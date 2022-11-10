@@ -4,7 +4,6 @@
 </a>
 <br>
 <br>
-<br>
 </div>
 
 # _Dockerized-NorLab_
