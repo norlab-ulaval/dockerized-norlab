@@ -1,0 +1,31 @@
+{
+        "name": "Default color scheme for dockerized-norlab shell prompts",
+        "groups": {
+                "information:additional":     { "fg": "gray6", "bg": "white", "attrs": [] },
+                "information:regular":        { "fg": "gray5", "bg": "white", "attrs": ["bold"] },
+                "information:highlighted":    { "fg": "black", "bg": "white", "attrs": [] },
+                "information:priority":       { "fg": "brightyellow", "bg": "mediumorange", "attrs": [] },
+                "cwd":                        "information:additional",
+                "cwd:current_folder":         "information:regular",
+                "cwd:divider":                { "fg": "gray3", "bg": "white", "attrs": [] },
+                "ds_prompt_end":              { "fg": "white", "bg": "gray9", "attrs": ["italic"] },
+                "background":                 { "fg": "white", "bg": "gray0", "attrs": [] },
+                "background:divider":         { "fg": "gray5", "bg": "gray0", "attrs": [] },
+                "branch":                     { "fg": "gray6", "bg": "white", "attrs": [] },
+                "branch_dirty":               { "fg": "brightyellow", "bg": "white", "attrs": [] },
+                "branch_clean":               { "fg": "gray6", "bg": "white", "attrs": [] },
+                "branch:divider":             { "fg": "gray6", "bg": "white", "attrs": [] },
+                "ds_logo":                    { "fg": "black", "bg": "white", "attrs": [] },
+                "hostname":                   { "fg": "gray8", "bg": "black", "attrs": [] },
+                "environment":                { "fg": "black", "bg": "white", "attrs": ["bold"] },
+                "mode":                       { "fg": "darkestgreen", "bg": "brightgreen", "attrs": ["bold"] },
+                "attached_clients":           { "fg": "white", "bg": "darkestgreen", "attrs": [] }
+        },
+        "mode_translations": {
+                "vicmd": {
+                        "groups": {
+                                "mode": {"fg": "darkestcyan", "bg": "white", "attrs": ["bold"]}
+                        }
+                }
+        }
+}

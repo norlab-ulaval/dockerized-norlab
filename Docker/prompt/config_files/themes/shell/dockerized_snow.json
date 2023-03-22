@@ -1,0 +1,82 @@
+{
+  "segments": {
+    "left": [
+      {
+        "type": "string",
+        "before": "",
+        "after": "  ",
+        "contents": "\ud835\udd7e",
+        "width": 4,
+        "draw_hard_divider": false,
+        "draw_soft_divider": false,
+        "highlight_groups": [
+          "ds_logo"
+        ]
+      },
+      {
+        "function": "powerline.segments.common.env.environment",
+        "priority": 20,
+        "after": "",
+        "before": "\uf308 ",
+        "args": {
+          "variable": "DS_CONTAINER_NAME"
+        }
+      },
+      {
+        "function": "powerline.segments.common.net.hostname",
+        "priority": 30,
+        "before": "\uf827 ",
+        "after": "",
+        "args": {
+          "only_if_ssh": false
+        }
+      },
+      {
+        "function": "powerline.segments.common.env.environment",
+        "after": "",
+        "before": "\ufb19 ",
+        "priority": 50,
+        "args": {
+          "variable": "DS_IMAGE_ARCHITECTURE"
+        }
+      },
+      {
+        "function": "powerline.segments.common.env.virtualenv",
+        "priority": 60
+      },
+      {
+        "function": "powerline.segments.common.vcs.branch",
+        "priority": 40
+        },
+        {
+        "function": "powerline.segments.common.vcs.stash",
+        "priority": 50
+      },
+      {
+        "function": "powerline.segments.shell.cwd",
+        "priority": 10,
+        "after": " ",
+        "draw_hard_divider": false,
+        "draw_soft_divider": false,
+        "args": {
+          "use_path_separator": true,
+          "shorten_home": true
+        }
+      },
+      {
+        "type": "string",
+        "before": "",
+        "after": "",
+        "width": 2,
+        "contents": "\ue0c8\ue0c1",
+        "draw_hard_divider": true,
+        "draw_soft_divider": true,
+        "highlight_groups": [
+                "ds_prompt_end"
+        ]
+       }
+
+    ],
+    "right": []
+  }
+}

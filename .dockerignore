@@ -1,0 +1,13 @@
+# Portable Network Graphics
+*.png
+
+# Scalable Vector Graphics
+*.svg
+*.svgz
+
+# Portable Document Format
+*.pdf
+
+*.drawio
+drawio/*
+visual/*
