@@ -12,31 +12,41 @@
 # 1. Follow Jetpack install instruction at https://developer.nvidia.com/embedded/jetpack
 #    Note: Xavier NX require first updating its QSPI before using the JetPack 5.x SD Card image
 # 2. Copy the `jetson_xavier_install.bash` script into the Jetson xavier using the following command
-#       $ export JETSON_USERNAME=snow
-#       $ export JETSON_IP=10.0.0.207
+#       $ export JETSON_USERNAME=snow && export JETSON_IP=10.0.0.207
 #       $ scp jetson_xavier_install.bash "$JETSON_USERNAME"@"$JETSON_IP":/home/"$JETSON_USERNAME"
 # 3. ssh in the xavier and execute the script:
 #       $ ssh "$JETSON_USERNAME"@"$JETSON_IP"
-#       $ cd /home/"$JETSON_USERNAME"/
 #       $ sudo bash jetson_xavier_install.bash
 # 4. Register your ssh credential in the Jetson
 #       $ scp ~/.ssh/id_rsa.pub "$JETSON_USERNAME"@"$JETSON_IP":./.ssh/authorized_keys
+# 5. Change the sudo timeout
+#       $ sudo visudo
+#    This will open a config file in vim. Change the line 'Defaults env_reset' for
+#       >>> Defaults        env_reset, timestamp_timeout=300
+#    Note: 300=5 hour
+# 5. When done reboot the Jetson
+#       $ sudo shutdown --reboot now
 
 JETSON_USER='snow'
 
 # ....CUDA nvcc check (for Xavier-nx via micro-sd card install)....................................................
 (
+  echo ""
   echo "# CUDA nvcc check (for Xavier-nx via micro-sd card install)"
   echo "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}"
   echo "export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-) >>"${JETSON_USER}"/.bashrc
+) >>"/home/${JETSON_USER}/.bashrc"
+
+source "/home/${JETSON_USER}/.bashrc"
 
 # Check nvcc version
-bash nvcc -V
+echo ""
+nvcc -V
+echo ""
 
 # ....Install utilities............................................................................................
 sudo apt-get update &&
-  sudo apt-get upgrade &&
+  sudo apt-get upgrade --assume-yes &&
   sudo apt-get install --assume-yes \
     tmux \
     htop \
@@ -45,6 +55,8 @@ sudo apt-get update &&
     less \
     tree \
     apt-utils \
+    bash-completion \
+    wget \
     zip gzip tar unzip &&
   sudo rm -rf /var/lib/apt/lists/*
 
@@ -52,9 +64,11 @@ sudo apt-get update &&
 sudo pip3 install -U jetson-stats
 
 # ....Configure Docker..............................................................................................
+echo ""
 sudo docker version
+echo ""
 sudo nvidia-docker version
-
+echo ""
 # . . Manage Docker as a non-root user. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 sudo usermod -a -G docker "${JETSON_USER}"
 
@@ -79,12 +93,18 @@ sudo apt-get update &&
   sudo apt-get upgrade &&
   sudo apt-get install --assume-yes docker-compose-plugin
 
+echo ""
 docker compose version
+echo ""
 
-# FINAL STEP
 # ....Register your ssh credential..................................................................................
-mkdir -p ~/.ssh
+mkdir -p "/home/${JETSON_USER}/.ssh"
+# Execute in workstation
+#   $ scp ~/.ssh/id_rsa.pub snow@10.0.0.207:./.ssh/authorized_keys
 
+# ....FINAL STEP....................................................................................................
+echo ""
+echo "....Jetson Xavier install script DONE..................................................."
 echo "1. Dont forget to register your ssh credential in the Jetson using the following command"
 echo "   $ scp ~/.ssh/id_rsa.pub snow@10.0.0.207:./.ssh/authorized_keys"
 echo ""
@@ -94,5 +114,7 @@ echo "   This will open a config file in vim. Change the line 'Defaults env_rese
 echo "   >>> Defaults        env_reset, timestamp_timeout=300"
 echo "   Note: 300=5 hour"
 echo ""
-echo "3. When done reboot the Jetson"
+echo "3. Revimboot the Jetson when done "
 echo "$ sudo shutdown --reboot now"
+echo "........................................................................................"
+echo ""
