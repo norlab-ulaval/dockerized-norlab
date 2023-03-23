@@ -9,6 +9,34 @@ services:
         BASE_IMAGE: dustynv/ros:humble-pytorch-l4t-r35.2.1
         DS_IMAGE_ARCHITECTURE: arm64-l4t
         DS_ROS_PKG: ros_base # see comment in dockerfile
+  dependencies_core:
+    image: norlabsnow/norlab-ros2-humble-dependencies-wo-services:arm64-l4t-r35.2.1
+    build:
+      context: ./Docker/norlab-ros2/dependencies
+      dockerfile: ./Dockerfile
+      args:
+        BASE_IMAGE: norlabsnow/norlab-ros2-humble:arm64-l4t-r35.2.1
+  dependencies_user_services:
+    image: norlabsnow/norlab-ros2-humble-dependencies:arm64-l4t-r35.2.1
+    build:
+      context: ./Docker/norlab-ros2/dependencies/user_services
+      dockerfile: ./Dockerfile
+      args:
+        BASE_IMG_TAG: arm64-l4t-r35.2.1
+  develop:
+    image: norlabsnow/norlab-ros2-humble-develop:arm64-l4t-r35.2.1
+    build:
+      context: ./Docker/norlab-ros2/develop
+      dockerfile: ./Dockerfile
+      args:
+        BASE_IMG_TAG: arm64-l4t-r35.2.1
+        DS_TARGET_PROJECT_SRC_REPO: dockerized-norlab
+        DS_HOST_TYPE: XavierNX # Not used now
+
+
+
+
+
 
 
 
