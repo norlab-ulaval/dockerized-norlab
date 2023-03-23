@@ -41,7 +41,7 @@ RUN #cd / && tree -L 3
 #   $ echo $ROS_PACKAGE_PATH
 #   > /home/youruser/ros2_ws/src:/opt/ros/melodic/share
 WORKDIR ${DS_DEV_WORKSPACE}
-RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
+RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
     && source ${DS_DEV_WORKSPACE}/install/setup.bash \
     && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_"
 

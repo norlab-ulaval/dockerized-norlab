@@ -36,21 +36,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV DS_DEV_WORKSPACE=$HOME/ros2_ws
 
 
-#RUN TMP_PV=$(python --version) \
-#    && if [[ ${TMP_PV:7:3} == "Python 3.8.10" ]]; then \
-#        ENV DS_PYTHON3_VERSION=python3.8 \
-#    elif [[ $(python --version) == "x86_64" ]]; then \
-#        ENV DS_PYTHON3_VERSION=python3.8 \
-#    else \
-#      echo -e "${DS_MSG_ERROR} This script does not yet support the $(uname -s) $(uname -m) architecture" \
-#      exit 1 \
-#    fi
-
-
 WORKDIR "/"
 
 
-# install development utilities
+# ....install development utilities................................................................................
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         apt-utils \
@@ -69,6 +58,30 @@ RUN apt-get update \
         zip gzip tar unzip \
     && rm -rf /var/lib/apt/lists/*
 
+
+# ....install ROS2 specific utilities..............................................................................
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
+        ros-dev-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# ....install sources..............................................................................................
+
+WORKDIR ${DS_DEV_WORKSPACE}/src
+RUN git clone https://github.com/ros2/examples src/examples -b humble  \
+    && cd ${DS_DEV_WORKSPACE} \
+    && apt-get update \
+    && rosdep install --from-paths src --ignore-packages-from-source --rosdistro ${ROS_DISTRO} --default-yes\
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR ${DS_DEV_WORKSPACE}
+RUN colcon build --symlink-install --merge-install
+
+
+RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && source ${DS_DEV_WORKSPACE}/install/setup.bash" \
+    && echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> ~/.bashrc \
+    && echo "source ${DS_DEV_WORKSPACE}/install/setup.bash" >> ~/.bashrc
 
 ## ===INstall Python 3 step DONE========================================================================================
 # Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables

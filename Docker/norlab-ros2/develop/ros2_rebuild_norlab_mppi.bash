@@ -8,12 +8,12 @@ cd "${DS_DEV_WORKSPACE}"
 # Install dependencies
 sudo apt-get update
 # rosdep install: looks at all the packages in the src directory and tries to find and install their dependencies on your platform
-rosdep install --from-paths ./src --ignore-packages-from-source --rosdistro ${ROS_DISTRO} --default-yes
+rosdep install --from-paths ./src --ignore-packages-from-source --rosdistro "${ROS_DISTRO}" --default-yes
 
 # colcon build step: rebuild everything in the catkin workspace DS_DEV_WORKSPACE
-source /opt/ros/${ROS_DISTRO}/setup.bash
-colcon build
-source ${DS_DEV_WORKSPACE}/install/setup.bash
+source "/opt/ros/${ROS_DISTRO}/install/setup.bash"
+colcon build --symlink-install --merge-install
+source "${DS_DEV_WORKSPACE}/install/setup.bash"
 
 
 # (Priority) todo:refactor (ref task NLSAR-222 🛠→ setupEnv*.sh scripts for deployement case)

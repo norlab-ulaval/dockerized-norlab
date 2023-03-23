@@ -104,7 +104,10 @@ RUN apt-get update \
 # Fetched Powerline install location using:
 #    $(pip3 show powerline-status | grep Location: | sed 's/Location: //g')/powerline
 ARG TMP_PV="$(python --version)"
-ENV DS_PYTHON3_VERSION="python${TMP_PV:7:3}"
+ENV DS_PYTHON3_VERSION="python${TMP_PV:-7:-3}"
+# Note: regarding the `${TMP_PV:-7:-3}` docker notation instead of the unix notation ${TMP_PV:7:3}, see post
+#       - How to use combination of ARG and ENV in Dockerfile to prevent unsupported modifier in substitution?: https://stackoverflow.com/questions/68935923/how-to-use-combination-of-arg-and-env-in-dockerfile-to-prevent-unsupported-modif
+#       - https://docs.docker.com/engine/reference/builder/#using-arg-variables
 
 ENV POWERLINE_DIR=/usr/local/lib/${DS_PYTHON3_VERSION}/dist-packages/powerline
 RUN ( \
@@ -161,9 +164,11 @@ RUN ( \
 #   $ echo $ROS_PACKAGE_PATH
 #   > /home/youruser/ros2_ws/src:/opt/ros/melodic/share
 WORKDIR ${DS_DEV_WORKSPACE}
-RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
+
+# Note: ROS2 setup.bash location is in `${ROS_DISTRO}/install/` instead of ROS1 in `${ROS_DISTRO}/`
+RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
     && source ${DS_DEV_WORKSPACE}/install/setup.bash \
-    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_"
+    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_" # WE ARE HERE <-- (!)
 
 
 CMD [ "bash" ]

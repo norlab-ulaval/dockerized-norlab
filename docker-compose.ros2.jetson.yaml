@@ -12,8 +12,8 @@ services:
   dependencies_core:
     image: norlabsnow/norlab-ros2-humble-dependencies-wo-services:arm64-l4t-r35.2.1
     build:
-      context: ./Docker/norlab-ros2/dependencies
-      dockerfile: ./Dockerfile
+      context: ./Docker
+      dockerfile: ./norlab-ros2/dependencies/Dockerfile
       args:
         BASE_IMAGE: norlabsnow/norlab-ros2-humble:arm64-l4t-r35.2.1
     depends_on:
@@ -21,8 +21,8 @@ services:
   dependencies_user_services:
     image: norlabsnow/norlab-ros2-humble-dependencies:arm64-l4t-r35.2.1
     build:
-      context: ./Docker/norlab-ros2/dependencies/user_services
-      dockerfile: ./Dockerfile
+      context: ./Docker
+      dockerfile: ./norlab-ros2/dependencies/user_services/Dockerfile
       args:
         BASE_IMG_TAG: arm64-l4t-r35.2.1
     depends_on:

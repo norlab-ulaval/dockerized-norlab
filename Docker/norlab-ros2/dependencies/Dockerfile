@@ -152,29 +152,31 @@ FROM ros-scientific-stack-base-image AS ros-performance-pkg-base-image
 # . . Numba install. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # https://numba.pydata.org
 
-# LLVM v3.9 <== (Python3.6 + JetPack 4.3/4.4)
-# Numba v0.31 <== (Python3.6 + JetPack 4.3/4.4)
-#ENV LVL_VERSION=3.9
-#ENV LVLLITE_VERSION=0.16.0
-ENV LVL_VERSION=4.0
-ENV LVLLITE_VERSION=0.20.0
+## LLVM v3.9 <== (Python3.6 + JetPack 4.3/4.4)
+## Numba v0.31 <== (Python3.6 + JetPack 4.3/4.4)
+##ENV LVL_VERSION=3.9
+##ENV LVLLITE_VERSION=0.16.0
+#ENV LVL_VERSION=4.0
+#ENV LVLLITE_VERSION=0.20.0
+#
+## Inspired by https://gitee.com/Cheng_Loon/jetson-packages-family-good
+#RUN apt-get update \
+#    && apt-get install --assume-yes --no-install-recommends \
+#        llvm-${LVL_VERSION} \
+#        llvm-${LVL_VERSION}-dev \
+#    && export LLVM_CONFIG=/usr/lib/llvm-${LVL_VERSION}/bin/llvm-config \
+#    && cd ${HOME} \
+#    && wget https://github.com/numba/llvmlite/archive/v${LVLLITE_VERSION}.zip \
+#    && unzip v${LVLLITE_VERSION}.zip \
+#    && cd llvmlite-${LVLLITE_VERSION} \
+#    && chmod 777 -R /usr/local/lib/python3.6/dist-packages/ \
+#    && python3 setup.py install
+#
+#RUN apt-get update \
+#    && apt-get install --assume-yes --no-install-recommends \
+#    python3-numba
 
-# Inspired by https://gitee.com/Cheng_Loon/jetson-packages-family-good
-RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
-        llvm-${LVL_VERSION} \
-        llvm-${LVL_VERSION}-dev \
-    && export LLVM_CONFIG=/usr/lib/llvm-${LVL_VERSION}/bin/llvm-config \
-    && cd ${HOME} \
-    && wget https://github.com/numba/llvmlite/archive/v${LVLLITE_VERSION}.zip \
-    && unzip v${LVLLITE_VERSION}.zip \
-    && cd llvmlite-${LVLLITE_VERSION} \
-    && chmod 777 -R /usr/local/lib/python3.6/dist-packages/ \
-    && python3 setup.py install
-
-RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
-    python3-numba
+RUN pip3 install --no-cache-dir --verbose numba
 
 
 

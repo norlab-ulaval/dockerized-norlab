@@ -2,7 +2,7 @@
 
 #set -e  # exit script if any statement returns a non-true return value
 
-ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/setup.bash"
+ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/install/setup.bash"
 echo "sourcing   ${ROS_ENV_SETUP}"
 source "${ROS_ENV_SETUP}"
 
