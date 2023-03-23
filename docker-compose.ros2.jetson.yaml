@@ -16,6 +16,8 @@ services:
       dockerfile: ./Dockerfile
       args:
         BASE_IMAGE: norlabsnow/norlab-ros2-humble:arm64-l4t-r35.2.1
+    depends_on:
+      - ros2_humble
   dependencies_user_services:
     image: norlabsnow/norlab-ros2-humble-dependencies:arm64-l4t-r35.2.1
     build:
@@ -23,6 +25,8 @@ services:
       dockerfile: ./Dockerfile
       args:
         BASE_IMG_TAG: arm64-l4t-r35.2.1
+    depends_on:
+      - dependencies_core
   develop:
     image: norlabsnow/norlab-ros2-humble-develop:arm64-l4t-r35.2.1
     build:
@@ -32,6 +36,8 @@ services:
         BASE_IMG_TAG: arm64-l4t-r35.2.1
         DS_TARGET_PROJECT_SRC_REPO: dockerized-norlab
         DS_HOST_TYPE: XavierNX # Not used now
+    depends_on:
+      - dependencies_user_services
 
 
 
