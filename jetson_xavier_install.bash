@@ -16,7 +16,7 @@
 #       $ scp jetson_xavier_install.bash "$JETSON_USERNAME"@"$JETSON_IP":/home/"$JETSON_USERNAME"
 # 3. ssh in the xavier and execute the script:
 #       $ ssh "$JETSON_USERNAME"@"$JETSON_IP"
-#       $ sudo bash jetson_xavier_install.bash
+#       $ source jetson_xavier_install.bash
 # 4. Register your ssh credential in the Jetson
 #       $ scp ~/.ssh/id_rsa.pub "$JETSON_USERNAME"@"$JETSON_IP":./.ssh/authorized_keys
 # 5. Change the sudo timeout
@@ -29,20 +29,35 @@
 
 JETSON_USER='snow'
 
-# ....CUDA nvcc check (for Xavier-nx via micro-sd card install)....................................................
-(
-  echo ""
-  echo "# CUDA nvcc check (for Xavier-nx via micro-sd card install)"
-  echo "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}"
-  echo "export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-) >>"/home/${JETSON_USER}/.bashrc"
+# ...CUDA toolkit path..................................................................................................
+# ref dusty_nv comment at https://forums.developer.nvidia.com/t/cuda-nvcc-not-found/118068
+if [[ $(uname -s) == "Darwin" ]]; then
+  echo -e "${DS_MSG_BASE} CUDA is not supported yet on Apple M1 computer"
+else
+  if ! command -v nvcc -V &> /dev/null; then
+    # nvcc command not working
+    echo -e "${DS_MSG_BASE} Fixing CUDA path for nvcc"
 
-source "/home/${JETSON_USER}/.bashrc"
+    ( \
+    echo ""; \
+    echo "# CUDA toolkit related"; \
+    echo "# ref dusty_nv comment at"; \
+    echo "#    https://forums.developer.nvidia.com/t/cuda-nvcc-not-found/118068"; \
+    echo "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}"; \
+    echo "export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"; \
+    echo ""; \
+    ) >> ~/.bashrc
 
-# Check nvcc version
-echo ""
-nvcc -V
-echo ""
+    source ~/.bashrc && echo -e "${DS_MSG_DONE} CUDA path hack added to ~/.bashrc for nvcc"
+  fi
+
+  if [[ $(nvcc -V | grep 'nvcc: NVIDIA (R) Cuda compiler driver') == "nvcc: NVIDIA (R) Cuda compiler driver" ]]; then
+    echo -e "${DS_MSG_DONE} nvcc installed properly"
+    nvcc -V
+  else
+    echo -e "${DS_MSG_ERROR} Check your nvcc installation. It's NOT installed properly!"
+  fi
+fi
 
 # ....Install utilities............................................................................................
 sudo apt-get update &&
@@ -99,6 +114,7 @@ echo ""
 
 # ....Register your ssh credential..................................................................................
 mkdir -p "/home/${JETSON_USER}/.ssh"
+sudo chown -R ${JETSON_USER}:${JETSON_USER} "/home/${JETSON_USER}/.ssh"
 # Execute in workstation
 #   $ scp ~/.ssh/id_rsa.pub snow@10.0.0.207:./.ssh/authorized_keys
 
