@@ -103,8 +103,13 @@ RUN apt-get update \
 
 # Fetched Powerline install location using:
 #    $(pip3 show powerline-status | grep Location: | sed 's/Location: //g')/powerline
-ARG TMP_PV="$(python --version)"
-ENV DS_PYTHON3_VERSION="python${TMP_PV:-7:-3}"
+
+## (Priority) ToDo: Change hardcoded version to dynamic version
+## see https://github.com/moby/moby/issues/29110
+#ARG TMP_PV=$(python --version)
+#ENV DS_PYTHON3_VERSION="python${TMP_PV:-7:-3}"
+ENV DS_PYTHON3_VERSION="python3.8"
+
 # Note: regarding the `${TMP_PV:-7:-3}` docker notation instead of the unix notation ${TMP_PV:7:3}, see post
 #       - How to use combination of ARG and ENV in Dockerfile to prevent unsupported modifier in substitution?: https://stackoverflow.com/questions/68935923/how-to-use-combination-of-arg-and-env-in-dockerfile-to-prevent-unsupported-modif
 #       - https://docs.docker.com/engine/reference/builder/#using-arg-variables

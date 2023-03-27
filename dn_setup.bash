@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ★★★ Usage note | Must be executed in the current terminal so use the following command:
-#         $ source ds_setup.bash
+#         $ source dn_setup.bash
 #
 
 
@@ -32,7 +32,7 @@ if [[ ! -d $DS_PATH ]]; then
 fi
 
 # Load environment variable from file
-set -o allexport; source ${DS_PATH}/ds.env; set +o allexport
+set -o allexport; source ${DS_PATH}/dn.env; set +o allexport
 
 echo -e "${DS_MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to install alias"
 

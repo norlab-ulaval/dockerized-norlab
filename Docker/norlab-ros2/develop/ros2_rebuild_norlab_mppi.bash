@@ -41,7 +41,7 @@ cd /
 #    2. check if norlab-ros2 was properly sourced
 #      # printenv | grep AR_
 #  or open a new terminal in the container
-#    $ bash /ds_attach.bash <container name>
+#    $ bash /dn_attach.bash <container name>
 #"
 
 

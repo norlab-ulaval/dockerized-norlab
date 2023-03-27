@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  develop:
+    image: norlabsnow/norlab-ros2-humble-develop:arm64-l4t-r35.2.1
+    container_name: IamSNOW-NX-TEST
+    environment:
+      DS_CONTAINER_NAME: IamSNOW-NX-TEST
+      DS_TARGET_PROJECT_SRC_REPO: NorLab_MPPI
+      DISPLAY: ${DISPLAY}
+      QT_X11_NO_MITSHM: 1
+      XAUTHORITY: /tmp/.docker.xauth
+      ##      ROS_MASTER_URI: http://${BASESTATION_IP}:11311
+      #      ROS_MASTER_URI: http://10.0.0.224:11311
+      #      #      ROS_HOSTNAME: ${XAVIER_NX_REDLEADER_IP}
+      #      ROS_HOSTNAME: 10.0.0.207
+      ROS_DOMAIN_ID: 1
+    volumes:
+      - /home/snow/NorLab_MPPI:/ros2_ws/src/NorLab_MPPI
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+    tty: true
+    stdin_open: true
+    devices:
+      - /dev/input/js0
+    privileged: true
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    cap_add:
+      - SYS_PTRACE
+
+#    network_mode: host # allow the container to have full access to the host’s networking system
+    ## Note: Port mapping is incompatible with network_mode: host
+    network_mode: bridge
+    pid: host
+    ports:
+      - "11311:11311" # Warthog ros master
+      - "80:80" # default ros master port
+      - "2222:22" # ssh
+    #      - "7777:7777" # gdbserver
+    #    networks:
+    #      - ros-network
+    extra_hosts:
+      - redleader:10.0.0.224
+#      - "${BASESTATION_HOSTNAME}:${BASESTATION_IP}"
+
+#networks:
+#  ros-network:
+#      external: true
+
+
+
+
+
+
+
+
+
+
+
+
+
