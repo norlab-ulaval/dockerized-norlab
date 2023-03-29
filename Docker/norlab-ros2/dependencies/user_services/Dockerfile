@@ -148,15 +148,21 @@ RUN ( \
     echo "else "; \
     echo "  # Skip or stop Powerline prompt configuration"; \
     echo "  powerline-daemon --quiet --kill"; \
+#    echo "  export PS1='❆  \e[0;34m$"{DN_CONTAINER_NAME}"\e[0m  \w\$ '"; \
+#    echo "  export PS1='\033[1;34m❆  $"{DN_CONTAINER_NAME}" \033[0m\033[2m \w \033[0m\033[1;34m\033[0m '"; \
+#    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w \033[0m\033[1;37m\033[0m '"; \
+#    echo "  export PS1='\033[1;37m❆ ›\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
+#    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
+    echo "  export PS1='\033[1;37m❆ ❯\033[0m\033[2m $"{DN_CONTAINER_NAME}" \033[0m\033[1;37m❯\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
     echo "fi"; \
   ) >> ~/.bashrc
+
+# echo "\033[1;37m BlaBla \033[0m"
 
 WORKDIR $POWERLINE_DIR
 
 COPY ./prompt/config_files/config.json config_files/
-#COPY ./prompt/config_files/config_minimal.json config_files/
 COPY ./prompt/config_files/themes/shell/dockerized_snow.json config_files/themes/shell/dockerized_snow.json
-#COPY ./prompt/config_files/themes/shell/dockerized_snow_minimal.json config_files/themes/shell/dockerized_snow_minimal.json
 COPY ./prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/colorschemes/shell/dockerized_snow.json
 
 # (Priority) todo:on task end >> delete bloc line
