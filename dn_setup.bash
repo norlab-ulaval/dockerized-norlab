@@ -10,25 +10,25 @@
 # - https://www.baeldung.com/linux/bash-alias-with-parameters
 # - https://unix.stackexchange.com/questions/3773/how-to-pass-parameters-to-an-alias
 
-#DS_PATH=$(sudo find / -name 'dockerized-norlab' -type d 2>/dev/null)
+#DN_PATH=$(sudo find / -name 'dockerized-norlab' -type d 2>/dev/null)
 
-DS_PATH=$(pwd | grep 'dockerized-norlab')
-if [[ ! -d $DS_PATH ]]; then
+DN_PATH=$(pwd | grep 'dockerized-norlab')
+if [[ ! -d $DN_PATH ]]; then
   echo -n "Enter the absolute path to the '/dockerized-norlab' dir: "
   read RESPONSE
-  DS_PATH="${RESPONSE}/dockerized-norlab"
-#  echo ">TEST RESPONSE: ${DS_PATH}"
+  DN_PATH="${RESPONSE}/dockerized-norlab"
+#  echo ">TEST RESPONSE: ${DN_PATH}"
 
-  while [ ! -d ${DS_PATH} ]
+  while [ ! -d ${DN_PATH} ]
   do
-    echo -e "(!) '${DS_PATH}' is unreachable"
+    echo -e "(!) '${DN_PATH}' is unreachable"
     echo -n "Enter the absolute path to dir /dockerized-norlab: "
     read RESPONSE
-    DS_PATH="${RESPONSE}/dockerized-norlab"
-#    echo ">TEST RESPONSE: ${DS_PATH}"
+    DN_PATH="${RESPONSE}/dockerized-norlab"
+#    echo ">TEST RESPONSE: ${DN_PATH}"
   done
 
-#  echo ">TEST: DS_PATH=${DS_PATH}."
+#  echo ">TEST: DN_PATH=${DN_PATH}."
 fi
 
 # Load environment variable from file
@@ -40,16 +40,16 @@ echo -e "${DS_MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to inst
 ( \
   echo ""; \
   echo "# dockerized-norlab aliases"; \
-  echo "export DS_PATH=${DS_PATH}"
-  echo "alias ds_cd='cd $DS_PATH'"; \
-  echo "alias ds_attach='cd $DS_PATH && bash ds_attach.bash'"; \
-#  echo "alias ds_instantiate_develop='cd $DS_PATH && bash ds_instantiate_develop.bash'"; \
-#  echo "alias ds_instantiate_deploy='cd $DS_PATH && bash ds_instantiate_deploy.bash'"; \
-#  echo "alias ds_build_dependencies='cd $DS_PATH && bash ds_build_dependencies.bash'"; \
-#  echo "alias ds_build_deploy='cd $DS_PATH && bash ds_build_deploy.bash'"; \
-#  echo "alias ds_build_develop='cd $DS_PATH && bash ds_build_develop.bash'"; \
-#  echo "alias ds_build_melodic_python3='cd $DS_PATH && bash ds_build_melodic_python3.bash'"; \
-#  echo "alias _ds_build_and_push_norlab_MPPI='cd $DS_PATH && bash _ds_build_and_push_norlab_MPPI.bash'"; \
+  echo "export DN_PATH=${DN_PATH}"
+  echo "alias dn_cd='cd $DN_PATH'"; \
+  echo "alias dn_attach='cd $DN_PATH && bash dn_attach.bash'"; \
+#  echo "alias dn_instantiate_develop='cd $DN_PATH && bash dn_instantiate_develop.bash'"; \
+#  echo "alias dn_instantiate_deploy='cd $DN_PATH && bash dn_instantiate_deploy.bash'"; \
+#  echo "alias dn_build_dependencies='cd $DN_PATH && bash dn_build_dependencies.bash'"; \
+#  echo "alias ds_build_deploy='cd $DN_PATH && bash ds_build_deploy.bash'"; \
+#  echo "alias ds_build_develop='cd $DN_PATH && bash ds_build_develop.bash'"; \
+#  echo "alias ds_build_melodic_python3='cd $DN_PATH && bash ds_build_melodic_python3.bash'"; \
+#  echo "alias _ds_build_and_push_norlab_MPPI='cd $DN_PATH && bash _ds_build_and_push_norlab_MPPI.bash'"; \
   echo ""; \
 ) >> ~/.bashrc
 
@@ -96,12 +96,12 @@ fi
 
 echo -e "${DS_MSG_DONE} Setup completed! New available alias:
 
-  ds_cd
-  ds_attach
+  dn_cd
+  dn_attach
 "
-#  ds_instantiate_develop
-#  ds_instantiate_deploy
-#  ds_build_dependencies
+#  dn_instantiate_develop
+#  dn_instantiate_deploy
+#  dn_build_dependencies
 #  ds_build_deploy
 #  ds_build_develop
 #  ds_build_melodic_python3

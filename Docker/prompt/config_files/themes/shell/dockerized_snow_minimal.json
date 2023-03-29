@@ -5,7 +5,7 @@
         "type": "string",
         "before": "",
         "after": "  ",
-        "contents": "\uf2dc",
+        "contents": "DN",
         "width": 4,
         "draw_hard_divider": false,
         "draw_soft_divider": false,
@@ -17,7 +17,7 @@
         "function": "powerline.segments.common.env.environment",
         "priority": 20,
         "after": "",
-        "before": "\uf308 ",
+        "before": "",
         "args": {
           "variable": "DN_CONTAINER_NAME"
         }
@@ -25,7 +25,7 @@
       {
         "function": "powerline.segments.common.net.hostname",
         "priority": 30,
-        "before": "\uf827 ",
+        "before": "Host: ",
         "after": "",
         "args": {
           "only_if_ssh": false
@@ -34,7 +34,7 @@
       {
         "function": "powerline.segments.common.env.environment",
         "after": "",
-        "before": "\ufb19 ",
+        "before": "Arch: ",
         "priority": 50,
         "args": {
           "variable": "DS_IMAGE_ARCHITECTURE"
@@ -68,7 +68,7 @@
         "before": "",
         "after": "",
         "width": 2,
-        "contents": "\ue0c8\ue0c1",
+        "contents": "",
         "draw_hard_divider": true,
         "draw_soft_divider": true,
         "highlight_groups": [

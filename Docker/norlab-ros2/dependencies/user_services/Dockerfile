@@ -93,14 +93,28 @@ RUN pip3 install --no-cache-dir --verbose psutil
 # 👍🏼 if it print either +python or +python3
 
 
-# Install Powerline + special font pack
-#RUN sudo pip3 install powerline-status
+# . . Install Powerline + special font pack. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  
+# Note: If Powerline prompt fonts are missing in PyCharm terminal, check that the `Console Scheme` / `Consol Font` /  `Use console font instead of default` is set to `Font:` `MesloLGS NF` (!)
+
+## Ref: https://github.com/powerline/fonts
 RUN pip3 install --no-cache-dir --verbose powerline-status
 RUN apt-get update \
     && apt-get install -y --no-install-recommends fonts-powerline \
     && rm -rf /var/lib/apt/lists/*
 
+#RUN /bin/bash -c "if [[ ${DN_ACTIVATE_POWERLINE_PROMT} == 'true' ]]; then \
+#        pip3 install --no-cache-dir --verbose powerline-status \
+#        && apt-get update \
+#            && apt-get install -y --no-install-recommends fonts-powerline \
+#            && rm -rf /var/lib/apt/lists/*; \
+#    else \
+#      echo 'Skip Powerline prompt configuration'; \
+#    fi"
+##      exit 1; \
 
+
+
+# . . Config bash shell. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # Fetched Powerline install location using:
 #    $(pip3 show powerline-status | grep Location: | sed 's/Location: //g')/powerline
 
@@ -114,23 +128,34 @@ ENV DS_PYTHON3_VERSION="python3.8"
 #       - How to use combination of ARG and ENV in Dockerfile to prevent unsupported modifier in substitution?: https://stackoverflow.com/questions/68935923/how-to-use-combination-of-arg-and-env-in-dockerfile-to-prevent-unsupported-modif
 #       - https://docs.docker.com/engine/reference/builder/#using-arg-variables
 
+ARG DN_ACTIVATE_POWERLINE_PROMT='true'
+ENV DN_ACTIVATE_POWERLINE_PROMT="${DN_ACTIVATE_POWERLINE_PROMT}"
+
 ENV POWERLINE_DIR=/usr/local/lib/${DS_PYTHON3_VERSION}/dist-packages/powerline
 RUN ( \
-    echo "if [ -f `which powerline-daemon` ]; then"; \
+#    echo "if [ -f `which powerline-daemon` ]; then"; \
+#    echo "if [[ '$DN_ACTIVATE_POWERLINE_PROMT' == 'true' ]]; then"; \
+    ## Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
+    echo "if [[ $"DN_ACTIVATE_POWERLINE_PROMT" == 'true' ]]; then"; \
     echo "  # Start the powerline daemon quietly"; \
-    echo "  powerline-daemon -q"; \
+    echo "  powerline-daemon --quiet"; \
     echo "  # Set Powerline env var for bash"; \
     echo "  POWERLINE_BASH_CONTINUATION=1"; \
     echo "  POWERLINE_BASH_SELECT=1"; \
     echo "  # Invoke binding script"; \
     echo "  . ${POWERLINE_DIR}/bindings/bash/powerline.sh"; \
+    echo "else "; \
+    echo "  # Skip or stop Powerline prompt configuration"; \
+    echo "  powerline-daemon --quiet --kill"; \
     echo "fi"; \
   ) >> ~/.bashrc
 
 WORKDIR $POWERLINE_DIR
 
 COPY ./prompt/config_files/config.json config_files/
+#COPY ./prompt/config_files/config_minimal.json config_files/
 COPY ./prompt/config_files/themes/shell/dockerized_snow.json config_files/themes/shell/dockerized_snow.json
+#COPY ./prompt/config_files/themes/shell/dockerized_snow_minimal.json config_files/themes/shell/dockerized_snow_minimal.json
 COPY ./prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/colorschemes/shell/dockerized_snow.json
 
 # (Priority) todo:on task end >> delete bloc line
@@ -143,7 +168,7 @@ RUN /bin/bash -c "cd config_files && tree -L 3"
 #RUN export DS_LOGO=$'\uf2dc' >> ~/.bashrc  #            nf-fa-snowflake_o
 #RUN export DS_LOGO=$'\U1D516' >> ~/.bashrc # 𝔖         mathematical fraktur capital s U+1D516      <--
 #RUN export DS_LOGO=$'\U1D57E' >> ~/.bashrc # 𝕾         mathematical bold fraktur capital s U+1D57E <--
-ENV DS_CONTAINER_NAME=IamSnow
+ENV DN_CONTAINER_NAME=IamSnow
 
 
 # ===Final build step===================================================================================================
@@ -151,13 +176,13 @@ FROM services AS final
 
 WORKDIR /
 #RUN echo $PWD
-COPY ./tools/ds_info.bash /
+COPY ./tools/dn_info.bash /
 #RUN cd / && tree -L 1
 
 RUN ( \
   echo ""; \
   echo "# dockerized-norlab aliases (from dependencies img)"; \
-  echo "alias ds_info='bash /ds_info.bash'"; \
+  echo "alias dn_info='bash /dn_info.bash'"; \
   echo ""; \
 ) >> ~/.bashrc
 
@@ -173,7 +198,7 @@ WORKDIR ${DS_DEV_WORKSPACE}
 # Note: ROS2 setup.bash location is in `${ROS_DISTRO}/install/` instead of ROS1 in `${ROS_DISTRO}/`
 RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
     && source ${DS_DEV_WORKSPACE}/install/setup.bash \
-    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_" # WE ARE HERE <-- (!)
+    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_ -e DN_" # WE ARE HERE <-- (!)
 
 
 CMD [ "bash" ]

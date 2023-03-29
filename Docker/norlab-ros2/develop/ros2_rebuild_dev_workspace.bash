@@ -18,11 +18,12 @@ source "${DS_DEV_WORKSPACE}/install/setup.bash"
 
 # (Priority) todo:refactor (ref task NLSAR-222 🛠→ setupEnv*.sh scripts for deployement case)
 ## Environment setup
-#norlab_mppi_env_setup="${DS_DEV_WORKSPACE}/src/${DS_TARGET_PROJECT_SRC_REPO}/mppi_util/setupEnv${DS_HOST_TYPE}.sh"
+#norlab_mppi_env_setup="${DS_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}/mppi_util/setupEnv${DS_HOST_TYPE}.sh"
 #echo "source ${norlab_mppi_env_setup}" >> ~/.bashrc
 
 # (NICE TO HAVE) todo:implement >> Terminal splash screen
 
+# ToDo: refactor `echo "  It should include the directory you're in: ${DS_DEV_WORKSPACE}/src:/opt/ros/melodic/share"`
 echo
 echo "  Make sure your workspace is properly overlayed by the setup script by checking the ROS_PACKAGE_PATH environment variable. "
 echo "  It should include the directory you're in: ${DS_DEV_WORKSPACE}/src:/opt/ros/melodic/share"

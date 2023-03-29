@@ -79,7 +79,8 @@ if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${CONTAIN
     echo -e "${DS_MSG_BASE} Starting container $(docker start ${CONTAINER_NAMES})"
     echo ""
 elif [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep ${CONTAINER_NAMES}` ]]; then
-    echo -e "${DS_MSG_ERROR} Container ${CONTAINER_NAMES} is not instantiated. Use command ${DS_MSG_BASE_FORMAT}ds_instantiate_develop${DS_MSG_END_FORMAT}"
+    echo -e "${DS_MSG_ERROR} Container ${CONTAINER_NAMES} is not instantiated."
+#    "Use command ${DS_MSG_BASE_FORMAT}dn_instantiate_develop${DS_MSG_END_FORMAT}"
     exit
 fi
 

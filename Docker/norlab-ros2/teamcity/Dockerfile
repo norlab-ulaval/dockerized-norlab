@@ -8,8 +8,8 @@ ARG BASE_IMG=norlab-ros2-humble-dependencies-wo-services
 FROM norlabsnow/${BASE_IMG}:${BASE_IMG_TAG} as teamcity
 
 
-ARG DS_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
-ENV DS_TARGET_PROJECT_SRC_REPO=${DS_TARGET_PROJECT_SRC_REPO}
+ARG DN_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
+ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
 
 
 WORKDIR /
@@ -29,7 +29,7 @@ RUN ( \
 # ===Final build step===================================================================================================
 WORKDIR /
 RUN #echo $PWD
-COPY ./tools/ds_info.bash /
+COPY ./tools/dn_info.bash /
 RUN #cd / && tree -L 3
 
 
@@ -48,7 +48,7 @@ RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
 
 
 # ... Finish container setup ...........................................................................................
-WORKDIR /ros2_ws/src/${DS_TARGET_PROJECT_SRC_REPO}
+WORKDIR /ros2_ws/src/${DN_TARGET_PROJECT_SRC_REPO}
 CMD [ "bash" ]
 
 # ///////////////////////////////////////////////////////////////////////////////////////////// norlab-ros2/teamcity ///

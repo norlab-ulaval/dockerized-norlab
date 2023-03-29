@@ -5,8 +5,9 @@ services:
     image: norlabsnow/norlab-ros2-humble-develop:arm64-l4t-r35.2.1
     container_name: IamSNOW-NX-TEST
     environment:
-      DS_CONTAINER_NAME: IamSNOW-NX-TEST
-      DS_TARGET_PROJECT_SRC_REPO: NorLab_MPPI
+      DN_CONTAINER_NAME: IamSNOW-NX-TEST
+      DN_ACTIVATE_POWERLINE_PROMT: true
+      DN_TARGET_PROJECT_SRC_REPO: NorLab_MPPI
       DISPLAY: ${DISPLAY}
       QT_X11_NO_MITSHM: 1
       XAUTHORITY: /tmp/.docker.xauth
@@ -31,20 +32,20 @@ services:
     cap_add:
       - SYS_PTRACE
 
-#    network_mode: host # allow the container to have full access to the host’s networking system
-    ## Note: Port mapping is incompatible with network_mode: host
-    network_mode: bridge
+    network_mode: host # allow the container to have full access to the host’s networking system
     pid: host
-    ports:
-      - "11311:11311" # Warthog ros master
-      - "80:80" # default ros master port
-      - "2222:22" # ssh
-    #      - "7777:7777" # gdbserver
+#    ## Note: Port mapping is incompatible with network_mode: host
+#    network_mode: bridge
+#    ports:
+#      - "11311:11311" # Warthog ros master
+#      - "80:80" # default ros master port
+#      - "2222:22" # ssh
+#    #      - "7777:7777" # gdbserver
     #    networks:
     #      - ros-network
-    extra_hosts:
-      - redleader:10.0.0.224
-#      - "${BASESTATION_HOSTNAME}:${BASESTATION_IP}"
+#    extra_hosts:
+#      - redleader:10.0.0.224
+##      - "${BASESTATION_HOSTNAME}:${BASESTATION_IP}"
 
 #networks:
 #  ros-network:
