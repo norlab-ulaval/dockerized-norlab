@@ -32,7 +32,7 @@ if [[ ! -d $DN_PATH ]]; then
 fi
 
 # Load environment variable from file
-set -o allexport; source ${DS_PATH}/dn.env; set +o allexport
+set -o allexport; source ${DN_PATH}/.env.prompt; set +o allexport
 
 echo -e "${DS_MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to install alias"
 

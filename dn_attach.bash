@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load environment variable from file
-set -o allexport; source dn.env; set +o allexport
+set -o allexport; source .env.prompt; set +o allexport
 
 
 bash ./visual/terminal_splash.bash
