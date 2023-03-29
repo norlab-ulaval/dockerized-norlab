@@ -23,12 +23,11 @@ Open a new interactive terminal with pseudo-TTY
 \033[0m"
 }
 
-## todo:on task end >> delete next bloc ↓↓
-#echo "
-#${0}: all arg >> ${@}
-#"
+## todo: on task end >> comment next dev bloc ↓↓
+#echo "${0}: all arg >>" \
+#  && echo "${@}"
 
-if [ $# -ne 1 ]; then
+if [ $# -lt 1 ]; then
   echo -e "${DS_MSG_ERROR} Missing argument: $0 ${DS_MSG_ERROR_FORMAT}<CONTAINER_NAMES>${DS_MSG_END_FORMAT}
 If your not sure, execute ${DS_MSG_EMPH_FORMAT}\$ docker ps -a${DS_MSG_END_FORMAT} in host terminal and check the STATUS column to see running container"
   exit 1

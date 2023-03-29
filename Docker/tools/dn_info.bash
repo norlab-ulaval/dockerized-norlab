@@ -5,14 +5,15 @@ SP="    "
 
 echo
 
-echo -e "Container informations:"
+echo -e "In-container informations:"
 #${DN_CONTAINER_NAME} container info
 echo -e "\033[1;37m
-${SP}DN Container name:           ${DN_CONTAINER_NAME}
-${SP}DN Image architecture:       ${DS_IMAGE_ARCHITECTURE}
-${SP}DN Target project repo:      ${DN_TARGET_PROJECT_SRC_REPO}
-${SP}DN Activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
-${SP}DN Project src code path:    ${DS_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
+${SP}DN container name:           ${DN_CONTAINER_NAME}
+${SP}DN host name:                $(hostname)
+${SP}DN image architecture:       ${DS_IMAGE_ARCHITECTURE}
+${SP}DN project src path:         ${DS_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
+${SP}DN target project repo:      ${DN_TARGET_PROJECT_SRC_REPO}
+${SP}DN activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
 ${SP}
 ${SP}ROS distro:                  ${ROS_DISTRO}
 ${SP}ROS package:                 ${DS_ROS_PKG}
@@ -28,28 +29,34 @@ ${SP}LLVMlite version:            $(echo "${PCK_VERSION}" | grep llvmlite | sed 
 \033[0m"
 #${SP}PyCuda version:          $(echo "${PCK_VERSION}" | grep pycuda | sed 's/pycuda==//g')
 
-echo -e "In container available alias:
+echo -e "In-container available alias:
 \033[1;37m
-${SP}dn_info
-${SP}dn_python3_check
-${SP}dn_ros2_rebuild_dev_workspace
-${SP}dn_fetch_ros_env
+${SP}$ dn_info
+${SP}$ dn_python3_check
+${SP}$ dn_ros2_rebuild_dev_workspace
+${SP}$ dn_fetch_ros_env
 \033[0m
 "
 
-echo -e "\033[1;37mIDE remote development workflow\033[0m: to connect to the container internal ssh server:
+echo -e "IDE remote development workflow › to connect to the container internal ssh server:
 \033[1;37m
 ${SP}$ ssh -p ${DS_PYCHARM_DEV_SERVER_PORT} ${DS_PYCHARM_DEV_USER}@$(hostname -I | awk '{print $1}')
 ${SP}$ sftp -P ${DS_PYCHARM_DEV_SERVER_PORT} openssh-$(hostname -I | awk '{print $1}')
-${SP}$ scp -P ${DS_PYCHARM_DEV_SERVER_PORT} /path/to/foo ${DS_PYCHARM_DEV_USER}@$(hostname -I | awk '{print $1}'):/path/to/dest/
+${SP}$ scp -P ${DS_PYCHARM_DEV_SERVER_PORT} /path/to/source ${DS_PYCHARM_DEV_USER}@$(hostname -I | awk '{print $1}'):/target/dir/
 \033[0m
 "
 
-echo -e "\033[1;37mTerminal prompt\033[0m: To change to a minimal prompt or if your terminal does not have \033[1;37m Powerline-status \033[0m or \033[1;37m Powerline10k \033[0m installed:
-${SP}# Execute the following line in the container
+# (NICE TO HAVE) ToDo: Add >> procedure for configuring .env file
+echo -e "Terminal prompt › The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m or\033[1;37m Powerline10k\033[0m be installed on the host terminal. To change to a minimal prompt, either set permanently the ENV variable in\033[1;37m docker-compose.<spec>.run.yaml\033[0m:
+${SP}
+${SP}services:
+${SP}  develop: # the service name
+${SP}\033[1;37m    environment:
+${SP}      - DN_ACTIVATE_POWERLINE_PROMT=false
+\033[0m
+or pass the following flag to \033[1;37mdn_attach\033[0m when connecting to a running container:
 \033[1;37m
-${SP}$ export DN_ACTIVATE_POWERLINE_PROMT=false
-${SP}$ source ~/.bashrc
+${SP}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-container-name>
 \033[0m
 "
 

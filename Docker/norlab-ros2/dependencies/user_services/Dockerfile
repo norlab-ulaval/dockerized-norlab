@@ -133,9 +133,10 @@ ENV DN_ACTIVATE_POWERLINE_PROMT="${DN_ACTIVATE_POWERLINE_PROMT}"
 
 ENV POWERLINE_DIR=/usr/local/lib/${DS_PYTHON3_VERSION}/dist-packages/powerline
 RUN ( \
+    ## Note: powerline-daemon and powerline10k are os specific app.
 #    echo "if [ -f `which powerline-daemon` ]; then"; \
-#    echo "if [[ '$DN_ACTIVATE_POWERLINE_PROMT' == 'true' ]]; then"; \
     ## Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
+#    echo "if [[ '$DN_ACTIVATE_POWERLINE_PROMT' == 'true' ]]; then"; \
     echo "if [[ $"DN_ACTIVATE_POWERLINE_PROMT" == 'true' ]]; then"; \
     echo "  # Start the powerline daemon quietly"; \
     echo "  powerline-daemon --quiet"; \

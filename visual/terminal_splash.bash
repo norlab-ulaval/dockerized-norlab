@@ -55,7 +55,7 @@ function dockerized_snow_slpash {
   echo_centering_str "⠀⠀⠀⠀⠙⣻⣿⣿⣧⠀⠀⢸⣿⠀⠀⢀⣿⣿⣿⣟⠉⠀⠀⠀" "\033[1;2m" " "
   echo_centering_str "⠀⠀⠀⠘⠛⠛⠉⠉⠙⠿⣿⣾⣿⣷⣿⠟⠉⠉⠙⠛⠛⠀⠀⠀" "\033[1;2m" " "
 #  echo_centering_str "·· NorLab dockerized-norlab ••" "\033[1;37m" "\033[0m·"
-  echo_centering_str "·····•· Dockerized-norlab ··•••" "\033[1;37m" "\033[0m·"
+  echo_centering_str "···•· Dockerized-norlab ··•••" "\033[1;37m" "\033[0m·"
   echo_centering_str "⠀⠀⠀⢠⣶⣤⣄⣀⣤⣶⣿⢿⣿⢿⣿⣶⣄⣀⣤⣤⣶⠀⠀⠀" "\033[1;2m" " "
   echo_centering_str "⠀⠀⠀⠀⣨⣿⣿⣿⡟⠁⠀⢸⣿⠀⠀⠉⣿⣿⣿⣯⣀⠀⠀⠀" "\033[1;2m" " "
   echo_centering_str "⠀⠀⠀⠈⠛⠁⣿⣿⢀⠀⣠⣿⣿⣷⡀⠀⠈⣿⣧⠉⠛⢀⠀⠀" "\033[1;2m" " "
