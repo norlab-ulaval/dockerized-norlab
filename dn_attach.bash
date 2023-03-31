@@ -83,4 +83,5 @@ elif [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep ${CONTAINER_NAM
     exit
 fi
 
-sudo docker exec -it ${USER_ARG} ${CONTAINER_NAMES} bash
+#sudo docker exec -it ${USER_ARG} ${CONTAINER_NAMES} bash
+docker exec -it ${USER_ARG} ${CONTAINER_NAMES} bash

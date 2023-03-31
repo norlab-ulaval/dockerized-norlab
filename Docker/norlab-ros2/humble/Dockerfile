@@ -12,6 +12,7 @@
 #   l4t-base: https://ngc.nvidia.com/catalog/containers/nvidia:l4t-base
 #   l4t-ros-noetic-pytorch: https://github.com/NVIDIA-AI-IOT/ros2_jetson/blob/main/docker/DockerFile.l4tbase.ros.noetic
 
+# OS: Ubuntu[18.04 (melodic)|22.04.2 LTS (Jammy Jellyfish)], l4t
 
 # JETPACK & L4T release version: https://developer.nvidia.com/embedded/jetpack-archive and https://www.stereolabs.com/blog/nvidia-jetson-l4t-and-jetpack-support/
 # Jetpack 4.6 › tag: r32.6.1
@@ -28,8 +29,13 @@ ARG DS_ROS_PKG=ros_base
 ENV DS_ROS_PKG=${DS_ROS_PKG}
 #ENV ROS_DISTRO=humble
 
+# ARCH: arm64-l4t, arm64-darwin, x86
 ARG DS_IMAGE_ARCHITECTURE=arm64-l4t
 ENV DS_IMAGE_ARCHITECTURE=${DS_IMAGE_ARCHITECTURE}
+
+## Declared in D-NL › Deploy
+## DS_HOST_TYPE: Local, XavierWarthog,
+## NorLab robot: warthog, warthog-xavier, xavier-nx-redleader, marmote ...
 
 # skip GUI dialog by setting everything to default
 ENV DEBIAN_FRONTEND=noninteractive
