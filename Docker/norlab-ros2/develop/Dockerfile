@@ -3,11 +3,10 @@
 
 #ARG  BASE_IMG_TAG=arm64-l4t-r32.6.1
 ARG  BASE_IMG_TAG=arm64-l4t-r35.2.1
-FROM norlabsnow/norlab-ros2-humble-dependencies:${BASE_IMG_TAG}
+#FROM norlabsnow/norlab-ros2-humble-dependencies:${BASE_IMG_TAG}
+FROM norlabsnow/project_f1tenth:${BASE_IMG_TAG}
 
-ARG DN_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
-# Note: `DN_TARGET_PROJECT_SRC_REPO` is required by the ros2_rebuild_dev_workspace.bash script
-ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
+
 
 # Default: Local , Option: XavierWarthog
 ARG DS_HOST_TYPE=Local

@@ -169,7 +169,7 @@ COPY ./prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/
 
 # (Priority) todo:on task end >> delete bloc line
 #RUN echo $POWERLINE_DIR
-RUN /bin/bash -c "cd config_files && tree -L 3"
+#RUN /bin/bash -c "cd config_files && tree -L 3"
 
 # Set Promt logo
 #RUN echo DS_LOGO=$'\u22EF𝐒\u22EF' >> ~/.bashrc

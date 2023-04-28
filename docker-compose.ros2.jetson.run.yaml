@@ -1,8 +1,14 @@
 version: "3.9"
 
 services:
+#  dn_project:
+#    image: norlabsnow/project_f1tenth:arm64-l4t-r35.2.1
+#    container_name: IamSNOW-NX-f1tenth-TEST
+#    tty: true
+#    stdin_open: true
   develop:
     image: norlabsnow/norlab-ros2-humble-develop:arm64-l4t-r35.2.1
+    command: nvidia-smi
     container_name: IamSNOW-NX-TEST
     environment:
       DN_CONTAINER_NAME: IamSNOW-NX-TEST
@@ -31,6 +37,13 @@ services:
       - apparmor=unconfined
     cap_add:
       - SYS_PTRACE
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: 'nvidia'
+              count: 1
+              capabilities: [gpu]
 
     network_mode: host # allow the container to have full access to the host’s networking system
     pid: host
@@ -50,16 +63,3 @@ services:
 #networks:
 #  ros-network:
 #      external: true
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -14,7 +14,8 @@
 #ARG BASE_IMAGE=nvidiajetson/l4t-ros-noetic-pytorch:r32.5
 #ARG BASE_IMAGE=norlabsnow/norlab-ros2-humble:x86-ubuntu20.04
 ARG BASE_IMAGE=norlabsnow/norlab-ros2-humble:arm64-l4t-r35.2.1
-FROM ${BASE_IMAGE} AS ros-python3-base-image
+#FROM ${BASE_IMAGE} AS ros-python3-base-image
+FROM ${BASE_IMAGE} AS ros-pytorch-base-image
 
 
 WORKDIR "/"
@@ -33,7 +34,7 @@ WORKDIR "/"
 
 
 # ===PyTorch============================================================================================================
-FROM ros-python3-base-image AS ros-pytorch-base-image
+#FROM ros-python3-base-image AS ros-pytorch-base-image
 
 ENV PATH="/usr/local/cuda/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
@@ -54,12 +55,12 @@ RUN apt-get update \
 # Note: libopenblas-base, libopenmpi-dev, python3-pip, Cython, numpy are all requirement for PyTorch
 #       build for JetPack (L4T). https://elinux.org/Jetson_Zoo#PyTorch_.28Caffe2.29
 
-RUN pip3 install --no-cache-dir --verbose --upgrade pip
-RUN pip3 install --no-cache-dir --verbose  \
-    setuptools \
-    wheel \
-    Cython \
-    numpy
+RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
+    && pip3 install --no-cache-dir --verbose  \
+        setuptools \
+        wheel \
+        Cython \
+        numpy
 
 
 ## PyTorch (for JetPack)
@@ -121,7 +122,8 @@ FROM ros-pytorch-base-image AS ros-scientific-stack-base-image
 RUN pip3 install --no-cache-dir --verbose \
     scipy \
     scikit-learn \
-    pandas
+    pandas \
+    numba
 
 # ...Configure Matplotlib to use a non-interactive backends for TeamCity run............................................
 # Procedure to fix NLSAR-343 ﹅→ `ModuleNotFoundError` when using pyplot & `couldn't connect to display`
@@ -147,7 +149,7 @@ RUN apt-get update \
 
 
 # ===Install performance optimization package===========================================================================
-FROM ros-scientific-stack-base-image AS ros-performance-pkg-base-image
+#FROM ros-scientific-stack-base-image AS ros-performance-pkg-base-image
 
 # . . Numba install. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # https://numba.pydata.org
@@ -176,12 +178,13 @@ FROM ros-scientific-stack-base-image AS ros-performance-pkg-base-image
 #    && apt-get install --assume-yes --no-install-recommends \
 #    python3-numba
 
-RUN pip3 install --no-cache-dir --verbose numba
+#RUN pip3 install --no-cache-dir --verbose numba
 
 
 
 # ===install utilities==================================================================================================
-FROM ros-performance-pkg-base-image AS python-dev-tools
+#FROM ros-performance-pkg-base-image AS python-dev-tools
+FROM ros-scientific-stack-base-image AS python-dev-tools
 
 # ...Install simulator..................................................................................................
 # Dependencies
@@ -203,36 +206,55 @@ RUN apt-get update \
 
 RUN pip3 install --no-cache-dir --verbose \
     pyvirtualdisplay \
-    imageio-ffmpeg
-
-# Install gym
-RUN pip3 install --no-cache-dir --verbose gym
-
-# Gym depencies
-RUN pip3 install --no-cache-dir --verbose \
+    imageio-ffmpeg  \
+    gym  \
+    # . . Gym depencies . . . . . . . . . . . . . . . . . . . . . . . . . .
     pyglet \
-    box2d-py
-
-## Jupyter + gym related
-RUN pip3 install --no-cache-dir --verbose \
+    box2d-py \
+    # . . Jupyter + gym related . . . . . . . . . . . . . . . . . . . . . .
     jupyterlab \
     notebook \
-    gym-notebook-wrapper
-
-
-# ...Sequential decision making related tools...........................................................................
-
-
-# ...install python general development package.........................................................................
-RUN pip3 install --no-cache-dir --verbose \
+    gym-notebook-wrapper \
+    # . . install python general development package . . . . . . . . . . . .
     pyyaml \
     termcolor \
     decorator \
     pytest \
     pytest-benchmark \
     pytest-mock \
+    pytest-instafail \
     python-dotenv \
     dataclasses
+
+
+# Install gym
+#RUN pip3 install --no-cache-dir --verbose gym
+
+# Gym depencies
+#RUN pip3 install --no-cache-dir --verbose \
+#    pyglet \
+#    box2d-py
+
+## Jupyter + gym related
+#RUN pip3 install --no-cache-dir --verbose \
+#    jupyterlab \
+#    notebook \
+#    gym-notebook-wrapper
+
+
+# ...Sequential decision making related tools...........................................................................
+
+
+# ...install python general development package.........................................................................
+#RUN pip3 install --no-cache-dir --verbose \
+#    pyyaml \
+#    termcolor \
+#    decorator \
+#    pytest \
+#    pytest-benchmark \
+#    pytest-mock \
+#    python-dotenv \
+#    dataclasses
 
     # black[d]
 

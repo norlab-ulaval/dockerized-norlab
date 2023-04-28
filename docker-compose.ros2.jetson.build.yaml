@@ -27,6 +27,15 @@ services:
         BASE_IMG_TAG: arm64-l4t-r35.2.1
     depends_on:
       - dependencies_core
+  dn_project:
+    image: norlabsnow/project_f1tenth:arm64-l4t-r35.2.1
+    build:
+      context: ./Docker/norlab-ros2/dn_project/project_f1tenth
+      dockerfile: ./Dockerfile
+      args:
+        BASE_IMG_TAG: arm64-l4t-r35.2.1
+    depends_on:
+      - dependencies_user_services
   develop:
     image: norlabsnow/norlab-ros2-humble-develop:arm64-l4t-r35.2.1
     build:
@@ -37,7 +46,7 @@ services:
 #        DN_TARGET_PROJECT_SRC_REPO: NorLab_MPPI
 #        DS_HOST_TYPE: XavierNX # Not used now
     depends_on:
-      - dependencies_user_services
+      - dn_project
 
 
 
