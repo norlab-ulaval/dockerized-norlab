@@ -6,21 +6,38 @@ set -o allexport; source .env.prompt; set +o allexport
 
 bash ./visual/terminal_splash.bash
 
+SP="    "
+
 function print_help_in_terminal() {
 
   echo -e "\$ ${0} [<optional argument>] <CONTAINER_NAMES>
 
 Open a new interactive terminal with pseudo-TTY
-
-\033[1m<optional argument>:\033[0m
-  -h, --help                Get help
-
+${SP}
+${SP}\033[1m<optional argument>:\033[0m
+${SP}  -h, --help                Get help
+${SP}
 \033[1mNote:\033[0m You can pass any docker build flag in <optional argument> eg.:
-  --env=\"VAR=1\"        (to set environment variables)
+
+${SP}--env=\"VAR=1\"        (to set environment variables)
 
 \033[2mRef. docker exec command:
   - https://docs.docker.com/engine/reference/commandline/exec/
-\033[0m"
+\033[0m
+"
+
+  echo -e "Terminal prompt › The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m or\033[1;37m Powerline10k\033[0m be installed on the host terminal. To change to a minimal prompt, either set permanently the ENV variable in\033[1;37m docker-compose.<spec>.run.yaml\033[0m:
+${SP}
+${SP}services:
+${SP}  develop: # the service name
+${SP}\033[1;37m    environment:
+${SP}      - DN_ACTIVATE_POWERLINE_PROMT=false
+\033[0m
+or pass the following flag to \033[1;37mdn_attach\033[0m when connecting to a running container:
+\033[1;37m
+${SP}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-container-name>
+\033[0m
+"
 }
 
 ## todo: on task end >> comment next dev bloc ↓↓
@@ -71,6 +88,22 @@ done
 #if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${CONTAINER_NAMES}` == "${CONTAINER_NAMES} exited" ]]; then echo "if TRUE"; else echo "else FALSE"; fi
 #if [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep IamNOTsnow` ]]; then echo "if TRUE"; else echo "else FALSE"; fi
 
+# ››› Display and xhost ››› . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+export DISPLAY=:0
+#echo "export DISPLAY=:0" >> ~/.bashrc
+
+# Note on xhost usage:
+#           $ xhost [[+-][family:]name]
+#
+#   familly:
+#     - local:      contains only one name, the empty string
+#     - inet:       Internet host (IPv4)
+#     - inet6:      Internet host (IPv6)
+#     - si:         Server Interpreted : si:<type>:<value>
+
+xhost +si:localuser:root
+#sudo xhost + # (Priority) todo:fixme!! (ref task NLSAR-189)
+#  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .‹‹‹ Display and xhost ‹‹‹
 
 # Fetch all container name, strip those unrelated one and test for exact name
 if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${CONTAINER_NAMES}` == "${CONTAINER_NAMES} exited" ]]; then

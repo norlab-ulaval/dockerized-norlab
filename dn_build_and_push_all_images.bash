@@ -2,4 +2,4 @@
 
 # ....Build all images..............................................................................................
 
-docker compose -f /home/snow/dockerized-norlab/docker-compose.ros2.jetson.build.yaml build --push
+docker compose -f docker-compose.ros2.jetson.build.yaml build --push

@@ -155,7 +155,8 @@ RUN ( \
 #    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
     ## Note: `\[ .. \]` is required to escape the sequence lenght from the prompt line lenght as there is a limit  \
     ##  https://unix.stackexchange.com/questions/71007/how-to-customize-ps1-properly
-    echo '  export PS1="\[\033[1;37m❆ ❯\033[0m\033[2m \$``{DN_CONTAINER_NAME}`` \033[0m\033[1;37m❯\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m \]"'; \
+#    echo '  export PS1="\[\033[1;37m❆ ❯\033[0m\033[2m \$``{DN_CONTAINER_NAME}`` \033[0m\033[1;37m❯\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m \]"'; \
+    echo '  export PS1="\[\033[1;37m\]❆ ❯\[\033[0m\033[2m\] \$``{DN_CONTAINER_NAME}`` \[\033[0m\033[1;37m\]❯\[\033[0m\033[2m\] \w\[\033[0m\033[1;37m\]\$\[\033[0m\] "'; \
     echo "fi"; \
   ) >> ~/.bashrc
 

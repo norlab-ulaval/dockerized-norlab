@@ -94,10 +94,12 @@ else
   echo -e "${DS_MSG_ERROR} Unknown shell! Check with the maintainer to add it to DS"
 fi
 
-echo -e "${DS_MSG_DONE} Setup completed! New available alias:
+echo -e "${DS_MSG_DONE} Setup completed!
 
+New available alias:
   dn_cd
   dn_attach
+
 "
 #  dn_instantiate_develop
 #  dn_instantiate_deploy

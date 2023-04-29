@@ -195,36 +195,40 @@ FROM ros-scientific-stack-base-image AS python-dev-tools
 #           ↳ |  require xvfb and python-opengl
 #   gym VideoRecorder dependency: ffmpeg and imageio-ffmpeg
 RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
+#    && apt-get install --assume-yes --no-install-recommends \
+    && apt-get install --assume-yes \
         swig \
         xvfb \
         mesa-utils \
-        python-opengl \
+#        python-opengl \
         ffmpeg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir --verbose \
-    pyvirtualdisplay \
-    imageio-ffmpeg  \
-    gym  \
-    # . . Gym depencies . . . . . . . . . . . . . . . . . . . . . . . . . .
-    pyglet \
-    box2d-py \
-    # . . Jupyter + gym related . . . . . . . . . . . . . . . . . . . . . .
-    jupyterlab \
-    notebook \
-    gym-notebook-wrapper \
-    # . . install python general development package . . . . . . . . . . . .
-    pyyaml \
-    termcolor \
-    decorator \
-    pytest \
-    pytest-benchmark \
-    pytest-mock \
-    pytest-instafail \
-    python-dotenv \
-    dataclasses
+RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
+    && pip3 install --no-cache-dir --verbose  \
+        pyvirtualdisplay \
+        imageio-ffmpeg  \
+        gym  \
+        # . . Gym depencies . . . . . . . . . . . . . . . . . . . . . . . . . .
+        pyglet \
+        box2d-py \
+        # . . Jupyter + gym related . . . . . . . . . . . . . . . . . . . . . .
+        jupyterlab \
+        notebook \
+        gym-notebook-wrapper \
+        # . . install python general development package . . . . . . . . . . . .
+        pyyaml \
+        termcolor \
+        decorator \
+        pytest \
+        pytest-benchmark \
+        pytest-mock \
+        pytest-instafail \
+        python-dotenv \
+        dataclasses \
+        PyOpenGL \
+        PyOpenGL_accelerate
 
 
 # Install gym

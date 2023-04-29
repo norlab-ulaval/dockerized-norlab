@@ -34,17 +34,18 @@ services:
       dockerfile: ./Dockerfile
       args:
         BASE_IMG_TAG: arm64-l4t-r35.2.1
+        DN_TARGET_PROJECT_SRC_REPO: NorLab_MPPI
     depends_on:
       - dependencies_user_services
   develop:
-    image: norlabsnow/norlab-ros2-humble-develop:arm64-l4t-r35.2.1
+#    image: norlabsnow/norlab-ros2-humble-develop:arm64-l4t-r35.2.1
+    image: norlabsnow/norlab-ros2-f1tenth-develop:arm64-l4t-r35.2.1
     build:
       context: ./Docker/norlab-ros2/develop
       dockerfile: ./Dockerfile
       args:
         BASE_IMG_TAG: arm64-l4t-r35.2.1
-#        DN_TARGET_PROJECT_SRC_REPO: NorLab_MPPI
-#        DS_HOST_TYPE: XavierNX # Not used now
+#        DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
     depends_on:
       - dn_project
 

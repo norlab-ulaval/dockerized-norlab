@@ -77,6 +77,15 @@ sudo apt-get update &&
 
 # ....Install Jetson utilities......................................................................................
 sudo pip3 install -U jetson-stats
+# Doc: https://rnext.it/jetson_stats/index.html
+# Repo: https://github.com/rbonghi/jetson_stats
+# Provide:
+#   - sudo jtop
+#   - jetson_config
+#   - jetson_release
+#   - jetson_swap
+#   - Many environment variables with prefix `JETSON_"`
+# (NICE TO HAVE) ToDo: implement follow the step for docker integration at https://github.com/rbonghi/jetson_stats#docker
 
 # ....Configure Docker..............................................................................................
 echo ""

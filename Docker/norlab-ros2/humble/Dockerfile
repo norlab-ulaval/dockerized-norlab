@@ -21,7 +21,7 @@
 #ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r32.6.1
 ARG BASE_IMAGE=dustynv/ros:humble-pytorch-l4t-r35.2.1
 FROM ${BASE_IMAGE} AS ros-base-image
-MAINTAINER luc.coupal.1@ulaval.ca
+LABEL org.opencontainers.image.authors="luc.coupal.1@ulaval.ca"
 
 #ARG DS_ROS_PKG=desktop_full
 ARG DS_ROS_PKG=ros_base
@@ -62,6 +62,7 @@ RUN apt-get update \
         vim \
         tree \
         zip gzip tar unzip \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -69,6 +70,7 @@ RUN apt-get update \
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         ros-dev-tools \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p "${DS_DEV_WORKSPACE}/src"
