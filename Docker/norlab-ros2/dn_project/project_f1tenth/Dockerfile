@@ -33,30 +33,16 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
 RUN apt-get update --fix-missing \
 #    && apt-get install --assume-yes --no-install-recommends \
     && apt-get install --assume-yes \
-#            python3-dev \
-#            python3-pip \
-#            git \
-#            build-essential \
             libgl1-mesa-dev \
-#            mesa-utils \
             libglu1-mesa-dev \
             fontconfig \
             libfreetype6-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-#RUN pip3 install --upgrade pip \
-#    && pip3 install --no-cache-dir \
-#      PyOpenGL \
-#      PyOpenGL_accelerate
-
 
 # ....Custom f1tenth steps..........................................................................................
 WORKDIR /
-#RUN git clone https://github.com/f1tenth/f1tenth_gym.git
-#WORKDIR /f1tenth_gym
-#WORKDIR ${DS_DEV_WORKSPACE}/f1tenth_gym
-#RUN pip3 install -e .
 
 RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
     && cd /f1tenth_gym  \
@@ -70,8 +56,10 @@ RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
 # ----Python--------------------------------------------------------------------------------------------------------
 # See NMO-159 ⚒︎ → `pip install` new module
 
-# ....RL/Control library › torchrl..................................................................................
 FROM f1tenth-simulator AS torchrl-dependencies
+# ....RL/Control library › torchrl..................................................................................
+# Doc:
+#   - tensordict › https://github.com/pytorch-labs/tensordict
 
 # Currently, torchrl and tensordict are being developped in parallel. If you're installing torchrl from the git repo,
 # you should do the same with tensordict (either via a clone or via
@@ -79,31 +67,19 @@ FROM f1tenth-simulator AS torchrl-dependencies
 #
 # Source: https://github.com/pytorch/rl/issues/1050#issuecomment-1506429635
 
-#RUN mkdir /pytorch-labs && cd /pytorch-labs  \
-#    && git clone https://github.com/pytorch-labs/tensordict.git  \
-#    && cd /pytorch-labs/tensordict && pip install -e .
-
 RUN pip3 install --no-cache-dir \
 #  git+https://github.com/pytorch-labs/tensordict@v0.1.0
 #  git+https://github.com/pytorch-labs/tensordict@0.0.3
   git+https://github.com/pytorch-labs/tensordict \
     functorch
-    # quickfix: reinstalling `functorch` is a hack for the torchRL installation problem
+    # QuickFix: reinstalling `functorch` is a hack for the torchRL installation problem
 
 # Sanity check
 RUN python -c "import tensordict"
 
 FROM torchrl-dependencies AS rl-lib-torchrl-install
-# TorchRL › https://github.com/pytorch/rl
-
-#WORKDIR /torchrl
-#RUN git clone https://github.com/pytorch/rl
-#WORKDIR /torchrl/rl
-#RUN pip3 install -e .
-
-#RUN mkdir /torchrl && cd /torchrl  \
-#    && git clone https://github.com/pytorch/rl  \
-#    && cd ./rl && pip install -e .
+# Doc:
+#   - TorchRL › https://github.com/pytorch/rl
 
 WORKDIR /torchrl
 RUN pip3 install --no-cache-dir \
@@ -117,19 +93,18 @@ WORKDIR "/"
 RUN python -c "import torchrl"
 
 FROM rl-lib-torchrl-install AS torchrl-optional-dependencies
-#RUN pip3 install --no-cache-dir tensordict
-
 
 # . . Install torchrl optional dependencies. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # Visualization and MLops
+# Doc:
+#   - Weights & Biases (wandb) › The developer-first MLOps platform
+#       - www: https://wandb.ai
+#       - pypi: https://pypi.org/project/wandb/
 RUN pip3 install --no-cache-dir \
     tensorboard \
     "hydra-core>=1.1" \
     hydra-submitit-launcher \
     wandb
-    # Weights & Biases (wandb) › The developer-first MLOps platform
-    #   - www: https://wandb.ai
-    #   - pypi: https://pypi.org/project/wandb/
 
 ## rendering
 #RUN pip3 install --no-cache-dir moviepy
@@ -140,10 +115,15 @@ RUN pip3 install --no-cache-dir \
 ## gym, atari games
 #RUN pip3 install --no-cache-dir "gym[atari]" "gym[accept-rom-license]" pygame
 
-# ....RL/Control library............................................................................................
-# ....Tools.........................................................................................................
 FROM torchrl-optional-dependencies AS rl-lib
 
+# ....RL/Control library............................................................................................
+# Doc:
+#   - pytorch-mppi › https://github.com/UM-ARM-Lab/pytorch_mppi
+#   - mbrl › https://github.com/facebookresearch/mbrl-lib
+#   - ray ›
+#       - rllib: https://docs.ray.io/en/latest/rllib/index.html
+#       - installation: https://docs.ray.io/en/latest/ray-overview/installation.html#
 RUN pip3 install --no-cache-dir \
     'pytorch-mppi[tune]' \
     mbrl \
