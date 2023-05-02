@@ -76,7 +76,7 @@ sudo apt-get update &&
   sudo rm -rf /var/lib/apt/lists/*
 
 # ....Install Jetson utilities......................................................................................
-sudo pip3 install -U jetson-stats
+sudo pip3 install --upgrade jetson-stats
 # Doc: https://rnext.it/jetson_stats/index.html
 # Repo: https://github.com/rbonghi/jetson_stats
 # Provide:

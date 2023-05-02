@@ -11,12 +11,6 @@ ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
 ARG DS_TARGET_PROJECT_SRC_DOMAIN=RedLeader962
 ENV DS_TARGET_PROJECT_SRC_DOMAIN=${DS_TARGET_PROJECT_SRC_DOMAIN}
 
-# ====project custom steps==========================================================================================
-
-# ----F1TENTH gym simulator----------------------------------------------------------------------------------------
-FROM dn-project AS f1tenth-simulator
-# Steps inspired from https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
-
 ENV LIBGL_ALWAYS_INDIRECT=1
 ENV NVIDIA_VISIBLE_DEVICES \
     ${NVIDIA_VISIBLE_DEVICES:-all}
@@ -30,6 +24,12 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
     # set to `graphics` or add `graphics` to `NVIDIA_DRIVER_CAPABILITIES,`
     # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 
+# ====Project custom steps==========================================================================================
+
+# ----F1TENTH gym simulator----------------------------------------------------------------------------------------
+FROM dn-project AS f1tenth-simulator
+# See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
+
 RUN apt-get update --fix-missing \
 #    && apt-get install --assume-yes --no-install-recommends \
     && apt-get install --assume-yes \
@@ -41,94 +41,86 @@ RUN apt-get update --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
 
-# ....Custom f1tenth steps..........................................................................................
 WORKDIR /
-
 RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
     && cd /f1tenth_gym  \
     && pip3 install -e .
-
 
 ## Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
 ## See known issues comment https://github.com/f1tenth/f1tenth_gym
 # RUN pip3 install pyglet==1.5.11
 
-# ----Python--------------------------------------------------------------------------------------------------------
-# See NMO-159 ⚒︎ → `pip install` new module
+# ====RL/Control library============================================================================================
+FROM f1tenth-simulator AS torchrl-lib
+# Note: ON HOLD › Both codebase are in beta release -> instalation is problematic and bugy on arch64. Either
+#           - it build and pass the sanity check in docker build but break on docker run `import torchrl`
+#           - or it build and work in docker run `import torchrl` but break `torch.cuda.is_available()`
 
-FROM f1tenth-simulator AS torchrl-dependencies
-# ....RL/Control library › torchrl..................................................................................
-# Doc:
-#   - tensordict › https://github.com/pytorch-labs/tensordict
-
-# Currently, torchrl and tensordict are being developped in parallel. If you're installing torchrl from the git repo,
-# you should do the same with tensordict (either via a clone or via
-#   `pip install git+https://github.com/pytorch-labs/tensordict`).
+### QuickFix:
+###   - Fix warning: `Failed to load image Python extension: {e}` cause by torch and torchvision incompatible version,
+###     (see torch <-> torchvision compatible pair: https://github.com/pytorch/vision#installation)
 #
-# Source: https://github.com/pytorch/rl/issues/1050#issuecomment-1506429635
+#
+#RUN mkdir /pytorch-labs && cd /pytorch-labs  \
+#    && git clone https://github.com/pytorch-labs/tensordict.git  \
+#    && cd /pytorch-labs/tensordict && pip3 install -e .
+#
+#RUN pip3 install --no-cache-dir --upgrade torchvision
+#
+#RUN mkdir /torchrl && cd /torchrl  \
+#    && git clone https://github.com/pytorch/rl  \
+#    && cd ./rl && pip3 install -e .
+#
+##RUN pip3 install --no-cache-dir \
+##  git+https://github.com/pytorch-labs/tensordict@v0.1.0 \
+##  git+https://github.com/pytorch/rl@v0.1.0
+#
+##RUN pip3 install --no-cache-dir \
+##    git+https://github.com/pytorch-labs/tensordict \
+##    git+https://github.com/pytorch/rl
+##
+##RUN python -c "import torch" \
+##    && python -c "import torchvision" \
+##    && python -c "import tensordict" \
+##    && python -c "import torchrl"
 
-RUN pip3 install --no-cache-dir \
-#  git+https://github.com/pytorch-labs/tensordict@v0.1.0
-#  git+https://github.com/pytorch-labs/tensordict@0.0.3
-  git+https://github.com/pytorch-labs/tensordict \
-    functorch
-    # QuickFix: reinstalling `functorch` is a hack for the torchRL installation problem
+FROM torchrl-lib AS python-libraries
 
-# Sanity check
-RUN python -c "import tensordict"
+# . . Stable-baselines3 (SB3) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+## Note: install step transfered to the `requirements_manual.txt` file
+#RUN pip3 install --no-cache-dir \
+#    'stable-baselines3[extra_no_roms,tests,docs]'  \
+#    && pip uninstall -y opencv-python  \
+#    && pip install opencv-python-headless
 
-FROM torchrl-dependencies AS rl-lib-torchrl-install
-# Doc:
-#   - TorchRL › https://github.com/pytorch/rl
 
-WORKDIR /torchrl
-RUN pip3 install --no-cache-dir \
-#  git+https://github.com/pytorch/rl@v0.1.0
-#  git+https://github.com/pytorch/rl@0.0.3
-#    git+https://github.com/pytorch/rl --force-reinstall
-    git+https://github.com/pytorch/rl
+# ====Install from requirements file================================================================================
+# ToDo: implement (ref task NMO-159 ⚒︎ → `pip install` new module)
 
-# Sanity check
+COPY requirements_manual.txt /requirements_manual.txt
+# Doc › pip install flag: https://pip.pypa.io/en/stable/cli/pip_install/#options
+RUN pip3 install --no-cache-dir --verbose -r /requirements_manual.txt  \
+    && rm -rf /requirements_manual.txt
+
+
+FROM python-libraries AS sanity-check
+
 WORKDIR "/"
-RUN python -c "import torchrl"
+#RUN python -c "import torch" \
+#    && python -c "import torchvision"
 
-FROM rl-lib-torchrl-install AS torchrl-optional-dependencies
+#RUN python -c "import torch" \
+#    && python -c "import torchvision" \
+#    && python -c "from pytorch_mppi import MPPI" \
+#    && python -c "import mbrl.algorithms.pets as pets" \
+#    && python -c "from stable_baselines3 import PPO"
 
-# . . Install torchrl optional dependencies. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-# Visualization and MLops
-# Doc:
-#   - Weights & Biases (wandb) › The developer-first MLOps platform
-#       - www: https://wandb.ai
-#       - pypi: https://pypi.org/project/wandb/
-RUN pip3 install --no-cache-dir \
-    tensorboard \
-    "hydra-core>=1.1" \
-    hydra-submitit-launcher \
-    wandb
+RUN python -c "import torch" \
+    && python -c "import torchvision" \
+    && python -c "from pytorch_mppi import MPPI" \
+    && python -c "import mbrl.algorithms.pets as pets" \
+    && python -c "from stable_baselines3 import PPO"
 
-## rendering
-#RUN pip3 install --no-cache-dir moviepy
-
-## deepmind control suite
-#RUN pip3 install --no-cache-dir dm_control
-
-## gym, atari games
-#RUN pip3 install --no-cache-dir "gym[atari]" "gym[accept-rom-license]" pygame
-
-FROM torchrl-optional-dependencies AS rl-lib
-
-# ....RL/Control library............................................................................................
-# Doc:
-#   - pytorch-mppi › https://github.com/UM-ARM-Lab/pytorch_mppi
-#   - mbrl › https://github.com/facebookresearch/mbrl-lib
-#   - ray ›
-#       - rllib: https://docs.ray.io/en/latest/rllib/index.html
-#       - installation: https://docs.ray.io/en/latest/ray-overview/installation.html#
-RUN pip3 install --no-cache-dir \
-    'pytorch-mppi[tune]' \
-    mbrl \
-    ray \
-    tqdm
 
 CMD [ "bash" ]
 

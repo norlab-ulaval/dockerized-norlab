@@ -47,10 +47,10 @@ RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
 
 # ... Finish container setup ...........................................................................................
 WORKDIR /
-COPY ros2_entrypoint.bash /
+COPY ros_entrypoint.bash /
 # set read/write permission to entrypoint file and joystick dir js0
-RUN /bin/bash -c "chmod +x /ros2_entrypoint.bash"
-ENTRYPOINT [ "/ros2_entrypoint.bash" ]
+RUN /bin/bash -c "chmod +x /ros_entrypoint.bash"
+ENTRYPOINT [ "/ros_entrypoint.bash" ]
 CMD [ "bash" ]
 
 # Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables

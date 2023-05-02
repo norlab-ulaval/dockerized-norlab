@@ -7,7 +7,6 @@ services:
     environment:
       DN_CONTAINER_NAME: IamSNOW-NX-f1tenth-TEST
       DN_ACTIVATE_POWERLINE_PROMT: false
-#      DN_TARGET_PROJECT_SRC_REPO: NorLab_MPPI
       ##      ROS_MASTER_URI: http://${BASESTATION_IP}:11311
       #      ROS_MASTER_URI: http://10.0.0.224:11311
       #      #      ROS_HOSTNAME: ${XAVIER_NX_REDLEADER_IP}
@@ -39,6 +38,7 @@ services:
       - apparmor=unconfined
     cap_add:
       - SYS_PTRACE
+    ipc: host # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
 #    deploy:
 #      resources:
 #        reservations:

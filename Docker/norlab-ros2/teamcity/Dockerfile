@@ -27,10 +27,10 @@ RUN ( \
 
 
 # ===Final build step===================================================================================================
-WORKDIR /
-RUN #echo $PWD
-COPY ./tools/dn_info.bash /
-RUN #cd / && tree -L 3
+#WORKDIR /
+#RUN echo $PWD
+#COPY ./tools/dn_info.bash /
+#RUN cd / && tree -L 3
 
 
 # ...source & check ROS environement variable...........................................................................

@@ -22,9 +22,10 @@ ${SP}ROS domain id:               ${ROS_DOMAIN_ID}
 ${SP}ROS master uri:              ${ROS_MASTER_URI}
 ${SP}
 ${SP}python3 version:             ${DS_PYTHON3_VERSION}
-${SP}Numpy version:               $(echo "${PCK_VERSION}" | grep numpy | sed 's/numpy==//g')
-${SP}PyTorch version:             $(echo "${PCK_VERSION}" | grep -w torch | sed 's/torch==//g')
-${SP}Numba version:               $(echo "${PCK_VERSION}" | grep numba | sed 's/numba==//g')
+${SP}numpy version:               $(echo "${PCK_VERSION}" | grep numpy | sed 's/numpy==//g')
+${SP}pyTorch version:             $(echo "${PCK_VERSION}" | grep -w torch | sed 's/torch==//g')
+${SP}torchvision version:         $(echo "${PCK_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
+${SP}numba version:               $(echo "${PCK_VERSION}" | grep numba | sed 's/numba==//g')
 ${SP}LLVMlite version:            $(echo "${PCK_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')
 \033[0m"
 #${SP}PyCuda version:          $(echo "${PCK_VERSION}" | grep pycuda | sed 's/pycuda==//g')
@@ -33,6 +34,7 @@ echo -e "In-container available alias:
 \033[1;37m
 ${SP}$ dn_info
 ${SP}$ dn_python3_check
+${SP}$ dn_gym_check
 ${SP}$ dn_ros2_rebuild_dev_workspace
 ${SP}$ dn_fetch_ros_env
 \033[0m

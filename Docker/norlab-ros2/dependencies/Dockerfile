@@ -39,31 +39,31 @@ WORKDIR "/"
 ENV PATH="/usr/local/cuda/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
-RUN apt-get update \
-    && apt-get install -y software-properties-common \
-    && ldconfig \
-    && apt-get install -y --no-install-recommends \
-            libopenblas-base \
-            libopenmpi-dev \
-            python3-pip \
-            python3-dev \
-            openmpi-bin \
-            openmpi-common \
-            gfortran \
-    && rm -rf /var/lib/apt/lists/*
-
-# Note: libopenblas-base, libopenmpi-dev, python3-pip, Cython, numpy are all requirement for PyTorch
-#       build for JetPack (L4T). https://elinux.org/Jetson_Zoo#PyTorch_.28Caffe2.29
-
-RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
-    && pip3 install --no-cache-dir --verbose  \
-        setuptools \
-        wheel \
-        Cython \
-        numpy
-
-
-## PyTorch (for JetPack)
+#RUN apt-get update \
+#    && apt-get install -y software-properties-common \
+#    && ldconfig \
+#    && apt-get install -y --no-install-recommends \
+#            libopenblas-base \
+#            libopenmpi-dev \
+#            python3-pip \
+#            python3-dev \
+#            openmpi-bin \
+#            openmpi-common \
+#            gfortran \
+#    && rm -rf /var/lib/apt/lists/*
+#
+## Note: libopenblas-base, libopenmpi-dev, python3-pip, Cython, numpy are all requirement for PyTorch
+##       build for JetPack (L4T). https://elinux.org/Jetson_Zoo#PyTorch_.28Caffe2.29
+#
+#RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
+#    && pip3 install --no-cache-dir --verbose  \
+#        setuptools \
+#        wheel \
+#        Cython \
+#        numpy
+#
+#
+## . . PyTorch (for JetPack) . . . . . . . . . . . . . . . . . . . . . .
 ##  https://elinux.org/Jetson_Zoo#PyTorch_.28Caffe2.29
 ##
 ## Jetpack 4.x
@@ -83,14 +83,14 @@ RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
 ## PyTorch (official)
 #ARG PYTORCH_OFFICIAL_WHL_URL=https://download.pytorch.org/whl/torch_stable.html
 #
-## Pytorch for M1 chips
+## . . Pytorch for M1 chips . . . . . . . . . . . . . . . . . . . . . .
 ## PyTorch v1.9.0 https://download.pytorch.org/whl/cpu/torch-1.9.0-cp39-none-macosx_11_0_arm64.whl cpu/torch-1.9.0-cp39-none-macosx_11_0_arm64.whl
 ## PyTorch v1.9.1 https://download.pytorch.org/whl/cpu/torch-1.9.1-cp39-none-macosx_11_0_arm64.whl cpu/torch-1.9.1-cp39-none-macosx_11_0_arm64.whl
 ## Pytorch v2.0.0 https://download.pytorch.org/whl/cpu/torch-2.0.0-cp39-none-macosx_11_0_arm64.whl cpu/torch-2.0.0-cp39-none-macosx_11_0_arm64.whl
 #ARG PYTORCH_URL_M1=https://download.pytorch.org/whl/cpu/torch-1.9.0-cp39-none-macosx_11_0_arm64.whl
 #ARG PYTORCH_WHL_M1=torch-1.9.0-cp39-none-macosx_11_0_arm64.whl
 #
-## Pytorch for x86
+## . . Pytorch for x86 . . . . . . . . . . . . . . . . . . . . . . . . .
 ## https://pytorch.org/get-started/locally/
 ## cu111 ==> cuda version
 #ARG PYTORCH_VERSION_X86="1.9.0+cu111"
@@ -207,10 +207,13 @@ RUN apt-get update \
 
 RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
     && pip3 install --no-cache-dir --verbose  \
+        # . . Vizualisation tools. . . . . . . . . . . . . . . . . . . . . .
         pyvirtualdisplay \
         imageio-ffmpeg  \
-        gym  \
+        PyOpenGL \
+        PyOpenGL_accelerate \
         # . . Gym depencies . . . . . . . . . . . . . . . . . . . . . . . . . .
+        gym  \
         pyglet \
         box2d-py \
         # . . Jupyter + gym related . . . . . . . . . . . . . . . . . . . . . .
@@ -221,48 +224,27 @@ RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
         pyyaml \
         termcolor \
         decorator \
+        black[d] \
+        # . . Type check. . . . . . . . . . . . . . . . . . . . . . . . . . . .
+        pytype \
+        mypy \
+        # . . Testing tools . . . . . . . . . . . . . . . . . . . . . . . . . .
         pytest \
         pytest-benchmark \
         pytest-mock \
         pytest-instafail \
         python-dotenv \
-        dataclasses \
-        PyOpenGL \
-        PyOpenGL_accelerate
+        pytest-cov \
+        pytest-env \
+        pytest-xdist \
+        mock
 
 
-# Install gym
-#RUN pip3 install --no-cache-dir --verbose gym
+## Packages for older python version
+#RUN pip3 install --no-cache-dir --verbose  \
+#            dataclasses
 
-# Gym depencies
-#RUN pip3 install --no-cache-dir --verbose \
-#    pyglet \
-#    box2d-py
-
-## Jupyter + gym related
-#RUN pip3 install --no-cache-dir --verbose \
-#    jupyterlab \
-#    notebook \
-#    gym-notebook-wrapper
-
-
-# ...Sequential decision making related tools...........................................................................
-
-
-# ...install python general development package.........................................................................
-#RUN pip3 install --no-cache-dir --verbose \
-#    pyyaml \
-#    termcolor \
-#    decorator \
-#    pytest \
-#    pytest-benchmark \
-#    pytest-mock \
-#    python-dotenv \
-#    dataclasses
-
-    # black[d]
-
-RUN pip3 install --no-cache-dir --verbose -U mock
+#RUN pip3 install --no-cache-dir --verbose -U mock
 
 
 # ===Final build step===================================================================================================
@@ -276,6 +258,20 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+
+WORKDIR /
+COPY ./tools/dn_info.bash /
+COPY ./tools/dn_test/try_pytorch.py dn_test/
+COPY ./tools/dn_test/try_gym.py dn_test/
+
+RUN ( \
+  echo ""; \
+  echo "# dockerized-norlab aliases (from dependencies img)"; \
+  echo "alias dn_info='bash /dn_info.bash'"; \
+  echo "alias dn_python3_check='python3 /dn_test/try_pytorch.py'"; \
+  echo "alias dn_gym_check='python3 /dn_test/try_gym.py'"; \
+  echo ""; \
+) >> ~/.bashrc
 
 
 CMD [ "bash" ]

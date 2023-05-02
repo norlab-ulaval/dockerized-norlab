@@ -12,7 +12,7 @@ echo -e "Starting container \033[1;37m internal ssh server for IDE remote develo
 #/usr/sbin/sshd -D -e -f /etc/ssh/sshd_config_dockerized_snow_openssh_server
 /usr/sbin/sshd -e -f /etc/ssh/sshd_config_dockerized_snow_openssh_server
 
-#echo -e "Check if ${DS_PYTHON3_VERSION} is working properly by running \033[1;37m\$ python3 /ros2_ws/src/${DN_TARGET_PROJECT_SRC_REPO}/src/container_related/try_pytorch.py\033[0m in the container terminal.
+#echo -e "Check if ${DS_PYTHON3_VERSION} is working properly by running \033[1;37m\$ dn_python3_check\033[0m in the container terminal.
 #If you need to rebuild your norlab-ros2 ROS project, use \033[1;37m\$ bash /ros2_rebuild_dev_workspace.bash\033[0m from inside the container,
 #"
 

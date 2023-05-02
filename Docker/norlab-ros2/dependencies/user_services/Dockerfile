@@ -184,17 +184,6 @@ ENV DN_CONTAINER_NAME=IamSnow
 # ===Final build step===================================================================================================
 FROM services AS final
 
-WORKDIR /
-#RUN echo $PWD
-COPY ./tools/dn_info.bash /
-#RUN cd / && tree -L 1
-
-RUN ( \
-  echo ""; \
-  echo "# dockerized-norlab aliases (from dependencies img)"; \
-  echo "alias dn_info='bash /dn_info.bash'"; \
-  echo ""; \
-) >> ~/.bashrc
 
 # ...source & check ROS environement variable...........................................................................
 # Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables

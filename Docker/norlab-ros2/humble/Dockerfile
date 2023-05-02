@@ -117,7 +117,7 @@ RUN mkdir -p "${DS_DEV_WORKSPACE}/src"
 #
 #WORKDIR ${DS_DEV_WORKSPACE}
 #RUN apt-get update \
-#    && /bin/bash -c "sudo -H pip install -U jetson-stats" \
+#    && /bin/bash -c "sudo -H pip install --upgrade jetson-stats" \
 #    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
 #    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --default-yes  \
 ##    --os=ubuntu:jammy \
@@ -129,7 +129,7 @@ RUN mkdir -p "${DS_DEV_WORKSPACE}/src"
 #
 #WORKDIR ${DS_DEV_WORKSPACE}
 #RUN apt-get update \
-#    && /bin/bash -c "sudo -H pip install -U jetson-stats" \
+#    && /bin/bash -c "sudo -H pip install --upgrade jetson-stats" \
 #    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
 #    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --default-yes --os=ubuntu:jammy \
 #    && rm -rf /var/lib/apt/lists/*

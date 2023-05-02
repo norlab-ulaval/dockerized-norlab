@@ -28,7 +28,6 @@ RUN ( \
   echo "# dockerized-norlab aliases (from develop img)"; \
   echo "alias dn_ros2_rebuild_dev_workspace='bash /ros2_rebuild_dev_workspace.bash'"; \
   echo "alias dn_fetch_ros_env='bash /fetch_ros_env.bash'"; \
-  echo "alias dn_python3_check='python3 /ros2_ws/src/${DN_TARGET_PROJECT_SRC_REPO}/src/container_related/try_pytorch.py'"; \
   echo ""; \
 ) >> ~/.bashrc
 
