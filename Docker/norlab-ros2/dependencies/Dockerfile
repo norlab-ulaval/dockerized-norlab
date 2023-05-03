@@ -1,6 +1,6 @@
 
 # /// norlab-ros2/dependencies /////////////////////////////////////////////////////////////////////////////////////////
-# This container is the base image for all other norlab-ros2 images: dev, deploy, ...
+# This container is the base image for all other norlab-ros images: dev, deploy, ...
 #
 # References:
 # - NVIDIA Container Runtime on Jetson: https://github.com/NVIDIA/nvidia-docker/wiki/NVIDIA-Container-Runtime-on-Jetson
@@ -13,9 +13,9 @@
 
 #ARG BASE_IMAGE=nvidiajetson/l4t-ros-noetic-pytorch:r32.5
 #ARG BASE_IMAGE=norlabsnow/norlab-ros2-humble:x86-ubuntu20.04
-ARG BASE_IMAGE=norlabsnow/norlab-ros2-humble:arm64-l4t-r35.2.1
-#FROM ${BASE_IMAGE} AS ros-python3-base-image
-FROM ${BASE_IMAGE} AS ros-pytorch-base-image
+ARG DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+ARG BASE_IMAGE=norlabsnow/norlab-ros
+FROM ${BASE_IMAGE}:${DN_BASE_IMG_TAG} AS ros-pytorch-base-image
 
 
 WORKDIR "/"
@@ -99,16 +99,16 @@ ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 ## Conditional build stage base on architecture version (arm64-l4t and x86)
 #
 ## Note: wget -O save the file under a diferent name
-#RUN /bin/bash -c "if [[ ${DS_IMAGE_ARCHITECTURE} == 'arm64-l4t' ]]; then \
+#RUN /bin/bash -c "if [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-l4t' ]]; then \
 #    wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate ${PYTORCH_L4T_WHL_URL} -O ${PYTORCH_L4T_WHL} && \q
 #        pip3 install --no-cache-dir --verbose ${PYTORCH_L4T_WHL} --verbose && \
 #        rm ${PYTORCH_L4T_WHL}; \
-#    elif [[ ${DS_IMAGE_ARCHITECTURE} == 'arm64-Darwin' ]]; then \
+#    elif [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-Darwin' ]]; then \
 #      pip3 install --no-cache-dir --verbose torch==1.9.0 -f ${PYTORCH_OFFICIAL_WHL_URL}; \
-#    elif [[ ${DS_IMAGE_ARCHITECTURE} == 'x86' ]]; then \
+#    elif [[ ${DN_IMAGE_ARCHITECTURE} == 'x86' ]]; then \
 #      pip3 install --no-cache-dir --verbose torch==${PYTORCH_VERSION_X86} -f ${PYTORCH_OFFICIAL_WHL_URL}; \
 #    else \
-#      echo 'Architecture ${DS_IMAGE_ARCHITECTURE} is not curently suported'; \
+#      echo 'Architecture ${DN_IMAGE_ARCHITECTURE} is not curently suported'; \
 #      exit 1; \
 #    fi"
 

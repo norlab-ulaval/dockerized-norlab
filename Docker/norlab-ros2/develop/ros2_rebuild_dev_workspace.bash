@@ -35,11 +35,11 @@ cd /
 
 # (Priority) todo:refactor (ref task NLSAR-222 🛠→ setupEnv*.sh scripts for deployement case)
 #echo "
-#  Done building norlab-ros2.
+#  Done building norlab-ros.
 #  Finale step:
-#    1. source your norlab-ros2 environment
+#    1. source your norlab-ros environment
 #      # source ~/.bashrc
-#    2. check if norlab-ros2 was properly sourced
+#    2. check if norlab-ros was properly sourced
 #      # printenv | grep AR_
 #  or open a new terminal in the container
 #    $ bash /dn_attach.bash <container name>

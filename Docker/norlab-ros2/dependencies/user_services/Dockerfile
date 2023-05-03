@@ -1,6 +1,6 @@
 
 # /// norlab-ros2/user_services ////////////////////////////////////////////////////////////////////////////////////////
-# This container is the base image for norlab-ros2 `develop` image and `deploy` image
+# This container is the base image for norlab-ros `develop` image and `deploy` image
 #
 # References:
 # - NVIDIA Container Runtime on Jetson: https://github.com/NVIDIA/nvidia-docker/wiki/NVIDIA-Container-Runtime-on-Jetson
@@ -11,10 +11,10 @@
 #   l4t-base: https://ngc.nvidia.com/catalog/containers/nvidia:l4t-base
 #   l4t-ros-noetic-pytorch: https://github.com/NVIDIA-AI-IOT/ros2_jetson/blob/main/docker/DockerFile.l4tbase.ros.noetic
 
-#ARG  BASE_IMG_TAG=x86-ubuntu18.04
-#ARG  BASE_IMG_TAG=arm64-l4t-r32.6.1
-ARG  BASE_IMG_TAG=arm64-l4t-r35.2.1
-FROM norlabsnow/norlab-ros2-humble-dependencies-wo-services:${BASE_IMG_TAG} AS services
+#ARG  DN_BASE_IMG_TAG=x86-ubuntu18.04
+#ARG  DN_BASE_IMG_TAG=arm64-l4t-r32.6.1
+ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+FROM norlabsnow/norlab-ros-dependencies:${DN_BASE_IMG_TAG} AS services
 
 
 # ===Service: ssh server================================================================================================

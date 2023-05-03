@@ -1,6 +1,6 @@
 
 # /// norlab-ros2/dependencies /////////////////////////////////////////////////////////////////////////////////////////
-# This container is the base image for all other norlab-ros2 images: dev, deploy, ...
+# This container is the base image for all other norlab-ros images: dev, deploy, ...
 #
 # References:
 # - NVIDIA Container Runtime on Jetson: https://github.com/NVIDIA/nvidia-docker/wiki/NVIDIA-Container-Runtime-on-Jetson
@@ -23,27 +23,25 @@ ARG BASE_IMAGE=dustynv/ros:humble-pytorch-l4t-r35.2.1
 FROM ${BASE_IMAGE} AS ros-base-image
 LABEL org.opencontainers.image.authors="luc.coupal.1@ulaval.ca"
 
-#ARG DS_ROS_PKG=desktop_full
-ARG DS_ROS_PKG=ros_base
-# Note: base_image `dustynv/ros:humble-pytorch-l4t-r35.2.1` is ros_base as per https://hub.docker.com/layers/dustynv/ros/humble-pytorch-l4t-r35.2.1/images/sha256-85b6e35baf947074b19efbdd628e3d0d5e32d2563557b493721d9de535463316?context=explore
-ENV DS_ROS_PKG=${DS_ROS_PKG}
-#ENV ROS_DISTRO=humble
-
 # ARCH: arm64-l4t, arm64-darwin, x86
-ARG DS_IMAGE_ARCHITECTURE=arm64-l4t
-ENV DS_IMAGE_ARCHITECTURE=${DS_IMAGE_ARCHITECTURE}
+ARG DN_IMAGE_ARCHITECTURE=NotSet
+ENV DN_IMAGE_ARCHITECTURE=${DN_IMAGE_ARCHITECTURE}
+
+# ROS pkg: ros_core, ros_base, desktop_full
+# Note: base_image `dustynv/ros:humble-pytorch-l4t-r35.2.1` is ros_base as per https://hub.docker.com/layers/dustynv/ros/humble-pytorch-l4t-r35.2.1/images/sha256-85b6e35baf947074b19efbdd628e3d0d5e32d2563557b493721d9de535463316?context=explore
+ARG DN_ROS_PKG=ros_base
+ENV DN_ROS_PKG=${DN_ROS_PKG}
 
 ## Declared in D-NL › Deploy
-## DS_HOST_TYPE: Local, XavierWarthog,
 ## NorLab robot: warthog, warthog-xavier, xavier-nx-redleader, marmote ...
+## DS_HOST_TYPE: Local, XavierWarthog,
+
+ENV DS_DEV_WORKSPACE=$HOME/ros2_ws
 
 # skip GUI dialog by setting everything to default
 ENV DEBIAN_FRONTEND=noninteractive
-ENV DS_DEV_WORKSPACE=$HOME/ros2_ws
-
 
 WORKDIR "/"
-
 
 # ....install development utilities................................................................................
 RUN apt-get update \

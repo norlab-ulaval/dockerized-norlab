@@ -1,10 +1,10 @@
 
 # /// norlab-ros2/develop //////////////////////////////////////////////////////////////////////////////////////////////
 
-#ARG  BASE_IMG_TAG=arm64-l4t-r32.6.1
-ARG  BASE_IMG_TAG=arm64-l4t-r35.2.1
-#FROM norlabsnow/norlab-ros2-humble-dependencies:${BASE_IMG_TAG}
-FROM norlabsnow/project_f1tenth:${BASE_IMG_TAG}
+#ARG  DN_BASE_IMG_TAG=arm64-l4t-r32.6.1
+ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+#FROM norlabsnow/norlab-ros-dependencies:${DN_BASE_IMG_TAG}
+FROM norlabsnow/norlab-ros-project-template:${DN_BASE_IMG_TAG}
 
 
 

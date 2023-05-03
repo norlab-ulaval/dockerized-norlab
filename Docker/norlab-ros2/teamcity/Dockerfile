@@ -1,11 +1,11 @@
 
 # /// norlab-ros2/teamcity /////////////////////////////////////////////////////////////////////////////////////////////
 
-#ARG BASE_IMG_TAG=arm64-l4t-r32.6.1
-ARG BASE_IMG_TAG=arm64-l4t-r35.2.1
-#ARG BASE_IMG=norlab-ros2-develop
-ARG BASE_IMG=norlab-ros2-humble-dependencies-wo-services
-FROM norlabsnow/${BASE_IMG}:${BASE_IMG_TAG} as teamcity
+#ARG DN_BASE_IMG_TAG=arm64-l4t-r32.6.1
+ARG DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+#ARG BASE_IMGAGE=norlab-ros-dependencies-wo-services
+ARG BASE_IMGAGE=norlab-ros-project-template
+FROM norlabsnow/${BASE_IMGAGE}:${DN_BASE_IMG_TAG} as teamcity
 
 
 ARG DN_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
@@ -26,14 +26,14 @@ RUN ( \
 )
 
 
-# ===Final build step===================================================================================================
+# ===Final build step=======================================================================================
 #WORKDIR /
 #RUN echo $PWD
 #COPY ./tools/dn_info.bash /
 #RUN cd / && tree -L 3
 
 
-# ...source & check ROS environement variable...........................................................................
+# ...source & check ROS environement variable...............................................
 # Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables
 # like ROS_ROOT and ROS_PACKAGE_PATH are set:
 #   $ printenv | grep ROS
@@ -47,7 +47,7 @@ RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
 
 
 
-# ... Finish container setup ...........................................................................................
+# ... Finish container setup ............................................................
 WORKDIR /ros2_ws/src/${DN_TARGET_PROJECT_SRC_REPO}
 CMD [ "bash" ]
 

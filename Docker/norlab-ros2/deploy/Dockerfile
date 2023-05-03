@@ -1,10 +1,10 @@
 
 # /// norlab-ros2/deploy ///////////////////////////////////////////////////////////////////////////////////////////////
 
-#ARG  BASE_IMG_TAG=arm64-l4t-r32.6.1
-ARG  BASE_IMG_TAG=arm64-l4t-r35.2.1
-FROM norlabsnow/norlab-ros2-humble-dependencies:${BASE_IMG_TAG}
-
+#ARG  DN_BASE_IMG_TAG=arm64-l4t-r32.6.1
+ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+#FROM norlabsnow/norlab-ros-dependencies:${DN_BASE_IMG_TAG}
+FROM norlabsnow/norlab-ros-project-template:${DN_BASE_IMG_TAG}
 
 # === Clone the NorLab_MPPI repo and install ===========================================================================
 #
@@ -15,8 +15,8 @@ FROM norlabsnow/norlab-ros2-humble-dependencies:${BASE_IMG_TAG}
 
 #ARG DN_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
 #ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
-#ARG DS_TARGET_PROJECT_SRC_DOMAIN=RedLeader962
-#ENV DS_TARGET_PROJECT_SRC_DOMAIN=${DS_TARGET_PROJECT_SRC_DOMAIN}
+#ARG DN_TARGET_PROJECT_SRC_DOMAIN=RedLeader962
+#ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN}
 
 ARG DEV_BRANCH=master
 
@@ -24,12 +24,12 @@ ARG DEV_BRANCH=master
 ARG DS_HOST_TYPE=Local
 ENV DS_HOST_TYPE=${DS_HOST_TYPE}
 
-# (Priority) todo:implement >> everything ↓↓
-RUN echo "${0}:not implemented error" && exit
+## (Priority) todo:implement >> everything ↓↓
+#RUN echo "${0}:not implemented error" && exit
 
 WORKDIR ${DS_DEV_WORKSPACE}/src
 RUN echo "Pull latest ${DEV_BRANCH} branch" \
-    && git clone --branch ${DEV_BRANCH} https://github.com/${DS_TARGET_PROJECT_SRC_DOMAIN}/${DN_TARGET_PROJECT_SRC_REPO}.git  \
+    && git clone --branch ${DEV_BRANCH} https://github.com/${DN_TARGET_PROJECT_SRC_DOMAIN}/${DN_TARGET_PROJECT_SRC_REPO}.git  \
     && cd ${DS_DEV_WORKSPACE} \
     && apt-get update \
     && rosdep install --from-paths src --ignore-src --default-yes \

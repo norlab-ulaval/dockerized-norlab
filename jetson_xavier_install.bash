@@ -32,11 +32,11 @@ JETSON_USER='snow'
 # ...CUDA toolkit path..................................................................................................
 # ref dusty_nv comment at https://forums.developer.nvidia.com/t/cuda-nvcc-not-found/118068
 if [[ $(uname -s) == "Darwin" ]]; then
-  echo -e "${DS_MSG_BASE} CUDA is not supported yet on Apple M1 computer"
+  echo -e "${DS_MSG_ERROR} CUDA is not supported yet on Apple M1 computer"
 else
   if ! command -v nvcc -V &> /dev/null; then
     # nvcc command not working
-    echo -e "${DS_MSG_BASE} Fixing CUDA path for nvcc"
+    echo -e "${DS_MSG_WARNING} Fixing CUDA path for nvcc"
 
     ( \
     echo ""; \

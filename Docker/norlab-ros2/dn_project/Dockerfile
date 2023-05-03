@@ -1,15 +1,22 @@
 
 # ////Project: F1TENTH//////////////////////////////////////////////////////////////////////////////////////////////
 
-ARG  BASE_IMG_TAG=arm64-l4t-r35.2.1
-FROM norlabsnow/norlab-ros2-humble-dependencies:${BASE_IMG_TAG} AS dn-project
+ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+FROM norlabsnow/norlab-ros-dependencies-user-services:${DN_BASE_IMG_TAG} AS dn-project
 
 
 ARG DN_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
 # Note: `DN_TARGET_PROJECT_SRC_REPO` is required by the `/develop/ros2_rebuild_dev_workspace.bash` script
 ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
-ARG DS_TARGET_PROJECT_SRC_DOMAIN=RedLeader962
-ENV DS_TARGET_PROJECT_SRC_DOMAIN=${DS_TARGET_PROJECT_SRC_DOMAIN}
+ARG DN_TARGET_PROJECT_SRC_DOMAIN=norlab-ulaval
+ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN}
+
+
+# ====Project custom steps==========================================================================================
+
+# ----F1TENTH gym simulator----------------------------------------------------------------------------------------
+FROM dn-project AS f1tenth-simulator
+# See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
 
 ENV LIBGL_ALWAYS_INDIRECT=1
 ENV NVIDIA_VISIBLE_DEVICES \
@@ -18,17 +25,10 @@ ENV NVIDIA_VISIBLE_DEVICES \
     # NVIDIA_VISIBLE_DEVICES is a substitute for `--gpus all` flag
     # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#environment-variables-oci-spec
 
-
 ENV NVIDIA_DRIVER_CAPABILITIES \
     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
     # set to `graphics` or add `graphics` to `NVIDIA_DRIVER_CAPABILITIES,`
     # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
-
-# ====Project custom steps==========================================================================================
-
-# ----F1TENTH gym simulator----------------------------------------------------------------------------------------
-FROM dn-project AS f1tenth-simulator
-# See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
 
 RUN apt-get update --fix-missing \
 #    && apt-get install --assume-yes --no-install-recommends \
@@ -106,14 +106,6 @@ RUN pip3 install --no-cache-dir --verbose -r /requirements_manual.txt  \
 FROM python-libraries AS sanity-check
 
 WORKDIR "/"
-#RUN python -c "import torch" \
-#    && python -c "import torchvision"
-
-#RUN python -c "import torch" \
-#    && python -c "import torchvision" \
-#    && python -c "from pytorch_mppi import MPPI" \
-#    && python -c "import mbrl.algorithms.pets as pets" \
-#    && python -c "from stable_baselines3 import PPO"
 
 RUN python -c "import torch" \
     && python -c "import torchvision" \

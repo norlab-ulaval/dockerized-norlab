@@ -32,7 +32,7 @@ if [[ ! -d $DN_PATH ]]; then
 fi
 
 # Load environment variable from file
-set -o allexport; source ${DN_PATH}/.env.prompt; set +o allexport
+set -o allexport; source "${DN_PATH}/.env.prompt"; set +o allexport
 
 echo -e "${DS_MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to install alias"
 
@@ -58,11 +58,11 @@ echo -e "${DS_MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to inst
 # ...CUDA toolkit path..................................................................................................
 # ref dusty_nv comment at https://forums.developer.nvidia.com/t/cuda-nvcc-not-found/118068
 if [[ $(uname -s) == "Darwin" ]]; then
-  echo -e "${DS_MSG_BASE} CUDA is not supported yet on Apple M1 computer"
+  echo -e "${DS_MSG_ERROR} CUDA is not supported yet on Apple M1 computer"
 else
   if ! command -v nvcc -V &> /dev/null; then
     # nvcc command not working
-    echo -e "${DS_MSG_BASE} Fixing CUDA path for nvcc"
+    echo -e "${DS_MSG_WARNING} Fixing CUDA path for nvcc"
 
     ( \
     echo ""; \

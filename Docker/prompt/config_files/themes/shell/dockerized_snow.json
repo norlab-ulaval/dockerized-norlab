@@ -37,7 +37,7 @@
         "before": "\ufb19 ",
         "priority": 50,
         "args": {
-          "variable": "DS_IMAGE_ARCHITECTURE"
+          "variable": "DN_IMAGE_ARCHITECTURE"
         }
       },
       {
