@@ -6,7 +6,7 @@ services:
       context: Docker/norlab-ros2/ROS
       dockerfile: ./Dockerfile
       args:
-        # (!) L4T version in the container tag should match your L4T version (ref https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
+        # (!) L4T container tags (e.g. r35.2.1) should match the L4T version on the Jetson otherwize cuda driver won't be accessible (ref https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
         BASE_IMAGE: dustynv/ros:humble-pytorch-l4t-r35.2.1
 #        docker pull dustynv/ros:humble-pytorch-l4t-r35.2.1
         DN_IMAGE_ARCHITECTURE: ${DN_IMAGE_ARCHITECTURE} # arm64-l4t, arm64-darwin, x86
