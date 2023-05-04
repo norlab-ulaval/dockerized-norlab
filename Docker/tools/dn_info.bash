@@ -11,7 +11,7 @@ echo -e "\033[1;37m
 ${SP}DN container name:           ${DN_CONTAINER_NAME}
 ${SP}DN host name:                $(hostname)
 ${SP}DN image architecture:       ${DN_IMAGE_ARCHITECTURE}
-${SP}DN project src path:         ${DS_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
+${SP}DN project src path:         ${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
 ${SP}DN target project repo:      ${DN_TARGET_PROJECT_SRC_REPO}
 ${SP}DN activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
 ${SP}

@@ -25,10 +25,12 @@ services:
     # noinspection ComposeUnknownKeys
     runtime: nvidia
     volumes:
-      - /home/snow/NorLab_MPPI:/ros2_ws/src/NorLab_MPPI
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      ## ....Add host volume you want to mount into the container..........................................................
+#      - /home/snow/NorLab_MPPI:/ros2_ws/src/NorLab_MPPI
+      - /home/snow/${DN_TARGET_PROJECT_SRC_REPO}:/ros2_ws/src/${DN_TARGET_PROJECT_SRC_REPO}
     tty: true
     stdin_open: true
     devices:

@@ -36,7 +36,7 @@ ENV DN_ROS_PKG=${DN_ROS_PKG}
 ## NorLab robot: warthog, warthog-xavier, xavier-nx-redleader, marmote ...
 ## DS_HOST_TYPE: Local, XavierWarthog,
 
-ENV DS_DEV_WORKSPACE=$HOME/ros2_ws
+ENV DN_DEV_WORKSPACE=$HOME/ros2_ws
 
 # skip GUI dialog by setting everything to default
 ENV DEBIAN_FRONTEND=noninteractive
@@ -71,19 +71,19 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p "${DS_DEV_WORKSPACE}/src"
+RUN mkdir -p "${DN_DEV_WORKSPACE}/src"
 
 # ....install sources..............................................................................................
 
 ## . . ros2_control Demos. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ## https://github.com/ros-controls/ros2_control_demos
 #
-#WORKDIR ${DS_DEV_WORKSPACE}/src
+#WORKDIR ${DN_DEV_WORKSPACE}/src
 #RUN git clone https://github.com/ros-controls/ros2_control
 #RUN git clone https://github.com/ros-controls/ros2_controllers
 #RUN git clone https://github.com/ros-controls/ros2_control_demos
 #
-#WORKDIR ${DS_DEV_WORKSPACE}
+#WORKDIR ${DN_DEV_WORKSPACE}
 #RUN apt-get update \
 #    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
 #    && rosdep install --from-paths src --ignore-src -r -y \
@@ -110,10 +110,10 @@ RUN mkdir -p "${DS_DEV_WORKSPACE}/src"
 #        ros-humble-launch-yaml \
 #    && rm -rf /var/lib/apt/lists/*
 
-#WORKDIR ${DS_DEV_WORKSPACE}/src
+#WORKDIR ${DN_DEV_WORKSPACE}/src
 #RUN git clone https://github.com/dusty-nv/ros_deep_learning
 #
-#WORKDIR ${DS_DEV_WORKSPACE}
+#WORKDIR ${DN_DEV_WORKSPACE}
 #RUN apt-get update \
 #    && /bin/bash -c "sudo -H pip install --upgrade jetson-stats" \
 #    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
@@ -122,10 +122,10 @@ RUN mkdir -p "${DS_DEV_WORKSPACE}/src"
 #    && rm -rf /var/lib/apt/lists/*
 
 ## . . ros2_jetson_stats. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#WORKDIR ${DS_DEV_WORKSPACE}/src
+#WORKDIR ${DN_DEV_WORKSPACE}/src
 #RUN git clone --branch humble https://github.com/NVIDIA-AI-IOT/ros2_jetson_stats.git
 #
-#WORKDIR ${DS_DEV_WORKSPACE}
+#WORKDIR ${DN_DEV_WORKSPACE}
 #RUN apt-get update \
 #    && /bin/bash -c "sudo -H pip install --upgrade jetson-stats" \
 #    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
@@ -133,26 +133,26 @@ RUN mkdir -p "${DS_DEV_WORKSPACE}/src"
 #    && rm -rf /var/lib/apt/lists/*
 
 ## . . icp_odom_with_twist. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#WORKDIR ${DS_DEV_WORKSPACE}/src
+#WORKDIR ${DN_DEV_WORKSPACE}/src
 #RUN git clone https://github.com/norlab-ulaval/icp_odom_with_twist.git
 #
-#WORKDIR "${DS_DEV_WORKSPACE}"
+#WORKDIR "${DN_DEV_WORKSPACE}"
 #RUN apt-get update \
 #    && rosdep install --from-paths ./src --ignore-packages-from-source --rosdistro ${ROS_DISTRO} -y
 
 ## . . ros2/examples. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#WORKDIR ${DS_DEV_WORKSPACE}/src
+#WORKDIR ${DN_DEV_WORKSPACE}/src
 #RUN git clone --branch humble https://github.com/ros2/examples
 #
-#WORKDIR ${DS_DEV_WORKSPACE}
+#WORKDIR ${DN_DEV_WORKSPACE}
 #RUN apt-get update \
 #    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
 #    && rosdep install --from-paths ./src --ignore-src -r --rosdistro ${ROS_DISTRO} --default-yes \
 #    && rm -rf /var/lib/apt/lists/*
 
-#WORKDIR ${DS_DEV_WORKSPACE}/src
+#WORKDIR ${DN_DEV_WORKSPACE}/src
 #RUN git clone --branch humble https://github.com/ros2/examples \
-#    && cd ${DS_DEV_WORKSPACE} \
+#    && cd ${DN_DEV_WORKSPACE} \
 #    && apt-get update \
 #    && rosdep install --from-paths src --ignore-src -r --rosdistro ${ROS_DISTRO} --default-yes \
 ##    && rosdep install --from-paths ./src --ignore-src --rosdistro ${ROS_DISTRO} --default-yes --os=ubuntu:jammy \
@@ -163,16 +163,16 @@ RUN mkdir -p "${DS_DEV_WORKSPACE}/src"
 # (NICE TO HAVE) ToDo: fixme!! (ref task NMO-163 ﹅→ rosdep install error for ros2/example repo)
 # lsb_release -a # Check Ubuntu version
 
-WORKDIR ${DS_DEV_WORKSPACE}
+WORKDIR ${DN_DEV_WORKSPACE}
 RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
         && colcon build --symlink-install"
 #        && colcon build --symlink-install --merge-install"
 
 
 #RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-#    && source ${DS_DEV_WORKSPACE}/install/setup.bash" \
+#    && source ${DN_DEV_WORKSPACE}/install/setup.bash" \
 #    && echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> ~/.bashrc \
-#    && echo "source ${DS_DEV_WORKSPACE}/install/setup.bash" >> ~/.bashrc
+#    && echo "source ${DN_DEV_WORKSPACE}/install/setup.bash" >> ~/.bashrc
 
 RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
     && echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> ~/.bashrc
@@ -182,7 +182,7 @@ RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
 # Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables
 # like ROS_ROOT and ROS_PACKAGE_PATH are set:
 #   $ printenv | grep ROS
-WORKDIR "${DS_DEV_WORKSPACE}"
+WORKDIR "${DN_DEV_WORKSPACE}"
 CMD [ "bash" ]
 
 

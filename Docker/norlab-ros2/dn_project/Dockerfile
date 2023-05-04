@@ -5,12 +5,17 @@ ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
 FROM norlabsnow/norlab-ros-dependencies-user-services:${DN_BASE_IMG_TAG} AS dn-project
 
 
-ARG DN_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
+#ARG DN_TARGET_PROJECT_SRC_REPO=f1tenth_controller
+#ARG DN_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
+ARG DN_TARGET_PROJECT_SRC_REPO
 # Note: `DN_TARGET_PROJECT_SRC_REPO` is required by the `/develop/ros2_rebuild_dev_workspace.bash` script
-ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
-ARG DN_TARGET_PROJECT_SRC_DOMAIN=norlab-ulaval
-ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN}
-
+# TODO: test `?err` syntax › should output an error if VARIABLE is unset or empty in the environment
+ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO?err}
+#ARG DN_TARGET_PROJECT_SRC_DOMAIN=norlab-ulaval
+#ARG DN_TARGET_PROJECT_SRC_DOMAIN=vaul-ulaval
+ARG DN_TARGET_PROJECT_SRC_DOMAIN
+# TODO: test `?err` syntax › should output an error if VARIABLE is unset or empty in the environment
+ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN?err}
 
 # ====Project custom steps==========================================================================================
 

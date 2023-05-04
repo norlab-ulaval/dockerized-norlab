@@ -28,7 +28,7 @@ RUN apt-get update \
 
 
 # ...Setup ssh server...................................................................................................
-WORKDIR ${DS_DEV_WORKSPACE}
+WORKDIR ${DN_DEV_WORKSPACE}
 
 # ssh port, remaped from default 22 to 2222
 ARG DS_PYCHARM_DEV_SERVER_PORT=2222
@@ -191,12 +191,12 @@ FROM services AS final
 #   $ printenv | grep ROS
 # Check the ROS_PACKAGE_PATH environment variable. It should include the directory you're in:
 #   $ echo $ROS_PACKAGE_PATH
-#   > /home/youruser/ros2_ws/src:/opt/ros/melodic/share
-WORKDIR ${DS_DEV_WORKSPACE}
+#   > /home/youruser${DN_DEV_WORKSPACE}/src:/opt/ros/melodic/share
+WORKDIR ${DN_DEV_WORKSPACE}
 
 # Note: ROS2 setup.bash location is in `${ROS_DISTRO}/install/` instead of ROS1 in `${ROS_DISTRO}/`
 RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && source ${DS_DEV_WORKSPACE}/install/setup.bash \
+    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_ -e DN_" # WE ARE HERE <-- (!)
 
 

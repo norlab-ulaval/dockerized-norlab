@@ -27,22 +27,22 @@ ENV DS_HOST_TYPE=${DS_HOST_TYPE}
 ## (Priority) todo:implement >> everything ↓↓
 #RUN echo "${0}:not implemented error" && exit
 
-WORKDIR ${DS_DEV_WORKSPACE}/src
+WORKDIR ${DN_DEV_WORKSPACE}/src
 RUN echo "Pull latest ${DEV_BRANCH} branch" \
     && git clone --branch ${DEV_BRANCH} https://github.com/${DN_TARGET_PROJECT_SRC_DOMAIN}/${DN_TARGET_PROJECT_SRC_REPO}.git  \
-    && cd ${DS_DEV_WORKSPACE} \
+    && cd ${DN_DEV_WORKSPACE} \
     && apt-get update \
     && rosdep install --from-paths src --ignore-src --default-yes \
     && rm -rf /var/lib/apt/lists/*
 
 
-WORKDIR ${DS_DEV_WORKSPACE}
+WORKDIR ${DN_DEV_WORKSPACE}
 RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
         && colcon build --symlink-install --merge-install"
 
 # (Priority) todo:refactor (ref task NLSAR-222 🛠→ setupEnv*.sh scripts for deployement case)
 ## Environment setup
-#RUN echo ". ${DS_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}/mppi_util/setupEnv${DS_HOST_TYPE}.sh" >> ~/.bashrc
+#RUN echo ". ${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}/mppi_util/setupEnv${DS_HOST_TYPE}.sh" >> ~/.bashrc
 
 
 # ... Finish container setup ...........................................................................................

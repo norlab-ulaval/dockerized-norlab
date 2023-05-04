@@ -39,16 +39,16 @@ RUN ( \
 #   $ printenv | grep ROS
 # Check the ROS_PACKAGE_PATH environment variable. It should include the directory you're in:
 #   $ echo $ROS_PACKAGE_PATH
-#   > /home/youruser/ros2_ws/src:/opt/ros/melodic/share
-WORKDIR ${DS_DEV_WORKSPACE}
+#   > /home/youruser${DN_DEV_WORKSPACE}/src:/opt/ros/melodic/share
+WORKDIR ${DN_DEV_WORKSPACE}
 RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && source ${DS_DEV_WORKSPACE}/install/setup.bash \
+    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_"
 
 
 
 # ... Finish container setup ............................................................
-WORKDIR /ros2_ws/src/${DN_TARGET_PROJECT_SRC_REPO}
+WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
 CMD [ "bash" ]
 
 # ///////////////////////////////////////////////////////////////////////////////////////////// norlab-ros2/teamcity ///

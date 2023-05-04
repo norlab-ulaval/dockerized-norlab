@@ -31,7 +31,8 @@ RUN ( \
   echo ""; \
 ) >> ~/.bashrc
 
-WORKDIR /ros2_ws/src/${DN_TARGET_PROJECT_SRC_REPO}
+ARG DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
+WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
 ENTRYPOINT [ "/ros2_entrypoint.bash" ]
 CMD [ "bash" ]
 
