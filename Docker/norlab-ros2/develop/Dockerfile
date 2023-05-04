@@ -6,6 +6,10 @@ ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
 #FROM norlabsnow/norlab-ros-dependencies:${DN_BASE_IMG_TAG}
 FROM norlabsnow/norlab-ros-project-template:${DN_BASE_IMG_TAG}
 
+ARG DN_TARGET_PROJECT_SRC_REPO
+ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO?err}
+ARG DN_TARGET_PROJECT_SRC_DOMAIN
+ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN?err}
 
 
 # Default: Local , Option: XavierWarthog
@@ -31,7 +35,6 @@ RUN ( \
   echo ""; \
 ) >> ~/.bashrc
 
-ARG DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
 WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
 ENTRYPOINT [ "/ros2_entrypoint.bash" ]
 CMD [ "bash" ]

@@ -4,9 +4,9 @@ services:
   develop:
 #    image: norlabsnow/norlab-ros-project-placeholder-develop:humble-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     image: norlabsnow/norlab-ros-project-template-develop:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
-    container_name: IamSNOW-NX-PROJECT-TEMPLATE-TEST
+    container_name: ${CONTAINER_NAME}
     environment:
-      DN_CONTAINER_NAME: IamSNOW-NX-PROJECT-TEMPLATE-TEST
+      DN_CONTAINER_NAME: ${CONTAINER_NAME}
       DN_ACTIVATE_POWERLINE_PROMT: true
       ##      ROS_MASTER_URI: http://${BASESTATION_IP}:11311
       #      ROS_MASTER_URI: http://10.0.0.224:11311
