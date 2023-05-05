@@ -232,13 +232,12 @@ RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
         pytest \
         pytest-benchmark \
         pytest-mock \
-        pytest-instafail \
         python-dotenv \
-        pytest-cov \
         pytest-env \
-        pytest-xdist \
         mock
 
+        ## (!) pytest-cov › "The pytest-cov package, due to technical restrictions, breaks PyCharm's debugger." \
+        ## see https://www.jetbrains.com/help/pycharm/2023.1/run-debug-configuration-py-test.html
 
 ## Packages for older python version
 #RUN pip3 install --no-cache-dir --verbose  \
