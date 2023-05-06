@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   ros_foxy_torch:
-    image: norlabsnow/norlab-ros:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
+    image: ${DN_HUB}/norlab-ros:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     build:
       context: Docker/norlab-ros2/ROS
       dockerfile: ./Dockerfile
@@ -12,17 +12,17 @@ services:
         DN_IMAGE_ARCHITECTURE: ${DN_IMAGE_ARCHITECTURE} # arm64-l4t, arm64-darwin, x86
         DN_ROS_PKG: ros_base # inactive, see comment in dockerfile
   dependencies_core:
-    image: norlabsnow/norlab-ros-dependencies:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
+    image: ${DN_HUB}/norlab-ros-dependencies:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     build:
       context: ./Docker
       dockerfile: ./norlab-ros2/dependencies/Dockerfile
       args:
-        BASE_IMAGE: norlabsnow/norlab-ros
+        BASE_IMAGE: ${DN_HUB}/norlab-ros
         DN_BASE_IMG_TAG: foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     depends_on:
       - ros_foxy_torch
   dependencies_user_services:
-    image: norlabsnow/norlab-ros-dependencies-user-services:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
+    image: ${DN_HUB}/norlab-ros-dependencies-user-services:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     build:
       context: ./Docker
       dockerfile: ./norlab-ros2/dependencies/user_services/Dockerfile
@@ -31,7 +31,7 @@ services:
     depends_on:
       - dependencies_core
   dn_project:
-    image: norlabsnow/norlab-ros-project-template:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
+    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     build:
       context: ./Docker/norlab-ros2/dn_project
       dockerfile: ./Dockerfile
@@ -43,27 +43,30 @@ services:
         DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}
     depends_on:
       - dependencies_user_services
-
   develop:
-    image: norlabsnow/norlab-ros-project-template-develop:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
+    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     build:
       context: ./Docker/norlab-ros2/develop
       dockerfile: ./Dockerfile
       args:
+        DN_HUB: ${DN_PROJECT_HUB}   # norlabsnow
+        DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-project-template
         DN_BASE_IMG_TAG: foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
-        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}
-        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}
+#        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}
+#        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}
 #        DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
     depends_on:
       - dn_project
 
 #  deploy:
-#    image: norlabsnow/norlab-ros-project-template-deploy:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
+#    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
 #    build:
 #      context: ./Docker/norlab-ros2/deploy
 #      dockerfile: ./Dockerfile
 #      args:
-#        DN_BASE_IMG_TAG: foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
+#         DN_HUB: ${DN_PROJECT_HUB}   # norlabsnow
+#         DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-project-template
+#         DN_BASE_IMG_TAG: foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
 ##        DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
 #    depends_on:
 #      - dn_project

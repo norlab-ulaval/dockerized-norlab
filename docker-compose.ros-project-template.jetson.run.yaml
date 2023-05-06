@@ -3,7 +3,7 @@ version: "3.9"
 services:
   develop:
 #    image: norlabsnow/norlab-ros-project-placeholder-develop:humble-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
-    image: norlabsnow/norlab-ros-project-template-develop:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
+    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     container_name: ${CONTAINER_NAME}
     environment:
       DN_CONTAINER_NAME: ${CONTAINER_NAME}
@@ -22,7 +22,6 @@ services:
 #      DISPLAY: '169.254.205.89:0.0'
       QT_X11_NO_MITSHM: 1
       XAUTHORITY: /tmp/.docker.xauth
-    # noinspection ComposeUnknownKeys
     runtime: nvidia
     volumes:
       - /etc/localtime:/etc/localtime:ro

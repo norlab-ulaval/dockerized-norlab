@@ -1,27 +1,23 @@
 
 # /// norlab-ros2/deploy ///////////////////////////////////////////////////////////////////////////////////////////////
 
-#ARG  DN_BASE_IMG_TAG=arm64-l4t-r32.6.1
-ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
-#FROM norlabsnow/norlab-ros-dependencies:${DN_BASE_IMG_TAG}
-FROM norlabsnow/norlab-ros-project-template:${DN_BASE_IMG_TAG}
+# norlabsnow/norlab-ros-dependencies:foxy-pytorch-arm64-l4t-r35.2.1
+ARG DN_HUB=norlabsnow
+ARG DN_PROJECT_IMAGE_NAME=norlab-ros-project-template
+ARG DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+FROM ${DN_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as deploy
 
-# === Clone the NorLab_MPPI repo and install ===========================================================================
-#
+# === Clone the repo and install =======================================================================================
 # Steps:
 #   1. clone NorLab_MPPI repos
 #   2. Install Dependencies
 #   3. Compilation & Running
+# =====================================================================================================================
 
-#ARG DN_TARGET_PROJECT_SRC_REPO=NorLab_MPPI
-#ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO}
-#ARG DN_TARGET_PROJECT_SRC_DOMAIN=RedLeader962
-#ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN}
-
-ARG DN_TARGET_PROJECT_SRC_REPO
-ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO?err}
-ARG DN_TARGET_PROJECT_SRC_DOMAIN
-ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN?err}
+#ARG DN_TARGET_PROJECT_SRC_REPO
+#ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO?err}
+#ARG DN_TARGET_PROJECT_SRC_DOMAIN
+#ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN?err}
 
 ARG DEV_BRANCH=master
 

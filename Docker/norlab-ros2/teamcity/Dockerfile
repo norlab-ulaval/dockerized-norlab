@@ -1,17 +1,17 @@
 
 # /// norlab-ros2/teamcity /////////////////////////////////////////////////////////////////////////////////////////////
 
-#ARG DN_BASE_IMG_TAG=arm64-l4t-r32.6.1
+# norlabsnow/norlab-ros-dependencies-wo-services:foxy-pytorch-arm64-l4t-r35.2.1
+ARG DN_HUB=norlabsnow
+ARG DN_PROJECT_IMAGE_NAME=norlab-ros-project-template
 ARG DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
-#ARG BASE_IMGAGE=norlab-ros-dependencies-wo-services
-ARG BASE_IMGAGE=norlab-ros-project-template
-FROM norlabsnow/${BASE_IMGAGE}:${DN_BASE_IMG_TAG} as teamcity
+FROM ${DN_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as teamcity
 
 
-ARG DN_TARGET_PROJECT_SRC_REPO
-ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO?err}
-ARG DN_TARGET_PROJECT_SRC_DOMAIN
-ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN?err}
+#ARG DN_TARGET_PROJECT_SRC_REPO
+#ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO?err}
+#ARG DN_TARGET_PROJECT_SRC_DOMAIN
+#ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN?err}
 
 
 WORKDIR /
