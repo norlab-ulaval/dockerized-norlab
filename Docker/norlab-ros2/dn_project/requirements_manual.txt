@@ -2,60 +2,60 @@
 # ====ROS==========================================================================================================
 osrf-pycommon
 
-# ====RL/Control library===========================================================================================
-## Doc:
-##  - pytorch-mppi › https://github.com/UM-ARM-Lab/pytorch_mppi
-##  - mbrl › https://github.com/facebookresearch/mbrl-lib
-##  - ray ›
-##      rllib: https://docs.ray.io/en/latest/rllib/index.html
-##      tune:  https://docs.ray.io/en/latest/tune/index.html
-##      installation: https://docs.ray.io/en/latest/ray-overview/installation.html#
-##  - tensordict › https://github.com/pytorch-labs/tensordict
-
-ray
-pytorch-mppi[tune]
--e git+https://github.com/pytorch-labs/tensordict.git#egg=tensordict
-
-## Model-based RL library (mbrl-lib)
-mbrl
-## alt version for mbrl
-# -e git+https://github.com/facebookresearch/mbrl-lib.git#egg=mbrl
-
-# ----Stable-Baseline3 (SB3)---------------------------------------------------------------------------------------
-stable-baselines3
-# opencv-python-headless
-
-# . . SB3 extras without Atari Games and PyGame. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-## Tensorboard support
-tensorboard>=2.9.1
-
-## Checking memory taken by replay buffer
-psutil
-
-## For progress bar callback
-tqdm
-rich
-
-# ====Visualization and MLops======================================================================================
-## Doc:
-##  - wandb (Weights & Biases) › The developer-first MLOps platform
-##      www: https://wandb.ai, pypi: https://pypi.org/project/wandb/
-##  - hydra-core:
-##      www: https://hydra.cc
-
-wandb
-hydra-core
-hydra-submitit-launcher
-
-## rendering
-# moviepy
-
-# ====Simulation====================================================================================================
-## deepmind control suite
-# dm_control
-
-## gym, atari games
-# gym[atari]
-# gym[accept-rom-license]
-# pygame
+# # ====RL/Control library===========================================================================================
+# ## Doc:
+# ##  - pytorch-mppi › https://github.com/UM-ARM-Lab/pytorch_mppi
+# ##  - mbrl › https://github.com/facebookresearch/mbrl-lib
+# ##  - ray ›
+# ##      rllib: https://docs.ray.io/en/latest/rllib/index.html
+# ##      tune:  https://docs.ray.io/en/latest/tune/index.html
+# ##      installation: https://docs.ray.io/en/latest/ray-overview/installation.html#
+# ##  - tensordict › https://github.com/pytorch-labs/tensordict
+#
+# ray
+# pytorch-mppi[tune]
+# -e git+https://github.com/pytorch-labs/tensordict.git#egg=tensordict
+#
+# ## Model-based RL library (mbrl-lib)
+# mbrl
+# ## alt version for mbrl
+# # -e git+https://github.com/facebookresearch/mbrl-lib.git#egg=mbrl
+#
+# # ----Stable-Baseline3 (SB3)---------------------------------------------------------------------------------------
+# stable-baselines3
+# # opencv-python-headless
+#
+# # . . SB3 extras without Atari Games and PyGame. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+# ## Tensorboard support
+# tensorboard>=2.9.1
+#
+# ## Checking memory taken by replay buffer
+# psutil
+#
+# ## For progress bar callback
+# tqdm
+# rich
+#
+# # ====Visualization and MLops======================================================================================
+# ## Doc:
+# ##  - wandb (Weights & Biases) › The developer-first MLOps platform
+# ##      www: https://wandb.ai, pypi: https://pypi.org/project/wandb/
+# ##  - hydra-core:
+# ##      www: https://hydra.cc
+#
+# wandb
+# hydra-core
+# hydra-submitit-launcher
+#
+# ## rendering
+# # moviepy
+#
+# # ====Simulation====================================================================================================
+# ## deepmind control suite
+# # dm_control
+#
+# ## gym, atari games
+# # gym[atari]
+# # gym[accept-rom-license]
+# # pygame
 

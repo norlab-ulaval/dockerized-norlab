@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Remote docker-compose (xavier-nx-redleader)  ›  BUILD" type="ShConfigurationType">
-    <option name="SCRIPT_TEXT" value="export DN_IMAGE_ARCHITECTURE='arm64-l4t' &amp;&amp; docker -H ssh://snow@169.254.205.89 compose -f docker-compose.ros-foxy-pytorch.jetson.build.yaml build" />
+    <option name="SCRIPT_TEXT" value="bash -c &quot;export DN_IMAGE_ARCHITECTURE='arm64-l4t' &amp;&amp; docker -H ssh://snow@169.254.205.89 compose -f docker-compose.ros-foxy-pytorch.jetson.build.yaml build&quot;" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />

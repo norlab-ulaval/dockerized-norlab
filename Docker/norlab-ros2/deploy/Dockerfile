@@ -19,7 +19,7 @@ FROM ${DN_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as deploy
 #ARG DN_TARGET_PROJECT_SRC_DOMAIN
 #ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN?err}
 
-ARG DEV_BRANCH=master
+ARG DN_DEPLOY_REPO_BRANCH=master
 
 # Default: Local , Option: XavierWarthog
 ARG DS_HOST_TYPE=Local
@@ -29,8 +29,8 @@ ENV DS_HOST_TYPE=${DS_HOST_TYPE}
 #RUN echo "${0}:not implemented error" && exit
 
 WORKDIR ${DN_DEV_WORKSPACE}/src
-RUN echo "Pull latest ${DEV_BRANCH} branch" \
-    && git clone --branch ${DEV_BRANCH} https://github.com/${DN_TARGET_PROJECT_SRC_DOMAIN}/${DN_TARGET_PROJECT_SRC_REPO}.git  \
+RUN echo "Pull latest ${DN_DEPLOY_REPO_BRANCH} branch" \
+    && git clone --branch ${DN_DEPLOY_REPO_BRANCH} https://github.com/${DN_TARGET_PROJECT_SRC_DOMAIN}/${DN_TARGET_PROJECT_SRC_REPO}.git  \
     && cd ${DN_DEV_WORKSPACE} \
     && apt-get update \
     && rosdep install --from-paths src --ignore-src --default-yes \

@@ -37,10 +37,8 @@ services:
       dockerfile: ./Dockerfile
       args:
         DN_BASE_IMG_TAG: foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
-#        DN_TARGET_PROJECT_SRC_DOMAIN: norlab-ulaval
-#        DN_TARGET_PROJECT_SRC_REPO: NorLab_MPPI
-        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}
-        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}
+        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}   # norlab-ulaval
+        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}   # NorLab_MPPI
     depends_on:
       - dependencies_user_services
   develop:
@@ -67,7 +65,8 @@ services:
 #         DN_HUB: ${DN_PROJECT_HUB}   # norlabsnow
 #         DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-project-template
 #         DN_BASE_IMG_TAG: foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
-##        DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
+##         DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
+##         DN_DEPLOY_REPO_BRANCH: master
 #    depends_on:
 #      - dn_project
 
