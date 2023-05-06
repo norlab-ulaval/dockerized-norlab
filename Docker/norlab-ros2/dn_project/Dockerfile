@@ -104,6 +104,11 @@ COPY requirements_manual.txt /requirements_manual.txt
 RUN pip3 install --no-cache-dir --verbose -r /requirements_manual.txt  \
     && rm -rf /requirements_manual.txt
 
+## (!) Hack for solving pytest<->pycharm RuntimeError
+## `INTERNALERROR> RuntimeError: wrap_controller at 'pytest_runtest_makereport' /usr/local/lib/python3.8/dist-packages/dash/testing/plugin.py:106 did not yield`
+## dash==2.8.1 › Solution from https://github.com/plotly/dash/issues/2460
+## Version 2.9.0 is responsible for the pytest<->pycharm RuntimeError
+RUN pip3 install --no-cache-dir dash[testing]!=2.9.0
 
 FROM python-libraries AS sanity-check
 
@@ -115,8 +120,8 @@ WORKDIR "/"
 #    && python -c "import mbrl.algorithms.pets as pets" \
 #    && python -c "from stable_baselines3 import PPO"
 
-#RUN python -c "import torch" \
-#    && python -c "import torchvision"
+RUN python -c "import torch" \
+    && python -c "import torchvision"
 
 CMD [ "bash" ]
 
