@@ -1,8 +1,9 @@
 
 # ////Project: F1TENTH//////////////////////////////////////////////////////////////////////////////////////////////
 
-ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
-FROM norlabsnow/norlab-ros-dependencies-user-services:${DN_BASE_IMG_TAG} AS dn-project
+ARG DN_HUB=norlabsnow
+ARG DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+FROM ${DN_HUB}/norlab-ros-dependencies-user-services:${DN_BASE_IMG_TAG} AS dn-project
 
 
 

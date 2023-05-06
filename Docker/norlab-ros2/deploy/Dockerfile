@@ -2,10 +2,10 @@
 # /// norlab-ros2/deploy ///////////////////////////////////////////////////////////////////////////////////////////////
 
 # norlabsnow/norlab-ros-dependencies:foxy-pytorch-arm64-l4t-r35.2.1
-ARG DN_HUB=norlabsnow
+ARG DN_PROJECT_HUB=norlabsnow
 ARG DN_PROJECT_IMAGE_NAME=norlab-ros-project-template
 ARG DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
-FROM ${DN_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as deploy
+FROM ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as deploy
 
 # === Clone the repo and install =======================================================================================
 # Steps:
