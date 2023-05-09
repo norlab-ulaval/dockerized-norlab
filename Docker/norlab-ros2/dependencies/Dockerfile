@@ -190,7 +190,7 @@ FROM ros-scientific-stack-base-image AS python-dev-tools
 # Dependencies
 #   box2d-py dependency: swig
 #   Gym headless server rendering require a virtual X server like xvfb
-#       pyvirtualdisplay is a python wraper for xvfb
+#       pyvirtualdisplay is a python wraper for xvfb › https://github.com/ponty/pyvirtualdisplay/tree/3.0
 #       gym-notebook-wrapper is wrapper for running gym and recording movie on Jupyter notebook
 #           ↳ |  require xvfb and python-opengl
 #   gym VideoRecorder dependency: ffmpeg and imageio-ffmpeg
@@ -198,10 +198,14 @@ RUN apt-get update \
 #    && apt-get install --assume-yes --no-install-recommends \
     && apt-get install --assume-yes \
         swig \
-        xvfb \
         mesa-utils \
-#        python-opengl \
         ffmpeg \
+        # . .pyvirtualdisplay dependencies and backends on Ubuntu 20.04 . . .
+        xvfb \
+        python-opengl \
+        xserver-xephyr \
+        tigervnc-standalone-server \
+        x11-utils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
