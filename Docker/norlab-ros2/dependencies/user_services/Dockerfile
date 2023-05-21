@@ -60,7 +60,7 @@ RUN useradd -m ${NEW_USER} \
 # Add the 'video' groups to new user as it's required for GPU access.
 # (not a problem on norlab-og but mandatory on Jetson device)
 # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
-RUN usermod -a -G video ${NEW_USER}
+RUN usermod -a -G video,sudo ${NEW_USER}
 
 # ...root config........................................................................................................
 # user:newpassword
