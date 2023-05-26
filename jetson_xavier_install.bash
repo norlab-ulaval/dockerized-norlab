@@ -94,6 +94,7 @@ echo ""
 sudo nvidia-docker version
 echo ""
 # . . Manage Docker as a non-root user. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+#sudo groupadd docker
 sudo usermod -a -G docker "${JETSON_USER}"
 
 # . . Configure Docker to start on boot with systemd. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

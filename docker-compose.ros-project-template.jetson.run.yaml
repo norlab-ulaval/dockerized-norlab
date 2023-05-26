@@ -21,7 +21,7 @@ services:
 #      DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
 #      DISPLAY: '169.254.205.89:0.0'
       QT_X11_NO_MITSHM: 1
-      XAUTHORITY: /tmp/.docker.xauth
+#      XAUTHORITY: /tmp/.docker.xauth
     runtime: nvidia
     volumes:
       - /etc/localtime:/etc/localtime:ro
