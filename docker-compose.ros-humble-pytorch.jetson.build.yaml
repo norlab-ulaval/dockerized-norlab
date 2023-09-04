@@ -10,7 +10,7 @@ services:
         BASE_IMAGE: dustynv/ros:humble-pytorch-l4t-r35.2.1
 #        docker pull dustynv/ros:humble-pytorch-l4t-r35.2.1
         DN_IMAGE_ARCHITECTURE: ${DN_IMAGE_ARCHITECTURE} # arm64-l4t, arm64-darwin, x86
-        DN_ROS_PKG: ros_base # inactive, see comment in dockerfile
+        ROS_PKG: ros_base # inactive, see comment in dockerfile
   dependencies_core:
     image: norlabsnow/norlab-ros-dependencies:humble-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     build:

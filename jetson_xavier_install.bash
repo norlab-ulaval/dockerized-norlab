@@ -1,4 +1,13 @@
 #!/bin/bash -i
+
+# (CRITICAL) ToDo: test execution
+
+# (Priority) ToDo: Make the script multi-aarch and multi-os by caling specialize version
+# see:
+# - `libpointmatcher-build-system build_system/lpm_server_config.bash`
+# - https://github.com/vaul-ulaval/f1tenth_controller/blob/272573b99855779428fccd122b5f84fc172e0767/setup_dockerized_norlab_for_this_repo.bash
+# - https://github.com/norlab-ulaval/dockerized-norlab/blob/8975e05e69ddc57cb858a3413ea7c98920f5422b/jetson_xavier_install.bash
+
 # ////Jetson Xavier install script//////////////////////////////////////////////////////////////////////////////////
 
 # Ref:
@@ -34,6 +43,9 @@ JETSON_USER='snow'
 if [[ $(uname -s) == "Darwin" ]]; then
   echo -e "${DS_MSG_ERROR} CUDA is not supported yet on Apple M1 computer"
 else
+
+  sudo apt-get install nvidia-cuda-toolkit
+
   if ! command -v nvcc -V &> /dev/null; then
     # nvcc command not working
     echo -e "${DS_MSG_WARNING} Fixing CUDA path for nvcc"
@@ -76,6 +88,9 @@ sudo apt-get update &&
   sudo rm -rf /var/lib/apt/lists/*
 
 # ....Install Jetson utilities......................................................................................
+
+# ToDo: This step is specialized to Jetson, add an if/then/else clause
+
 sudo pip3 install --upgrade jetson-stats
 # Doc: https://rnext.it/jetson_stats/index.html
 # Repo: https://github.com/rbonghi/jetson_stats
@@ -94,7 +109,10 @@ echo ""
 sudo nvidia-docker version
 echo ""
 # . . Manage Docker as a non-root user. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#sudo groupadd docker
+# Config so that we dont have to preface docker command with sudo everytime
+# Ref: https://docs.docker.com/engine/install/linux-postinstall/
+
+sudo groupadd docker
 sudo usermod -a -G docker "${JETSON_USER}"
 
 # . . Configure Docker to start on boot with systemd. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -116,13 +134,15 @@ echo \
 # . . Finally install docker-compose. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 sudo apt-get update &&
   sudo apt-get upgrade &&
-  sudo apt-get install --assume-yes docker-compose-plugin
+  sudo apt-get install --assume-yes \
+   docker-compose-plugin
 
 echo ""
 docker compose version
 echo ""
 
 # ....Register your ssh credential..................................................................................
+## (Priority) ToDo: implement › check if the file existe first <- unmute when implemented
 mkdir -p "/home/${JETSON_USER}/.ssh"
 sudo chown -R ${JETSON_USER}:${JETSON_USER} "/home/${JETSON_USER}/.ssh"
 # Execute in workstation
@@ -139,8 +159,14 @@ echo "      $ sudo visudo"
 echo "   This will open a config file in vim. Change the line 'Defaults env_reset' for"
 echo "      >>> Defaults        env_reset, timestamp_timeout=300"
 echo "   Note: 300=5 hour"
-echo ""
-echo "3. Revimboot the Jetson when done "
+echo
+echo "   Save the file by pressing 'Ctrl+O' and press 'enter', and exit using 'Ctrl+X'"
+echo
+echo "   Ref.:"
+echo "    - https://www.shell-tips.com/linux/sudo-no-tty-present-and-no-askpass-program-specified/"
+echo "    - https://teamcity-support.jetbrains.com/hc/en-us/community/posts/115000568844--sudo-build-step-hangs-the-build"
+echo
+echo "3. Reboot the Jetson when done "
 echo "      $ sudo shutdown --reboot now"
 echo "........................................................................................"
 echo ""

@@ -18,8 +18,16 @@
 # Jetpack 4.6 › tag: r32.6.1
 # Jetpack 5.1 › tag: r35.2.1
 
-#ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r32.6.1
-ARG BASE_IMAGE=dustynv/ros:humble-pytorch-l4t-r35.2.1
+# 💎 Note:
+#   ``` bash
+#   if [ $ARCH = "x86_64" ]; then
+#     BASE_IMAGE="nvcr.io/nvidia/pytorch:22.04-py3"
+#   fi
+#   ```
+# 💎 Note on PyTorch install for Jetson: https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html
+
+#ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r35.2.1
+#ARG BASE_IMAGE=dustynv/ros:humble-pytorch-l4t-r35.2.1
 FROM ${BASE_IMAGE} AS ros-base-image
 LABEL org.opencontainers.image.authors="luc.coupal.1@ulaval.ca"
 
@@ -28,9 +36,32 @@ ARG DN_IMAGE_ARCHITECTURE=NotSet
 ENV DN_IMAGE_ARCHITECTURE=${DN_IMAGE_ARCHITECTURE}
 
 # ROS pkg: ros_core, ros_base, desktop_full
-# Note: base_image `dustynv/ros:humble-pytorch-l4t-r35.2.1` is ros_base as per https://hub.docker.com/layers/dustynv/ros/humble-pytorch-l4t-r35.2.1/images/sha256-85b6e35baf947074b19efbdd628e3d0d5e32d2563557b493721d9de535463316?context=explore
-ARG DN_ROS_PKG=ros_base
-ENV DN_ROS_PKG=${DN_ROS_PKG}
+ARG ROS_PKG=ros_base
+ENV ROS_PKG=${ROS_PKG}
+
+#ARG ROS_DISTRO=humble
+ARG ROS_DISTRO=foxy
+
+ENV ROS_DISTRO=${ROS_VERSION}
+ENV ROS_ROOT=/opt/ros/${ROS_DISTRO}
+ENV ROS_PYTHON_VERSION=3
+
+ENV SHELL /bin/bash
+SHELL ["/bin/bash", "-c"]
+
+#WORKDIR /tmp
+
+# ››› from dusty ›››..................................................................................................
+# change the locale from POSIX to UTF-8
+RUN locale-gen en_US en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV PYTHONIOENCODING=utf-8
+# ..................................................................................................‹‹‹ from dusty ‹‹‹
+
+# (CRITICAL) ToDo: implement >> add the foolowing build steps somewhere in the dockerfile
+#   - set the working dir for building ros2
+#   - copy the scipt `build_ros2_no_opencv.bash`
+#   - execute
 
 ## Declared in D-NL › Deploy
 ## NorLab robot: warthog, warthog-xavier, xavier-nx-redleader, marmote ...

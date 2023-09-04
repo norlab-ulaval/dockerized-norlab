@@ -53,6 +53,7 @@ fi
 CONTAINER_NAMES=""
 USER_ARG=""
 
+# (CRITICAL) ToDo: validate (ref task NMO-257 ♻︎ → dn_attach.bash command line flag logic)
 for arg in "$@"; do
   case $arg in
   -h | --help)
@@ -89,6 +90,8 @@ done
 #if [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep IamNOTsnow` ]]; then echo "if TRUE"; else echo "else FALSE"; fi
 
 # ››› Display and xhost ››› . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+# (CRITICAL) ToDo: Check the Dusty-nv implementation for X11 forwarding (ref task NMO-183 Fix GUI display issue)
+
 export DISPLAY=:0
 #echo "export DISPLAY=:0" >> ~/.bashrc
 
@@ -102,7 +105,8 @@ export DISPLAY=:0
 #     - si:         Server Interpreted : si:<type>:<value>
 
 xhost +si:localuser:root
-#sudo xhost + # (Priority) todo:fixme!! (ref task NLSAR-189)
+#sudo xhost + # (Priority) todo:fixme!!
+#   (ref task NMO-87 🩹→ Find a secure and permanent solution for the xhost "display not available" problem)
 #  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .‹‹‹ Display and xhost ‹‹‹
 
 # Fetch all container name, strip those unrelated one and test for exact name

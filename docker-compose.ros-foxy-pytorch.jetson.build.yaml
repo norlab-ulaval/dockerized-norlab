@@ -7,10 +7,12 @@ services:
       dockerfile: ./Dockerfile
       args:
         # (!) L4T container tags (e.g. r35.2.1) should match the L4T version on the Jetson otherwize cuda driver won't be accessible (ref https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
-        BASE_IMAGE: dustynv/ros:foxy-pytorch-l4t-r35.2.1
+#        BASE_IMAGE: dustynv/ros:foxy-pytorch-l4t-r35.2.1
+        BASE_IMAGE: dustynv/ros:foxy-ros-base-l4t-r35.2.1   # Base
+#        BASE_IMAGE: dustynv/ros:foxy-desktop-l4t-r35.2.1   # Desktop
 #        docker pull dustynv/ros:foxy-pytorch-l4t-r35.2.1
         DN_IMAGE_ARCHITECTURE: ${DN_IMAGE_ARCHITECTURE} # arm64-l4t, arm64-darwin, x86
-        DN_ROS_PKG: ros_base # inactive, see comment in dockerfile
+        ROS_PKG: ros_base # inactive, see comment in dockerfile
   dependencies_core:
     image: ${DN_HUB}/norlab-ros-dependencies:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     build:

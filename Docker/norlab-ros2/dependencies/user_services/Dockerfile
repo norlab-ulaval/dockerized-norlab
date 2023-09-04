@@ -62,6 +62,8 @@ RUN useradd -m ${NEW_USER} \
 # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
 RUN usermod -a -G video,sudo ${NEW_USER}
 
+# (CRITICAL) ToDo: implement >> `usermode --shell <the shell> ${NEW_USER}` for pycharm remote run
+
 # ...root config........................................................................................................
 # user:newpassword
 RUN echo "root:${PASSWORD}" | chpasswd
@@ -119,10 +121,11 @@ RUN apt-get update \
 #    $(pip3 show powerline-status | grep Location: | sed 's/Location: //g')/powerline
 
 ## (Priority) ToDo: Change hardcoded version to dynamic version
+# (Priority) ToDo: validate >> was pushed at an earlier step
 ## see https://github.com/moby/moby/issues/29110
 #ARG TMP_PV=$(python --version)
 #ENV DS_PYTHON3_VERSION="python${TMP_PV:-7:-3}"
-ENV DS_PYTHON3_VERSION="python3.8"
+#ENV DS_PYTHON3_VERSION="python3.8"
 
 # Note: regarding the `${TMP_PV:-7:-3}` docker notation instead of the unix notation ${TMP_PV:7:3}, see post
 #       - How to use combination of ARG and ENV in Dockerfile to prevent unsupported modifier in substitution?: https://stackoverflow.com/questions/68935923/how-to-use-combination-of-arg-and-env-in-dockerfile-to-prevent-unsupported-modif

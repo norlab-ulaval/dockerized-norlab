@@ -1,13 +1,15 @@
 #!/bin/bash
 
 # ››› Display and xhost ››› . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+# (CRITICAL) ToDo: Check the Dusty-nv implementation for X11 forwarding (ref task NMO-183 Fix GUI display issue)
+
 export DISPLAY=:0
-#sudo xhost + # (Priority) todo:fixme!! (ref task NLSAR-189)
+#sudo xhost + # (Priority) todo:fixme!!
+#   (ref task NMO-87 🩹→ Find a secure and permanent solution for the xhost "display not available" problem)
 xhost +si:localuser:root
 #  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .‹‹‹ Display and xhost ‹‹‹
 
 source ./dn_which_architecture.bash
-
 
 docker compose -f docker-compose.ros-project-template.jetson.run.yaml up --detach --wait
 

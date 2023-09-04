@@ -9,10 +9,10 @@ FROM ${DN_HUB}/norlab-ros-dependencies-user-services:${DN_BASE_IMG_TAG} AS dn-pr
 
 # eg: f1tenth_controller, NorLab_MPPI
 ARG DN_TARGET_PROJECT_SRC_REPO
-ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO?err}
+ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO:?'Build argument needs to be set and non-empty.'}
 # eg: norlab-ulaval, vaul-ulaval
 ARG DN_TARGET_PROJECT_SRC_DOMAIN
-ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN?err}
+ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN:?'Build argument needs to be set and non-empty.'}
 
 # ====Project custom steps==========================================================================================
 

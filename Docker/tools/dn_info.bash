@@ -16,7 +16,7 @@ ${SP}DN target project repo:      ${DN_TARGET_PROJECT_SRC_REPO}
 ${SP}DN activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
 ${SP}
 ${SP}ROS distro:                  ${ROS_DISTRO}
-${SP}ROS package:                 ${DN_ROS_PKG}
+${SP}ROS package:                 ${ROS_PKG}
 ${SP}ROS python version:          ${ROS_PYTHON_VERSION}
 ${SP}ROS domain id:               ${ROS_DOMAIN_ID}
 ${SP}ROS master uri:              ${ROS_MASTER_URI}
@@ -62,3 +62,9 @@ ${SP}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-contai
 \033[0m
 "
 
+# ToDo: Validate output
+echo -e "If you're running a python interpreter in remote development, dont forget to add the python path pointing to the ROS package:
+\033[1;37m
+${SP} PYTHONPATH=${PYTHONPATH}
+\033[0m
+"
