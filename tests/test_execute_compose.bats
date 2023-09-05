@@ -1,0 +1,112 @@
+#!/usr/bin/env bats
+#
+# Usage in docker container
+#   $ REPO_ROOT=$(pwd) && RUN_TESTS_IN_DIR='tests'
+#   $ docker run -it --rm -v "$REPO_ROOT:/code" bats/bats:latest "$RUN_TESTS_IN_DIR"
+#
+#   Note: "/code" is the working directory in the bats official image
+#
+# bats-core ref:
+#   - https://bats-core.readthedocs.io/en/stable/tutorial.html
+#   - https://bats-core.readthedocs.io/en/stable/writing-tests.html
+#   - https://opensource.com/article/19/2/testing-bash-bats
+#       ↳ https://github.com/dmlond/how_to_bats/blob/master/test/build.bats
+#
+# Helper library: 
+#   - https://github.com/bats-core/bats-assert
+#   - https://github.com/bats-core/bats-support
+#   - https://github.com/bats-core/bats-file
+#
+
+BATS_HELPER_PATH=/usr/lib/bats
+if [[ -d ${BATS_HELPER_PATH} ]]; then
+  load "${BATS_HELPER_PATH}/bats-support/load"
+  load "${BATS_HELPER_PATH}/bats-assert/load"
+  load "${BATS_HELPER_PATH}/bats-file/load"
+  load "bats_testing_tools/bats_helper_functions"
+  #load "${BATS_HELPER_PATH}/bats-detik/load" # << Kubernetes support
+else
+  echo -e "\n[\033[1;31mERROR\033[0m] $0 path to bats-core helper library unreachable at \"${BATS_HELPER_PATH}\"!"
+  echo '(press any key to exit)'
+  read -r -n 1
+  exit 1
+fi
+
+# ====Setup========================================================================================================
+TESTED_FILE="dn_execute_compose.bash"
+TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
+
+setup_file() {
+  BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
+#  pwd >&3 && tree -L 2 -a -hug utilities/ >&3
+#  printenv >&3
+}
+
+#setup() {
+#  cd "$TESTED_FILE_PATH" || exit
+#}
+
+# ====Teardown=====================================================================================================
+
+#teardown() {
+#  bats_print_run_env_variable_on_error
+#}
+
+#teardown_file() {
+#    echo "executed once after finishing the last test"
+#}
+
+# ====Test casses==================================================================================================
+
+@test "sourcing $TESTED_FILE from bad cwd › expect fail" {
+  cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
+  # Note:
+  #  - "echo 'Y'" is for sending an keyboard input to the 'read' command which expect a single character
+  #    run bash -c "echo 'Y' | bash ./function_library/$TESTED_FILE"
+  #  - Alt: Use the 'yes [n]' command which optionaly send n time
+  run bash -c "yes 1 | bash ./build_script/$TESTED_FILE"
+#  bats_print_run_env_variable
+  assert_failure 1
+  assert_output --partial "'$TESTED_FILE' script must be sourced from"
+}
+
+@test "sourcing $TESTED_FILE from ok cwd › expect pass" {
+  cd "${BATS_DOCKER_WORKDIR}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE"
+  assert_success
+  refute_output  --partial "No such file or directory"
+#  bats_print_run_env_variable
+}
+
+@test "pass any docker command" {
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE -- version"
+  assert_success
+  assert_output --regexp .*"docker compose -f ".*"version"
+#  bats_print_run_env_variable
+}
+
+@test "flags that set env variable" {
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE --dockerized-norlab-version v1 \
+                                            --base-image dustynv/pytorch \
+                                            --tag-package 2.1 \
+                                            --tag-version r35.0.0 \
+                                            --docker-debug-logs \
+                                            --fail-fast
+
+  assert_not_empty "$IS_TEAMCITY_RUN"
+  assert_equal "${DOCKERIZED_NORLAB_VERSION}" 'v1'
+  assert_equal "${BASE_IMAGE}" 'dustynv/pytorch'
+  assert_equal "${TAG_PACKAGE}" '2.1'
+  assert_equal "${TAG_VERSION}" 'r35.0.0'
+  assert_equal "${BUILDKIT_PROGRESS}" plain
+  assert_equal "${DEPENDENCIES_BASE_IMAGE_TAG}" '2.1-r35.0.0'
+  assert_equal "${DN_IMAGE_TAG}" 'DNv1-JC-2.1-r35.0.0'
+}
+
+@test "flag --help" {
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE --help
+  assert_success
+  assert_output --regexp .*"${TESTED_FILE} \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
+}
+
+

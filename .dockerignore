@@ -11,3 +11,6 @@
 *.drawio
 drawio/*
 visual/*
+
+# Excluded directory
+/scratches/

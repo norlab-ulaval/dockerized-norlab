@@ -1,0 +1,134 @@
+services:
+
+  # =================================================================================================================
+  main:
+    build:
+      platforms:
+        - "linux/arm64/v8"
+      args:
+        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
+    tty: true
+    stdin_open: true
+    init: true  # Propagate exit code (See remark in task NMO-266)
+
+  # ====Dockerized-NorLab base images=================================================================================
+  dn-ros:
+    extends: main
+    image: ${DN_HUB:?err}/ros:${DN_IMAGE_TAG:?err}
+    build:
+      context: ./dockerized-norlab-images/core-images/ROS
+      dockerfile: ./Dockerfile
+      args:
+        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
+        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+
+  # ====Dockerized-NorLab dependencies================================================================================
+  dependencies-core:
+    extends: main
+    image: ${DN_HUB:?err}/dependencies-core:${DN_IMAGE_TAG:?err}
+    build:
+      context: ./dockerized-norlab-images
+      dockerfile: dockerized-norlab-images/core-images/dependencies/Dockerfile
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dn-ros
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-ros
+
+  dependencies-interactive:
+    extends: main
+    image: ${DN_HUB:?err}/dependencies-interactive:${DN_IMAGE_TAG:?err}
+    build:
+      context: ./dockerized-norlab-images
+      dockerfile: ./core-images/dependencies/user_services/Dockerfile
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dependencies-core
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-core
+
+  # ====Dockerized-NorLab images======================================================================================
+  dn-control-drl:
+    extends: main
+    image: ${DN_HUB:?err}/dn-control-drl:${DN_IMAGE_TAG:?err}
+    build:
+      context: ./dockerized-norlab-images
+      dockerfile: ./core-images/control-drl/Dockerfile
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dependencies-interactive
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-interactive
+
+  dn-perception-3d:
+    extends: main
+    image: ${DN_HUB:?err}/dn-perception-3d:${DN_IMAGE_TAG:?err}
+    build:
+      context: ./dockerized-norlab-images
+      dockerfile: ./core-images/perception-3d/Dockerfile
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dependencies-interactive
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-interactive
+
+
+  # ====Project level================================================================================================
+  dn-project-template:
+    extends: main
+    image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+    build:
+      context: ./dockerized-norlab-images/core-images/dn-project-template
+      dockerfile: ./Dockerfile
+      args:
+        DN_HUB: ${DN_HUB:?err}   # norlabsnow
+        BASE_IMAGE: ${DN_HUB:?err}/dn-control-drl
+        DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
+        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}   # norlab-ulaval
+        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}   # NorLab_MPPI
+    depends_on:
+      - dependencies-interactive
+
+  develop:
+    extends: main
+    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+    build:
+      context: ./dockerized-norlab-images/core-images/develop
+      dockerfile: ./Dockerfile
+      args:
+        DN_PROJECT_HUB: ${DN_PROJECT_HUB}   # norlabsnow
+        DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-dn-project-template
+        DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
+#        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}
+#        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}
+#        DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
+    depends_on:
+      - dn-project-template
+
+  deploy:
+    extends: main
+    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+    build:
+      context: ./dockerized-norlab-images/core-images/deploy
+      dockerfile: ./Dockerfile
+      args:
+         DN_PROJECT_HUB: ${DN_PROJECT_HUB}   # norlabsnow
+         DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-dn-project-template
+         DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
+#         DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
+         DN_DEPLOY_REPO_BRANCH: main  # Option: main, dev or tag version (ie v*.*.*)
+    depends_on:
+      - dn-project-template
+
+#  deploy-bleeding-edge:
+#    extends: deploy
+#    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:bleeding-edge-${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+#    build:
+#      args:
+#        DN_DEPLOY_REPO_BRANCH: dev
+
+
+
+
+
+
