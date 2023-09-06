@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Execute build matrix on docker compose docker-compose.libpointmatcher.yaml
+# Execute build matrix on docker compose docker-compose.dockerized-norlab.build.yaml
 #
 # Usage:
 #   $ bash dn_execute_compose_over_build_matrix.bash [<optional flag>] [-- <any docker cmd+arg>]
@@ -21,6 +21,8 @@
 # ....Default......................................................................................................
 DOCKER_COMPOSE_CMD_ARGS='up --build --force-recreate'
 BUILD_STATUS_PASS=0
+BUILD_MATRIX='.env.build_matrix'
+DN_EXECUTE_COMPOSE_FLAGS=''
 
 
 # ....Pre-condition................................................................................................
@@ -34,7 +36,7 @@ fi
 # ....Load environment variables from file.........................................................................
 set -o allexport
 source .env.dockerized-norlab
-source .env.build_matrix
+source "$BUILD_MATRIX"
 set +o allexport
 
 set -o allexport
@@ -61,21 +63,25 @@ function print_help_in_terminal() {
   \033[1m
     <optional argument>:\033[0m
       -h, --help          Get help
-      --dockerized-norlab-version-build-matrix-override head
-                          The libpointmatcher release tag. Override must be a single value
+      --build-matrix-file-override '.env.build_matrix'
+                          The build matrix .env file. Must be at repository root.
+      --dockerized-norlab-version-build-matrix-override latest
+                          The Dockerized-NorLab release tag. Override must be a single value
                           (default to array sequence specified in .env.build_matrix)
-      --os-name-build-matrix-override ubuntu
+      --os-name-build-matrix-override l4t
                           The operating system name. Override must be a single value
                           (default to array sequence specified in .env.build_matrix)
-      --ubuntu-version-build-matrix-override jammy
-      --osx-version-build-matrix-override ventura
+      --l4t-version-build-matrix-override r35.2.1
                           Named operating system version. Override must be a single value
                           (default to array sequence specified in .env.build_matrix)
+                          Note: L4T container tags (e.g. r35.2.1) should match the L4T version
+                          on the Jetson otherwize cuda driver won't be accessible
+                          (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
+      --ubuntu-version-build-matrix-override jammy
       --docker-debug-logs
                           Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
       --fail-fast         Exit script at first encountered error
-      --ci-sitrep-run     Override LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE and
-                            LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS with there respective _SITREP version
+      --ci-test-force-runing-docker-cmd
 
   \033[1m
     [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
@@ -86,34 +92,43 @@ function print_help_in_terminal() {
 # ====Begin========================================================================================================
 norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
-print_formated_script_header 'dn_execute_compose_over_build_matrix.bash' "${LPM_LINE_CHAR_BUILDER_LVL1}"
+print_formated_script_header 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
 # ....Script command line flags....................................................................................
 while [ $# -gt 0 ]; do
 
   case $1 in
+  --build-matrix-file-override)
+    unset BUILD_MATRIX
+    BUILD_MATRIX="$2"
+    set -o allexport
+    source "$BUILD_MATRIX"
+    set +o allexport
+    shift # Remove argument (--build-matrix-file-override)
+    shift # Remove argument value
+    ;;
   --dockerized-norlab-version-build-matrix-override)
-    unset LPM_MATRIX_LIBPOINTMATCHER_VERSIONS
-    LPM_MATRIX_LIBPOINTMATCHER_VERSIONS=("$2")
+    unset DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS
+    DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=("$2")
     shift # Remove argument (--dockerized-norlab-version-build-matrix-override)
     shift # Remove argument value
     ;;
   --os-name-build-matrix-override)
-    unset LPM_MATRIX_SUPPORTED_OS
-    LPM_MATRIX_SUPPORTED_OS=("$2")
+    unset DN_MATRIX_SUPPORTED_OS
+    DN_MATRIX_SUPPORTED_OS=("$2")
     shift # Remove argument (--os-name-build-matrix-override)
     shift # Remove argument value
     ;;
-  --ubuntu-version-build-matrix-override)
-    unset LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS
-    LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("$2")
-    shift # Remove argument (--ubuntu-version-build-matrix-override)
+  --l4t-version-build-matrix-override)
+    unset DN_MATRIX_L4T_SUPPORTED_VERSIONS
+    DN_MATRIX_L4T_SUPPORTED_VERSIONS=("$2")
+    shift # Remove argument (--l4t-version-build-matrix-override)
     shift # Remove argument value
     ;;
-  --osx-version-build-matrix-override)
-    unset LPM_MATRIX_OSX_SUPPORTED_VERSIONS
-    LPM_MATRIX_OSX_SUPPORTED_VERSIONS=("$2")
-    shift # Remove argument (--osx-version-build-matrix-override)
+  --ubuntu-version-build-matrix-override)
+    unset DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS
+    DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("$2")
+    shift # Remove argument (--ubuntu-version-build-matrix-override)
     shift # Remove argument value
     ;;
   --docker-debug-logs)
@@ -126,15 +141,9 @@ while [ $# -gt 0 ]; do
     set -e
     shift # Remove argument (--fail-fast)
     ;;
-  --ci-sitrep-run)
-    shift # Remove argument (--ci-sitrep-run)
-    unset LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE
-    unset LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS
-    LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE=("${LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE_SITREP[@]}")
-    LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("${LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS_SITREP[@]}")
-    print_msg "${MSG_DIMMED_FORMAT}ci-sitrep${MSG_END_FORMAT} run environment variable override:
-        - ${MSG_DIMMED_FORMAT}LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE=(${LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE_SITREP[*]})${MSG_END_FORMAT}
-        - ${MSG_DIMMED_FORMAT}LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS_SITREP[*]})${MSG_END_FORMAT}"
+  --ci-test-force-runing-docker-cmd)
+    export DN_EXECUTE_COMPOSE_FLAGS="${DN_EXECUTE_COMPOSE_FLAGS} --ci-test-force-runing-docker-cmd"
+    shift # Remove argument (--ci-test-force-runing-docker-cmd)
     ;;
   -h | --help)
     print_help_in_terminal
@@ -154,37 +163,42 @@ done
 
 
 # ..................................................................................................................
-print_msg "Build images specified in ${MSG_DIMMED_FORMAT}'docker-compose.libpointmatcher.yaml'${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
+print_msg "Build images specified in ${MSG_DIMMED_FORMAT}'docker-compose.dockerized-norlab.build.yaml'${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
 
 ## Freeze build matrix env variable to prevent override by dn_execute_compose.bash when reloading .env/build_matrix
-FREEZED_LPM_MATRIX_LIBPOINTMATCHER_VERSIONS=("${LPM_MATRIX_LIBPOINTMATCHER_VERSIONS[@]}")
-FREEZED_LPM_MATRIX_SUPPORTED_OS=("${LPM_MATRIX_SUPPORTED_OS[@]}")
-FREEZED_LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("${LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
-FREEZED_LPM_MATRIX_OSX_SUPPORTED_VERSIONS=("${LPM_MATRIX_OSX_SUPPORTED_VERSIONS[@]}")
-FREEZED_LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE=("${LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE[@]}")
+FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=("${DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}")
+FREEZED_DN_MATRIX_SUPPORTED_OS=("${DN_MATRIX_SUPPORTED_OS[@]}")
+FREEZED_DN_MATRIX_L4T_SUPPORTED_VERSIONS=("${DN_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
+FREEZED_DN_MATRIX_L4T_BASE_IMAGES_AND_PKG=("${DN_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
+FREEZED_DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("${DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
+FREEZED_DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=("${DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
 
 
 print_msg "Environment variables ${MSG_EMPH_FORMAT}(build matrix)${MSG_END_FORMAT} set for compose:\n
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_LIBPOINTMATCHER_VERSIONS=(${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE=(${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_SUPPORTED_OS=(${FREEZED_LPM_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${FREEZED_LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_OSX_SUPPORTED_VERSIONS=(${FREEZED_LPM_MATRIX_OSX_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=(${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_SUPPORTED_OS=(${FREEZED_DN_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_L4T_SUPPORTED_VERSIONS=(${FREEZED_DN_MATRIX_L4T_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${FREEZED_DN_MATRIX_L4T_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${FREEZED_DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${FREEZED_DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
 "
 
-# Note: EACH_LPM_VERSION is used for container labeling and to fetch the repo at release tag
-for EACH_LPM_VERSION in "${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_VERSIONS[@]}"; do
+# Note: EACH_DN_VERSION is used for container labeling and to fetch the repo at release tag
+for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
   if [[ ${TEAMCITY_VERSION} ]]; then
-    echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${EACH_LPM_VERSION}']"
+    echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${EACH_DN_VERSION}']"
   fi
 
-  for EACH_OS_NAME in "${FREEZED_LPM_MATRIX_SUPPORTED_OS[@]}"; do
+  for EACH_OS_NAME in "${FREEZED_DN_MATRIX_SUPPORTED_OS[@]}"; do
     unset CRAWL_OS_VERSIONS
+    unset CRAWL_BASE_IMAGES_AND_PKG
 
     if [[ ${EACH_OS_NAME} == 'ubuntu' ]]; then
-      CRAWL_OS_VERSIONS=("${FREEZED_LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
-    elif [[ ${EACH_OS_NAME} == 'osx' ]]; then
-      CRAWL_OS_VERSIONS=("${FREEZED_LPM_MATRIX_OSX_SUPPORTED_VERSIONS[@]}")
+      CRAWL_OS_VERSIONS=("${FREEZED_DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
+      CRAWL_BASE_IMAGES_AND_PKG=("${FREEZED_DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
+    elif [[ ${EACH_OS_NAME} == 'l4t' ]]; then
+      CRAWL_OS_VERSIONS=("${FREEZED_DN_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
+      CRAWL_BASE_IMAGES_AND_PKG=("${FREEZED_DN_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
     else
       print_msg_error_and_exit "${EACH_OS_NAME} not supported!"
     fi
@@ -193,32 +207,43 @@ for EACH_LPM_VERSION in "${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_VERSIONS[@]}"; do
         print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} supported version array because it's empty!"
     fi
 
+    if [[ -z ${CRAWL_BASE_IMAGES_AND_PKG} ]]; then
+        print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images and pkg array because it's empty!"
+    fi
+
     if [[ ${TEAMCITY_VERSION} ]]; then
       echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${EACH_OS_NAME}']"
     fi
 
     for EACH_OS_VERSION in "${CRAWL_OS_VERSIONS[@]}"; do
-#      export LPM_JOB_ID=${LPM_JOB_ID}
 
       if [[ ${TEAMCITY_VERSION} ]]; then
         echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${EACH_OS_VERSION}']"
       fi
 
-      for EACH_CMAKE_BUILD_TYPE in "${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE[@]}"; do
+      for EACH_BASE_IMAGES_AND_PKG in "${CRAWL_BASE_IMAGES_AND_PKG[@]}"; do
 
         # shellcheck disable=SC2034
         SHOW_SPLASH_EC='false'
 
+        # shellcheck disable=SC2001
+        EACH_BASE_IMAGE=$( echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/:.*//' )
+        # shellcheck disable=SC2001
+        EACH_TAG_PKG=$( echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://' )
+
         if [[ ${TEAMCITY_VERSION} ]]; then
-          echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute lpm_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_LPM_VERSION} --libpointmatcher-cmake-build-type ${EACH_CMAKE_BUILD_TYPE} --os-name ${EACH_OS_NAME} --os-version ${EACH_OS_VERSION} -- ${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT_TEAMCITY}|n']"
+          echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} -- ${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT_TEAMCITY}|n']"
           echo " "
         fi
 
-        source dn_execute_compose.bash --dockerized-norlab-version "${EACH_LPM_VERSION}" \
-                                          --libpointmatcher-cmake-build-type "${EACH_CMAKE_BUILD_TYPE}" \
-                                          --os-name "${EACH_OS_NAME}" \
-                                          --os-version "${EACH_OS_VERSION}" \
-                                          -- "${DOCKER_COMPOSE_CMD_ARGS}"
+        # shellcheck disable=SC2086
+        source dockerized-norlab-scripts/build_script/dn_execute_compose.bash \
+                                        --dockerized-norlab-version "${EACH_DN_VERSION}" \
+                                        --base-image "${EACH_BASE_IMAGE}" \
+                                        --tag-package "${EACH_TAG_PKG}" \
+                                        --tag-version "${EACH_OS_VERSION}" \
+                                        $DN_EXECUTE_COMPOSE_FLAGS \
+                                        -- "${DOCKER_COMPOSE_CMD_ARGS}"
 
         # ....Collect image tags exported by dn_execute_compose.bash..............................................
         # Global: Read 'DOCKER_EXIT_CODE' env variable exported by function show_and_execute_docker
@@ -238,17 +263,12 @@ for EACH_LPM_VERSION in "${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_VERSIONS[@]}"; do
 
         # Collect image tags exported by dn_execute_compose.bash
         # Global: Read 'DN_IMAGE_TAG' env variable exported by dn_execute_compose.bash
-        if [[ ${EACH_CMAKE_BUILD_TYPE} == 'None' ]] || [[ -z ${EACH_CMAKE_BUILD_TYPE} ]]; then
-          IMAGE_TAG_CRAWLED=("${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG}")
-          IMAGE_TAG_CRAWLED_TC=("${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}")
-        else
-          IMAGE_TAG_CRAWLED=("${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG} Compile mode: ${EACH_CMAKE_BUILD_TYPE}")
-          IMAGE_TAG_CRAWLED_TC=("${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG} Compile mode: ${EACH_CMAKE_BUILD_TYPE}")
-        fi
+        IMAGE_TAG_CRAWLED=("${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG}")
+        IMAGE_TAG_CRAWLED_TC=("${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}")
         # .........................................................................................................
 
         if [[ ${TEAMCITY_VERSION} ]]; then
-          echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} execute lpm_execute_compose.bash']"
+          echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash']"
         fi
 
       done
@@ -265,22 +285,23 @@ for EACH_LPM_VERSION in "${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_VERSIONS[@]}"; do
 
   done
   if [[ ${TEAMCITY_VERSION} ]]; then
-    echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} ${EACH_LPM_VERSION}']"
+    echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} ${EACH_DN_VERSION}']"
   fi
 done
 
 echo " "
 print_msg "Environment variables ${MSG_EMPH_FORMAT}(build matrix)${MSG_END_FORMAT} used by compose:\n
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_LIBPOINTMATCHER_VERSIONS=(${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE=(${FREEZED_LPM_MATRIX_LIBPOINTMATCHER_CMAKE_BUILD_TYPE[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_SUPPORTED_OS=(${FREEZED_LPM_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${FREEZED_LPM_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    LPM_MATRIX_OSX_SUPPORTED_VERSIONS=(${FREEZED_LPM_MATRIX_OSX_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=(${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_SUPPORTED_OS=(${FREEZED_DN_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_L4T_SUPPORTED_VERSIONS=(${FREEZED_DN_MATRIX_L4T_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${FREEZED_DN_MATRIX_L4T_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${FREEZED_DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${FREEZED_DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
 "
 
 print_msg_done "FINAL › Build matrix completed with command
 
-${MSG_DIMMED_FORMAT}    $ docker compose -f docker-compose.libpointmatcher.yaml ${DOCKER_COMPOSE_CMD_ARGS} ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    $ docker compose -f docker-compose.dockerized-norlab.build.yaml ${DOCKER_COMPOSE_CMD_ARGS} ${MSG_END_FORMAT}
 
 Status of tag crawled:
 "
@@ -288,7 +309,7 @@ for tag in "${IMAGE_TAG_CRAWLED[@]}" ; do
     echo -e "   ${tag}${MSG_END_FORMAT}"
 done
 
-print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${LPM_LINE_CHAR_BUILDER_LVL1}"
+print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
 # ====TeamCity service message=====================================================================================
 if [[ ${TEAMCITY_VERSION} ]]; then
@@ -299,4 +320,5 @@ if [[ ${TEAMCITY_VERSION} ]]; then
 fi
 # ====Teardown=====================================================================================================
 cd "${TMP_CWD}"
+# shellcheck disable=SC2086
 exit $BUILD_STATUS_PASS

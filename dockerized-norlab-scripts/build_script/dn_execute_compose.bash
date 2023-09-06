@@ -15,12 +15,13 @@
 #
 
 # ....Default......................................................................................................
-DOCKERIZED_NORLAB_VERSION='head'
+DOCKERIZED_NORLAB_VERSION='latest'
 BASE_IMAGE='dustynv/ros'
 TAG_PACKAGE='foxy-pytorch-l4t'
 TAG_VERSION='r35.2.1'
 #LPM_JOB_ID='0'
 DOCKER_COMPOSE_CMD_ARGS='up --build --force-recreate'  # alt: build --no-cache --push
+CI_TEST=false
 
 # ....Pre-condition................................................................................................
 if [[ ! -f  ".env.dockerized-norlab" ]]; then
@@ -59,16 +60,18 @@ function print_help_in_terminal() {
   \033[1m
     <optional argument>:\033[0m
       -h, --help                              Get help
-      --dockerized-norlab-version v1.3.1      The dockerized-norlab release tag (default to main branch head)
+      --dockerized-norlab-version v1.3.1      The dockerized-norlab release tag (default to main branch latest)
       --base-image                            The base image name (default to 'dustynv/ros')
       --tag-package                           The package name portion of the tag (default to 'foxy-pytorch-l4t')
-      --tag-version r35.2.1                    Operating system version, see .env.build_matrix for supported version
+      --tag-version r35.2.1                   Operating system version, see .env.build_matrix for supported version
                                                 (default to 'r35.2.1')
                                               Note: L4T container tags (e.g. r35.2.1) should match the L4T version
                                               on the Jetson otherwize cuda driver won't be accessible
                                               (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
       --docker-debug-logs                     Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
       --fail-fast                             Exit script at first encountered error
+      --ci-test-force-runing-docker-cmd
+
   \033[1m
     [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
                                               command and arguments (default to '${DOCKER_COMPOSE_CMD_ARGS}').
@@ -94,7 +97,7 @@ if [[ "${SHOW_SPLASH_EC}" == 'true' ]]; then
   norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 fi
 
-print_formated_script_header 'dn_execute_compose.bash' "${LPM_LINE_CHAR_BUILDER_LVL2}"
+print_formated_script_header 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
 # ....Script command line flags....................................................................................
 while [ $# -gt 0 ]; do
@@ -128,6 +131,10 @@ while [ $# -gt 0 ]; do
     ;;
   --fail-fast)
     set -e
+    shift # Remove argument (--fail-fast)
+    ;;
+  --ci-test-force-runing-docker-cmd)
+    CI_TEST=true
     shift # Remove argument (--fail-fast)
     ;;
   -h | --help)
@@ -169,7 +176,7 @@ print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
 
 
-show_and_execute_docker "compose -f dockerized-norlab-images/compose-matrix/docker-compose.dockerized-norlab.build.yaml ${DOCKER_COMPOSE_CMD_ARGS}"
+show_and_execute_docker "compose -f dockerized-norlab-images/compose-matrix/docker-compose.dockerized-norlab.build.yaml ${DOCKER_COMPOSE_CMD_ARGS}" "$CI_TEST"
 
 
 print_msg "Environment variables used by compose:\n
@@ -177,6 +184,6 @@ ${MSG_DIMMED_FORMAT}    DOCKERIZED_NORLAB_VERSION=${DOCKERIZED_NORLAB_VERSION} $
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}"
 
-print_formated_script_footer 'dn_execute_compose.bash' "${LPM_LINE_CHAR_BUILDER_LVL2}"
+print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 # ====Teardown=====================================================================================================
 cd "${TMP_CWD}"

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Stop IamSNOW-NX-TEST " type="ShConfigurationType">
+  <configuration default="false" name="Stop IamSNOW-NX-TEST " type="ShConfigurationType" folderName="Local">
     <option name="SCRIPT_TEXT" value="docker stop IamSNOW-NX-TEST " />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />

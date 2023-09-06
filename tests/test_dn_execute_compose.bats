@@ -78,11 +78,30 @@ setup_file() {
 #  bats_print_run_env_variable
 }
 
-@test "pass any docker command" {
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE -- version"
+@test "docker command are passed to show_and_execute_docker" {
+  local DOCKER_CMD="build --no-cache --push"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE -- ${DOCKER_CMD}"
   assert_success
-  assert_output --regexp .*"docker compose -f ".*"version"
+  assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}"
 #  bats_print_run_env_variable
+}
+
+@test "docker exit code propagation on pass › expect pass" {
+  local DOCKER_CMD="version"
+  mock_docker_command_exit_ok
+  set +e
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+  set -e
+  assert_equal "$DOCKER_EXIT_CODE" 0
+}
+
+@test "docker exit code propagation on faillure › expect pass" {
+  local DOCKER_CMD="version"
+  mock_docker_command_exit_error
+  set +e
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+  set -e
+  assert_equal "$DOCKER_EXIT_CODE" 1
 }
 
 @test "flags that set env variable" {
@@ -108,5 +127,6 @@ setup_file() {
   assert_success
   assert_output --regexp .*"${TESTED_FILE} \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
 }
+
 
 
