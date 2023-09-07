@@ -1,8 +1,8 @@
 {
         "name": "Default color scheme for dockerized-norlab shell prompts",
         "groups": {
-                "information:additional":     { "fg": "gray0", "bg": "gray7", "attrs": [] },
-                "information:regular":        { "fg": "gray0", "bg": "gray7", "attrs": ["bold"] },
+                "information:additional":     { "fg": "black", "bg": "gray7", "attrs": [] },
+                "information:regular":        { "fg": "black", "bg": "gray7", "attrs": ["bold"] },
                 "information:highlighted":    { "fg": "black", "bg": "white", "attrs": [] },
                 "information:priority":       { "fg": "brightyellow", "bg": "mediumorange", "attrs": [] },
                 "cwd":                        "information:additional",
