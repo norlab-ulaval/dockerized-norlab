@@ -55,17 +55,28 @@
       {
         "function": "powerline.segments.shell.cwd",
         "priority": 10,
-        "after": "",
-        "draw_hard_divider": true,
-        "draw_soft_divider": true,
+        "after": " ",
+        "draw_hard_divider": false,
+        "draw_soft_divider": false,
         "args": {
           "use_path_separator": true,
           "shorten_home": true
         }
-      }
-    ],
-    "right": [
+      },
+      {
+        "type": "string",
+        "before": "",
+        "after": "",
+        "width": 2,
+        "contents": "\ue0c8\ue0c1",
+        "draw_hard_divider": true,
+        "draw_soft_divider": true,
+        "highlight_groups": [
+                "ds_prompt_end"
+        ]
+       }
 
-    ]
+    ],
+    "right": []
   }
 }

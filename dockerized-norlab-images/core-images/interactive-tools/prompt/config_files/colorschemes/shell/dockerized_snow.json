@@ -1,14 +1,13 @@
 {
         "name": "Default color scheme for dockerized-norlab shell prompts",
         "groups": {
-                "information:additional":     { "fg": "gray6", "bg": "white", "attrs": [] },
-                "information:regular":        { "fg": "gray5", "bg": "white", "attrs": ["bold"] },
+                "information:additional":     { "fg": "gray0", "bg": "gray7", "attrs": [] },
+                "information:regular":        { "fg": "gray0", "bg": "gray7", "attrs": ["bold"] },
                 "information:highlighted":    { "fg": "black", "bg": "white", "attrs": [] },
                 "information:priority":       { "fg": "brightyellow", "bg": "mediumorange", "attrs": [] },
                 "cwd":                        "information:additional",
                 "cwd:current_folder":         "information:regular",
                 "cwd:divider":                { "fg": "gray3", "bg": "white", "attrs": [] },
-                "ds_prompt_end":              { "fg": "white", "bg": "gray9", "attrs": ["italic"] },
                 "background":                 { "fg": "white", "bg": "gray0", "attrs": [] },
                 "background:divider":         { "fg": "gray5", "bg": "gray0", "attrs": [] },
                 "branch":                     { "fg": "gray6", "bg": "white", "attrs": [] },
