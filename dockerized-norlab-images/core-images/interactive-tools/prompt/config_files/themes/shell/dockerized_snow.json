@@ -4,11 +4,11 @@
       {
         "type": "string",
         "before": "",
-        "after": "  ",
+        "after": "",
         "contents": "\uf2dc",
-        "width": 4,
-        "draw_hard_divider": false,
-        "draw_soft_divider": false,
+        "width": 1,
+        "draw_hard_divider": true,
+        "draw_soft_divider": true,
         "highlight_groups": [
           "ds_logo"
         ]
@@ -16,8 +16,8 @@
       {
         "function": "powerline.segments.common.env.environment",
         "priority": 20,
-        "after": "",
-        "before": "\uf308 ",
+        "before": "",
+        "after": " 🐳",
         "args": {
           "variable": "DN_CONTAINER_NAME"
         }
@@ -25,19 +25,12 @@
       {
         "function": "powerline.segments.common.net.hostname",
         "priority": 30,
-        "before": "\uf827 ",
-        "after": "",
+        "before": "",
+        "after": " ⚡",
+        "draw_hard_divider": false,
+        "draw_soft_divider": true,
         "args": {
           "only_if_ssh": false
-        }
-      },
-      {
-        "function": "powerline.segments.common.env.environment",
-        "after": "",
-        "before": "\ufb19 ",
-        "priority": 50,
-        "args": {
-          "variable": "DN_IMAGE_ARCHITECTURE"
         }
       },
       {
@@ -55,6 +48,7 @@
       {
         "function": "powerline.segments.shell.cwd",
         "priority": 10,
+        "before": "",
         "after": "",
         "draw_hard_divider": true,
         "draw_soft_divider": true,

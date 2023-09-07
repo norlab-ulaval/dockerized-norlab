@@ -92,20 +92,13 @@ RUN pip3 install --no-cache-dir --verbose psutil
 # Note: If Powerline prompt fonts are missing in PyCharm terminal, check that the `Console Scheme` / `Consol Font` /  `Use console font instead of default` is set to `Font:` `MesloLGS NF` (!)
 
 ## Ref: https://github.com/powerline/fonts
-RUN pip3 install --no-cache-dir --verbose powerline-status
+RUN pip3 install --no-cache-dir --verbose \
+     powerline-status
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends fonts-powerline \
     && rm -rf /var/lib/apt/lists/*
 
-#RUN /bin/bash -c "if [[ ${DN_ACTIVATE_POWERLINE_PROMT} == 'true' ]]; then \
-#        pip3 install --no-cache-dir --verbose powerline-status \
-#        && apt-get update \
-#            && apt-get install -y --no-install-recommends fonts-powerline \
-#            && rm -rf /var/lib/apt/lists/*; \
-#    else \
-#      echo 'Skip Powerline prompt configuration'; \
-#    fi"
-##      exit 1; \
 
 
 

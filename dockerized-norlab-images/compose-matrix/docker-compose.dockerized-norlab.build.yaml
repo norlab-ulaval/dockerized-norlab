@@ -1,4 +1,3 @@
-
 services:
 
   service-global:
@@ -35,15 +34,15 @@ services:
         BASE_IMAGE: ${DN_HUB:?err}/dn-ros
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dependencies-core:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dn-ros
+  #    depends_on:
+  #      - dn-ros
 
   dependencies-interactive:
     extends: service-global
     build:
       context: ../core-images/interactive-tools
-#      context: ../../
-#      dockerfile: ./dockerized-norlab-images/core-images/interactive-tools/Dockerfile
+      #      context: ../../
+      #      dockerfile: ./dockerized-norlab-images/core-images/interactive-tools/Dockerfile
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dependencies-core
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}

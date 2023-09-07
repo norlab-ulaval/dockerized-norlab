@@ -3,6 +3,18 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
+# ====Begin========================================================================================================
+# ....Setup timezone and localization..............................................................................
+# change the locale from POSIX to UTF-8
+RUN apt-get update && \
+    apt-get install --assume-yes --no-install-recommends \
+        locales && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN locale-gen en_US en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV PYTHONIOENCODING=utf-8
+
 
 # ....install development utilities................................................................................
 RUN apt-get update \
