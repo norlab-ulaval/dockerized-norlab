@@ -1,20 +1,18 @@
 #!/bin/bash
+#
+# Convenient script for building all images specified in 'docker-compose.dockerized-norlab.build.yaml'
+#
+# Usage:
+#   $ bash dn_build_all_images.bash [<optional flag>]
+#
+# Arguments:
+#   - [<optional flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
+#
 
-# ....Load helper function.........................................................................................
-source ./utilities/support_script/dn_which_architecture.bash
+if [[ $( basename $(pwd) ) = build_script ]]; then
+    cd ../..
+elif [[ $( basename $(pwd) ) = dockerized-norlab-scripts ]]; then
+    cd ..
+fi
 
-TMP_CWD=$(pwd)
-cd ./utilities/norlab-shell-script-tools/src/function_library
-source ./prompt_utilities.bash
-cd $TMP_CWD
-
-
-# ====Begin========================================================================================================
-# ....Build all images..............................................................................................
-#docker compose -f <theComposeFile> build --no-cache
-
-print_msg "Building 'docker-compose.ros-foxy-pytorch.jetson.build.yaml'"
-docker compose -f Docker/dn-compose/docker-compose.dockerized-norlab.build.yaml build
-print_msg_done "All build done"
-
-
+bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "$@" -- build

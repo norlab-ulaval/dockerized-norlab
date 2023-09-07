@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# ToDo: refactor using function 'set_which_architecture_and_os' from 'utilities/norlab-shell-script-tools/src/function_library/general_utilities.bash'
+
 set -e
 
 # Load environment variable from file

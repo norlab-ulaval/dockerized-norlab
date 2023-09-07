@@ -5,7 +5,7 @@
 # Usage:
 #   $ bash dn_execute_compose.bash [<optional flag>] [-- <any docker cmd+arg>]
 #
-#   $ bash dn_execute_compose.bash -- run --rm ci
+#   $ bash dn_execute_compose.bash -- build --push dependencies-core
 #
 # Arguments:
 #   see function print_help_in_terminal or execute the script with the --help flag
@@ -20,7 +20,7 @@ BASE_IMAGE='dustynv/ros'
 TAG_PACKAGE='foxy-pytorch-l4t'
 TAG_VERSION='r35.2.1'
 #LPM_JOB_ID='0'
-DOCKER_COMPOSE_CMD_ARGS='up --build --force-recreate'  # alt: build --no-cache --push
+DOCKER_COMPOSE_CMD_ARGS='build'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 CI_TEST=false
 
 # ....Pre-condition................................................................................................
@@ -174,7 +174,6 @@ print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 ## docker compose [-f <theComposeFile> ...] [options] [COMMAND] [ARGS...]
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
-
 
 show_and_execute_docker "compose -f dockerized-norlab-images/compose-matrix/docker-compose.dockerized-norlab.build.yaml ${DOCKER_COMPOSE_CMD_ARGS}" "$CI_TEST"
 

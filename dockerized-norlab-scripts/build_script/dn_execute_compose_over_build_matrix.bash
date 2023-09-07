@@ -5,7 +5,7 @@
 # Usage:
 #   $ bash dn_execute_compose_over_build_matrix.bash [<optional flag>] [-- <any docker cmd+arg>]
 #
-#   $ bash dn_execute_compose_over_build_matrix.bash -- up --build --force-recreate
+#   $ bash dn_execute_compose_over_build_matrix.bash -- build --no-cache --push dependencies-core
 #
 # Arguments:
 #   see function print_help_in_terminal or execute the script with the --help flag
@@ -19,7 +19,7 @@
 #set -x
 
 # ....Default......................................................................................................
-DOCKER_COMPOSE_CMD_ARGS='up --build --force-recreate'
+DOCKER_COMPOSE_CMD_ARGS='build' # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 BUILD_STATUS_PASS=0
 BUILD_MATRIX='.env.build_matrix'
 DN_EXECUTE_COMPOSE_FLAGS=''

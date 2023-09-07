@@ -95,7 +95,7 @@ setup_file() {
   local DOCKER_CMD="version"
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override .env.build_matrix.tests \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -108,7 +108,7 @@ setup_file() {
   local DOCKER_CMD="version"
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override .env.build_matrix.tests \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -129,7 +129,7 @@ setup_file() {
   mock_docker_command_exit_error
   fake_IS_TEAMCITY_RUN
   set +e
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override .env.build_matrix.tests \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -149,7 +149,7 @@ setup_file() {
   mock_docker_command_exit_error
   fake_IS_TEAMCITY_RUN
   set +e
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override .env.build_matrix.tests \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -161,7 +161,7 @@ setup_file() {
 @test "flags that set env variable" {
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override .env.build_matrix.tests \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                                                 --os-name-build-matrix-override 'l4t' \

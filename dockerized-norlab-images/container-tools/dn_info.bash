@@ -3,6 +3,14 @@
 PCK_VERSION=$(pip3 list --format freeze)
 SP="    "
 
+TMP_CWD=$(pwd)
+cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_scripts/
+source ./which_python_version.bash
+source ./which_architecture_and_os.bash
+DN_PYTHON3_VERSION=${PYTHON3_VERSION?err}
+DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err}
+cd "$TMP_CWD"
+
 echo
 
 echo -e "In-container informations:"
@@ -21,7 +29,7 @@ ${SP}ROS python version:          ${ROS_PYTHON_VERSION}
 ${SP}ROS domain id:               ${ROS_DOMAIN_ID}
 ${SP}ROS master uri:              ${ROS_MASTER_URI}
 ${SP}
-${SP}python3 version:             ${DS_PYTHON3_VERSION}
+${SP}python3 version:             ${DN_PYTHON3_VERSION}
 ${SP}numpy version:               $(echo "${PCK_VERSION}" | grep numpy | sed 's/numpy==//g')
 ${SP}pyTorch version:             $(echo "${PCK_VERSION}" | grep -w torch | sed 's/torch==//g')
 ${SP}torchvision version:         $(echo "${PCK_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')

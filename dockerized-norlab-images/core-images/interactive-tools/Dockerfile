@@ -1,20 +1,13 @@
-
-# /// core-images/user_services ////////////////////////////////////////////////////////////////////////////////////////
+#
 # This container is the base image for norlab-ros `develop` image and `deploy` image
 #
-# References:
-# - NVIDIA Container Runtime on Jetson: https://github.com/NVIDIA/nvidia-docker/wiki/NVIDIA-Container-Runtime-on-Jetson
-# - dusty-nv/jetson-containers: https://github.com/dusty-nv/jetson-containers/blob/master/Dockerfile.ros.noetic
-# - ROS noetic installation from source: http://wiki.ros.org/noetic/Installation/Source
 
-# Base image: nvidia linux 4 tegra (L4T) nvidia docker container official image
-#   l4t-base: https://ngc.nvidia.com/catalog/containers/nvidia:l4t-base
-#   l4t-ros-noetic-pytorch: https://github.com/NVIDIA-AI-IOT/ros2_jetson/blob/main/docker/DockerFile.l4tbase.ros.noetic
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS services
 
-#ARG  DN_BASE_IMG_TAG=x86-ubuntu18.04
-#ARG  DN_BASE_IMG_TAG=arm64-l4t-r32.6.1
-ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
-FROM norlabsnow/norlab-ros-dependencies:${DN_BASE_IMG_TAG} AS services
+#ARG  DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
+#FROM norlabsnow/norlab-ros-dependencies:${DN_BASE_IMG_TAG} AS services
 
 
 # ===Service: ssh server================================================================================================
@@ -124,8 +117,8 @@ RUN apt-get update \
 # (Priority) ToDo: validate >> was pushed at an earlier step
 ## see https://github.com/moby/moby/issues/29110
 #ARG TMP_PV=$(python --version)
-#ENV DS_PYTHON3_VERSION="python${TMP_PV:-7:-3}"
-#ENV DS_PYTHON3_VERSION="python3.8"
+#ENV DN_PYTHON3_VERSION="python${TMP_PV:-7:-3}"
+#ENV DN_PYTHON3_VERSION="python3.8"
 
 # Note: regarding the `${TMP_PV:-7:-3}` docker notation instead of the unix notation ${TMP_PV:7:3}, see post
 #       - How to use combination of ARG and ENV in Dockerfile to prevent unsupported modifier in substitution?: https://stackoverflow.com/questions/68935923/how-to-use-combination-of-arg-and-env-in-dockerfile-to-prevent-unsupported-modif
@@ -134,42 +127,56 @@ RUN apt-get update \
 ARG DN_ACTIVATE_POWERLINE_PROMT='true'
 ENV DN_ACTIVATE_POWERLINE_PROMT="${DN_ACTIVATE_POWERLINE_PROMT}"
 
-ENV POWERLINE_DIR=/usr/local/lib/${DS_PYTHON3_VERSION}/dist-packages/powerline
-RUN ( \
-    ## Note: powerline-daemon and powerline10k are os specific app.
-#    echo "if [ -f `which powerline-daemon` ]; then"; \
-    ## Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
-#    echo "if [[ '$DN_ACTIVATE_POWERLINE_PROMT' == 'true' ]]; then"; \
-    echo "if [[ $"DN_ACTIVATE_POWERLINE_PROMT" == 'true' ]]; then"; \
-    echo "  # Start the powerline daemon quietly"; \
-    echo "  powerline-daemon --quiet"; \
-    echo "  # Set Powerline env var for bash"; \
-    echo "  POWERLINE_BASH_CONTINUATION=1"; \
-    echo "  POWERLINE_BASH_SELECT=1"; \
-    echo "  # Invoke binding script"; \
-    echo "  . ${POWERLINE_DIR}/bindings/bash/powerline.sh"; \
-    echo "else "; \
-    echo "  # Skip or stop Powerline prompt configuration"; \
-    echo "  powerline-daemon --quiet --kill"; \
-#    echo "  export PS1='❆  \e[0;34m$"{DN_CONTAINER_NAME}"\e[0m  \w\$ '"; \
-#    echo "  export PS1='\033[1;34m❆  $"{DN_CONTAINER_NAME}" \033[0m\033[2m \w \033[0m\033[1;34m\033[0m '"; \
-#    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w \033[0m\033[1;37m\033[0m '"; \
-#    echo "  export PS1='\033[1;37m❆ ›\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
-#    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
-    ## Note: `\[ .. \]` is required to escape the sequence lenght from the prompt line lenght as there is a limit  \
-    ##  https://unix.stackexchange.com/questions/71007/how-to-customize-ps1-properly
-#    echo '  export PS1="\[\033[1;37m❆ ❯\033[0m\033[2m \$``{DN_CONTAINER_NAME}`` \033[0m\033[1;37m❯\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m \]"'; \
-    echo '  export PS1="\[\033[1;37m\]❆ ❯\[\033[0m\033[2m\] \$``{DN_CONTAINER_NAME}`` \[\033[0m\033[1;37m\]❯\[\033[0m\033[2m\] \w\[\033[0m\033[1;37m\]\$\[\033[0m\] "'; \
-    echo "fi"; \
-  ) >> ~/.bashrc
+#ENV POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline
+RUN cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_scripts/ \
+    && source ./which_python_version.bash \
+    && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
+    && ( \
+        ## Note: powerline-daemon and powerline10k are os specific app.
+    #    echo "if [ -f `which powerline-daemon` ]; then"; \
+        ## Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
+    #    echo "if [[ '$DN_ACTIVATE_POWERLINE_PROMT' == 'true' ]]; then"; \
+        echo "if [[ $"DN_ACTIVATE_POWERLINE_PROMT" == 'true' ]]; then"; \
+        echo "  # Start the powerline daemon quietly"; \
+        echo "  powerline-daemon --quiet"; \
+        echo "  # Set Powerline env var for bash"; \
+        echo "  POWERLINE_BASH_CONTINUATION=1"; \
+        echo "  POWERLINE_BASH_SELECT=1"; \
+        echo "  # Invoke binding script"; \
+        echo "  . ${POWERLINE_DIR}/bindings/bash/powerline.sh"; \
+        echo "else "; \
+        echo "  # Skip or stop Powerline prompt configuration"; \
+        echo "  powerline-daemon --quiet --kill"; \
+    #    echo "  export PS1='❆  \e[0;34m$"{DN_CONTAINER_NAME}"\e[0m  \w\$ '"; \
+    #    echo "  export PS1='\033[1;34m❆  $"{DN_CONTAINER_NAME}" \033[0m\033[2m \w \033[0m\033[1;34m\033[0m '"; \
+    #    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w \033[0m\033[1;37m\033[0m '"; \
+    #    echo "  export PS1='\033[1;37m❆ ›\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
+    #    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
+        ## Note: `\[ .. \]` is required to escape the sequence lenght from the prompt line lenght as there is a limit  \
+        ##  https://unix.stackexchange.com/questions/71007/how-to-customize-ps1-properly
+    #    echo '  export PS1="\[\033[1;37m❆ ❯\033[0m\033[2m \$``{DN_CONTAINER_NAME}`` \033[0m\033[1;37m❯\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m \]"'; \
+        echo '  export PS1="\[\033[1;37m\]❆ ❯\[\033[0m\033[2m\] \$``{DN_CONTAINER_NAME}`` \[\033[0m\033[1;37m\]❯\[\033[0m\033[2m\] \w\[\033[0m\033[1;37m\]\$\[\033[0m\] "'; \
+        echo "fi"; \
+      ) >> ~/.bashrc
 
 # echo "\033[1;37m BlaBla \033[0m"
 
-WORKDIR $POWERLINE_DIR
+ENV POWERLINE_TMP=/tmp/powerline_tmp
+WORKDIR $POWERLINE_TMP
 
 COPY prompt/config_files/config.json config_files/
 COPY prompt/config_files/themes/shell/dockerized_snow.json config_files/themes/shell/dockerized_snow.json
 COPY prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/colorschemes/shell/dockerized_snow.json
+
+RUN cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_scripts/ \
+    && source ./which_python_version.bash \
+    && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
+    && mkdir -p $POWERLINE_DIR/config_files/ \
+    && mkdir -p $POWERLINE_DIR/config_files/themes/shell/ \
+    && mkdir -p $POWERLINE_DIR/config_files/colorschemes/shell/ \
+    && mv $POWERLINE_TMP/config_files/config.json $POWERLINE_DIR/config_files/ \
+    && mv $POWERLINE_TMP/config_files/themes/shell/dockerized_snow.json $POWERLINE_DIR/config_files/themes/shell/ \
+    && mv $POWERLINE_TMP/config_files/colorschemes/shell/dockerized_snow.json $POWERLINE_DIR/config_files/colorschemes/shell/
 
 # (Priority) todo:on task end >> delete bloc line
 #RUN echo $POWERLINE_DIR
