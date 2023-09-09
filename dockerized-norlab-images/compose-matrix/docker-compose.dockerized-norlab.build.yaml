@@ -1,22 +1,44 @@
+name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
+
 services:
 
-  service-global:
+  global-service-dev:
     build:
-      context: ../base-images/service-global
-      dockerfile: Dockerfile
-      args:
-        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-        BASE_IMAGE: nvcr.io/nvidia/l4t-jetpack
-        BASE_IMAGE_TAG: r35.2.1
-      platforms:
-        - "linux/arm64/v8"
+      context: ../base-images/global-service-builder
+#      no_cache: true  # Enforce full rebuild
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     tty: true
     stdin_open: true
     init: true  # Propagate exit code (See remark in task NMO-266)
+    devices:
+      - /dev/input/js0
+    privileged: true
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    cap_add:
+      - SYS_PTRACE
+    network_mode: host    # allow the container to have full access to the host’s networking system
+    pid: host
+    ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
 
-  #   ====Dockerized-NorLab base images=================================================================================
+  global-service-builder:
+    extends: global-service-dev # ToDo: on dev task end >> mute this line ←
+    labels:
+      org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+    build:
+      context: ../base-images/global-service-builder
+      additional_contexts:
+        context-dn-container-tools: ../container-tools/
+      args:
+        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
+      platforms:
+        - "linux/arm64/v8"
+
+  # ====Dockerized-NorLab base images========================================================================
   dn-ros:
-    extends: service-global
+    extends: global-service-builder
     build:
       context: ../base-images/dn-ros
       args:
@@ -24,36 +46,64 @@ services:
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dn-ros:${DN_IMAGE_TAG:?err}
 
-  # ====Dockerized-NorLab dependencies================================================================================
+  # ====Dockerized-NorLab dependencies=======================================================================
   dependencies-core:
-    extends: service-global
+    extends: global-service-builder
     build:
-      context: ../../
-      dockerfile: ./dockerized-norlab-images/core-images/dependencies/Dockerfile
+      context: ../core-images/dependencies/
+      dockerfile: Dockerfile.core
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dn-ros
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dependencies-core:${DN_IMAGE_TAG:?err}
-  #    depends_on:
-  #      - dn-ros
+#    depends_on:
+#      - dn-ros
 
-  dependencies-interactive:
-    extends: service-global
+  dependencies-python-science-stack:
+    extends: global-service-builder
     build:
-      context: ../core-images/interactive-tools
-      #      context: ../../
-      #      dockerfile: ./dockerized-norlab-images/core-images/interactive-tools/Dockerfile
+      context: ../core-images/dependencies/
+      dockerfile: Dockerfile.python-science-stack
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dependencies-core
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-        DN_ACTIVATE_POWERLINE_PROMT: true
-    image: ${DN_HUB:?err}/dependencies-interactive:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
 #    depends_on:
 #      - dependencies-core
-#
-#  # ====Dockerized-NorLab images======================================================================================
+
+  dependencies-simulation-gym:
+    extends: global-service-builder
+    build:
+      context: ../core-images/dependencies/
+      dockerfile: Dockerfile.simulation-gym
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dependencies-python-science-stack
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dependencies-simulation-gym:${DN_IMAGE_TAG:?err}
+#    depends_on:
+#      - dependencies-python-science-stack
+#      - dependencies-core
+    command: bash -c "tree -L 4 -a && bash" # <-- we arre here: on task end >> mute this line ←
+
+#  interactive-tools:
+#    extends: global-service-builder
+#    build:
+#      context: ../core-images/project-add-on
+#      dockerfile: Dockerfile.interactive-tools
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dependencies-core
+#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+#        DN_ACTIVATE_POWERLINE_PROMT: true
+#    image: ${DN_HUB:?err}/dependencies-interactive:${DN_IMAGE_TAG:?err}
+#    environment:
+#      DN_CONTAINER_NAME: IamInteractive
+#    container_name: IamInteractive
+##    depends_on:
+##      - dependencies-python-science-stack
+
+#  # ====Dockerized-NorLab images=============================================================================
 #  dn-control-drl:
-#    extends: service-global
+#    extends: global-service-builder
 #    build:
 #      context: ./dockerized-norlab-images
 #      dockerfile: ./core-images/control-drl/Dockerfile
@@ -61,11 +111,11 @@ services:
 #        BASE_IMAGE: ${DN_HUB:?err}/dependencies-interactive
 #        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
 #    image: ${DN_HUB:?err}/dn-control-drl:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dependencies-interactive
+##    depends_on:
+##      - dependencies-interactive
 #
 #  dn-perception-3d:
-#    extends: service-global
+#    extends: global-service-builder
 #    build:
 #      context: ./dockerized-norlab-images
 #      dockerfile: ./core-images/perception-3d/Dockerfile
@@ -73,13 +123,16 @@ services:
 #        BASE_IMAGE: ${DN_HUB:?err}/dependencies-interactive
 #        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
 #    image: ${DN_HUB:?err}/dn-perception-3d:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dependencies-interactive
+##    depends_on:
+##      - dependencies-interactive
 #
 #
-#  # ====Project level================================================================================================
+#  # ====Project level========================================================================================
 #  dn-project-template:
-#    extends: service-global
+#    extends: global-service-builder
+#    environment:
+#      DN_CONTAINER_NAME: ${CONTAINER_NAME}
+#    container_name: ${CONTAINER_NAME}
 #    build:
 #      context: ./dockerized-norlab-images/core-images/dn-project-template
 #      dockerfile: ./Dockerfile
@@ -90,11 +143,11 @@ services:
 #        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}   # norlab-ulaval
 #        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}   # NorLab_MPPI
 #    image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-#    depends_on:
-#      - dependencies-interactive
+##    depends_on:
+##      - dependencies-interactive
 #
 #  develop:
-#    extends: service-global
+#    extends: global-service-builder
 #    build:
 #      context: ./dockerized-norlab-images/core-images/develop
 #      dockerfile: ./Dockerfile
@@ -106,11 +159,11 @@ services:
 ##        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}
 ##        DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
 #    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-#    depends_on:
-#      - dn-project-template
+##    depends_on:
+##      - dn-project-template
 #
 #  deploy:
-#    extends: service-global
+#    extends: global-service-builder
 #    build:
 #      context: ./dockerized-norlab-images/core-images/deploy
 #      dockerfile: ./Dockerfile
@@ -121,8 +174,8 @@ services:
 ##         DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
 #         DN_DEPLOY_REPO_BRANCH: main  # Option: main, dev or tag version (ie v*.*.*)
 #    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-#    depends_on:
-#      - dn-project-template
+##    depends_on:
+##      - dn-project-template
 #
 ##  deploy-bleeding-edge:
 ##    extends: deploy

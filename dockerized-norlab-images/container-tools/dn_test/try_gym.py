@@ -17,7 +17,7 @@ def verify_gym_classic_control_install() -> None:
         # env: gym.wrappers.time_limit.TimeLimit = gym.make('Pendulum-v1')
         env: gym.wrappers.time_limit.TimeLimit = gym.make('CartPole-v1')
         env.reset()
-        output = env.render("rgb_array")
+        # output = env.render("rgb_array")
         action = env.action_space.sample()
         next_obs = env.step(action=action)
         assert isinstance(next_obs[0], np.ndarray)
@@ -28,8 +28,7 @@ def verify_gym_classic_control_install() -> None:
 
         # (PRIORITY) ToDo:validate >> next bloc ↓↓
         raise Exception(
-                f"> (!) Something is wrong with Gym classic control. It's probably the Dockerized-SNOW python "
-                f"interpreter\n"
+                f"> (!) Something is wrong with Gym classic control.\n"
                 f"{e}"
                 ) from e
 
@@ -48,9 +47,9 @@ def verify_gym_box2d_install() -> None:
         import gym
 
         print(f'> Gym version:    {gym.__version__}')
-        env: gym.wrappers.time_limit.TimeLimit = gym.make('CarRacing-v0')
+        env: gym.wrappers.time_limit.TimeLimit = gym.make('CarRacing-v2')
         env.reset()
-        output = env.render("rgb_array")
+        # output = env.render("rgb_array")
         action = env.action_space.sample()
         next_obs = env.step(action=action)
         assert isinstance(next_obs[0], np.ndarray)
@@ -61,7 +60,7 @@ def verify_gym_box2d_install() -> None:
 
         # (Priority) ToDo:validate >> next bloc ↓↓
         raise Exception(
-                f"> (!) Something is wrong with Gym Box2D. It's probably the Dockerized-SNOW python interpreter\n"
+                f"> (!) Something is wrong with Gym Box2D.\n"
                 f"{e}"
                 ) from e
 

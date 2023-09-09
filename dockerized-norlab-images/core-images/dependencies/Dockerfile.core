@@ -1,0 +1,113 @@
+
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
+SHELL ["/bin/bash", "-c"]
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV TZ=Etc/UTC
+ENV TERM=${TERM:-"xterm-256color"}
+
+
+# ====Begin===================================================================================================
+
+# ....Setup timezone and localization.........................................................................
+# change the locale from POSIX to UTF-8
+RUN apt-get update && \
+    apt-get install --assume-yes --no-install-recommends \
+        locales && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN locale-gen en_US en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV PYTHONIOENCODING=utf-8
+
+# ....install development utilities...........................................................................
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
+        apt-utils \
+        lsb-release \
+        cmake \
+        build-essential \
+        curl \
+        wget \
+        gnupg2 \
+        ca-certificates \
+        git \
+        libusb-dev \
+        usbutils \
+        vim \
+        tree \
+        zip gzip tar unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --no-cache-dir --ignore-installed  \
+    pybind11
+
+
+# ===Final build step=========================================================================================
+FROM base-image AS final
+
+RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
+    && pip3 install --no-cache-dir --verbose  \
+        # . . install python general development package . . . . . . . . . . . .
+        pyyaml \
+        termcolor \
+        decorator \
+        black[d] \
+        # . . Type check. . . . . . . . . . . . . . . . . . . . . . . . . . . .
+        pytype \
+        mypy \
+        # . . Testing tools . . . . . . . . . . . . . . . . . . . . . . . . . .
+        pytest \
+        pytest-benchmark \
+        pytest-mock \
+        python-dotenv \
+        pytest-env \
+        mock
+
+    ## (!) pytest-cov › "The pytest-cov package, due to technical restrictions, breaks PyCharm's debugger." \
+    ## see https://www.jetbrains.com/help/pycharm/2023.1/run-debug-configuration-py-test.html
+
+## Packages for older python version
+#RUN pip3 install --no-cache-dir --verbose  \
+#            dataclasses
+
+# ...install development utilities...........................................................................
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
+        usbutils \
+        rsync \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# ....Install norlab-shell-script-tool.......................................................................
+WORKDIR /dockerized-norlab
+
+RUN git clone https://github.com/norlab-ulaval/norlab-shell-script-tools.git ./utilities/norlab-shell-script-tools/
+
+WORKDIR /dockerized-norlab
+RUN cd ./utilities/norlab-shell-script-tools/src/utility_scripts \
+    && source ./which_python_version.bash \
+    && echo "PYTHON3_VERSION=${PYTHON3_VERSION}"
+
+# ....Add dockerized-norlab tools............................................................................
+# ToDo: move this step at a later stage
+
+COPY --from=context-dn-container-tools ./dn_info.bash ./dockerized-norlab-images/container-tools/
+
+RUN ( \
+  echo ""; \
+  echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
+  echo "alias dn_info='bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"; \
+) >> ~/.bashrc
+
+RUN bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
+
+CMD [ "bash" ]

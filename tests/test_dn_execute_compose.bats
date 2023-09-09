@@ -32,7 +32,7 @@ else
   exit 1
 fi
 
-# ====Setup========================================================================================================
+# ====Setup===================================================================================================
 TESTED_FILE="dn_execute_compose.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
@@ -46,7 +46,7 @@ setup_file() {
 #  cd "$TESTED_FILE_PATH" || exit
 #}
 
-# ====Teardown=====================================================================================================
+# ====Teardown================================================================================================
 
 #teardown() {
 #  bats_print_run_env_variable_on_error
@@ -56,7 +56,7 @@ setup_file() {
 #    echo "executed once after finishing the last test"
 #}
 
-# ====Test casses==================================================================================================
+# ====Test casses=============================================================================================
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"

@@ -9,10 +9,16 @@
 #   - [<optional flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
 #
 
+clear
+
 if [[ $( basename $(pwd) ) = build_script ]]; then
     cd ../..
 elif [[ $( basename $(pwd) ) = dockerized-norlab-scripts ]]; then
     cd ..
 fi
 
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "$@" -- build
+# ToDo: on task end >> refactor out the `--build-matrix-file-override .env.build_matrix.dev` line
+
+bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
+               --build-matrix-file-override .env.build_matrix.dev \
+               "$@" -- build

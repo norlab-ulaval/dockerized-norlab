@@ -3,24 +3,20 @@ ARG BASE_IMAGE=dustynv/ros
 ARG BASE_IMAGE_TAG=foxy-pytorch-l4t-r35.2.1
 FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
-LABEL org.opencontainers.image.authors="luc.coupal.1@ulaval.ca"
-
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
 SHELL ["/bin/bash", "-c"]
 ARG DEBIAN_FRONTEND=noninteractive
-ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
 
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-
-# ====Begin install=================================================================================================
+# ====Begin install============================================================================================
 
 ENV DN_DEV_WORKSPACE=$HOME/ros2_ws
 
-# ....install ROS2 specific utilities..............................................................................
+# ....install ROS2 specific utilities.........................................................................
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         ros-dev-tools \
@@ -32,7 +28,7 @@ RUN pip3 install --no-cache-dir  \
 
 RUN mkdir -p "${DN_DEV_WORKSPACE}/src"
 
-# ....install sources..............................................................................................
+# ....install sources.........................................................................................
 
 ## . . ros2_control Demos. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ## https://github.com/ros-controls/ros2_control_demos

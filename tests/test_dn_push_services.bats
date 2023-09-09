@@ -35,8 +35,8 @@ fi
 
 
 
-# ====Setup========================================================================================================
-TESTED_FILE="dn_push_all_images.bash"
+# ====Setup===================================================================================================
+TESTED_FILE="dn_push_services.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 setup_file() {
@@ -49,7 +49,7 @@ setup_file() {
 #  cd "$TESTED_FILE_PATH" || exit
 #}
 
-# ====Teardown=====================================================================================================
+# ====Teardown================================================================================================
 
 #teardown() {
 #  bats_print_run_env_variable_on_error
@@ -59,7 +59,7 @@ setup_file() {
 #    echo "executed once after finishing the last test"
 #}
 
-# ====Test casses==================================================================================================
+# ====Test casses=============================================================================================
 
 @test "running $TESTED_FILE from root, 'build_script/' or 'dockerized-norlab-scripts/'  › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"

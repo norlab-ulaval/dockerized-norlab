@@ -18,7 +18,7 @@ FROM ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as develop
 ARG DS_HOST_TYPE=Local
 ENV DS_HOST_TYPE=${DS_HOST_TYPE}
 
-# ... Finish container setup ...........................................................................................
+# ... Finish container setup ......................................................................................
 WORKDIR /
 COPY ros2_rebuild_dev_workspace.bash /
 COPY ros2_entrypoint.bash /

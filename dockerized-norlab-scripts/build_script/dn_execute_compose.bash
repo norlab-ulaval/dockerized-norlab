@@ -14,7 +14,7 @@
 #   Dont use "set -e" in this script as it will affect the build system policy, use the --fail-fast flag instead
 #
 
-# ....Default......................................................................................................
+# ....Default.................................................................................................
 DOCKERIZED_NORLAB_VERSION='latest'
 BASE_IMAGE='dustynv/ros'
 TAG_PACKAGE='foxy-pytorch-l4t'
@@ -23,7 +23,7 @@ TAG_VERSION='r35.2.1'
 DOCKER_COMPOSE_CMD_ARGS='build'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 CI_TEST=false
 
-# ....Pre-condition................................................................................................
+# ....Pre-condition...........................................................................................
 if [[ ! -f  ".env.dockerized-norlab" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
   echo '(press any key to exit)'
@@ -31,7 +31,7 @@ if [[ ! -f  ".env.dockerized-norlab" ]]; then
   exit 1
 fi
 
-# ....Load environment variables from file.........................................................................
+# ....Load environment variables from file....................................................................
 set -o allexport
 source .env.dockerized-norlab
 source .env.build_matrix
@@ -41,7 +41,7 @@ set -o allexport
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
-# ....Helper function..............................................................................................
+# ....Helper function.........................................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD=$(pwd)
@@ -80,7 +80,7 @@ function print_help_in_terminal() {
 "
 }
 
-# ....TeamCity service message logic................................................................................
+# ....TeamCity service message logic...........................................................................
 if [[ ${TEAMCITY_VERSION} ]]; then
   export IS_TEAMCITY_RUN=true
   TC_VERSION="TEAMCITY_VERSION=${TEAMCITY_VERSION}"
@@ -90,7 +90,7 @@ fi
 #printenv
 print_msg "IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN} ${TC_VERSION}"
 
-# ====Begin========================================================================================================
+# ====Begin===================================================================================================
 SHOW_SPLASH_EC="${SHOW_SPLASH_EC:-true}"
 
 if [[ "${SHOW_SPLASH_EC}" == 'true' ]]; then
@@ -99,7 +99,7 @@ fi
 
 print_formated_script_header 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
-# ....Script command line flags....................................................................................
+# ....Script command line flags...............................................................................
 while [ $# -gt 0 ]; do
 
   case $1 in
@@ -153,10 +153,11 @@ while [ $# -gt 0 ]; do
 
 done
 
-# ..................................................................................................................
+# .............................................................................................................
 # Note: DOCKERIZED_NORLAB_VERSION will be used to fetch the repo at release tag (ref task NMO-252)
 export DOCKERIZED_NORLAB_VERSION="${DOCKERIZED_NORLAB_VERSION}"
 export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE}"
+export TAG_VERSION="${TAG_VERSION}"
 export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
 
 export DN_IMAGE_TAG="DN${DOCKERIZED_NORLAB_VERSION}-JC-${DEPENDENCIES_BASE_IMAGE_TAG}"
@@ -175,6 +176,7 @@ print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
 
+# (Priority) ToDo: refactor >> add docker file flag logic
 show_and_execute_docker "compose -f dockerized-norlab-images/compose-matrix/docker-compose.dockerized-norlab.build.yaml ${DOCKER_COMPOSE_CMD_ARGS}" "$CI_TEST"
 
 
@@ -184,5 +186,5 @@ ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}"
 
 print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
-# ====Teardown=====================================================================================================
+# ====Teardown================================================================================================
 cd "${TMP_CWD}"

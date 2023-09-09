@@ -18,14 +18,14 @@
 #set -v
 #set -x
 
-# ....Default......................................................................................................
+# ....Default.................................................................................................
 DOCKER_COMPOSE_CMD_ARGS='build' # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 BUILD_STATUS_PASS=0
 BUILD_MATRIX='.env.build_matrix'
 DN_EXECUTE_COMPOSE_FLAGS=''
 
 
-# ....Pre-condition................................................................................................
+# ....Pre-condition...........................................................................................
 if [[ ! -f  ".env.dockerized-norlab" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
   echo '(press any key to exit)'
@@ -33,7 +33,7 @@ if [[ ! -f  ".env.dockerized-norlab" ]]; then
   exit 1
 fi
 
-# ....Load environment variables from file.........................................................................
+# ....Load environment variables from file....................................................................
 set -o allexport
 source .env.dockerized-norlab
 source "$BUILD_MATRIX"
@@ -43,7 +43,7 @@ set -o allexport
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
-# ....Helper function..............................................................................................
+# ....Helper function.........................................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD=$(pwd)
@@ -89,12 +89,12 @@ function print_help_in_terminal() {
 "
 }
 
-# ====Begin========================================================================================================
+# ====Begin===================================================================================================
 norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
 print_formated_script_header 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
-# ....Script command line flags....................................................................................
+# ....Script command line flags...............................................................................
 while [ $# -gt 0 ]; do
 
   case $1 in
@@ -162,7 +162,7 @@ while [ $# -gt 0 ]; do
 done
 
 
-# ..................................................................................................................
+# .............................................................................................................
 print_msg "Build images specified in ${MSG_DIMMED_FORMAT}'docker-compose.dockerized-norlab.build.yaml'${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
 
 ## Freeze build matrix env variable to prevent override by dn_execute_compose.bash when reloading .env/build_matrix
@@ -236,6 +236,7 @@ for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
           echo " "
         fi
 
+        # (Priority) ToDo: refactor >> add docker file flag logic
         # shellcheck disable=SC2086
         source dockerized-norlab-scripts/build_script/dn_execute_compose.bash \
                                         --dockerized-norlab-version "${EACH_DN_VERSION}" \
@@ -265,7 +266,7 @@ for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
         # Global: Read 'DN_IMAGE_TAG' env variable exported by dn_execute_compose.bash
         IMAGE_TAG_CRAWLED=("${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG}")
         IMAGE_TAG_CRAWLED_TC=("${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}")
-        # .........................................................................................................
+        # ....................................................................................................
 
         if [[ ${TEAMCITY_VERSION} ]]; then
           echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash']"
@@ -311,14 +312,14 @@ done
 
 print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
-# ====TeamCity service message=====================================================================================
+# ====TeamCity service message================================================================================
 if [[ ${TEAMCITY_VERSION} ]]; then
   # Tag added to the TeamCity build via a service message
   for tc_build_tag in "${IMAGE_TAG_CRAWLED_TC[@]}" ; do
       echo -e "##teamcity[addBuildTag '${tc_build_tag}']"
   done
 fi
-# ====Teardown=====================================================================================================
+# ====Teardown================================================================================================
 cd "${TMP_CWD}"
 # shellcheck disable=SC2086
 exit $BUILD_STATUS_PASS

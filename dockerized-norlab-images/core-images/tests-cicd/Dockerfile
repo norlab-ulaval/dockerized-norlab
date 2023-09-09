@@ -16,7 +16,7 @@ FROM ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as teamcity
 
 WORKDIR /
 
-# ===install teamcity & CI/CD utilities=================================================================================
+# ===install teamcity & CI/CD utilities============================================================================
 
 RUN pip3 install --no-cache-dir --verbose --upgrade pip
 RUN pip3 install --no-cache-dir --verbose --upgrade pytest
@@ -28,7 +28,7 @@ RUN ( \
 )
 
 
-# ===Final build step=======================================================================================
+# ===Final build step==================================================================================
 #WORKDIR /
 #RUN echo $PWD
 #COPY ./container-tools/dn_info.bash /
