@@ -4,7 +4,7 @@ ARG DN_BASE_IMG_TAG
 FROM ${BASE_IMAGE:?err}:${DN_BASE_IMG_TAG:?err} AS pytorch-base-image
 
 
-# ===PyTorch=======================================================================================================
+# ===PyTorch=============================================================================================
 
 ENV CUDA_HOME="/usr/local/cuda"
 ENV LLVM_CONFIG="/usr/bin/llvm-config-9"
@@ -125,7 +125,7 @@ RUN /bin/bash -c "if [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-l4t' ]]; then \
 
 
 
-# ===Install python scientific stack ==============================================================================
+# ===Install python scientific stack ====================================================================
 FROM pytorch-base-image AS ros-scientific-stack-base-image
 
 # install aditional python package

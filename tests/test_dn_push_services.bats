@@ -35,7 +35,7 @@ fi
 
 
 
-# ====Setup===================================================================================================
+# ====Setup=========================================================================================
 TESTED_FILE="dn_push_services.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
@@ -49,7 +49,7 @@ setup_file() {
 #  cd "$TESTED_FILE_PATH" || exit
 #}
 
-# ====Teardown================================================================================================
+# ====Teardown======================================================================================
 
 #teardown() {
 #  bats_print_run_env_variable_on_error
@@ -59,27 +59,27 @@ setup_file() {
 #    echo "executed once after finishing the last test"
 #}
 
-# ====Test casses=============================================================================================
+# ====Test casses===================================================================================
 
 @test "running $TESTED_FILE from root, 'build_script/' or 'dockerized-norlab-scripts/'  › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"
-  run bash ./$TESTED_FILE --build-matrix-file-override tests/.env.build_matrix.mock
+  run bash ./$TESTED_FILE tests/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
-  run bash ./build_script/$TESTED_FILE --build-matrix-file-override tests/.env.build_matrix.mock
+  run bash ./build_script/$TESTED_FILE tests/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override tests/.env.build_matrix.mock
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE tests/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 }
 
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
                                               --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                                               --os-name-build-matrix-override 'l4t' \
                                               --l4t-version-build-matrix-override 'r33.3.3'

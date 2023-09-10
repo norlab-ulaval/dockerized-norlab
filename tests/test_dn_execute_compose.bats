@@ -32,7 +32,7 @@ else
   exit 1
 fi
 
-# ====Setup===================================================================================================
+# ====Setup=========================================================================================
 TESTED_FILE="dn_execute_compose.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
@@ -46,7 +46,7 @@ setup_file() {
 #  cd "$TESTED_FILE_PATH" || exit
 #}
 
-# ====Teardown================================================================================================
+# ====Teardown======================================================================================
 
 #teardown() {
 #  bats_print_run_env_variable_on_error
@@ -56,7 +56,7 @@ setup_file() {
 #    echo "executed once after finishing the last test"
 #}
 
-# ====Test casses=============================================================================================
+# ====Test casses===================================================================================
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
@@ -64,7 +64,7 @@ setup_file() {
   #  - "echo 'Y'" is for sending an keyboard input to the 'read' command which expect a single character
   #    run bash -c "echo 'Y' | bash ./function_library/$TESTED_FILE"
   #  - Alt: Use the 'yes [n]' command which optionaly send n time
-  run bash -c "yes 1 | bash ./build_script/$TESTED_FILE"
+  run bash -c "yes 1 | bash ./build_script/$TESTED_FILE docker-compose.dn-dependencies.build.yaml"
 #  bats_print_run_env_variable
   assert_failure 1
   assert_output --partial "'$TESTED_FILE' script must be sourced from"
@@ -72,15 +72,29 @@ setup_file() {
 
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE docker-compose.dn-dependencies.build.yaml"
   assert_success
   refute_output  --partial "No such file or directory"
 #  bats_print_run_env_variable
 }
 
+
+@test "missing docker-compose.yaml file mandatory argument › expect pass" {
+  cd "${BATS_DOCKER_WORKDIR}"
+  run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE"
+  assert_failure
+  assert_output --partial "Missing the docker-compose.yaml file mandatory argument"
+
+  run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'docker-compose.unreachable.yaml'"
+  assert_failure
+  assert_output --partial "'$TESTED_FILE' can't find the docker-compose.yaml file 'docker-compose.unreachable.yaml'"
+#  bats_print_run_env_variable
+}
+
 @test "docker command are passed to show_and_execute_docker" {
   local DOCKER_CMD="build --no-cache --push"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE -- ${DOCKER_CMD}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE docker-compose.dn-dependencies.build.yaml \
+                                            -- ${DOCKER_CMD}"
   assert_success
   assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}"
 #  bats_print_run_env_variable
@@ -90,7 +104,8 @@ setup_file() {
   local DOCKER_CMD="version"
   mock_docker_command_exit_ok
   set +e
-  source ./${TESTED_FILE_PATH}/$TESTED_FILE --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE docker-compose.dn-dependencies.build.yaml \
+                                            --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
   set -e
   assert_equal "$DOCKER_EXIT_CODE" 0
 }
@@ -99,13 +114,15 @@ setup_file() {
   local DOCKER_CMD="version"
   mock_docker_command_exit_error
   set +e
-  source ./${TESTED_FILE_PATH}/$TESTED_FILE --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE docker-compose.dn-dependencies.build.yaml \
+                                            --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
   set -e
   assert_equal "$DOCKER_EXIT_CODE" 1
 }
 
 @test "flags that set env variable" {
-  source ./${TESTED_FILE_PATH}/$TESTED_FILE --dockerized-norlab-version v1 \
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE docker-compose.dn-dependencies.build.yaml \
+                                            --dockerized-norlab-version v1 \
                                             --base-image dustynv/pytorch \
                                             --tag-package 2.1 \
                                             --tag-version r35.0.0 \
@@ -123,9 +140,10 @@ setup_file() {
 }
 
 @test "flag --help" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE --help
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE docker-compose.dn-dependencies.build.yaml \
+                                            --help
   assert_success
-  assert_output --regexp .*"${TESTED_FILE} \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
+  assert_output --regexp .*"${TESTED_FILE} <docker-compose.yaml> \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
 }
 
 

@@ -14,7 +14,7 @@ ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO:?'Build argument nee
 ARG DN_TARGET_PROJECT_SRC_DOMAIN
 ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN:?'Build argument needs to be set and non-empty.'}
 
-# ====Project custom steps=====================================================================================
+# ====Project custom steps===========================================================================
 
 # ----F1TENTH gym simulator----------------------------------------------------------------------------------------
 #FROM dn-project AS f1tenth-simulator
@@ -52,7 +52,7 @@ ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN:?'Build argument
 ### See known issues comment https://github.com/f1tenth/f1tenth_gym
 ## RUN pip3 install pyglet==1.5.11
 #
-## ====RL/Control library=======================================================================================
+## ====RL/Control library=============================================================================
 #FROM f1tenth-simulator AS torchrl-lib
 ## Note: ON HOLD › Both codebase are in beta release -> instalation is problematic and bugy on arch64. Either
 ##           - it build and pass the sanity check in docker build but break on docker run `import torchrl`
@@ -96,7 +96,7 @@ FROM dn-project AS python-libraries
 #    && pip install opencv-python-headless
 
 
-# ====Install from requirements file===========================================================================
+# ====Install from requirements file=================================================================
 # ToDo: implement (ref task NMO-159 ⚒︎ → `pip install` new module)
 
 COPY requirements_manual.txt /requirements_manual.txt

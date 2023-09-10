@@ -35,7 +35,7 @@ fi
 
 
 
-# ====Setup===================================================================================================
+# ====Setup=========================================================================================
 TESTED_FILE="dn_execute_compose_over_build_matrix.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
@@ -49,7 +49,7 @@ setup_file() {
 #  cd "$TESTED_FILE_PATH" || exit
 #}
 
-# ====Teardown================================================================================================
+# ====Teardown======================================================================================
 
 #teardown() {
 #  bats_print_run_env_variable_on_error
@@ -60,7 +60,7 @@ setup_file() {
 #    echo "executed once after finishing the last test"
 #}
 
-# ====Test casses=============================================================================================
+# ====Test casses===================================================================================
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
@@ -68,7 +68,7 @@ setup_file() {
   #  - "echo 'Y'" is for sending an keyboard input to the 'read' command which expect a single character
   #    run bash -c "echo 'Y' | bash ./function_library/$TESTED_FILE"
   #  - Alt: Use the 'yes [n]' command which optionaly send n time
-  run bash -c "yes 1 | bash ./build_script/$TESTED_FILE"
+  run bash -c "yes 1 | bash ./build_script/$TESTED_FILE 'tests/.env.build_matrix.mock'"
 #  bats_print_run_env_variable
   assert_failure 1
   assert_output --partial "'$TESTED_FILE' script must be sourced from"
@@ -77,26 +77,38 @@ setup_file() {
 
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock'"
   assert_success
   refute_output  --partial "No such file or directory"
 #  bats_print_run_env_variable
 }
 
+@test "missing dotenv build matrix file mandatory argument› expect pass" {
+  cd "${BATS_DOCKER_WORKDIR}"
+  run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE"
+  assert_failure
+  assert_output --partial "Missing the dotenv build matrix file mandatory argument"
+
+  run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE '.env.build_matrix.unreachable'"
+  assert_failure
+  assert_output --partial "'$TESTED_FILE' can't find dotenv build matrix file '.env.build_matrix.unreachable'"
+#  bats_print_run_env_variable
+}
+
 @test "docker command are passed to show_and_execute_docker" {
   local DOCKER_CMD="build --no-cache --push"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE -- ${DOCKER_CMD}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' -- ${DOCKER_CMD}"
   assert_success
   assert_output --regexp .*"Skipping the execution of Docker command".*
   assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}".*
   assert_output --regexp .*"with command".*"${DOCKER_CMD}".*
 }
 
-@test "flag › --build-matrix-file-override › ok" {
+@test "dotenv build matrix file argument › ok" {
   local DOCKER_CMD="version"
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -109,7 +121,7 @@ setup_file() {
   local DOCKER_CMD="version"
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -130,7 +142,7 @@ setup_file() {
   mock_docker_command_exit_error
   fake_IS_TEAMCITY_RUN
   set +e
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -150,7 +162,7 @@ setup_file() {
   mock_docker_command_exit_error
   fake_IS_TEAMCITY_RUN
   set +e
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -162,7 +174,7 @@ setup_file() {
 @test "flags that set env variable" {
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE --build-matrix-file-override 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
                                                 --ci-test-force-runing-docker-cmd \
                                                 --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                                                 --os-name-build-matrix-override 'l4t' \
@@ -176,7 +188,7 @@ setup_file() {
 }
 
 @test "flag --help" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE --help
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' --help
   assert_success
-  assert_output --regexp .*"${TESTED_FILE} \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
+  assert_output --regexp .*"${TESTED_FILE} '<.env.build_matrix.*>' \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
 }

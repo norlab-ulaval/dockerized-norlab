@@ -1,8 +1,8 @@
 
-# ====ROS=====================================================================================================
+# ====ROS===========================================================================================
 osrf-pycommon
 
-# # ====RL/Control library======================================================================================
+# # ====RL/Control library============================================================================
 # ## Doc:
 # ##  - pytorch-mppi › https://github.com/UM-ARM-Lab/pytorch_mppi
 # ##  - mbrl › https://github.com/facebookresearch/mbrl-lib
@@ -36,7 +36,7 @@ osrf-pycommon
 # tqdm
 # rich
 #
-# # ====Visualization and MLops=================================================================================
+# # ====Visualization and MLops=======================================================================
 # ## Doc:
 # ##  - wandb (Weights & Biases) › The developer-first MLOps platform
 # ##      www: https://wandb.ai, pypi: https://pypi.org/project/wandb/
@@ -50,7 +50,7 @@ osrf-pycommon
 # ## rendering
 # # moviepy
 #
-# # ====Simulation===============================================================================================
+# # ====Simulation=====================================================================================
 # ## deepmind control suite
 # # dm_control
 #

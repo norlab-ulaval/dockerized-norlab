@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# Execute build matrix on docker compose docker-compose.dockerized-norlab.build.yaml
+# Execute build matrix on docker compose docker-compose.dn-dependencies.build.yaml
 #
 # Usage:
-#   $ bash dn_execute_compose_over_build_matrix.bash [<optional flag>] [-- <any docker cmd+arg>]
+#   $ bash dn_execute_compose_over_build_matrix.bash '<.env.build_matrix.*>' [<optional flag>] [-- <any docker cmd+arg>]
 #
-#   $ bash dn_execute_compose_over_build_matrix.bash -- build --no-cache --push dependencies-core
+#   $ bash dn_execute_compose_over_build_matrix.bash '.env.build_matrix.dependencies' -- build --no-cache --push dependencies-core
 #
 # Arguments:
 #   see function print_help_in_terminal or execute the script with the --help flag
@@ -18,16 +18,24 @@
 #set -v
 #set -x
 
-# ....Default.................................................................................................
+# ....Default.......................................................................................
 DOCKER_COMPOSE_CMD_ARGS='build' # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 BUILD_STATUS_PASS=0
-BUILD_MATRIX='.env.build_matrix'
 DN_EXECUTE_COMPOSE_FLAGS=''
 
+DOTENV_BUILD_MATRIX="${1:?'Missing the dotenv build matrix file mandatory argument'}"
+shift # Remove argument value
 
-# ....Pre-condition...........................................................................................
-if [[ ! -f  ".env.dockerized-norlab" ]]; then
+# ....Pre-condition.................................................................................
+if [[ ! -f ".env.dockerized-norlab" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
+  echo '(press any key to exit)'
+  read -r -n 1
+  exit 1
+fi
+
+if [[ ! -f "${DOTENV_BUILD_MATRIX}" ]]; then
+  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file '${DOTENV_BUILD_MATRIX}'"
   echo '(press any key to exit)'
   read -r -n 1
   exit 1
@@ -36,14 +44,15 @@ fi
 # ....Load environment variables from file....................................................................
 set -o allexport
 source .env.dockerized-norlab
-source "$BUILD_MATRIX"
+source "$DOTENV_BUILD_MATRIX"
+source "${BUILD_MATRIX_MAIN:?'Main .env.build_matrix file name missing'}"
 set +o allexport
 
 set -o allexport
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
-# ....Helper function.........................................................................................
+# ....Helper function...............................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD=$(pwd)
@@ -55,16 +64,12 @@ source ./teamcity_utilities.bash
 source ./terminal_splash.bash
 cd "$TMP_CWD"
 
-
-
 function print_help_in_terminal() {
   echo -e "\n
-\$ ${0} [<optional flag>] [-- <any docker cmd+arg>]
+\$ ${0} '<.env.build_matrix.*>' [<optional flag>] [-- <any docker cmd+arg>]
   \033[1m
     <optional argument>:\033[0m
       -h, --help          Get help
-      --build-matrix-file-override '.env.build_matrix'
-                          The build matrix .env file. Must be at repository root.
       --dockerized-norlab-version-build-matrix-override latest
                           The Dockerized-NorLab release tag. Override must be a single value
                           (default to array sequence specified in .env.build_matrix)
@@ -89,24 +94,33 @@ function print_help_in_terminal() {
 "
 }
 
-# ====Begin===================================================================================================
+# (NICE TO HAVE) ToDo: refactor out to 'norlab-shell-script-tools'
+function teamcity_service_msg_blockOpened_custom() {
+  local THE_MSG=$1
+  if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+    echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${THE_MSG}']"
+  fi
+}
+
+# (NICE TO HAVE) ToDo: refactor out to 'norlab-shell-script-tools'
+function teamcity_service_msg_blockClosed_custom() {
+  local THE_MSG=$1
+  if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+    echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} ${THE_MSG}']"
+  fi
+}
+
+# ====Begin=========================================================================================
 norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
+
+set_is_teamcity_run_environment_variable
 
 print_formated_script_header 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
-# ....Script command line flags...............................................................................
+# ....Script command line flags.....................................................................
 while [ $# -gt 0 ]; do
 
   case $1 in
-  --build-matrix-file-override)
-    unset BUILD_MATRIX
-    BUILD_MATRIX="$2"
-    set -o allexport
-    source "$BUILD_MATRIX"
-    set +o allexport
-    shift # Remove argument (--build-matrix-file-override)
-    shift # Remove argument value
-    ;;
   --dockerized-norlab-version-build-matrix-override)
     unset DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS
     DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=("$2")
@@ -132,8 +146,8 @@ while [ $# -gt 0 ]; do
     shift # Remove argument value
     ;;
   --docker-debug-logs)
-#    set -v
-#    set -x
+    #    set -v
+    #    set -x
     export BUILDKIT_PROGRESS=plain
     shift # Remove argument (--docker-debug-logs)
     ;;
@@ -161,11 +175,11 @@ while [ $# -gt 0 ]; do
 
 done
 
-
-# .............................................................................................................
+# ...................................................................................................
 print_msg "Build images specified in ${MSG_DIMMED_FORMAT}'docker-compose.dockerized-norlab.build.yaml'${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
 
 ## Freeze build matrix env variable to prevent override by dn_execute_compose.bash when reloading .env/build_matrix
+FREEZED_DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}"
 FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=("${DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}")
 FREEZED_DN_MATRIX_SUPPORTED_OS=("${DN_MATRIX_SUPPORTED_OS[@]}")
 FREEZED_DN_MATRIX_L4T_SUPPORTED_VERSIONS=("${DN_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
@@ -173,8 +187,10 @@ FREEZED_DN_MATRIX_L4T_BASE_IMAGES_AND_PKG=("${DN_MATRIX_L4T_BASE_IMAGES_AND_PKG[
 FREEZED_DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("${DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
 FREEZED_DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=("${DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
 
-
-print_msg "Environment variables ${MSG_EMPH_FORMAT}(build matrix)${MSG_END_FORMAT} set for compose:\n
+function print_env_var_build_matrix() {
+  local SUP_TEXT=$1
+  print_msg "Environment variables ${MSG_EMPH_FORMAT}(build matrix)${MSG_END_FORMAT} $SUP_TEXT:\n
+${MSG_DIMMED_FORMAT}    DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${FREEZED_DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=(${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DN_MATRIX_SUPPORTED_OS=(${FREEZED_DN_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DN_MATRIX_L4T_SUPPORTED_VERSIONS=(${FREEZED_DN_MATRIX_L4T_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
@@ -182,14 +198,23 @@ ${MSG_DIMMED_FORMAT}    DN_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${FREEZED_DN_MATRIX_L
 ${MSG_DIMMED_FORMAT}    DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${FREEZED_DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${FREEZED_DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
 "
+}
 
+print_env_var_build_matrix 'set for compose'
+
+# ====Crawl build matrix============================================================================
 # Note: EACH_DN_VERSION is used for container labeling and to fetch the repo at release tag
 for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
-  if [[ ${TEAMCITY_VERSION} ]]; then
-    echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${EACH_DN_VERSION}']"
+  teamcity_service_msg_blockOpened_custom "Bloc=${EACH_DN_VERSION}"
+
+  if [[ -z ${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[*]} ]] || [[ ! ${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS} ]]; then
+    echo "FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[*]}"
+    print_msg_error_and_exit "Can't crawl Dockerized-NorLab supported version array because it's empty!"
   fi
 
   for EACH_OS_NAME in "${FREEZED_DN_MATRIX_SUPPORTED_OS[@]}"; do
+    teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_NAME}"
+
     unset CRAWL_OS_VERSIONS
     unset CRAWL_BASE_IMAGES_AND_PKG
 
@@ -203,48 +228,41 @@ for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
       print_msg_error_and_exit "${EACH_OS_NAME} not supported!"
     fi
 
-    if [[ -z ${CRAWL_OS_VERSIONS} ]]; then
-        print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} supported version array because it's empty!"
+    if [[ -z ${CRAWL_OS_VERSIONS[*]} ]]; then
+      print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} supported version array because it's empty!"
     fi
 
-    if [[ -z ${CRAWL_BASE_IMAGES_AND_PKG} ]]; then
-        print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images and pkg array because it's empty!"
-    fi
-
-    if [[ ${TEAMCITY_VERSION} ]]; then
-      echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${EACH_OS_NAME}']"
+    if [[ -z ${CRAWL_BASE_IMAGES_AND_PKG[*]} ]]; then
+      print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images and pkg array because it's empty!"
     fi
 
     for EACH_OS_VERSION in "${CRAWL_OS_VERSIONS[@]}"; do
-
-      if [[ ${TEAMCITY_VERSION} ]]; then
-        echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${EACH_OS_VERSION}']"
-      fi
-
+      teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_VERSION}"
       for EACH_BASE_IMAGES_AND_PKG in "${CRAWL_BASE_IMAGES_AND_PKG[@]}"; do
 
         # shellcheck disable=SC2034
         SHOW_SPLASH_EC='false'
 
         # shellcheck disable=SC2001
-        EACH_BASE_IMAGE=$( echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/:.*//' )
+        EACH_BASE_IMAGE=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/:.*//')
         # shellcheck disable=SC2001
-        EACH_TAG_PKG=$( echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://' )
+        EACH_TAG_PKG=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://')
 
         if [[ ${TEAMCITY_VERSION} ]]; then
           echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} -- ${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT_TEAMCITY}|n']"
           echo " "
         fi
 
-        # (Priority) ToDo: refactor >> add docker file flag logic
+        # (Priority) ToDo: pass env variable `COMPOSE_FILE` to flag `--compose-file` >> (ref task NMO-338 add docker-compose file selection logic)
         # shellcheck disable=SC2086
         source dockerized-norlab-scripts/build_script/dn_execute_compose.bash \
-                                        --dockerized-norlab-version "${EACH_DN_VERSION}" \
-                                        --base-image "${EACH_BASE_IMAGE}" \
-                                        --tag-package "${EACH_TAG_PKG}" \
-                                        --tag-version "${EACH_OS_VERSION}" \
-                                        $DN_EXECUTE_COMPOSE_FLAGS \
-                                        -- "${DOCKER_COMPOSE_CMD_ARGS}"
+          ${DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} \
+          --dockerized-norlab-version "${EACH_DN_VERSION}" \
+          --base-image "${EACH_BASE_IMAGE}" \
+          --tag-package "${EACH_TAG_PKG}" \
+          --tag-version "${EACH_OS_VERSION}" \
+          $DN_EXECUTE_COMPOSE_FLAGS \
+          -- "${DOCKER_COMPOSE_CMD_ARGS}"
 
         # ....Collect image tags exported by dn_execute_compose.bash..............................................
         # Global: Read 'DOCKER_EXIT_CODE' env variable exported by function show_and_execute_docker
@@ -266,39 +284,22 @@ for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
         # Global: Read 'DN_IMAGE_TAG' env variable exported by dn_execute_compose.bash
         IMAGE_TAG_CRAWLED=("${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG}")
         IMAGE_TAG_CRAWLED_TC=("${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}")
-        # ....................................................................................................
+        # ..........................................................................................
 
         if [[ ${TEAMCITY_VERSION} ]]; then
           echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash']"
         fi
 
       done
-
-      if [[ ${TEAMCITY_VERSION} ]]; then
-        echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} ${EACH_OS_VERSION}']"
-      fi
-
+      teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_VERSION}"
     done
-
-    if [[ ${TEAMCITY_VERSION} ]]; then
-      echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} ${EACH_OS_NAME}']"
-    fi
-
+    teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_NAME}"
   done
-  if [[ ${TEAMCITY_VERSION} ]]; then
-    echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} ${EACH_DN_VERSION}']"
-  fi
+  teamcity_service_msg_blockClosed_custom "Bloc=${EACH_DN_VERSION}"
 done
 
-echo " "
-print_msg "Environment variables ${MSG_EMPH_FORMAT}(build matrix)${MSG_END_FORMAT} used by compose:\n
-${MSG_DIMMED_FORMAT}    DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS=(${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    DN_MATRIX_SUPPORTED_OS=(${FREEZED_DN_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    DN_MATRIX_L4T_SUPPORTED_VERSIONS=(${FREEZED_DN_MATRIX_L4T_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    DN_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${FREEZED_DN_MATRIX_L4T_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${FREEZED_DN_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${FREEZED_DN_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
-"
+# ====Show feedback================================================================================
+print_env_var_build_matrix 'used by compose'
 
 print_msg_done "FINAL › Build matrix completed with command
 
@@ -306,20 +307,23 @@ ${MSG_DIMMED_FORMAT}    $ docker compose -f docker-compose.dockerized-norlab.bui
 
 Status of tag crawled:
 "
-for tag in "${IMAGE_TAG_CRAWLED[@]}" ; do
-    echo -e "   ${tag}${MSG_END_FORMAT}"
+for tag in "${IMAGE_TAG_CRAWLED[@]}"; do
+  echo -e "   ${tag}${MSG_END_FORMAT}"
 done
 
 print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
-# ====TeamCity service message================================================================================
+# ====TeamCity service message======================================================================
 if [[ ${TEAMCITY_VERSION} ]]; then
   # Tag added to the TeamCity build via a service message
-  for tc_build_tag in "${IMAGE_TAG_CRAWLED_TC[@]}" ; do
-      echo -e "##teamcity[addBuildTag '${tc_build_tag}']"
+  for tc_build_tag in "${IMAGE_TAG_CRAWLED_TC[@]}"; do
+    echo -e "##teamcity[addBuildTag '${tc_build_tag}']"
   done
 fi
-# ====Teardown================================================================================================
+# ====Teardown======================================================================================
 cd "${TMP_CWD}"
+
+echo "TESTTT=${TESTTT}"
+
 # shellcheck disable=SC2086
 exit $BUILD_STATUS_PASS

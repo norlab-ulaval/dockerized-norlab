@@ -38,7 +38,7 @@
 
 JETSON_USER='snow'
 
-# ...CUDA toolkit path.............................................................................................
+# ...CUDA toolkit path...................................................................................
 # ref dusty_nv comment at https://forums.developer.nvidia.com/t/cuda-nvcc-not-found/118068
 if [[ $(uname -s) == "Darwin" ]]; then
   echo -e "${MSG_ERROR} CUDA is not supported yet on Apple M1 computer"
@@ -71,7 +71,7 @@ else
   fi
 fi
 
-# ....Install utilities.......................................................................................
+# ....Install utilities.............................................................................
 sudo apt-get update &&
   sudo apt-get upgrade --assume-yes &&
   sudo apt-get install --assume-yes \
@@ -87,7 +87,7 @@ sudo apt-get update &&
     zip gzip tar unzip &&
   sudo rm -rf /var/lib/apt/lists/*
 
-# ....Install Jetson utilities.................................................................................
+# ....Install Jetson utilities.......................................................................
 
 # ToDo: This step is specialized to Jetson, add an if/then/else clause
 
@@ -102,7 +102,7 @@ sudo pip3 install --upgrade jetson-stats
 #   - Many environment variables with prefix `JETSON_"`
 # (NICE TO HAVE) ToDo: implement follow the step for docker integration at https://github.com/rbonghi/jetson_stats#docker
 
-# ....Configure Docker.........................................................................................
+# ....Configure Docker...............................................................................
 echo ""
 sudo docker version
 echo ""
@@ -121,7 +121,7 @@ sudo systemctl enable containerd.service
 
 sudo systemctl restart docker
 
-# ....Install Docker-compose...................................................................................
+# ....Install Docker-compose.........................................................................
 # . . Add Docker’s official GPG key:. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 sudo mkdir -m 0755 -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -141,14 +141,14 @@ echo ""
 docker compose version
 echo ""
 
-# ....Register your ssh credential.............................................................................
+# ....Register your ssh credential...................................................................
 ## (Priority) ToDo: implement › check if the file existe first <- unmute when implemented
 mkdir -p "/home/${JETSON_USER}/.ssh"
 sudo chown -R ${JETSON_USER}:${JETSON_USER} "/home/${JETSON_USER}/.ssh"
 # Execute in workstation
 #   $ scp ~/.ssh/id_rsa.pub snow@10.0.0.207:./.ssh/authorized_keys
 
-# ....FINAL STEP...............................................................................................
+# ....FINAL STEP.....................................................................................
 echo ""
 echo "....Jetson Xavier install script DONE..................................................."
 echo "1. Dont forget to register your ssh credential in the Jetson using the following command"
@@ -168,5 +168,5 @@ echo "    - https://teamcity-support.jetbrains.com/hc/en-us/community/posts/1150
 echo
 echo "3. Reboot the Jetson when done "
 echo "      $ sudo shutdown --reboot now"
-echo "..................................................................................."
+echo "........................................................................."
 echo ""

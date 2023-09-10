@@ -12,11 +12,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-# ====Begin install============================================================================================
+# ====Begin install==================================================================================
 
 ENV DN_DEV_WORKSPACE=$HOME/ros2_ws
 
-# ....install ROS2 specific utilities.........................................................................
+# ....install ROS2 specific utilities...............................................................
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         ros-dev-tools \
@@ -28,7 +28,7 @@ RUN pip3 install --no-cache-dir  \
 
 RUN mkdir -p "${DN_DEV_WORKSPACE}/src"
 
-# ....install sources.........................................................................................
+# ....install sources...............................................................................
 
 ## . . ros2_control Demos. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ## https://github.com/ros-controls/ros2_control_demos

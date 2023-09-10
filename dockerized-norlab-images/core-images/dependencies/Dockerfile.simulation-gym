@@ -3,9 +3,9 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
-# ====Begin===================================================================================================
+# ====Begin=========================================================================================
 
-# ...Install simulator........................................................................................
+# ...Install simulator..............................................................................
 # Dependencies
 #   box2d-py dependency: swig
 #   Gym headless server rendering require a virtual X server like xvfb
@@ -45,7 +45,7 @@ RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
         gym-notebook-wrapper
 
 
-# ....Add dockerized-norlab tools............................................................................
+# ....Add dockerized-norlab tools..................................................................
 # ToDo: move this step at a later stage
 
 COPY --from=context-dn-container-tools ./dn_test/* ./dockerized-norlab-images/container-tools/dn_test/

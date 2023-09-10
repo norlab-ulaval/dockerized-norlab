@@ -2,6 +2,7 @@ name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
 
 services:
 
+  # (Priority) ToDo: refactor out global services >> NMO-340 split docker-compose by build stage
   global-service-dev:
     build:
       context: ../base-images/global-service-builder
@@ -36,7 +37,8 @@ services:
       platforms:
         - "linux/arm64/v8"
 
-  # ====Dockerized-NorLab base images========================================================================
+  # ====Dockerized-NorLab base images==============================================================
+  # (Priority) ToDo: move dn-ros to dependencies services >> NMO-340 split docker-compose by build stage
   dn-ros:
     extends: global-service-builder
     build:
@@ -46,7 +48,8 @@ services:
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dn-ros:${DN_IMAGE_TAG:?err}
 
-  # ====Dockerized-NorLab dependencies=======================================================================
+  # ====Dockerized-NorLab dependencies=============================================================
+  # (Priority) ToDo: refactor out dependencies services >> NMO-340 split docker-compose by build stage
   dependencies-core:
     extends: global-service-builder
     build:
@@ -101,7 +104,8 @@ services:
 ##    depends_on:
 ##      - dependencies-python-science-stack
 
-#  # ====Dockerized-NorLab images=============================================================================
+#  # ====Dockerized-NorLab images===================================================================
+#  # (Priority) ToDo: refactor out package related services to dn-packages compose file >> NMO-340 split docker-compose by build stage
 #  dn-control-drl:
 #    extends: global-service-builder
 #    build:
@@ -127,7 +131,8 @@ services:
 ##      - dependencies-interactive
 #
 #
-#  # ====Project level========================================================================================
+#  # ====Project level==============================================================================
+#  # (Priority) ToDo: refactor out project related services to dn-project compose file >> NMO-340 split docker-compose by build stage
 #  dn-project-template:
 #    extends: global-service-builder
 #    environment:

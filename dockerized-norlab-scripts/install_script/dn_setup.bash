@@ -5,7 +5,7 @@
 #
 
 
-# ...aliasing dev..................................................................................................
+# ...aliasing dev........................................................................................
 # ref:
 # - https://www.baeldung.com/linux/bash-alias-with-parameters
 # - https://unix.stackexchange.com/questions/3773/how-to-pass-parameters-to-an-alias
@@ -55,7 +55,7 @@ echo -e "${MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to install
 
 
 
-# ...CUDA toolkit path.............................................................................................
+# ...CUDA toolkit path...................................................................................
 # ref dusty_nv comment at https://forums.developer.nvidia.com/t/cuda-nvcc-not-found/118068
 if [[ $(uname -s) == "Darwin" ]]; then
   echo -e "${MSG_ERROR} CUDA is not supported yet on Apple M1 computer"
