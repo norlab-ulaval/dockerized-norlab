@@ -1,0 +1,26 @@
+name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
+
+services:
+
+  # ====Dockerized-NorLab perception ==============================================================
+  dn-perception:
+    extends:
+      file: ../compose-matrix/docker-compose.global-service.build.yaml
+      service: global-service-builder
+    build:
+      context: ../core-images/pkg-perception/dn-perception
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dn-perception:${DN_IMAGE_TAG:?err}
+
+  dn-perception-libpointmatcher:
+    extends: dn-perception
+    build:
+      context: ../core-images/pkg-perception/dn-perception-libpointmatcher
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dn-perception
+    image: ${DN_HUB:?err}/dn-perception-libpointmatcher:${DN_IMAGE_TAG:?err}
+
+

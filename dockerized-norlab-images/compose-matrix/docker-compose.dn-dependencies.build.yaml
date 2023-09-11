@@ -28,7 +28,6 @@ services:
     container_name: IamInteractive
     image: ${DN_HUB:?err}/dependencies-prompt:${DN_IMAGE_TAG:?err}
 
-
   dependencies-python-science-stack:
     extends: dependencies-core
     build:

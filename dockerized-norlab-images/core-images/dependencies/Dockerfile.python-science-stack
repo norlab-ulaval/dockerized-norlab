@@ -7,10 +7,10 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 # install aditional python package
 RUN pip3 install --no-cache-dir --verbose \
     scipy \
-    scikit-learn \
     pandas \
     numba
 
+#    scikit-learn \
 #    pycuda
 
 

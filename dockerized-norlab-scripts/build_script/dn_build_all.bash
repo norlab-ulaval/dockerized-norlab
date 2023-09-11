@@ -22,5 +22,5 @@ bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matr
                       "$@" -- build
 
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                      .env.build_matrix.dn-packages \
+                      .env.build_matrix.dn-control \
                       "$@" -- build
