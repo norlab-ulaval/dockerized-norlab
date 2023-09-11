@@ -15,7 +15,7 @@ COMPOSE_FILE=Docker/dn-compose/docker-compose.ros-project-template.jetson.run.ya
 
 docker compose -f "${COMPOSE_FILE}" up --detach --wait
 
-#CN=$(grep -A3 'develop:' "${COMPOSE_FILE}" | tail -n1); CN=${CN//*container_name: /}; echo "$CN"
+#CN=$(grep -A3 'project-develop:' "${COMPOSE_FILE}" | tail -n1); CN=${CN//*container_name: /}; echo "$CN"
 #echo "${CN}"
 
 if [[ -n $TEAMCITY_VERSION ]]; then

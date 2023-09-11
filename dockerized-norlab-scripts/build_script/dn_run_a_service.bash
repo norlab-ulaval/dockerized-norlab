@@ -22,12 +22,13 @@ elif [[ $( basename "$(pwd)" ) = dockerized-norlab-scripts ]]; then
     cd ..
 fi
 
-
+#OPTION_FLAG='--build'
+#OPTION_FLAG='--user pycharm-debugger'
 
 # Notes;
 #   - be advised that docker compose run command bypass the container_name field of the .yaml file so you can spin the same service multiple time and all container will have a unique name
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${DOTENV_BUILD_MATRIX}" \
-                                                            --fail-fast \
-                                                            -- run --build --rm --no-deps "$@"
+bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
+                "${DOTENV_BUILD_MATRIX}" \
+                --fail-fast \
+                -- run "${OPTION_FLAG:-""}" --rm --no-deps "$@"
 
-#--force-recreate

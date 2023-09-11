@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-# Convenient script for building all images specified in 'docker-compose.dn-dependencies.build.yaml'
+# Convenient script for building all images specified in in a dotenv build matrix file
 #
 # Usage:
-#   $ bash dn_build_all_images.bash '<.env.build_matrix.*>' [<optional flag>]
+#   $ bash dn_build_over_single_build_matrix.bash '<.env.build_matrix.*>' [<optional flag>]
 #
 # Arguments:
 #   - <.env.build_matrix.*>  Dotenv build matrix file

@@ -1,0 +1,101 @@
+name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
+
+services:
+
+  # ====Dockerized-NorLab control images===========================================================
+  dn-control:
+    extends:
+      file: ../compose-matrix/docker-compose.global-service.build.yaml
+      service: global-service-builder
+    build:
+      context: ../dockerized-norlab-images/core-images/pkg-control/
+      dockerfile: Dockerfile.dn-control
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dn-control-drl:${DN_IMAGE_TAG:?err}
+
+#  dn-control-drl:
+#    extends: dependencies-core
+#    build:
+#      context: ./dockerized-norlab-images
+#      dockerfile: ./core-images/control-drl/Dockerfile
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dependencies-interactive
+#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+#    image: ${DN_HUB:?err}/dn-control-drl:${DN_IMAGE_TAG:?err}
+#
+#  dependencies-simulation-gym:
+#    extends: dependencies-core
+#    build:
+#      context: ../core-images/pkg-control/
+#      dockerfile: Dockerfile.simulation-gym
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dependencies-python-science-stack
+#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+#    image: ${DN_HUB:?err}/dependencies-simulation-gym:${DN_IMAGE_TAG:?err}
+#
+#  dn-perception-3d:
+#    extends: dependencies-core
+#    build:
+#      context: ./dockerized-norlab-images
+#      dockerfile: ./core-images/perception-3d/Dockerfile
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dependencies-interactive
+#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+#    image: ${DN_HUB:?err}/dn-perception-3d:${DN_IMAGE_TAG:?err}
+#
+#
+#  # ====Project level==============================================================================
+#  # (Priority) ToDo: refactor out project related services to dn-project compose file >> NMO-340 split docker-compose by build stage
+#  project-template:
+#    extends: dependencies-core
+#    environment:
+#      DN_CONTAINER_NAME: ${CONTAINER_NAME}
+#    container_name: ${CONTAINER_NAME}
+#    build:
+#      context: ./dockerized-norlab-images/core-images/project-template
+#      dockerfile: ./Dockerfile
+#      args:
+#        DN_HUB: ${DN_HUB:?err}   # norlabsnow
+#        BASE_IMAGE: ${DN_HUB:?err}/dn-control-drl
+#        DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
+#        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}   # norlab-ulaval
+#        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}   # NorLab_MPPI
+#    image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+#
+#  project-develop:
+#    extends: dependencies-core
+#    build:
+#      context: ./dockerized-norlab-images/core-images/project-develop
+#      dockerfile: ./Dockerfile
+#      args:
+#        DN_PROJECT_HUB: ${DN_PROJECT_HUB}   # norlabsnow
+#        DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-project-template
+#        DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
+##        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}
+##        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}
+##        DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
+#    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+#
+#  project-deploy:
+#    extends: dependencies-core
+#    build:
+#      context: ./dockerized-norlab-images/core-images/project-deploy
+#      dockerfile: ./Dockerfile
+#      args:
+#         DN_PROJECT_HUB: ${DN_PROJECT_HUB}   # norlabsnow
+#         DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-project-template
+#         DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
+##         DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
+#         DN_DEPLOY_REPO_BRANCH: main  # Option: main, dev or tag version (ie v*.*.*)
+#    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+#
+##  project-deploy-bleeding-edge:
+##    extends: project-deploy
+##    build:
+##      args:
+##        DN_DEPLOY_REPO_BRANCH: dev
+##    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:bleeding-edge-${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+#
+#

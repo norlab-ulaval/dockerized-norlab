@@ -25,7 +25,7 @@ bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matr
                                                             -- up --build --detach --wait --no-deps "$1"
 
 
-#CN=$(grep -A3 'develop:' ${THE_COMPOSE_FILE} | tail -n1); CN=${CN//*container_name: /}; echo "$CN"
+#CN=$(grep -A3 'project-develop:' ${THE_COMPOSE_FILE} | tail -n1); CN=${CN//*container_name: /}; echo "$CN"
 #echo "${CN}"
 
 if [[ -n $TEAMCITY_VERSION ]]; then

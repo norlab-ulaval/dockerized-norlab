@@ -14,7 +14,7 @@ RUN pip3 install --no-cache-dir --verbose \
 #    pycuda
 
 
-# ...Configure Matplotlib to use a non-interactive backends for TeamCity run...................................
+# ...Configure Matplotlib to use a non-interactive backends for TeamCity run..........................
 # Procedure to fix NLSAR-343 ﹅→ `ModuleNotFoundError` when using pyplot & `couldn't connect to display`
 # Solution: install python3-tk and configure matplotlib to use a non-interactive backend in TeamCity
 # Ref:
@@ -34,6 +34,5 @@ RUN apt-get update \
       python3-matplotlib \
       python3-tk \
     && rm -rf /var/lib/apt/lists/*
-
 
 CMD [ "bash" ]

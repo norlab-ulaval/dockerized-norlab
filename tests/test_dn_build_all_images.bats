@@ -36,7 +36,7 @@ fi
 
 
 # ====Setup=========================================================================================
-TESTED_FILE="dn_build_all_images.bash"
+TESTED_FILE="dn_build_over_single_build_matrix.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 setup_file() {

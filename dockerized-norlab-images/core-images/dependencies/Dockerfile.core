@@ -69,10 +69,20 @@ RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
         pytest-mock \
         python-dotenv \
         pytest-env \
-        mock
+        mock \
+        pytest-instafail \
+        pytest-xdist
 
-    ## (!) pytest-cov › "The pytest-cov package, due to technical restrictions, breaks PyCharm's debugger." \
-    ## see https://www.jetbrains.com/help/pycharm/2023.1/run-debug-configuration-py-test.html
+
+## (!) pytest-cov › "The pytest-cov package, due to technical restrictions, breaks PyCharm's debugger." \
+## see https://www.jetbrains.com/help/pycharm/2023.1/run-debug-configuration-py-test.html
+
+## (!) Hack for solving pytest<->pycharm RuntimeError
+## `INTERNALERROR> RuntimeError: wrap_controller at 'pytest_runtest_makereport' /usr/local/lib/python3.8/dist-packages/dash/testing/plugin.py:106 did not yield`
+## dash==2.8.1 › Solution from https://github.com/plotly/dash/issues/2460
+## Version 2.9.0 is responsible for the pytest<->pycharm RuntimeError
+RUN pip3 install --no-cache-dir \
+    'dash[testing]!=2.9.0'
 
 ## Packages for older python version
 #RUN pip3 install --no-cache-dir --verbose  \
@@ -92,6 +102,7 @@ WORKDIR /dockerized-norlab
 
 RUN git clone https://github.com/norlab-ulaval/norlab-shell-script-tools.git ./utilities/norlab-shell-script-tools/
 
+# Test norlab-shell-script-tools install
 WORKDIR /dockerized-norlab
 RUN cd ./utilities/norlab-shell-script-tools/src/utility_scripts \
     && source ./which_python_version.bash \

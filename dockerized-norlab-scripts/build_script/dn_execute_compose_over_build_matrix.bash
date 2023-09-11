@@ -5,7 +5,7 @@
 # Usage:
 #   $ bash dn_execute_compose_over_build_matrix.bash '<.env.build_matrix.*>' [<optional flag>] [-- <any docker cmd+arg>]
 #
-#   $ bash dn_execute_compose_over_build_matrix.bash '.env.build_matrix.dependencies' -- build --no-cache --push dependencies-core
+#   $ bash dn_execute_compose_over_build_matrix.bash '.env.build_matrix.dn-dependencies' -- build --no-cache --push dependencies-core
 #
 # Arguments:
 #   see function print_help_in_terminal or execute the script with the --help flag
@@ -322,8 +322,6 @@ if [[ ${TEAMCITY_VERSION} ]]; then
 fi
 # ====Teardown======================================================================================
 cd "${TMP_CWD}"
-
-echo "TESTTT=${TESTTT}"
 
 # shellcheck disable=SC2086
 exit $BUILD_STATUS_PASS

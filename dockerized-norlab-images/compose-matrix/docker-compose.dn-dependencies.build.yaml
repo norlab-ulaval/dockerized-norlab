@@ -2,191 +2,50 @@ name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
 
 services:
 
-  # (Priority) ToDo: refactor out global services >> NMO-340 split docker-compose by build stage
-  global-service-dev:
-    build:
-      context: ../base-images/global-service-builder
-#      no_cache: true  # Enforce full rebuild
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    tty: true
-    stdin_open: true
-    init: true  # Propagate exit code (See remark in task NMO-266)
-    devices:
-      - /dev/input/js0
-    privileged: true
-    security_opt:
-      - seccomp=unconfined
-      - apparmor=unconfined
-    cap_add:
-      - SYS_PTRACE
-    network_mode: host    # allow the container to have full access to the host’s networking system
-    pid: host
-    ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
-
-  global-service-builder:
-    extends: global-service-dev # ToDo: on dev task end >> mute this line ←
-    labels:
-      org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-    build:
-      context: ../base-images/global-service-builder
-      additional_contexts:
-        context-dn-container-tools: ../container-tools/
-      args:
-        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-      platforms:
-        - "linux/arm64/v8"
-
-  # ====Dockerized-NorLab base images==============================================================
-  # (Priority) ToDo: move dn-ros to dependencies services >> NMO-340 split docker-compose by build stage
-  dn-ros:
-    extends: global-service-builder
-    build:
-      context: ../base-images/dn-ros
-      args:
-        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
-        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dn-ros:${DN_IMAGE_TAG:?err}
-
   # ====Dockerized-NorLab dependencies=============================================================
-  # (Priority) ToDo: refactor out dependencies services >> NMO-340 split docker-compose by build stage
   dependencies-core:
-    extends: global-service-builder
+    extends:
+      file: ../compose-matrix/docker-compose.global-service.build.yaml
+      service: global-service-builder
     build:
       context: ../core-images/dependencies/
       dockerfile: Dockerfile.core
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dn-ros
-        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
+        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dependencies-core:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dn-ros
 
-  dependencies-python-science-stack:
-    extends: global-service-builder
+  dependencies-prompt:
+    extends: dependencies-core
     build:
-      context: ../core-images/dependencies/
-      dockerfile: Dockerfile.python-science-stack
+      dockerfile: Dockerfile.prompt
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dependencies-core
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dependencies-core
+    environment:
+      DN_ACTIVATE_POWERLINE_PROMT: false
+      DN_CONTAINER_NAME: IamInteractive
+    container_name: IamInteractive
+    image: ${DN_HUB:?err}/dependencies-prompt:${DN_IMAGE_TAG:?err}
 
-  dependencies-simulation-gym:
-    extends: global-service-builder
+
+  dependencies-python-science-stack:
+    extends: dependencies-core
     build:
-      context: ../core-images/dependencies/
-      dockerfile: Dockerfile.simulation-gym
+      dockerfile: Dockerfile.python-science-stack
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dependencies-prompt
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
+
+  dependencies-ros2-custom:
+    extends: dependencies-core
+    build:
+      dockerfile: Dockerfile.ros2-dn-custom
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dependencies-python-science-stack
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dependencies-simulation-gym:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dependencies-python-science-stack
-#      - dependencies-core
-    command: bash -c "tree -L 4 -a && bash" # <-- we arre here: on task end >> mute this line ←
+      tags:
+        - ${DN_HUB:?err}/dn-dependencies:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
 
-#  interactive-tools:
-#    extends: global-service-builder
-#    build:
-#      context: ../core-images/project-add-on
-#      dockerfile: Dockerfile.interactive-tools
-#      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dependencies-core
-#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-#        DN_ACTIVATE_POWERLINE_PROMT: true
-#    image: ${DN_HUB:?err}/dependencies-interactive:${DN_IMAGE_TAG:?err}
-#    environment:
-#      DN_CONTAINER_NAME: IamInteractive
-#    container_name: IamInteractive
-##    depends_on:
-##      - dependencies-python-science-stack
-
-#  # ====Dockerized-NorLab images===================================================================
-#  # (Priority) ToDo: refactor out package related services to dn-packages compose file >> NMO-340 split docker-compose by build stage
-#  dn-control-drl:
-#    extends: global-service-builder
-#    build:
-#      context: ./dockerized-norlab-images
-#      dockerfile: ./core-images/control-drl/Dockerfile
-#      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dependencies-interactive
-#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-#    image: ${DN_HUB:?err}/dn-control-drl:${DN_IMAGE_TAG:?err}
-##    depends_on:
-##      - dependencies-interactive
-#
-#  dn-perception-3d:
-#    extends: global-service-builder
-#    build:
-#      context: ./dockerized-norlab-images
-#      dockerfile: ./core-images/perception-3d/Dockerfile
-#      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dependencies-interactive
-#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-#    image: ${DN_HUB:?err}/dn-perception-3d:${DN_IMAGE_TAG:?err}
-##    depends_on:
-##      - dependencies-interactive
-#
-#
-#  # ====Project level==============================================================================
-#  # (Priority) ToDo: refactor out project related services to dn-project compose file >> NMO-340 split docker-compose by build stage
-#  dn-project-template:
-#    extends: global-service-builder
-#    environment:
-#      DN_CONTAINER_NAME: ${CONTAINER_NAME}
-#    container_name: ${CONTAINER_NAME}
-#    build:
-#      context: ./dockerized-norlab-images/core-images/dn-project-template
-#      dockerfile: ./Dockerfile
-#      args:
-#        DN_HUB: ${DN_HUB:?err}   # norlabsnow
-#        BASE_IMAGE: ${DN_HUB:?err}/dn-control-drl
-#        DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
-#        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}   # norlab-ulaval
-#        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}   # NorLab_MPPI
-#    image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-##    depends_on:
-##      - dependencies-interactive
-#
-#  develop:
-#    extends: global-service-builder
-#    build:
-#      context: ./dockerized-norlab-images/core-images/develop
-#      dockerfile: ./Dockerfile
-#      args:
-#        DN_PROJECT_HUB: ${DN_PROJECT_HUB}   # norlabsnow
-#        DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-dn-project-template
-#        DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
-##        DN_TARGET_PROJECT_SRC_DOMAIN: ${DN_TARGET_PROJECT_SRC_DOMAIN}
-##        DN_TARGET_PROJECT_SRC_REPO: ${DN_TARGET_PROJECT_SRC_REPO}
-##        DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
-#    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-##    depends_on:
-##      - dn-project-template
-#
-#  deploy:
-#    extends: global-service-builder
-#    build:
-#      context: ./dockerized-norlab-images/core-images/deploy
-#      dockerfile: ./Dockerfile
-#      args:
-#         DN_PROJECT_HUB: ${DN_PROJECT_HUB}   # norlabsnow
-#         DN_PROJECT_IMAGE_NAME: ${DN_PROJECT_IMAGE_NAME}   # norlab-ros-dn-project-template
-#         DN_BASE_IMG_TAG: ${DN_IMAGE_TAG:?err}
-##         DS_HOST_TYPE: XavierNX # Option: Local (Not used now)
-#         DN_DEPLOY_REPO_BRANCH: main  # Option: main, dev or tag version (ie v*.*.*)
-#    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-##    depends_on:
-##      - dn-project-template
-#
-##  deploy-bleeding-edge:
-##    extends: deploy
-##    build:
-##      args:
-##        DN_DEPLOY_REPO_BRANCH: dev
-##    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:bleeding-edge-${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-#
-#
