@@ -5,3 +5,6 @@
 
 # Jetbrains
 .idea/*
+
+# Files and directories
+/dockerized-norlab-scripts/build_script/build_all.log

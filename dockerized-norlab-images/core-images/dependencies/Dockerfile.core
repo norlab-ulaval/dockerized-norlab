@@ -55,6 +55,8 @@ FROM base-image AS final
 
 RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
     && pip3 install --no-cache-dir --verbose  \
+        setuptools \
+        wheel \
         # . . install python general development package . . . . . . . . . . . .
         pyyaml \
         termcolor \
@@ -102,15 +104,14 @@ WORKDIR /dockerized-norlab
 
 RUN git clone https://github.com/norlab-ulaval/norlab-shell-script-tools.git ./utilities/norlab-shell-script-tools/
 
-# Test norlab-shell-script-tools install
-WORKDIR /dockerized-norlab
+# . . Sanity check. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 RUN cd ./utilities/norlab-shell-script-tools/src/utility_scripts \
     && source ./which_python_version.bash \
     && echo "PYTHON3_VERSION=${PYTHON3_VERSION}"
 
-# ....Add dockerized-norlab tools..................................................................
+# ....Add dn-container tools........................................................................
 # ToDo: move this step at a later stage
-
+WORKDIR /dockerized-norlab
 COPY --from=context-dn-container-tools ./dn_info.bash ./dockerized-norlab-images/container-tools/
 
 RUN ( \

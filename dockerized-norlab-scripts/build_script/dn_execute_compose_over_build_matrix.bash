@@ -165,7 +165,7 @@ while [ $# -gt 0 ]; do
     ;;
   --) # no more option
     shift
-    DOCKER_COMPOSE_CMD_ARGS="$*"
+    DOCKER_COMPOSE_CMD_ARGS=$@
     break
     ;;
   *) # Default case
@@ -176,7 +176,7 @@ while [ $# -gt 0 ]; do
 done
 
 # ...................................................................................................
-print_msg "Build images specified in ${MSG_DIMMED_FORMAT}'docker-compose.dockerized-norlab.build.yaml'${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
+print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
 
 ## Freeze build matrix env variable to prevent override by dn_execute_compose.bash when reloading .env/build_matrix
 FREEZED_DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}"
@@ -262,7 +262,8 @@ for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
           --tag-package "${EACH_TAG_PKG}" \
           --tag-version "${EACH_OS_VERSION}" \
           $DN_EXECUTE_COMPOSE_FLAGS \
-          -- "${DOCKER_COMPOSE_CMD_ARGS}"
+          -- $DOCKER_COMPOSE_CMD_ARGS
+
 
         # ....Collect image tags exported by dn_execute_compose.bash..............................................
         # Global: Read 'DOCKER_EXIT_CODE' env variable exported by function show_and_execute_docker
@@ -301,15 +302,32 @@ done
 # ====Show feedback================================================================================
 print_env_var_build_matrix 'used by compose'
 
-print_msg_done "FINAL › Build matrix completed with command
-
-${MSG_DIMMED_FORMAT}    $ docker compose -f docker-compose.dockerized-norlab.build.yaml ${DOCKER_COMPOSE_CMD_ARGS} ${MSG_END_FORMAT}
-
-Status of tag crawled:
-"
+STR_BUILT_SERVICES=$( docker compose -f "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services | sed 's/^/   - /' )
+export STR_BUILT_SERVICES
 for tag in "${IMAGE_TAG_CRAWLED[@]}"; do
-  echo -e "   ${tag}${MSG_END_FORMAT}"
+  STR_IMAGE_TAG_CRAWLED="${STR_IMAGE_TAG_CRAWLED}\n   ${tag}${MSG_END_FORMAT}"
 done
+
+STR_BUILD_MATRIX_SERVICES_AND_TAGS="Service crawled:
+${MSG_DIMMED_FORMAT}
+${STR_BUILT_SERVICES}
+${MSG_END_FORMAT}
+with tag:
+${STR_IMAGE_TAG_CRAWLED}"
+
+# Quick hack to export build matrix log to parent script when called via bash sinc we can't source it whitout breacking docker command
+( \
+  echo ""; \
+  echo "STR_BUILD_MATRIX_SERVICES_AND_TAGS=\"$STR_BUILD_MATRIX_SERVICES_AND_TAGS\""; \
+  echo ""; \
+) > ./dockerized-norlab-scripts/build_script/build_all.log
+
+
+print_msg_done "FINAL › Build matrix completed with command
+${MSG_DIMMED_FORMAT}
+    $ docker compose -f ${DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS}
+${MSG_END_FORMAT}
+${STR_BUILD_MATRIX_SERVICES_AND_TAGS}"
 
 print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 

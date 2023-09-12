@@ -8,6 +8,8 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 RUN pip3 install --no-cache-dir --verbose \
     scipy \
     pandas \
+    Cython \
+    numpy\
     numba
 
 #    scikit-learn \

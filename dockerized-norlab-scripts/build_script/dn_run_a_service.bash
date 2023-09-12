@@ -22,7 +22,7 @@ elif [[ $( basename "$(pwd)" ) = dockerized-norlab-scripts ]]; then
     cd ..
 fi
 
-#OPTION_FLAG='--build'
+OPTION_FLAG='--build'
 #OPTION_FLAG='--user pycharm-debugger'
 
 # Notes;

@@ -4,13 +4,9 @@ services:
 
   global-service-dev:
     build:
-      context: ../core-images/global-service-builder
-      no_cache: true  # Enforce full rebuild
-    command: bash -c "tree -L 4 -a && printenv | grep -i -e DN_ && bash" # <-- we arre here: on task end >> mute this line ←
-#    environment:
-#      DN_CONTAINER_NAME: IamNooorLab
-#      DN_ACTIVATE_POWERLINE_PROMT: true
-#    container_name: IamNooorLab
+      context: .
+#      no_cache: true  # Enforce full rebuild                               <-- mute on task end
+    command: bash -c "tree -L 4 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     volumes:
       - /etc/localtime:/etc/localtime:ro
     tty: true
@@ -27,15 +23,20 @@ services:
     network_mode: host    # allow the container to have full access to the host’s networking system
     pid: host
     ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
+#    environment:
+#      DN_CONTAINER_NAME: IamNooorLab
+#      DN_ACTIVATE_POWERLINE_PROMT: true
+#    container_name: IamNooorLab
 
   global-service-builder:
     extends: global-service-dev # ToDo: on dev task end >> mute this line ←
     labels:
       org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
     build:
-      context: ../core-images/global-service-builder
+      context: .
+      dockerfile: Dockerfile
       additional_contexts:
-        context-dn-container-tools: ../container-tools/
+        context-dn-container-tools: ../../container-tools/
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
       platforms:

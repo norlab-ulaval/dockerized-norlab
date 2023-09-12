@@ -1,0 +1,57 @@
+name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
+
+services:
+
+  # ====Dockerized-NorLab control =================================================================
+  dn-control-deep-learning:
+    extends:
+      file: docker-compose.dn-control.build.yaml
+      service: dn-control
+    build:
+      context: dn-control-deep-learning
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dn-control
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dn-control-deep-learning:${DN_IMAGE_TAG:?err}
+
+  dn-control-deep-rl:
+    extends: dn-control-deep-learning
+    build:
+      context: dn-control-deep-rl
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dn-control-deep-learning
+    image: ${DN_HUB:?err}/dn-control-deep-rl:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-control-deep-learning
+
+#  dn-control-torchrl:
+#    extends: dn-control-deep-learning
+#    build:
+#      context: dn-control-torchrl
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dn-control-deep-rl
+#    image: ${DN_HUB:?err}/dn-control-torchrl:${DN_IMAGE_TAG:?err}
+#    depends_on:
+#      - dn-control-deep-rl
+
+  dn-control-deep-rl-gym:
+    extends: dn-control-deep-learning
+    build:
+      context: dn-control-gym
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dn-control-deep-rl
+    image: ${DN_HUB:?err}/dn-control-deep-rl-gym:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-control-deep-rl
+
+  dn-control-deep-rl-f1tenth:
+    extends: dn-control-deep-learning
+    build:
+      context: dn-control-f1tenth
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dn-control-deep-rl-gym
+    image: ${DN_HUB:?err}/dn-control-deep-rl-f1tenth:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-control-deep-rl-gym
+
+

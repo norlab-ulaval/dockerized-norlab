@@ -126,14 +126,14 @@ setup_file() {
                                                 -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"Pass".*"DNlatest-JC-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DNlatest-JC-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DNlatest-JC-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DNlatest-JC-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DNv9.9.9-JC-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DNv9.9.9-JC-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DNv9.9.9-JC-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DNv9.9.9-JC-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-latest-JP-humble-ros-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-latest-JP-humble-pytorch-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-latest-JP-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-latest-JP-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v9.9.9-JP-humble-ros-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v9.9.9-JP-humble-pytorch-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v9.9.9-JP-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v9.9.9-JP-humble-pytorch-l4t-r22.2.2".*
 #  bats_print_run_env_variable
 }
 
@@ -147,14 +147,14 @@ setup_file() {
                                                 -- "$DOCKER_CMD"
   set -e
   assert_failure
-  assert_output --regexp .*"Fail".*"DNlatest-JC-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DNlatest-JC-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DNlatest-JC-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DNlatest-JC-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DNv9.9.9-JC-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DNv9.9.9-JC-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DNv9.9.9-JC-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DNv9.9.9-JC-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-latest-JP-humble-ros-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-latest-JP-humble-pytorch-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-latest-JP-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-latest-JP-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-v9.9.9-JP-humble-ros-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-v9.9.9-JP-humble-pytorch-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-v9.9.9-JP-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-v9.9.9-JP-humble-pytorch-l4t-r22.2.2".*
 }
 
 @test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
@@ -180,11 +180,11 @@ setup_file() {
                                                 --os-name-build-matrix-override 'l4t' \
                                                 --l4t-version-build-matrix-override 'r33.3.3'
   set -e
-  assert_output --regexp .*"Pass".*"DNv8.8.8-JC-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"Pass".*"DNv8.8.8-JC-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v8.8.8-JP-humble-ros-core-l4t-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v8.8.8-JP-humble-pytorch-l4t-r33.3.3".*
 
-  refute_output --regexp .*"Pass".*"DNv9.9.9-JC-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"Pass".*"DNv9.9.9-JC-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v9.9.9-JP-humble-ros-core-l4t-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v9.9.9-JP-humble-pytorch-l4t-r11.1.1".*
 }
 
 @test "flag --help" {

@@ -5,15 +5,16 @@ services:
   # ====Dockerized-NorLab dependencies=============================================================
   dependencies-core:
     extends:
-      file: ../compose-matrix/docker-compose.global-service.build.yaml
+      file: ../global-service-builder/docker-compose.global-service.build.yaml
       service: global-service-builder
     build:
-      context: ../core-images/dependencies/
+      context: .
       dockerfile: Dockerfile.core
       args:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dependencies-core:${DN_IMAGE_TAG:?err}
+  #    pull_policy: if_not_present
 
   dependencies-prompt:
     extends: dependencies-core
@@ -27,6 +28,8 @@ services:
       DN_CONTAINER_NAME: IamInteractive
     container_name: IamInteractive
     image: ${DN_HUB:?err}/dependencies-prompt:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-core
 
   dependencies-python-science-stack:
     extends: dependencies-core
@@ -36,6 +39,8 @@ services:
         BASE_IMAGE: ${DN_HUB:?err}/dependencies-prompt
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-prompt
 
   dependencies-ros2-custom:
     extends: dependencies-core
@@ -47,4 +52,5 @@ services:
       tags:
         - ${DN_HUB:?err}/dn-dependencies:${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
-
+    depends_on:
+      - dependencies-python-science-stack

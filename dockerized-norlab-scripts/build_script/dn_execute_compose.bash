@@ -23,7 +23,6 @@ TAG_VERSION='r35.2.1'
 DOCKER_COMPOSE_CMD_ARGS='build'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 CI_TEST=false
 
-PATH_TO_COMPOSE_FILE_DIR='dockerized-norlab-images/compose-matrix'
 EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
 shift # Remove argument value
 
@@ -37,7 +36,7 @@ if [[ ! -f  ".env.dockerized-norlab" ]]; then
 fi
 
 
-if [[ ! -f  "${PATH_TO_COMPOSE_FILE_DIR}/${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" ]]; then
+if [[ ! -f  "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' can't find the docker-compose.yaml file '${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}'"
   echo '(press any key to exit)'
   read -r -n 1
@@ -156,7 +155,7 @@ while [ $# -gt 0 ]; do
     ;;
   --) # no more option
     shift
-    DOCKER_COMPOSE_CMD_ARGS="$*"
+    DOCKER_COMPOSE_CMD_ARGS=$@
     break
     ;;
   *) # Default case
@@ -173,7 +172,7 @@ export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE}"
 export TAG_VERSION="${TAG_VERSION}"
 export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
 
-export DN_IMAGE_TAG="DN${DOCKERIZED_NORLAB_VERSION}-JC-${DEPENDENCIES_BASE_IMAGE_TAG}"
+export DN_IMAGE_TAG="DN-${DOCKERIZED_NORLAB_VERSION}-JP-${DEPENDENCIES_BASE_IMAGE_TAG}"
 
 print_msg "Environment variables set for compose:\n
 ${MSG_DIMMED_FORMAT}    DOCKERIZED_NORLAB_VERSION=${DOCKERIZED_NORLAB_VERSION} ${MSG_END_FORMAT}
@@ -181,7 +180,7 @@ ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
 "
 
-print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}docker-compose.dockerized-norlab.build.yaml${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT}"
+print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT}"
 print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
@@ -189,7 +188,7 @@ print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
 
-show_and_execute_docker "compose -f ${PATH_TO_COMPOSE_FILE_DIR}/${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS}" "$CI_TEST"
+show_and_execute_docker "compose -f $EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE $DOCKER_COMPOSE_CMD_ARGS" "$CI_TEST"
 
 print_msg "Environment variables used by compose:\n
 ${MSG_DIMMED_FORMAT}    DOCKERIZED_NORLAB_VERSION=${DOCKERIZED_NORLAB_VERSION} ${MSG_END_FORMAT}

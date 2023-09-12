@@ -85,13 +85,13 @@ setup_file() {
                                               --l4t-version-build-matrix-override 'r33.3.3'
 
   assert_success
-  assert_output --regexp .*"docker compose -f docker-compose.dockerized-norlab.build.yaml push".*
+  assert_output --regexp .*"docker compose -f".*"push".*
 
-  assert_output --regexp .*"DNv8.8.8-JC-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DNv8.8.8-JC-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v8.8.8-JP-humble-ros-core-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v8.8.8-JP-humble-pytorch-l4t-r33.3.3".*
 
-  refute_output --regexp .*"DNv9.9.9-JC-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DNv9.9.9-JC-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v9.9.9-JP-humble-ros-core-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v9.9.9-JP-humble-pytorch-l4t-r11.1.1".*
 
 #  bats_print_run_env_variable
 }

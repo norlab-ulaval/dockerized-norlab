@@ -14,3 +14,6 @@ visual/*
 
 # Excluded directory
 /scratches/
+
+# Excluded files
+!/dockerized-norlab-scripts/build_script/build_all.log
