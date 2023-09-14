@@ -20,6 +20,7 @@ BASE_IMAGE='dustynv/ros'
 TAG_PACKAGE='foxy-pytorch-l4t'
 TAG_VERSION='r35.2.1'
 #LPM_JOB_ID='0'
+DOCKER_MANAGEMENT_COMMAND='compose'
 DOCKER_COMPOSE_CMD_ARGS='build'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 CI_TEST=false
 
@@ -79,6 +80,7 @@ function print_help_in_terminal() {
                                               Note: L4T container tags (e.g. r35.2.1) should match the L4T version
                                               on the Jetson otherwize cuda driver won't be accessible
                                               (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
+      --buildx-bake                                Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
       --docker-debug-logs                     Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
       --fail-fast                             Exit script at first encountered error
       --ci-test-force-runing-docker-cmd
@@ -141,13 +143,17 @@ while [ $# -gt 0 ]; do
     export BUILDKIT_PROGRESS=plain
     shift # Remove argument (--docker-debug-logs)
     ;;
+  --buildx-bake)
+    DOCKER_MANAGEMENT_COMMAND='buildx bake'
+    shift # Remove argument (--buildx-bake)
+    ;;
   --fail-fast)
     set -e
     shift # Remove argument (--fail-fast)
     ;;
   --ci-test-force-runing-docker-cmd)
     CI_TEST=true
-    shift # Remove argument (--fail-fast)
+    shift # Remove argument (--ci-test-force-runing-docker-cmd)
     ;;
   -h | --help)
     print_help_in_terminal
@@ -188,7 +194,7 @@ print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
 
-show_and_execute_docker "compose -f $EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE $DOCKER_COMPOSE_CMD_ARGS" "$CI_TEST"
+show_and_execute_docker "$DOCKER_MANAGEMENT_COMMAND -f $EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE $DOCKER_COMPOSE_CMD_ARGS" "$CI_TEST"
 
 print_msg "Environment variables used by compose:\n
 ${MSG_DIMMED_FORMAT}    DOCKERIZED_NORLAB_VERSION=${DOCKERIZED_NORLAB_VERSION} ${MSG_END_FORMAT}

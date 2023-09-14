@@ -97,7 +97,7 @@ setup_file() {
 
 @test "docker command are passed to show_and_execute_docker" {
   local DOCKER_CMD="build --no-cache --push"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' -- ${DOCKER_CMD}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' --fail-fast -- ${DOCKER_CMD}"
   assert_success
   assert_output --regexp .*"Skipping the execution of Docker command".*
   assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}".*
@@ -188,7 +188,19 @@ setup_file() {
 }
 
 @test "flag --help" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' --help
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
+                                                                 --fail-fast \
+                                                                 --help
   assert_success
   assert_output --regexp .*"${TESTED_FILE} '<.env.build_matrix.*>' \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
 }
+
+@test "flag --buildx-bake" {
+  local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' --buildx-bake --fail-fast -- ${DOCKER_CMD}"
+
+  assert_success
+  assert_output --regexp .*"docker buildx bake -f ".*"${DOCKER_CMD}"
+#  bats_print_run_env_variable
+}
+

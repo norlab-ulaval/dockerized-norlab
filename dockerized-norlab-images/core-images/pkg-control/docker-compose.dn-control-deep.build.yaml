@@ -4,13 +4,16 @@ services:
 
   # ====Dockerized-NorLab control =================================================================
   dn-control-deep-learning:
+#    extends:
+#      file: docker-compose.dn-control.build.yaml
+#      service: dn-control
     extends:
-      file: docker-compose.dn-control.build.yaml
-      service: dn-control
+      file: ../global-service-builder/docker-compose.global-service.build.yaml
+      service: global-service-builder
     build:
       context: dn-control-deep-learning
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dn-control
+        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dn-control-deep-learning:${DN_IMAGE_TAG:?err}
 

@@ -47,6 +47,15 @@ def verify_gym_box2d_install() -> None:
         import gym
 
         print(f'> Gym version:    {gym.__version__}')
+        env: gym.wrappers.time_limit.TimeLimit = gym.make('CarRacing-v0')
+        env.reset()
+        # output = env.render("rgb_array")
+        action = env.action_space.sample()
+        next_obs = env.step(action=action)
+        assert isinstance(next_obs[0], np.ndarray)
+        env.close()
+        print("\n> Gym Box2D install is good to go!\n")
+    except gym.error.DeprecatedEnv as e:
         env: gym.wrappers.time_limit.TimeLimit = gym.make('CarRacing-v2')
         env.reset()
         # output = env.render("rgb_array")

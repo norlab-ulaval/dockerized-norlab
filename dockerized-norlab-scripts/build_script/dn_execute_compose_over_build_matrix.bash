@@ -83,6 +83,7 @@ function print_help_in_terminal() {
                           on the Jetson otherwize cuda driver won't be accessible
                           (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
       --ubuntu-version-build-matrix-override jammy
+      --buildx-bake            Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
       --docker-debug-logs
                           Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
       --fail-fast         Exit script at first encountered error
@@ -145,6 +146,10 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--ubuntu-version-build-matrix-override)
     shift # Remove argument value
     ;;
+  --buildx-bake)
+      export DN_EXECUTE_COMPOSE_FLAGS="${DN_EXECUTE_COMPOSE_FLAGS} --buildx-bake"
+      shift # Remove argument (--buildx-bake)
+      ;;
   --docker-debug-logs)
     #    set -v
     #    set -x

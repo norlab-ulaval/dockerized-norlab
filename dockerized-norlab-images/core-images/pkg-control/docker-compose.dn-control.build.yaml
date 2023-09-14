@@ -14,23 +14,26 @@ services:
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dn-control:${DN_IMAGE_TAG:?err}
 
-  dn-control-gym:
-    extends: dn-control
-    build:
-      context: dn-control-gym
-      args:
-        BASE_IMAGE: ${DN_HUB:?err}/dn-control
-    image: ${DN_HUB:?err}/dn-control-gym:${DN_IMAGE_TAG:?err}
-    depends_on:
-      - dn-control
+#  dn-control-gym:
+#    extends: dn-control
+#    build:
+#      context: dn-control-gym
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dn-control
+#    image: ${DN_HUB:?err}/dn-control-gym:${DN_IMAGE_TAG:?err}
+#    depends_on:
+#      - dn-control
 
+#  # (!) Install problem, skipping for now, will use the 'dn-control-deep-rl-f1tenth' image in the mean time
 #  dn-control-f1tenth:
 #    extends: dn-control
 #    build:
 #      context: dn-control-f1tenth
 #      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dn-control-gym
+#        BASE_IMAGE: ${DN_HUB:?err}/dn-control
+##      no_cache: true
 #    image: ${DN_HUB:?err}/dn-control-f1tenth:${DN_IMAGE_TAG:?err}
+##    pull_policy: build
 #    depends_on:
-#      - dn-control-gym
+#      - dn-control
 #

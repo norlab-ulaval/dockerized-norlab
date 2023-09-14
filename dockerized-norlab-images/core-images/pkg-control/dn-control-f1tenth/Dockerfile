@@ -28,31 +28,58 @@ RUN apt-get update --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
 
-#
-#RUN pip3 install --no-cache-dir --verbose --upgrade \
-#    Pillow \
-#    psutil==5.7.0
+##RUN pip3 uninstall -y opencv-python  \
+##    && pip3 install opencv-python-headless
 
+## ....F1TENTH docker file install....................................................................
+#RUN apt-get update --fix-missing && \
+#    apt-get install -y \
+#                    python3-dev \
+#                    python3-pip \
+#                    build-essential \
+#                    libgl1-mesa-dev \
+#                    mesa-utils \
+#                    libglu1-mesa-dev \
+#                    fontconfig \
+#                    libfreetype6-dev
+#
+#RUN pip3 install --upgrade pip \
+#  && pip3 install PyOpenGL \
+#                 PyOpenGL_accelerate
+## ...................................................................................................
+
+### (☕MINOR) ToDo: test >> next bloc ↓↓
+#RUN apt-get update --fix-missing \
+#    && apt-get upgrade --assume-yes
+#
+### (☕MINOR) ToDo: test >> next bloc ↓↓
+##RUN pip3 uninstall --verbose setuptools \
+##    && pip3 install --no-cache-dir --verbose --upgrade \
+##           setuptools
+#RUN pip3 install --no-cache-dir --verbose --upgrade --force-reinstall \
+#           setuptools
+
+# ToDo: assessment python version installed in dustynv pytorch image
+RUN bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
+
+# ...................................................................................................
 RUN pip3 install --no-cache-dir --upgrade pip \
-    && pip3 install --no-cache-dir --verbose --upgrade \
+    && pip3 install --no-cache-dir --verbose \
       'gym[classic_control,box2d]==0.19.0'
-#      'setuptools!=67.0.0' \
-#      'setuptools==65.5.0' \
 
-#WORKDIR /
-#RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
-#    && cd /f1tenth_gym  \
-#    && pip3 install -e .
-##    && pip3 install -e ".[dev]"
-#
-#
-## Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
-## See known issues comment https://github.com/f1tenth/f1tenth_gym
-##RUN pip3 install pyglet==1.5.11
-#RUN pip3 install --no-cache-dir --upgrade  \
-#    'pyglet<1.5.11' \
-#    pyopengl
-#
+WORKDIR /
+RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
+    && cd /f1tenth_gym  \
+    && pip3 install -e .
+#    && pip3 install -e ".[dev]"
+
+
+# Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
+# See known issues comment https://github.com/f1tenth/f1tenth_gym
+#RUN pip3 install pyglet==1.5.11
+RUN pip3 install --no-cache-dir --upgrade  \
+    'pyglet<1.5.11' \
+    pyopengl
 
 # ====End===============================================================================================
 CMD [ "bash" ]

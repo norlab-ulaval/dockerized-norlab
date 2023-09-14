@@ -132,10 +132,13 @@ echo \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 
 # . . Finally install docker-compose. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+# (Priority) ToDo: refactor using norlab-shell-script-tools
 sudo apt-get update &&
   sudo apt-get upgrade &&
   sudo apt-get install --assume-yes \
-   docker-compose-plugin
+   docker-compose-plugin \
+   docker-buildx-plugin
 
 echo ""
 docker compose version

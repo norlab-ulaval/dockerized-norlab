@@ -9,6 +9,8 @@ services:
     command: bash -c "tree -L 4 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     volumes:
       - /etc/localtime:/etc/localtime:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw # Share system folder
     tty: true
     stdin_open: true
     init: true  # Propagate exit code (See remark in task NMO-266)
@@ -27,6 +29,16 @@ services:
 #      DN_CONTAINER_NAME: IamNooorLab
 #      DN_ACTIVATE_POWERLINE_PROMT: true
 #    container_name: IamNooorLab
+    environment:
+      ROS_DOMAIN_ID: 1
+      NVIDIA_VISIBLE_DEVICES: all   # substitute for `--gpus all` flag
+      # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#environment-variables-oci-spec
+      NVIDIA_DRIVER_CAPABILITIES: all
+      # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
+      DISPLAY: ${DISPLAY}
+      #      DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
+      #      DISPLAY: '169.254.205.89:0.0'
+      QT_X11_NO_MITSHM: 1
 
   global-service-builder:
     extends: global-service-dev # ToDo: on dev task end >> mute this line ←
@@ -41,3 +53,4 @@ services:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
       platforms:
         - "linux/arm64/v8"
+#    pull_policy: never

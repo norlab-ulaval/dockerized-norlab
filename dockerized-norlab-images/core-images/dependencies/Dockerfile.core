@@ -57,6 +57,10 @@ RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
     && pip3 install --no-cache-dir --verbose  \
         setuptools \
         wheel \
+        build \
+        psutil \
+        tqdm \
+        rich \
         # . . install python general development package . . . . . . . . . . . .
         pyyaml \
         termcolor \
