@@ -22,6 +22,6 @@ if [[ -n $TEAMCITY_VERSION ]]; then
   # (NICE TO HAVE) ToDo: implement >> fetch container name from an .env file
   echo -e "${MSG_EMPH_FORMAT}The container is running inside a TeamCity agent >> keep container detached${MSG_END_FORMAT}"
 else
-  #  sudo docker exec -it ${CONTAINER_NAME} /ros_entrypoint.bash bash
+  #  sudo docker exec -it ${DN_CONTAINER_NAME} /ros_entrypoint.bash bash
   docker compose -f "${COMPOSE_FILE}" exec develop /ros2_entrypoint.bash bash
 fi

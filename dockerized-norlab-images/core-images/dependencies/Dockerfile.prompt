@@ -15,11 +15,14 @@ ENV DN_ACTIVATE_POWERLINE_PROMT="${DN_ACTIVATE_POWERLINE_PROMT:-true}"
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         socat \
+        fonts-powerline \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --no-cache-dir --verbose \
+        psutil \
+        powerline-status
 
-RUN pip3 install --no-cache-dir --verbose psutil
-# RUN pip3 install --no-cache-dir --verbose pygit2  # Not required by Powerline if Git is installed
+    # RUN pip3 install --no-cache-dir --verbose pygit2  # Not required by Powerline if Git is installed
 
 # Require a Vim installation suporting python
 #       $ vim --version | grep +python
@@ -30,14 +33,14 @@ RUN pip3 install --no-cache-dir --verbose psutil
 # . . Install Powerline + special font pack. . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # Note: If Powerline prompt fonts are missing in PyCharm terminal, check that the `Console Scheme` / `Consol Font` /  `Use console font instead of default` is set to `Font:` `MesloLGS NF` (!)
 
-## Ref: https://github.com/powerline/fonts
-RUN pip3 install --no-cache-dir --verbose \
-     powerline-status
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends  \
-      fonts-powerline \
-    && rm -rf /var/lib/apt/lists/*
+### Ref: https://github.com/powerline/fonts
+#RUN pip3 install --no-cache-dir --verbose \
+#     powerline-status
+#
+#RUN apt-get update \
+#    && apt-get install -y --no-install-recommends  \
+#      fonts-powerline \
+#    && rm -rf /var/lib/apt/lists/*
 
 
 # . . Config bash shell. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -102,12 +105,14 @@ RUN cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_script
     && mv $POWERLINE_TMP/config_files/themes/shell/dockerized_snow.json $POWERLINE_DIR/config_files/themes/shell/ \
     && mv $POWERLINE_TMP/config_files/colorschemes/shell/dockerized_snow.json $POWERLINE_DIR/config_files/colorschemes/shell/
 
-# Set Promt logo
+# ....Set Prompt logo..............................................................................
+## Dockerized-Norlab (legacy code)
 #RUN echo DS_LOGO=$'\u22EF𝐒\u22EF' >> ~/.bashrc
-#RUN export DS_LOGO=$'\U22EF\U1D412\U22EF'  # ⋯𝐒⋯        mathematical bold capital s (U+1D412)
 #RUN export DS_LOGO=$'\uf2dc' >> ~/.bashrc  #            nf-fa-snowflake_o
-#RUN export DS_LOGO=$'\U1D516' >> ~/.bashrc # 𝔖         mathematical fraktur capital s U+1D516      <--
-#RUN export DS_LOGO=$'\U1D57E' >> ~/.bashrc # 𝕾         mathematical bold fraktur capital s U+1D57E <--
+## Dockerized-snow (legacy code)
+#RUN export DS_LOGO=$'\U22EF\U1D412\U22EF'  # ⋯𝐒⋯        mathematical bold capital s (U+1D412)
+#RUN export DS_LOGO=$'\U1D516' >> ~/.bashrc # 𝔖         mathematical fraktur capital s U+1D516
+#RUN export DS_LOGO=$'\U1D57E' >> ~/.bashrc # 𝕾         mathematical bold fraktur capital s U+1D57E
 
 
 CMD [ "bash" ]

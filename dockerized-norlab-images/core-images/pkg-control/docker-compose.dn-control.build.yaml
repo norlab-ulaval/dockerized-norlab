@@ -1,4 +1,4 @@
-name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
+name: ${DN_COMPOSE_NAME}
 
 services:
 

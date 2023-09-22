@@ -1,36 +1,45 @@
 
-# /// core-images/project-deploy ///////////////////////////////////////////////////////////////////////////////////////////////
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS debugging-tools
 
-# norlabsnow/norlab-ros-dependencies:foxy-pytorch-arm64-l4t-r35.2.1
-ARG DN_PROJECT_HUB=norlabsnow
-ARG DN_PROJECT_IMAGE_NAME=dockerized-norlab-project-template
-ARG DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
-FROM ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as deploy
+# ....ssh and gdb server config....................................................................
+# ssh port, remaped from default 22 to 2222
+ENV DN_SSH_SERVER_PORT=${DN_SSH_SERVER_PORT:-2222}
+EXPOSE ${DN_SSH_SERVER_PORT}
 
-# === Clone the repo and install ========================================================================
-# Steps:
-#   1. clone NorLab_MPPI repos
-#   2. Install Dependencies
-#   3. Compilation & Running
-# ======================================================================================================
+# gdbserver port, remaped from default 77 to 7777
+ENV DN_GDB_SERVER_PORT=${DN_GDB_SERVER_PORT:-7777}
+EXPOSE ${DN_GDB_SERVER_PORT}
 
-#ARG DN_TARGET_PROJECT_SRC_REPO
-#ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO:?'Build argument needs to be set and non-empty.'}
-#ARG DN_TARGET_PROJECT_SRC_DOMAIN
-#ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN:?'Build argument needs to be set and non-empty.'}
+# ...debugging user config.........................................................................
+ARG DN_SSH_SERVER_USER=pycharm-debugger
+ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
+ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 
-ARG DN_DEPLOY_REPO_BRANCH=master
+# ....install debugging tools......................................................................
+WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 
-# Default: Local , Option: XavierWarthog
-ARG DS_HOST_TYPE=Local
-ENV DS_HOST_TYPE=${DS_HOST_TYPE}
+COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
+RUN source ./dn_install_debugging_tools.bash \
+    && rm ./dn_install_debugging_tools.bash
+
+
+FROM debugging-tools AS package-project-src-code
+
+ARG DN_DEPLOY_REPO_BRANCH=main
 
 ## (Priority) todo:implement >> everything ↓↓
 #RUN echo "${0}:not implemented error" && exit
 
 WORKDIR ${DN_DEV_WORKSPACE}/src
-RUN echo "Pull latest ${DN_DEPLOY_REPO_BRANCH} branch" \
-    && git clone --branch ${DN_DEPLOY_REPO_BRANCH} https://github.com/${DN_TARGET_PROJECT_SRC_DOMAIN}/${DN_TARGET_PROJECT_SRC_REPO}.git  \
+RUN echo "Sanity check"\
+    && echo ${DN_PROJECT_GIT_NAME:?'Build argument needs to be set and non-empty.'} \
+    && echo ${DN_PROJECT_GIT_DOMAIN:?'Build argument needs to be set and non-empty.'} \
+    && echo ${DN_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'} \
+    && echo \
+    && echo "Pull latest ${DN_DEPLOY_REPO_BRANCH} branch" \
+    && git clone --branch ${DN_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git  \
     && cd ${DN_DEV_WORKSPACE} \
     && apt-get update \
     && rosdep install --from-paths src --ignore-src --default-yes \
@@ -38,27 +47,38 @@ RUN echo "Pull latest ${DN_DEPLOY_REPO_BRANCH} branch" \
 
 
 WORKDIR ${DN_DEV_WORKSPACE}
-RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-        && colcon build --symlink-install --merge-install"
-
-# (Priority) todo:refactor (ref task NLSAR-222 🛠→ setupEnv*.sh scripts for deployement case)
-## Environment setup
-#RUN echo ". ${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}/mppi_util/setupEnv${DS_HOST_TYPE}.sh" >> ~/.bashrc
+RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && colcon build --symlink-install --event-handlers console_direct+
 
 
-# ... Finish container setup ............................................................................
+FROM package-project-src-code AS test
+
+USER "${DN_SSH_SERVER_USER}"
+
+# Note: The .bashrc files get sourced only for interactive shell, so use 'bash -i' when
+#       dockerfile build stage require to source ~/.bashrc.
+#       see https://stackoverflow.com/a/74017557 by Chuck Batson
+SHELL ["/bin/bash", "-i", "-c"]
+
+RUN echo "Check that ROS source is available via the ssh daemon user" \
+    && [[ $(whoami) == ${DN_SSH_SERVER_USER}  ]] \
+    && rosversion -d \
+    && printenv \
+    && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && python -c "import rclpy"
+
+ENTRYPOINT [ "" ]
+
+FROM package-project-src-code AS final
+
 WORKDIR /
+
 COPY ros_entrypoint.bash /
-# set read/write permission to entrypoint file and joystick dir js0
-RUN /bin/bash -c "chmod +x /ros_entrypoint.bash"
+RUN chmod +x /ros_entrypoint.bash
+
 ENTRYPOINT [ "/ros_entrypoint.bash" ]
 CMD [ "bash" ]
 
-# Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables
-# like ROS_ROOT and ROS_PACKAGE_PATH are set:
-#   $ printenv | grep ROS
-
-# /////////////////////////////////////////////////////////////////////////////////////////////// core-images/project-deploy ///
 
 
 

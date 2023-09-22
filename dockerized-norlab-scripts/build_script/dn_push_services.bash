@@ -21,8 +21,10 @@ elif [[ $( basename "$(pwd)" ) = dockerized-norlab-scripts ]]; then
 fi
 
 
+# (NICE TO HAVE) ToDo: refactor to use 'dn_build_all.bash' with ADD_DOCKER_FLAG, OVERIDE_DOCKER_CMD and OVERIDE_BUILD_MATRIX_LIST
+
+bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${DOTENV_BUILD_MATRIX}"\
+                 "$@" -- push
 
 # docker compose push relevant flags:
 #      --ignore-push-failures   Push what it can and ignores images with push failures
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${DOTENV_BUILD_MATRIX}"\
-                 "$@" -- push

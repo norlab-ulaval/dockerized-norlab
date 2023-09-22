@@ -1,7 +1,7 @@
 
 ARG BASE_IMAGE
-ARG DN_BASE_IMG_TAG
-FROM ${BASE_IMAGE:?err}:${DN_BASE_IMG_TAG:?err} AS pytorch-base-image
+ARG DN_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${DN_IMAGE_TAG:?err} AS pytorch-base-image
 
 
 # ===PyTorch=============================================================================================

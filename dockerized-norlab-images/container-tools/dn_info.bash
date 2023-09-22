@@ -19,8 +19,8 @@ echo -e "\033[1;37m
 ${SP}DN container name:           ${DN_CONTAINER_NAME}
 ${SP}DN host name:                $(hostname)
 ${SP}DN image architecture:       ${DN_IMAGE_ARCHITECTURE}
-${SP}DN project src path:         ${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
-${SP}DN target project repo:      ${DN_TARGET_PROJECT_SRC_REPO}
+${SP}DN project src path:         ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+${SP}DN target project repo:      ${DN_PROJECT_GIT_NAME}
 ${SP}DN activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
 ${SP}
 ${SP}ROS distro:                  ${ROS_DISTRO}
@@ -50,9 +50,9 @@ ${SP}$ dn_fetch_ros_env
 
 echo -e "IDE remote development workflow › to connect to the container internal ssh server:
 \033[1;37m
-${SP}$ ssh -p ${DS_PYCHARM_DEV_SERVER_PORT} ${DS_PYCHARM_DEV_USER}@$(hostname -I | awk '{print $1}')
-${SP}$ sftp -P ${DS_PYCHARM_DEV_SERVER_PORT} openssh-$(hostname -I | awk '{print $1}')
-${SP}$ scp -P ${DS_PYCHARM_DEV_SERVER_PORT} /path/to/source ${DS_PYCHARM_DEV_USER}@$(hostname -I | awk '{print $1}'):/target/dir/
+${SP}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}')
+${SP}$ sftp -P ${DN_SSH_SERVER_PORT} openssh-$(hostname -I | awk '{print $1}')
+${SP}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}'):/target/dir/
 \033[0m
 "
 

@@ -9,8 +9,12 @@
 #   - [<optional flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
 #
 # Global
-#   - Read ADD_DOCKER_FLAG    Use to quickly add docker flag at runtime
-#                               e.g.: $ ADD_DOCKER_FLAG=--push --dry-run && bash dn_build_all.bash
+#   - Read ADD_DOCKER_FLAG            Use to quickly add docker flag at runtime
+#             e.g.: $ ADD_DOCKER_FLAG=--push --dry-run && source dn_build_all.bash
+#   - Read OVERIDE_DOCKER_CMD         Use to quickly overide the docker command
+#             e.g.: $ OVERIDE_DOCKER_CMD=push
+#   - Read OVERIDE_BUILD_MATRIX_LIST  Use to quickly overide the build matrix list
+#             e.g.: $ OVERIDE_BUILD_MATRIX_LIST=( '.env.build_matrix.dev' ) && source dn_build_all.bash
 #
 
 clear
@@ -61,7 +65,8 @@ function agregate_build_logs() {
 }
 
 # ====Begin=========================================================================================
-DOCKER_CMD=build
+DOCKER_CMD=${OVERIDE_DOCKER_CMD:-build}
+
 # ....manual config.................................................................................
 
 #DOCKER_CMD="push --ignore-push-failures"
@@ -76,36 +81,25 @@ DOCKER_CMD=build
 DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${ADD_DOCKER_FLAG:-""}"
 SUB_SCRIPT_FLAGS=$@
 
-# ....execute.......................................................................................
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                      .env.build_matrix.dn-dependencies \
-                      ${SUB_SCRIPT_FLAGS} -- "${DOCKER_COMMAND_W_FLAGS}"
-#                      .env.build_matrix.dev \
+# ....execute all build matrix.....................................................................
 
-fetch_build_log
-ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS=( "${STR_BUILD_MATRIX_SERVICES_AND_TAGS}" )
+#DOTENV_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-dependencies' '.env.build_matrix.dn-control' '.env.build_matrix.dn-control-deep' '.env.build_matrix.dn-perception' )
+DOTENV_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-dependencies' '.env.build_matrix.dn-control' '.env.build_matrix.dn-control-deep' '.env.build_matrix.dn-perception' '.env.build_matrix.dn-project' )
+#OVERIDE_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-project' )
+#OVERIDE_BUILD_MATRIX_LIST=( '.env.build_matrix.dev' )
 
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                      .env.build_matrix.dn-control \
-                      ${SUB_SCRIPT_FLAGS} -- "${DOCKER_COMMAND_W_FLAGS}"
+CRAWL_BUILD_MATRIX=( "${OVERIDE_BUILD_MATRIX_LIST[*]:-${DOTENV_BUILD_MATRIX_LIST[@]}}" )
 
-fetch_build_log
-agregate_build_logs
+for EACH_BUILD_MATRIX in "${CRAWL_BUILD_MATRIX[@]}" ; do
+    bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
+                          "$EACH_BUILD_MATRIX" \
+                          ${SUB_SCRIPT_FLAGS} -- "${DOCKER_COMMAND_W_FLAGS}"
 
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                      .env.build_matrix.dn-control-deep \
-                      ${SUB_SCRIPT_FLAGS} -- "${DOCKER_COMMAND_W_FLAGS}"
+    fetch_build_log
+    agregate_build_logs
+done
 
-fetch_build_log
-agregate_build_logs
-
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                      .env.build_matrix.dn-perception \
-                      ${SUB_SCRIPT_FLAGS} -- "${DOCKER_COMMAND_W_FLAGS}"
-
-fetch_build_log
-agregate_build_logs
-
+# ....show build matrix feedback...................................................................
 norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
 print_msg_done "${MSG_DIMMED_FORMAT}dn_build_all.bash${MSG_END_FORMAT} execution summary"

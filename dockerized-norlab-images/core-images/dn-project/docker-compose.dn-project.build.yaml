@@ -1,0 +1,113 @@
+name: ${DN_PROJECT_COMPOSE_NAME}
+
+services:
+
+  # ====Dockerized-NorLab Project==================================================================
+  project-core-main: # ›› no push build service
+    extends:
+      file: ../global-service-builder/docker-compose.global-service.build.yaml
+      service: global-service-builder
+    build:
+      context: project-core
+      dockerfile: Dockerfile.template
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/${DN_PROJECT_BASE_IMG:?err}
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+        DN_PROJECT_GIT_DOMAIN: ${DN_PROJECT_GIT_DOMAIN:?err}   # norlab-ulaval
+        DN_PROJECT_GIT_NAME: ${DN_PROJECT_GIT_NAME:?err}   # dockerized-norlab-project-mock
+
+  project-core:
+    extends: project-core-main
+    image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core:${PROJECT_TAG:?err}
+    environment:
+      DN_CONTAINER_NAME: ${DN_CONTAINER_NAME:?err}
+      DN_ACTIVATE_POWERLINE_PROMT: true
+    container_name: ${DN_CONTAINER_NAME}
+    depends_on:
+      - project-core-main
+
+
+  # ====Dockerized-NorLab Project restricted=======================================================
+
+  # ....project-develop............................................................................
+  project-develop-main: # ›› no push build service
+    extends: project-core-main
+    build:
+      context: project-develop
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
+        BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
+    depends_on:
+      - project-core
+
+  project-develop-tester:
+    extends: project-develop-main
+    build:
+      target: test
+    depends_on:
+      - project-develop-main
+
+  project-develop:
+    extends: project-develop-main
+    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:${PROJECT_TAG:?err}
+    depends_on:
+      - project-develop-main
+
+  # ....project-deploy.............................................................................
+  project-deploy-main: # ›› no push build service
+    extends: project-core-main
+    build:
+      context: project-deploy
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
+        BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
+        DN_DEPLOY_REPO_BRANCH: main  # Option: main, dev or tag version (ie v*.*.*)
+    depends_on:
+      - project-core
+
+  project-deploy-tester:
+    extends: project-deploy-main
+    build:
+      target: test
+    depends_on:
+      - project-deploy-main
+
+  project-deploy:
+    extends: project-deploy-main
+    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${PROJECT_TAG:?err}
+    depends_on:
+      - project-deploy-main
+
+
+  # ....project-cicd................................................................................
+#  # ToDo: implement
+#  project-cicd:
+#    extends: project-core
+#    build:
+#      context: project-cicd
+#      dockerfile: Dockerfile
+#      args:
+#        BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
+#        BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
+#    depends_on:
+#      - project-core
+
+
+  # ====Dockerized-NorLab Project public===========================================================
+
+  # ....project-release............................................................................
+#  # ToDo: implement
+#  project-release:
+#    extends: project-core
+#    build:
+#      context: project-release
+#      dockerfile: Dockerfile
+#      args:
+#        BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}
+#        BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
+#    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-release:${PROJECT_TAG:?err}
+#    depends_on:
+#      - project-core
+

@@ -1,0 +1,14 @@
+#
+# Doc
+#  - Requirements File Format:  https://pip.pypa.io/en/stable/reference/requirements-file-format/
+#  - Requirement Specifiers:  https://pip.pypa.io/en/stable/reference/requirement-specifiers/
+#
+#
+# Usage examples:
+#
+# gym>=0.21.0
+# gym[classic_control,box2d,mujoco_py]<0.21.0
+#
+# -e git+https://github.com/pytorch-labs/tensordict.git#egg=tensordict
+#
+osrf-pycommon

@@ -258,12 +258,12 @@ for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
           echo " "
         fi
 
-        # (Priority) ToDo: pass env variable `COMPOSE_FILE` to flag `--compose-file` >> (ref task NMO-338 add docker-compose file selection logic)
         # shellcheck disable=SC2086
         source dockerized-norlab-scripts/build_script/dn_execute_compose.bash \
           ${DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} \
           --dockerized-norlab-version "${EACH_DN_VERSION}" \
           --base-image "${EACH_BASE_IMAGE}" \
+          --os-name "${EACH_OS_NAME}" \
           --tag-package "${EACH_TAG_PKG}" \
           --tag-version "${EACH_OS_VERSION}" \
           $DN_EXECUTE_COMPOSE_FLAGS \

@@ -1,0 +1,32 @@
+
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS project-setup
+
+# eg: f1tenth_controller, NorLab_MPPI
+ARG DN_PROJECT_GIT_NAME
+ENV DN_PROJECT_GIT_NAME=${DN_PROJECT_GIT_NAME:?'Build argument needs to be set and non-empty.'}
+# eg: norlab-ulaval, vaul-ulaval
+ARG DN_PROJECT_GIT_DOMAIN
+ENV DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN:?'Build argument needs to be set and non-empty.'}
+
+FROM project-setup AS project-custom-docker-steps
+# ====Project custom steps===========================================================================
+# ToDo: add custom step here
+
+
+
+
+FROM project-custom-docker-steps AS project-custom-python-libraries
+
+COPY requirements_manual.txt /requirements_manual.txt
+# Doc › pip install flag: https://pip.pypa.io/en/stable/cli/pip_install/#options
+RUN pip3 install --no-cache-dir --verbose -r /requirements_manual.txt  \
+    && rm -rf /requirements_manual.txt
+
+
+FROM project-custom-python-libraries AS final
+
+WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+CMD [ "bash" ]
+

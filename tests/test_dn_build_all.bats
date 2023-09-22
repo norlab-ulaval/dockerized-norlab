@@ -88,11 +88,11 @@ setup_file() {
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*
 
-  assert_output --regexp .*"DN-v8.8.8-JP-foxy-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DN-v8.8.8-JP-foxy-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v8.8.8-foxy-ros-core-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v8.8.8-foxy-pytorch-l4t-r33.3.3".*
 
-  refute_output --regexp .*"DN-v9.9.9-JP-foxy-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DN-v9.9.9-JP-foxy-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v9.9.9-foxy-ros-core-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v9.9.9-foxy-pytorch-l4t-r11.1.1".*
 
 }
 

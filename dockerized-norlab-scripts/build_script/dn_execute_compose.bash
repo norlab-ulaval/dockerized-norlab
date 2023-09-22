@@ -17,6 +17,7 @@
 # ....Default.......................................................................................
 DOCKERIZED_NORLAB_VERSION='latest'
 BASE_IMAGE='dustynv/ros'
+OS_NAME='l4t'
 TAG_PACKAGE='foxy-pytorch-l4t'
 TAG_VERSION='r35.2.1'
 #LPM_JOB_ID='0'
@@ -74,6 +75,7 @@ function print_help_in_terminal() {
       -h, --help                              Get help
       --dockerized-norlab-version v1.3.1      The dockerized-norlab release tag (default to main branch latest)
       --base-image                            The base image name (default to 'dustynv/ros')
+      --os-name                               The name os the OS (default to 'l4t')
       --tag-package                           The package name portion of the tag (default to 'foxy-pytorch-l4t')
       --tag-version r35.2.1                   Operating system version, see .env.build_matrix for supported version
                                                 (default to 'r35.2.1')
@@ -127,6 +129,11 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--base-image)
     shift # Remove argument value
     ;;
+  --os-name)
+    OS_NAME="${2}"
+    shift # Remove argument (--os-name)
+    shift # Remove argument value
+    ;;
   --tag-package)
     TAG_PACKAGE="${2}"
     shift # Remove argument (--tag-package)
@@ -176,9 +183,10 @@ done
 export DOCKERIZED_NORLAB_VERSION="${DOCKERIZED_NORLAB_VERSION}"
 export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE}"
 export TAG_VERSION="${TAG_VERSION}"
-export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
 
-export DN_IMAGE_TAG="DN-${DOCKERIZED_NORLAB_VERSION}-JP-${DEPENDENCIES_BASE_IMAGE_TAG}"
+export PROJECT_TAG="${OS_NAME}-${TAG_VERSION}"
+export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
+export DN_IMAGE_TAG="DN-${DOCKERIZED_NORLAB_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
 
 print_msg "Environment variables set for compose:\n
 ${MSG_DIMMED_FORMAT}    DOCKERIZED_NORLAB_VERSION=${DOCKERIZED_NORLAB_VERSION} ${MSG_END_FORMAT}

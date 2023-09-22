@@ -1,17 +1,11 @@
 
-# /// core-images/tests-cicd /////////////////////////////////////////////////////////////////////////////////////////////
-
-# norlabsnow/norlab-ros-dependencies-wo-services:foxy-pytorch-arm64-l4t-r35.2.1
-ARG DN_PROJECT_HUB=norlabsnow
-ARG DN_PROJECT_IMAGE_NAME=dockerized-norlab-project-template
-ARG DN_BASE_IMG_TAG=humble-pytorch-arm64-l4t-r35.2.1
-FROM ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}:${DN_BASE_IMG_TAG} as teamcity
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS norlab-teamcity-server-setup
 
 
-#ARG DN_TARGET_PROJECT_SRC_REPO
-#ENV DN_TARGET_PROJECT_SRC_REPO=${DN_TARGET_PROJECT_SRC_REPO:?'Build argument needs to be set and non-empty.'}
-#ARG DN_TARGET_PROJECT_SRC_DOMAIN
-#ENV DN_TARGET_PROJECT_SRC_DOMAIN=${DN_TARGET_PROJECT_SRC_DOMAIN:?'Build argument needs to be set and non-empty.'}
+RUN ${DN_PROJECT_GIT_NAME:?'Build argument needs to be set and non-empty.'} \
+    && echo ${DN_PROJECT_GIT_DOMAIN:?'Build argument needs to be set and non-empty.'}
 
 
 WORKDIR /
@@ -50,10 +44,5 @@ RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
 
 
 # ... Finish container setup ............................................................
-WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}
+WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 CMD [ "bash" ]
-
-
-
-
-

@@ -1,4 +1,4 @@
-name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
+name: ${DN_COMPOSE_NAME}
 
 services:
 
@@ -27,15 +27,6 @@ services:
     depends_on:
       - dn-control-deep-learning
 
-#  dn-control-torchrl:
-#    extends: dn-control-deep-learning
-#    build:
-#      context: dn-control-torchrl
-#      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dn-control-deep-rl
-#    image: ${DN_HUB:?err}/dn-control-torchrl:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dn-control-deep-rl
 
   dn-control-deep-rl-gym:
     extends: dn-control-deep-learning
@@ -58,3 +49,12 @@ services:
       - dn-control-deep-rl-gym
 
 
+#  dn-control-torchrl:
+#    extends: dn-control-deep-learning
+#    build:
+#      context: dn-control-torchrl
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dn-control-deep-rl
+#    image: ${DN_HUB:?err}/dn-control-torchrl:${DN_IMAGE_TAG:?err}
+#    depends_on:
+#      - dn-control-deep-rl

@@ -12,14 +12,11 @@ rosdep install --from-paths ./src --ignore-packages-from-source --rosdistro "${R
 
 # colcon build step: rebuild everything in the catkin workspace DN_DEV_WORKSPACE
 source "/opt/ros/${ROS_DISTRO}/install/setup.bash"
-colcon build --symlink-install --merge-install
+colcon build --symlink-install
+# --merge-install
 source "${DN_DEV_WORKSPACE}/install/setup.bash"
 
 
-# (Priority) todo:refactor (ref task NLSAR-222 🛠→ setupEnv*.sh scripts for deployement case)
-## Environment setup
-#norlab_mppi_env_setup="${DN_DEV_WORKSPACE}/src/${DN_TARGET_PROJECT_SRC_REPO}/mppi_util/setupEnv${DS_HOST_TYPE}.sh"
-#echo "source ${norlab_mppi_env_setup}" >> ~/.bashrc
 
 # (NICE TO HAVE) todo:implement >> Terminal splash screen
 
@@ -28,7 +25,7 @@ echo
 echo "  Make sure your workspace is properly overlayed by the setup script by checking the ROS_PACKAGE_PATH environment variable. "
 echo "  It should include the directory you're in: ${DN_DEV_WORKSPACE}/src:/opt/ros/melodic/share"
 echo
-printenv | grep -e ROS -e MASTER -e HOSTNAME -e DS_
+printenv | grep -i -e ROS -e MASTER -e HOSTNAME -e DS_ -e DN_
 echo
 
 cd /

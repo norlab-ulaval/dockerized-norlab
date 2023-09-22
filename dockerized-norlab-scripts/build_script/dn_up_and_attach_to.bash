@@ -9,6 +9,8 @@
 #   - <theService>              The service to attach once all are up
 #
 
+clear
+
 DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
@@ -22,7 +24,8 @@ fi
 
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${DOTENV_BUILD_MATRIX}"\
                                                             --fail-fast \
-                                                            -- up --build --detach --wait --no-deps "$1"
+                                                            -- up --build --detach --wait \
+                                                            --no-deps "$1"
 
 
 #CN=$(grep -A3 'project-develop:' ${THE_COMPOSE_FILE} | tail -n1); CN=${CN//*container_name: /}; echo "$CN"

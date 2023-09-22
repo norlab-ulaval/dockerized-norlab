@@ -1,4 +1,4 @@
-name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
+name: ${DN_COMPOSE_NAME}
 
 services:
 
@@ -9,14 +9,17 @@ services:
 #      service: global-service-builder
 #    build:
 #      context: .
-#      dockerfile: Dockerfile.test_remote
+#      dockerfile: Dockerfile.test
 #      args:
 #        BASE_IMAGE: nvcr.io/nvidia/l4t-jetpack
 #        BASE_IMAGE_TAG: r35.2.1
-#    image: ${DN_HUB:?err}/dependencies-test:r35.2.1
+#    image: ${DN_HUB:?err}/dn-dependencies-test:r35.2.1
 
   # ====Dockerized-NorLab dependencies=============================================================
-  dependencies-core:
+
+  # ....dependencies-core............................................................................
+
+  dependencies-main: # ›› no push build service
     extends:
       file: ../global-service-builder/docker-compose.global-service.build.yaml
       service: global-service-builder
@@ -26,43 +29,65 @@ services:
       args:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dependencies-core:${DN_IMAGE_TAG:?err}
 
+  dependencies-core:
+    extends: dependencies-main
+    image: ${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-main
+
+  # ....dependencies-prompt..........................................................................
   dependencies-prompt:
     extends: dependencies-core
     build:
       dockerfile: Dockerfile.prompt
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dependencies-core
+        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies-core
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     environment:
       DN_ACTIVATE_POWERLINE_PROMT: false
       DN_CONTAINER_NAME: IamInteractive
     container_name: IamInteractive
-    image: ${DN_HUB:?err}/dependencies-prompt:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dn-dependencies-prompt:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-core
 
+  # ....dependencies-python-science-stack............................................................
   dependencies-python-science-stack:
     extends: dependencies-core
     build:
       dockerfile: Dockerfile.python-science-stack
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dependencies-prompt
+        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies-prompt
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dn-dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-prompt
 
-  dependencies-ros2-custom:
-    extends: dependencies-core
+  # ....dependencies-ros2-custom......................................................................
+  dependencies-ros2-custom-main: # ›› no push build service
+    extends: dependencies-main
     build:
       dockerfile: Dockerfile.ros2-dn-custom
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dependencies-python-science-stack
+        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies-python-science-stack
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-      tags:
-        - ${DN_HUB:?err}/dn-dependencies:${DN_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-python-science-stack
+
+  dependencies-ros2-custom-tester:
+    extends: dependencies-ros2-custom-main
+    build:
+      target: test
+    depends_on:
+      - dependencies-ros2-custom-main
+
+  dependencies-ros2-custom:
+    extends: dependencies-ros2-custom-main
+    build:
+      tags:
+        - ${DN_HUB:?err}/dn-dependencies:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dn-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-ros2-custom-main
+

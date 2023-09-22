@@ -4,9 +4,9 @@ services:
   develop:
 #    image: norlabsnow/norlab-ros-project-placeholder-project-develop:humble-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
     image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:foxy-pytorch-${DN_IMAGE_ARCHITECTURE}-r35.2.1
-    container_name: ${CONTAINER_NAME}
+    container_name: ${DN_CONTAINER_NAME}
     environment:
-      DN_CONTAINER_NAME: ${CONTAINER_NAME}
+      DN_CONTAINER_NAME: ${DN_CONTAINER_NAME}
       DN_ACTIVATE_POWERLINE_PROMT: true
       ##      ROS_MASTER_URI: http://${BASESTATION_IP}:11311
       #      ROS_MASTER_URI: http://10.0.0.224:11311
@@ -29,13 +29,13 @@ services:
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
       ## ....Add host volume you want to mount into the container..........................................................
 #      - /home/snow/NorLab_MPPI:/ros2_ws/src/NorLab_MPPI
-      - /home/snow/${DN_TARGET_PROJECT_SRC_REPO}:/ros2_ws/src/${DN_TARGET_PROJECT_SRC_REPO}
+      - /home/snow/${DN_PROJECT_GIT_NAME}:/ros2_ws/src/${DN_PROJECT_GIT_NAME}
     tty: true
     stdin_open: true
     devices:
       - /dev/input/js0
     privileged: true
-    security_opt:
+    security_opt: # options needed for gdb debugging
       - seccomp=unconfined
       - apparmor=unconfined
     cap_add:

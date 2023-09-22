@@ -1,7 +1,7 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros-custom-install
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -21,14 +21,15 @@ RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         ros-dev-tools \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --no-cache-dir  \
+            osrf-pycommon \
+            bagpy
 
-RUN pip3 install --no-cache-dir  \
-    osrf-pycommon \
-    bagpy
 
-
-RUN mkdir -p "${DN_DEV_WORKSPACE}/src"
+# Note: Next line is for creating the directories without using a RUN to keep number of layer small
+WORKDIR ${DN_DEV_WORKSPACE}/src
+#RUN mkdir -p "${DN_DEV_WORKSPACE}/src"
 
 # ....install sources...............................................................................
 
@@ -68,21 +69,18 @@ RUN mkdir -p "${DN_DEV_WORKSPACE}/src"
 
 WORKDIR ${DN_DEV_WORKSPACE}
 # (Priority) ToDo: validate >> next bloc ↓↓
-RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-        && colcon build --symlink-install"
-#        && colcon build --symlink-install --merge-install"
+RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+        && colcon build --symlink-install \
+        && echo \
+        && ( \
+            echo ""; \
+            echo "# >>> dockerized-norlab ros2-dn-custom "; \
+            echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
+            echo "# <<< dockerized-norlab ros2-dn-custom "; \
+            echo ""; \
+            ) >> ~/.bashrc
 
-# (Priority) ToDo: validate >> next bloc ↓↓
-# (CRITICAL) ToDo: add this step to pycharm-debugger
-RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    && ( \
-    echo ""; \
-    echo "# >>> dockerized-norlab ros2-dn-custom "; \
-    echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    echo "# <<< dockerized-norlab ros2-dn-custom "; \
-    echo ""; \
-    ) >> ~/.bashrc
-
+    #        && colcon build --symlink-install --merge-install"
 
 # ...source & check ROS environment variable........................................................
 # Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables
@@ -91,14 +89,25 @@ RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
 # Check the ROS_PACKAGE_PATH environment variable. It should include the directory you're in:
 #   $ echo $ROS_PACKAGE_PATH
 #   > /home/youruser${DN_DEV_WORKSPACE}/src:/opt/ros/melodic/share
+
+FROM ros-custom-install as test
+
+RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && echo "Sanity check" \
+    && rosversion -d \
+    && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && python -c "import rclpy"
+
+
+FROM ros-custom-install as final
 WORKDIR ${DN_DEV_WORKSPACE}
 
-# (Priority) ToDo: validate >> next bloc ↓↓
-# Note: ROS2 setup.bash location is in `${ROS_DISTRO}/install/` instead of ROS1 in `${ROS_DISTRO}/`
-RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_ -e DN_" # WE ARE HERE <-- (!)
-
+## (Priority) ToDo: validate >> next bloc ↓↓
+## (Priority) ToDo: should be in the entrypoint instead >> next bloc ↓↓
+## Note: ROS2 setup.bash location is in `${ROS_DISTRO}/install/` instead of ROS1 in `${ROS_DISTRO}/`
+#RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
+#    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_ -e DN_" # WE ARE HERE <-- (!)
 
 CMD [ "bash" ]
 

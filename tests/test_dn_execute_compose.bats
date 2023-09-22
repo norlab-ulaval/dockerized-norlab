@@ -126,6 +126,7 @@ setup_file() {
   source ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOCKER_COMPOSE_FILE}" \
                                             --dockerized-norlab-version v1 \
                                             --base-image dustynv/pytorch \
+                                            --os-name arbitratyName \
                                             --tag-package 2.1 \
                                             --tag-version r35.0.0 \
                                             --docker-debug-logs \
@@ -136,9 +137,10 @@ setup_file() {
   assert_equal "${BASE_IMAGE}" 'dustynv/pytorch'
   assert_equal "${TAG_PACKAGE}" '2.1'
   assert_equal "${TAG_VERSION}" 'r35.0.0'
+  assert_equal "${PROJECT_TAG}" 'arbitratyName-r35.0.0'
   assert_equal "${BUILDKIT_PROGRESS}" plain
   assert_equal "${DEPENDENCIES_BASE_IMAGE_TAG}" '2.1-r35.0.0'
-  assert_equal "${DN_IMAGE_TAG}" 'DN-v1-JP-2.1-r35.0.0'
+  assert_equal "${DN_IMAGE_TAG}" 'DN-v1-2.1-r35.0.0'
 }
 
 @test "flag --help" {

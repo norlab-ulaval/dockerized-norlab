@@ -10,7 +10,7 @@ SP="    "
 
 function print_help_in_terminal() {
 
-  echo -e "\$ ${0} [<optional argument>] <CONTAINER_NAMES>
+  echo -e "\$ ${0} [<optional argument>] <THE_CONTAINER_NAME>
 
 Open a new interactive terminal with pseudo-TTY
 ${SP}
@@ -45,12 +45,12 @@ ${SP}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-contai
 #  && echo "${@}"
 
 if [ $# -lt 1 ]; then
-  echo -e "${MSG_ERROR} Missing argument: $0 ${MSG_ERROR_FORMAT}<CONTAINER_NAMES>${MSG_END_FORMAT}
+  echo -e "${MSG_ERROR} Missing argument: $0 ${MSG_ERROR_FORMAT}<THE_CONTAINER_NAME>${MSG_END_FORMAT}
 If your not sure, execute ${MSG_EMPH_FORMAT}\$ docker ps -a${MSG_END_FORMAT} in host terminal and check the STATUS column to see running container"
   exit 1
 fi
 
-CONTAINER_NAMES=""
+THE_CONTAINER_NAME=""
 USER_ARG=""
 
 # (CRITICAL) ToDo: validate (ref task NMO-257 ♻︎ → dn_attach.bash command line flag logic)
@@ -69,7 +69,7 @@ for arg in "$@"; do
     shift # Remove generic argument from processing
     ;;
   *)
-    CONTAINER_NAMES="${arg}"
+    THE_CONTAINER_NAME="${arg}"
     break
     ;;
   esac
@@ -81,12 +81,12 @@ done
 #echo "
 #${0}:
 #  USER_ARG >> ${USER_ARG}
-#  CONTAINER_NAMES >> ${CONTAINER_NAMES}
+#  THE_CONTAINER_NAME >> ${THE_CONTAINER_NAME}
 #"
 
 
 # todo:on task end >> delete next bloc ↓↓
-#if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${CONTAINER_NAMES}` == "${CONTAINER_NAMES} exited" ]]; then echo "if TRUE"; else echo "else FALSE"; fi
+#if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${THE_CONTAINER_NAME}` == "${THE_CONTAINER_NAME} exited" ]]; then echo "if TRUE"; else echo "else FALSE"; fi
 #if [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep IamNOTsnow` ]]; then echo "if TRUE"; else echo "else FALSE"; fi
 
 # ››› Display and xhost ››› . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -110,15 +110,15 @@ xhost +si:localuser:root
 #  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .‹‹‹ Display and xhost ‹‹‹
 
 # Fetch all container name, strip those unrelated one and test for exact name
-if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${CONTAINER_NAMES}` == "${CONTAINER_NAMES} exited" ]]; then
+if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${THE_CONTAINER_NAME}` == "${THE_CONTAINER_NAME} exited" ]]; then
     # Start container if he is stopped
-    echo -e "${MSG_BASE} Starting container $(docker start ${CONTAINER_NAMES})"
+    echo -e "${MSG_BASE} Starting container $(docker start ${THE_CONTAINER_NAME})"
     echo ""
-elif [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep ${CONTAINER_NAMES}` ]]; then
-    echo -e "${MSG_ERROR} Container ${CONTAINER_NAMES} is not instantiated."
+elif [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep ${THE_CONTAINER_NAME}` ]]; then
+    echo -e "${MSG_ERROR} Container ${THE_CONTAINER_NAME} is not instantiated."
 #    "Use command ${MSG_BASE_FORMAT}dn_instantiate_develop${MSG_END_FORMAT}"
     exit
 fi
 
-#sudo docker exec -it ${USER_ARG} ${CONTAINER_NAMES} bash
-docker exec -it ${USER_ARG} ${CONTAINER_NAMES} bash
+#sudo docker exec -it ${USER_ARG} ${THE_CONTAINER_NAME} bash
+docker exec -it ${USER_ARG} ${THE_CONTAINER_NAME} bash

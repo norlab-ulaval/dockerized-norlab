@@ -10,6 +10,10 @@
 #   - <service>              The service to run
 #   - [<optional command>]   Any optional flag for docker compose run <service> [command]
 #
+# Global
+#   - Read OPTION_FLAG       Use to quickly add docker flag at runtime
+#                            e.g.: $ OPTION_FLAG=--build
+#
 
 clear
 
@@ -22,7 +26,7 @@ elif [[ $( basename "$(pwd)" ) = dockerized-norlab-scripts ]]; then
     cd ..
 fi
 
-OPTION_FLAG='--build'
+#OPTION_FLAG='--build'
 #OPTION_FLAG='--user pycharm-debugger'
 
 # Notes;
@@ -30,5 +34,6 @@ OPTION_FLAG='--build'
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
                 "${DOTENV_BUILD_MATRIX}" \
                 --fail-fast \
-                -- run "${OPTION_FLAG:-""}" --rm --no-deps "$@"
+                -- run "${OPTION_FLAG:-""}" --rm \
+                --no-deps "$@"
 

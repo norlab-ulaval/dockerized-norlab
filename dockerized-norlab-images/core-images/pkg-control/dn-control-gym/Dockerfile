@@ -3,7 +3,9 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
-# ====Begin=========================================================================================
+WORKDIR /dockerized-norlab
+
+COPY --from=context-dn-container-tools ./dn_test/try_gym.py ./dockerized-norlab-images/container-tools/dn_test/
 
 # ...Install simulator..............................................................................
 # Dependencies
@@ -13,6 +15,7 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 #       gym-notebook-wrapper is wrapper for running gym and recording movie on Jupyter notebook
 #           ↳ |  require xvfb and python-opengl
 #   gym VideoRecorder dependency: ffmpeg and imageio-ffmpeg
+
 RUN apt-get update \
 #    && apt-get install --assume-yes --no-install-recommends \
     && apt-get install --assume-yes \
@@ -26,9 +29,8 @@ RUN apt-get update \
         tigervnc-standalone-server \
         x11-utils \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --no-cache-dir --verbose --upgrade pip  \
     && pip3 install --no-cache-dir --verbose  \
         # . . Vizualisation tools. . . . . . . . . . . . . . . . . . . . . .
         pyvirtualdisplay \
@@ -42,18 +44,14 @@ RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
         # . . Jupyter + gym related . . . . . . . . . . . . . . . . . . . . . .
         jupyterlab \
         notebook \
-        gym-notebook-wrapper
+        gym-notebook-wrapper \
+    && echo \
+    && echo "Sanity check" \
+    && python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py \
+    && echo \
+    && ( \
+        echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
+        ) >> ~/.bashrc
 
-
-# ....Sanity check..................................................................................
-WORKDIR /dockerized-norlab
-
-COPY --from=context-dn-container-tools ./dn_test/try_gym.py ./dockerized-norlab-images/container-tools/dn_test/
-
-RUN ( \
-  echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
-) >> ~/.bashrc
-
-RUN python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py
 
 CMD [ "bash" ]

@@ -28,25 +28,7 @@ RUN apt-get update --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
 
-##RUN pip3 uninstall -y opencv-python  \
-##    && pip3 install opencv-python-headless
-
 ## ....F1TENTH docker file install....................................................................
-#RUN apt-get update --fix-missing && \
-#    apt-get install -y \
-#                    python3-dev \
-#                    python3-pip \
-#                    build-essential \
-#                    libgl1-mesa-dev \
-#                    mesa-utils \
-#                    libglu1-mesa-dev \
-#                    fontconfig \
-#                    libfreetype6-dev
-#
-#RUN pip3 install --upgrade pip \
-#  && pip3 install PyOpenGL \
-#                 PyOpenGL_accelerate
-## ...................................................................................................
 
 ### (☕MINOR) ToDo: test >> next bloc ↓↓
 #RUN apt-get update --fix-missing \
@@ -58,11 +40,15 @@ RUN apt-get update --fix-missing \
 ##           setuptools
 #RUN pip3 install --no-cache-dir --verbose --upgrade --force-reinstall \
 #           setuptools
+## ...................................................................................................
 
-# ToDo: assessment python version installed in dustynv pytorch image
-RUN bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
+# Fix for gym <-> F1TENTH TypeError:
+# >>> obs, step_reward, done, info = env.reset(np.array([[conf.sx, conf.sy, conf.stheta]]))
+# >>>     TypeError: reset() takes 1 positional argument but 2 were given
+# Check pull request #35 "reset() function signature no longer works with gym 0.21.0" at https://github.com/f1tenth/f1tenth_gym/issues/35
+# Gym version: 0.21.0 -> oct 6 2021; 0.20.0 -> Sep 14, 2021;
+#RUN pip3 install --no-cache-dir 'gym[classic_control,box2d]<0.21.0'
 
-# ...................................................................................................
 RUN pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir --verbose \
       'gym[classic_control,box2d]==0.19.0'

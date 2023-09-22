@@ -1,4 +1,4 @@
-name: ${DN_TARGET_COMPOSE_PROJECT_NAME}
+name: ${DN_COMPOSE_NAME}
 
 services:
 
@@ -6,7 +6,7 @@ services:
     build:
       context: .
 #      no_cache: true  # Enforce full rebuild                               <-- mute on task end
-    command: bash -c "tree -L 4 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
+    command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -17,7 +17,7 @@ services:
     devices:
       - /dev/input/js0
     privileged: true
-    security_opt:
+    security_opt: # options needed for gdb debugging
       - seccomp=unconfined
       - apparmor=unconfined
     cap_add:
