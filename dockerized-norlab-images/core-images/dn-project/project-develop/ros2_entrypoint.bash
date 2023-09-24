@@ -16,6 +16,6 @@ echo -e "Starting container \033[1;37m internal ssh server for IDE remote develo
 #If you need to rebuild your norlab-ros ROS project, use \033[1;37m\$ bash /ros2_rebuild_dev_workspace.bash\033[0m from inside the container,
 #"
 
-bash /dn_info.bash
+bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
 
 exec "$@"

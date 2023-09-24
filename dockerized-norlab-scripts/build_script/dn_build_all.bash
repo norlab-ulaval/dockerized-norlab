@@ -3,7 +3,7 @@
 # Convenient script for building all images specified in 'docker-compose.dn-dependencies.build.yaml'
 #
 # Usage:
-#   $ bash dn_build_over_single_build_matrix.bash [<optional flag>]
+#   $ bash dn_build_all.bash [<optional flag>]
 #
 # Arguments:
 #   - [<optional flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
