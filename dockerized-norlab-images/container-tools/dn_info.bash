@@ -70,9 +70,8 @@ ${SP}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-contai
 \033[0m
 "
 
-# ToDo: Validate output
+# ToDo: Validate output › PYTHONPATH is not accessible the first time dn_info is called
 echo -e "If you're running a python interpreter in remote development, dont forget to add the python path pointing to the ROS package:
 \033[1;37m
 ${SP} PYTHONPATH=${PYTHONPATH}
-\033[0m
-"
+\033[0m"

@@ -73,10 +73,10 @@ FROM package-project-src-code AS final
 
 WORKDIR /
 
-COPY ros_entrypoint.bash /
-RUN chmod +x /ros_entrypoint.bash
+COPY dn_ros2_entrypoint.bash /
+RUN chmod +x /dn_ros2_entrypoint.bash
 
-ENTRYPOINT [ "/ros_entrypoint.bash" ]
+ENTRYPOINT [ "/dn_ros2_entrypoint.bash" ]
 CMD [ "bash" ]
 
 

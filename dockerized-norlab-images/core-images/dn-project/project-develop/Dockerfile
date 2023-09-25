@@ -28,14 +28,14 @@ RUN source ./dn_install_debugging_tools.bash \
 FROM debugging-tools AS project-specific-ros-setup
 
 WORKDIR /
-COPY ros2_rebuild_dev_workspace.bash /
-COPY ros2_entrypoint.bash /
-COPY fetch_ros_env.bash /
+COPY dn_ros2_rebuild_dev_workspace.bash /
+COPY dn_ros2_entrypoint.bash /
+COPY dn_fetch_ros_env.bash /
 
 # set read/write permission to entrypoint file and joystick dir js0
-RUN chmod +x /ros2_entrypoint.bash \
-    && chmod +x /ros2_rebuild_dev_workspace.bash \
-    && chmod +x /fetch_ros_env.bash \
+RUN chmod +x /dn_ros2_entrypoint.bash \
+    && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
+    && chmod +x /dn_fetch_ros_env.bash \
     && ( \
           echo ""; \
           echo "# >>> dockerized-norlab aliases (from develop img)"; \
@@ -65,7 +65,7 @@ ENTRYPOINT [ "" ]
 FROM project-specific-ros-setup AS final
 
 WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-ENTRYPOINT [ "/ros2_entrypoint.bash" ]
+ENTRYPOINT [ "/dn_ros2_entrypoint.bash" ]
 CMD [ "bash" ]
 
 

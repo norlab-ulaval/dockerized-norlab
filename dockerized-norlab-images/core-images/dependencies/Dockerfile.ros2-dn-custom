@@ -70,15 +70,28 @@ WORKDIR ${DN_DEV_WORKSPACE}/src
 WORKDIR ${DN_DEV_WORKSPACE}
 # (Priority) ToDo: validate >> next bloc ↓↓
 RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-        && colcon build --symlink-install \
-        && echo \
-        && ( \
-            echo ""; \
-            echo "# >>> dockerized-norlab ros2-dn-custom "; \
-            echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
-            echo "# <<< dockerized-norlab ros2-dn-custom "; \
-            echo ""; \
-            ) >> ~/.bashrc
+    && colcon build --symlink-install \
+    && echo \
+    && echo "Move dustynv entrypoint at the end of bashrc" \
+    && cd /dockerized-norlab//utilities/norlab-shell-script-tools \
+    && source .env.project \
+    && cd src/function_library \
+    && source ./general_utilities.bash \
+    && seek_and_modify_string_in_file 'source /ros_entrypoint.sh' '' "$HOME/.bashrc" \
+    && echo \
+    && ( \
+        echo ""; \
+        echo "# >>> dockerized-norlab ros2-dn-custom "; \
+        echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
+        echo ""; \
+        echo "# Quickhack for NMO-359 ROS_ROOT env var does not persist outside root user"; \
+        echo "export ROS_ROOT=/opt/ros/${ROS_DISTRO}"; \
+        echo ""; \
+        echo "# Move the dustynv entrypoint after the re-declaration of ROS_ROOT"; \
+        echo "source /ros_entrypoint.sh"; \
+        echo "# <<< dockerized-norlab ros2-dn-custom "; \
+        echo ""; \
+        ) >> ~/.bashrc
 
     #        && colcon build --symlink-install --merge-install"
 
