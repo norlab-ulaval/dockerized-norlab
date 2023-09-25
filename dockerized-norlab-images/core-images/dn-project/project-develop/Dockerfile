@@ -32,9 +32,20 @@ COPY dn_ros2_rebuild_dev_workspace.bash /
 COPY dn_ros2_entrypoint.bash /
 COPY dn_fetch_ros_env.bash /
 
-# ToDo: move the file upper in dn-project/ dir and add copy step to project-deploy also
-# Execute ros sourcing system wide instead of in .bashrc (which is not executed in non-interactive shell)
-COPY 01-dn-source-ros.sh /etc/profile.d
+## ToDo: move the file upper in dn-project/ dir and add copy step to project-deploy also
+## Execute ros sourcing system wide instead of in .bashrc (which is not executed in non-interactive shell)
+#COPY 02-dn-source-ros-system-wide.sh /etc/profile.d
+#
+RUN ( \
+      echo ""; \
+      echo "# Execute ros sourcing system wide instead of in .bashrc which is not executed"; \
+      echo "# in non-interactive shell such as in pycharm-debugger"; \
+      echo "ROS_ENV_SETUP=/opt/ros/${ROS_DISTRO}/install/setup.bash"; \
+      echo "echo sourcing ${ROS_ENV_SETUP}"; \
+      echo "source ${ROS_ENV_SETUP}"; \
+      echo ""; \
+    ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
+    && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh
 
 # set read/write permission to entrypoint file and joystick dir js0
 RUN chmod +x /dn_ros2_entrypoint.bash \
