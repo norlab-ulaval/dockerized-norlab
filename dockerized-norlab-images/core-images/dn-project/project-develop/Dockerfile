@@ -40,9 +40,8 @@ RUN ( \
       echo ""; \
       echo "# Execute ros sourcing system wide instead of in .bashrc which is not executed"; \
       echo "# in non-interactive shell such as in pycharm-debugger"; \
-      echo "ROS_ENV_SETUP=/opt/ros/${ROS_DISTRO}/install/setup.bash"; \
-      echo "echo sourcing ${ROS_ENV_SETUP}"; \
-      echo "source ${ROS_ENV_SETUP}"; \
+      echo "echo sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
+      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
       echo ""; \
     ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh
