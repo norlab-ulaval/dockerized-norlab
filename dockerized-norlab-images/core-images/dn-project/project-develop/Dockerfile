@@ -52,7 +52,8 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     ) > /etc/profile.d/02-dn-source-ros-system-wide.sh
 
 # To source ros in non-interactive & non-login shell
-RUN echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> "$BASH_ENV"
+#RUN echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> "$BASH_ENV"
+ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
 
 ## https://github.com/abrahammurciano/python-shell-source
 #RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
