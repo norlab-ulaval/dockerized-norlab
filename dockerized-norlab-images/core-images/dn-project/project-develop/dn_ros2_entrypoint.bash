@@ -6,7 +6,7 @@
 if [[ -z $AMENT_PREFIX_PATH ]]; then
   # Explicitly source ROS as we removed the dustynv ros_entrypoint.sh from .bashrc
   ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/install/setup.bash"
-  echo "sourcing   ${ROS_ENV_SETUP}"
+  echo "sourcing ${ROS_ENV_SETUP}"
   source "${ROS_ENV_SETUP}"
 fi
 

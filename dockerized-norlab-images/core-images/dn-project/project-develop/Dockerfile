@@ -36,19 +36,23 @@ COPY dn_fetch_ros_env.bash /
 ## Execute ros sourcing system wide instead of in .bashrc (which is not executed in non-interactive shell)
 #COPY 02-dn-source-ros-system-wide.sh /etc/profile.d
 #
-RUN ( \
+RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
+    && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
+    && ( \
       echo ""; \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc which is not executed"; \
       echo "# in non-interactive shell such as in pycharm-debugger"; \
-      echo "echo sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
-      echo ". /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash\""; \
+      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
       echo ""; \
       echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
       echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
       echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
       echo ""; \
-    ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
-    && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh
+    ) > /etc/profile.d/02-dn-source-ros-system-wide.sh
+
+# To source ros in non-interactive & non-login shell
+RUN echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> "$BASH_ENV"
 
 ## https://github.com/abrahammurciano/python-shell-source
 #RUN pip3 install --no-cache-dir --verbose --upgrade pip  \

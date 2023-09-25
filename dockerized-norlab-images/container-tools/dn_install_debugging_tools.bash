@@ -23,7 +23,6 @@ apt-get update \
 ( \
   echo "LogLevel DEBUG2"; \
   echo "PermitRootLogin yes"; \
-  echo "PermitUserEnvironment yes"; \
   echo "PasswordAuthentication yes"; \
   echo "Port ${DN_SSH_SERVER_PORT}"; \
   ## Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
@@ -31,6 +30,8 @@ apt-get update \
   echo "Subsystem sftp /usr/lib/openssh/sftp-server"; \
 ) > /etc/ssh/sshd_config_dockerized_norlab_openssh_server \
 && mkdir /run/sshd
+
+#  echo "PermitUserEnvironment yes"; \
 
 # SSH login fix. Otherwise user is kicked off after login
 sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
