@@ -23,6 +23,7 @@ apt-get update \
 ( \
   echo "LogLevel DEBUG2"; \
   echo "PermitRootLogin yes"; \
+  echo "PermitUserEnvironment yes"; \
   echo "PasswordAuthentication yes"; \
   echo "Port ${DN_SSH_SERVER_PORT}"; \
   ## Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
@@ -45,7 +46,8 @@ usermod -a -G video,sudo "${DN_SSH_SERVER_USER}"
 # user:newpassword
 echo "root:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
 
-usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
+# (Priority) ToDo: test without usermod
+#usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
 
 # ....add the ros distro source steps to debugger user..............................................
 
@@ -60,7 +62,9 @@ usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
 #) >> /home/"${DN_SSH_SERVER_USER}"/.bashrc
 
 # Option 2: hardlink the root .bashrc to the debugger user .bashrc
-sudo ln -fv /root/.bashrc "/home/${DN_SSH_SERVER_USER}/.bashrc"
+#sudo ln -fv /root/.bashrc "/home/${DN_SSH_SERVER_USER}/.bashrc"
+
+# Option 3: rely on /etc/profile.d/
 
 # ====Jetbrains IDE================================================================================
 
