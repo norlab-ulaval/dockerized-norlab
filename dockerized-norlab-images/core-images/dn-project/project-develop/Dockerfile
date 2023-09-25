@@ -41,7 +41,7 @@ RUN ( \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc which is not executed"; \
       echo "# in non-interactive shell such as in pycharm-debugger"; \
       echo "echo sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
-      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
+      echo ". /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
       echo ""; \
       echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
       echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
