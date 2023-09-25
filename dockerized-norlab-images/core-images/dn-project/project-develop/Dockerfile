@@ -32,6 +32,10 @@ COPY dn_ros2_rebuild_dev_workspace.bash /
 COPY dn_ros2_entrypoint.bash /
 COPY dn_fetch_ros_env.bash /
 
+# ToDo: move the file upper in dn-project/ dir and add copy step to project-deploy also
+# Execute ros sourcing system wide instead of in .bashrc (which is not executed in non-interactive shell)
+COPY 01-dn-source-ros.sh /etc/profile.d
+
 # set read/write permission to entrypoint file and joystick dir js0
 RUN chmod +x /dn_ros2_entrypoint.bash \
     && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
@@ -39,8 +43,8 @@ RUN chmod +x /dn_ros2_entrypoint.bash \
     && ( \
           echo ""; \
           echo "# >>> dockerized-norlab aliases (from develop img)"; \
-          echo "alias dn_ros2_rebuild_dev_workspace='bash /ros2_rebuild_dev_workspace.bash'"; \
-          echo "alias dn_fetch_ros_env='bash /fetch_ros_env.bash'"; \
+          echo "alias dn_ros2_rebuild_dev_workspace='bash /dn_ros2_rebuild_dev_workspace.bash'"; \
+          echo "alias dn_fetch_ros_env='bash /dn_fetch_ros_env.bash'"; \
           echo ""; \
         ) >> ~/.bashrc
 
