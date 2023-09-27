@@ -23,8 +23,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && pip3 install --no-cache-dir  \
-            osrf-pycommon \
-            bagpy
+            osrf-pycommon
 
 
 # Note: Next line is for creating the directories without using a RUN to keep number of layer small
