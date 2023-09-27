@@ -1,15 +1,49 @@
 #!/bin/bash
+#
+# Convenient script for building all images specified in 'docker-compose.dn-dependencies.build.yaml'
+#
+# Usage:
+#   $ bash dn_attach.bash [<optional argument>]
+#
+# Arguments:
+#   You can pass any docker build flag in <optional argument> eg.:
+#     --env=\"VAR=1\"        (to set environment variables)
+#
 
-# Load environment variable from file
-set -o allexport; source .env.prompt; set +o allexport
+if [[ $( basename $(pwd) ) = run_script ]]; then
+    cd ../..
+elif [[ $( basename $(pwd) ) = dockerized-norlab-scripts ]]; then
+    cd ..
+fi
 
+# ....Pre-condition.................................................................................
+if [[ ! -f  ".env.dockerized-norlab" ]]; then
+  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_attach.bash' script must be executed from the project root!\n Curent working directory is '$(pwd)'"
+  echo '(press any key to exit)'
+  read -r -n 1
+  exit 1
+fi
 
-bash ./visual/terminal_splash.bash
+# ....Load environment variables from file....................................................................
+set -o allexport
+source .env.dockerized-norlab
+set +o allexport
 
+set -o allexport
+source ./utilities/norlab-shell-script-tools/.env.project
+set +o allexport
+
+# ....Helper function...............................................................................
+## import shell functions from norlab-shell-script-tools utilities library
+
+TMP_CWD=$(pwd)
+cd ./utilities/norlab-shell-script-tools/src/function_library
+source ./prompt_utilities.bash
+source ./terminal_splash.bash
+cd "$TMP_CWD"
 SP="    "
 
 function print_help_in_terminal() {
-
   echo -e "\$ ${0} [<optional argument>] <THE_CONTAINER_NAME>
 
 Open a new interactive terminal with pseudo-TTY
@@ -84,12 +118,7 @@ done
 #  THE_CONTAINER_NAME >> ${THE_CONTAINER_NAME}
 #"
 
-
-# todo:on task end >> delete next bloc ↓↓
-#if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${THE_CONTAINER_NAME}` == "${THE_CONTAINER_NAME} exited" ]]; then echo "if TRUE"; else echo "else FALSE"; fi
-#if [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep IamNOTsnow` ]]; then echo "if TRUE"; else echo "else FALSE"; fi
-
-# ››› Display and xhost ››› . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+# ....Display and xhost............................................................................
 # (CRITICAL) ToDo: Check the Dusty-nv implementation for X11 forwarding (ref task NMO-183 Fix GUI display issue)
 
 export DISPLAY=:0
@@ -107,14 +136,16 @@ export DISPLAY=:0
 xhost +si:localuser:root
 #sudo xhost + # (Priority) todo:fixme!!
 #   (ref task NMO-87 🩹→ Find a secure and permanent solution for the xhost "display not available" problem)
-#  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .‹‹‹ Display and xhost ‹‹‹
+
+# ====Begin=========================================================================================
+norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
 # Fetch all container name, strip those unrelated one and test for exact name
-if [[ `docker ps --quiet --all --format "{{.Names}} {{.State}}" | grep ${THE_CONTAINER_NAME}` == "${THE_CONTAINER_NAME} exited" ]]; then
+if [[ $(docker ps --all --format "{{.Names}} {{.State}}" | grep ${THE_CONTAINER_NAME}) == "${THE_CONTAINER_NAME} exited" ]]; then
     # Start container if he is stopped
     echo -e "${MSG_BASE} Starting container $(docker start ${THE_CONTAINER_NAME})"
     echo ""
-elif [[ -z `docker ps --quiet --all --format "{{.Names}}" | grep ${THE_CONTAINER_NAME}` ]]; then
+elif [[ -z $(docker ps --all --format "{{.Names}}" | grep ${THE_CONTAINER_NAME}) ]]; then
     echo -e "${MSG_ERROR} Container ${THE_CONTAINER_NAME} is not instantiated."
 #    "Use command ${MSG_BASE_FORMAT}dn_instantiate_develop${MSG_END_FORMAT}"
     exit

@@ -42,7 +42,7 @@ echo -e "${MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to install
   echo "# >>> dockerized-norlab aliases"; \
   echo "export DN_PATH=${DN_PATH}"; \
   echo "alias dn_cd='cd $DN_PATH'"; \
-  echo "alias dn_attach='cd $DN_PATH && bash dn_attach.bash'"; \
+  echo "alias dn_attach='cd ${DN_PATH}/dockerized-norlab-scripts/run_script && bash dn_attach.bash'"; \
 #  echo "alias dn_instantiate_develop='cd $DN_PATH && bash dn_instantiate_develop.bash'"; \
 #  echo "alias dn_instantiate_deploy='cd $DN_PATH && bash dn_instantiate_deploy.bash'"; \
 #  echo "alias dn_build_dependencies='cd $DN_PATH && bash dn_build_dependencies.bash'"; \
