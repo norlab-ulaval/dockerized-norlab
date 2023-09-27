@@ -19,14 +19,16 @@ apt-get update \
 # (CRITICAL) ToDo: (ref task NMO-348 validate that DN_SSH_SERVER_PORT var in 'sshd_config_dockerized_norlab_openssh_server' can be changed at runtime via compose ENV)
 # Inspired from:
 # - https://austinmorlan.com/posts/docker_clion_development/
+# - https://www.allaban.me/posts/2020/08/ros2-setup-ide-docker/
 # - https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
+# Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
+# ToDo: test › expect no substitution
+#  echo "Port $"DN_SSH_SERVER_PORT""; \
 ( \
   echo "LogLevel DEBUG2"; \
   echo "PermitRootLogin yes"; \
   echo "PasswordAuthentication yes"; \
   echo "Port ${DN_SSH_SERVER_PORT}"; \
-  ## Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
-#  echo "Port $"DN_SSH_SERVER_PORT""; \
   echo "Subsystem sftp /usr/lib/openssh/sftp-server"; \
 ) > /etc/ssh/sshd_config_dockerized_norlab_openssh_server \
 && mkdir /run/sshd
@@ -34,6 +36,7 @@ apt-get update \
 #  echo "PermitUserEnvironment yes"; \
 
 # SSH login fix. Otherwise user is kicked off after login
+# Ref https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
 sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
 useradd -m "${DN_SSH_SERVER_USER}" \

@@ -55,6 +55,13 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
 #RUN echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> "$BASH_ENV"
 ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
 
+# (CRITICAL) ToDo: test using pytest-dotenv in pycharm (ref task NMO-360 ﹅→ Fix the ROS environment variable not loaded in PyCharm pytest run nightmare)
+# https://github.com/quiqua/pytest-dotenv
+# How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
+RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
+    && pip3 install --no-cache-dir --verbose  \
+        pytest-dotenv
+
 ## https://github.com/abrahammurciano/python-shell-source
 #RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
 #    && pip3 install --no-cache-dir --verbose  \
