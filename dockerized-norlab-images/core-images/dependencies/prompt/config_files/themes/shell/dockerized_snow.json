@@ -27,7 +27,7 @@
         "priority": 30,
         "before": "",
         "after": " ⚡",
-        "draw_hard_divider": false,
+        "draw_hard_divider": true,
         "draw_soft_divider": true,
         "args": {
           "only_if_ssh": false
