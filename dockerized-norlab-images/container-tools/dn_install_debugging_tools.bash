@@ -68,7 +68,8 @@ echo "root:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
 # Option 2: hardlink the root .bashrc to the debugger user .bashrc
 #sudo ln -fv /root/.bashrc "/home/${DN_SSH_SERVER_USER}/.bashrc"
 
-# Option 3: rely on /etc/profile.d/
+# Option 3 (CURRENT): rely on /etc/profile.d/
+# Note: this logic is currently implemented in dockerized-norlab-images/core-images/dn-project/project-develop/Dockerfile
 
 # ====Jetbrains IDE================================================================================
 

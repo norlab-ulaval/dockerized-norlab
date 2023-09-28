@@ -43,13 +43,21 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc which is not executed"; \
       echo "# in non-interactive shell such as in pycharm-debugger"; \
       echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash\""; \
-      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
+      echo "source /opt/ros/${ROS_DISTRO}/setup.bash"; \
+      echo ""; \
+      echo "echo \"ros2 install pkg sanity check\""; \
+      echo "[[ -n \"$(ros2 pkg list | grep -e ros_core)\" ]] || echo \"Can't find ros_core localy\" && exit "; \
+      echo "[[ -n \"$(ros2 pkg list | grep -e rclpy)\" ]] || echo \"Can't find rclpy localy\" && exit "; \
+      echo "[[ -n \"$(ros2 pkg list | grep -e ackermann_msgs)\" ]] || echo \"Can't find ackermann_msgs localy\" && exit "; \
+      echo "[[ -n \"$(ros2 pkg list | grep -e vesc_msgs)\" ]] || echo \"Can't find vesc_msgs localy\" && exit "; \
       echo ""; \
       echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
       echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
       echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
       echo ""; \
     ) > /etc/profile.d/02-dn-source-ros-system-wide.sh
+
+#      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
 
 # To source ros in non-interactive & non-login shell
 #RUN echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> "$BASH_ENV"

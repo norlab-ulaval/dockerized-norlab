@@ -92,7 +92,10 @@ WORKDIR ${DN_DEV_WORKSPACE}
 #        echo ""; \
 #        ) >> ~/.bashrc
 
-RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+
+# (CRITICAL) ToDo: validate >> source /opt/ros/${ROS_DISTRO}/setup.bash VS source /opt/ros/${ROS_DISTRO}/install/setup.bash
+#RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
     && echo \
     && echo "Remove dustynv entrypoint from .bashrc. Source ROS in the dn_ros2_entrypoint.bash instead" \
@@ -114,7 +117,9 @@ RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
 
 FROM ros-custom-install as test
 
-RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+# (CRITICAL) ToDo: validate >> source /opt/ros/${ROS_DISTRO}/setup.bash VS source /opt/ros/${ROS_DISTRO}/install/setup.bash
+#RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && echo "Sanity check" \
     && rosversion -d \
     && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
