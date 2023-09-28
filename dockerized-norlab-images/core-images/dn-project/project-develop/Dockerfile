@@ -33,9 +33,10 @@ COPY dn_ros2_entrypoint.bash /
 COPY dn_fetch_ros_env.bash /
 
 ## ToDo: move the file upper in dn-project/ dir and add copy step to project-deploy also
+##         or move it to Dockerfile.ros2-dn-custom but
 ## Execute ros sourcing system wide instead of in .bashrc (which is not executed in non-interactive shell)
 #COPY 02-dn-source-ros-system-wide.sh /etc/profile.d
-#
+# (NICE TO HAVE) ToDo: DN_CONTAINER_NAME is being set with the build arg instead of the env at runtime
 RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \
