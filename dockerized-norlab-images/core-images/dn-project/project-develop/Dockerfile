@@ -40,8 +40,8 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \
       echo ""; \
-      echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc which is not executed"; \
-      echo "# in non-interactive shell such as in pycharm-debugger"; \
+      echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
+      echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
       echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
       echo "source /opt/ros/${ROS_DISTRO}/setup.bash"; \
       echo ""; \
@@ -49,9 +49,15 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
       echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
       echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
       echo ""; \
-    ) > /etc/profile.d/02-dn-source-ros-system-wide.sh
+    ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
+    && echo "" \
+    && ( \
+      echo ""; \
+      echo "# Dockerized-NorLab › Source ROS2 environment"; \
+      echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
+      echo ""; \
+    ) >> ~/.bashrc
 
-#      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
 
 # To source ros in non-interactive & non-login shell
 #RUN echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> "$BASH_ENV"
