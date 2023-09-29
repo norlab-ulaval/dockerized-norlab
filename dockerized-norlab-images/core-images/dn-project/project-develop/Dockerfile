@@ -32,43 +32,9 @@ COPY dn_ros2_rebuild_dev_workspace.bash /
 COPY dn_ros2_entrypoint.bash /
 COPY dn_fetch_ros_env.bash /
 
-## ToDo: move the file upper in dn-project/ dir and add copy step to project-deploy also
-##         or move it to Dockerfile.ros2-dn-custom but
-## Execute ros sourcing system wide instead of in .bashrc (which is not executed in non-interactive shell)
-#COPY 02-dn-source-ros-system-wide.sh /etc/profile.d
-RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
-    && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
-    && ( \
-      echo ""; \
-      echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
-      echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
-      echo "source /opt/ros/${ROS_DISTRO}/setup.bash"; \
-      echo ""; \
-    ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
-    && echo "" \
-    && ( \
-      echo ""; \
-      echo "# Dockerized-NorLab › Source ROS2 environment"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
-      echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
-      echo ""; \
-    ) >> ~/.bashrc
-
-# (NICE TO HAVE) ToDo: DN_CONTAINER_NAME is being set with the build arg instead of the env at runtime
-#      echo ""; \
-#      echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
-#      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
-#      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
-
-# To source ros in non-interactive & non-login shell
-#RUN echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash" >> "$BASH_ENV"
-ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
-
 # (CRITICAL) ToDo: test using pytest-dotenv in pycharm (ref task NMO-360 ﹅→ Fix the ROS environment variable not loaded in PyCharm pytest run nightmare)
 # https://github.com/quiqua/pytest-dotenv
 # How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
-# Note: is alread apt=get install in Dockerfile.core
 RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
     && pip3 install --no-cache-dir --verbose  \
         pytest-dotenv

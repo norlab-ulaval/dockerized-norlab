@@ -22,8 +22,29 @@ RUN apt-get update \
         ros-dev-tools \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
+    && echo "=====================================================================================" \
     && pip3 install --no-cache-dir  \
-            osrf-pycommon
+            osrf-pycommon \
+            rosbags \
+            rosbags-dataframe \
+    && echo "=====================================================================================" \
+    && apt-get update --fix-missing \
+    && apt-get install --assume-yes \
+            ros-${ROS_DISTRO}-ackermann-msgs \
+            ros-${ROS_DISTRO}-vesc-msgs \
+            ros-${ROS_DISTRO}-rosbridge-msgs \
+            ros-${ROS_DISTRO}-urg-node-msgs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && echo "====================================================================================="
+
+# https://ternaris.gitlab.io/rosbags/index.html
+# https://ternaris.gitlab.io/rosbags-dataframe/
+
+# # https://pypi.org/project/ros2-numpy/
+# # https://github.com/Box-Robotics/ros2_numpy
+# # Require python >= 3.10
+# ros2-numpy
 
 
 # Note: Next line is for creating the directories without using a RUN to keep number of layer small
@@ -67,45 +88,55 @@ WORKDIR ${DN_DEV_WORKSPACE}/src
 
 
 WORKDIR ${DN_DEV_WORKSPACE}
-## (Priority) ToDo: validate >> next bloc ↓↓
-#RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-#    && colcon build --symlink-install \
-#    && echo \
-#    && echo "Move dustynv entrypoint at the end of bashrc" \
-#    && cd /dockerized-norlab//utilities/norlab-shell-script-tools \
-#    && source .env.project \
-#    && cd src/function_library \
-#    && source ./general_utilities.bash \
-#    && seek_and_modify_string_in_file 'source /ros_entrypoint.sh' '' "$HOME/.bashrc" \
-#    && echo \
-#    && ( \
-#        echo ""; \
-#        echo "# >>> dockerized-norlab ros2-dn-custom "; \
-#        echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
-#        echo ""; \
-#        echo "# Quickhack for NMO-359 ROS_ROOT env var does not persist outside root user"; \
-#        echo "export ROS_ROOT=/opt/ros/${ROS_DISTRO}"; \
-#        echo ""; \
-#        echo "# Move the dustynv entrypoint after the re-declaration of ROS_ROOT"; \
-#        echo "source /ros_entrypoint.sh"; \
-#        echo "# <<< dockerized-norlab ros2-dn-custom "; \
-#        echo ""; \
-#        ) >> ~/.bashrc
 
-
-# (CRITICAL) ToDo: validate >> source /opt/ros/${ROS_DISTRO}/setup.bash VS source /opt/ros/${ROS_DISTRO}/install/setup.bash
-#RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
     && echo \
-    && echo "Remove dustynv entrypoint from .bashrc. Source ROS in the dn_ros2_entrypoint.bash instead" \
+    && echo "===Remove dustynv entrypoint from .bashrc. =============================================" \
+    && echo "Note: Source ROS in the dn_ros2_entrypoint.bash instead" \
+    && echo \
     && cd /dockerized-norlab//utilities/norlab-shell-script-tools \
     && source .env.project \
     && cd src/function_library \
     && source ./general_utilities.bash \
-    && seek_and_modify_string_in_file 'source /ros_entrypoint.sh' '' "$HOME/.bashrc"
+    && seek_and_modify_string_in_file 'source /ros_entrypoint.sh' '' "$HOME/.bashrc" \
+    && echo \
+    && echo "===Remove Jetson-container unused install===============================================" \
+    && rm --recursive --force /ros_deep_learning \
+    && rm --recursive --force /jetson-inference \
+    && rm --force ros_entrypoint.sh \
+    && echo \
+    && echo "===Execute ros sourcing system wide instead of in .bashrc===============================" \
+    && echo "(which is not executed in non-interactive shell)" \
+    && touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
+    && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
+    && ( \
+      echo ""; \
+      echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
+      echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
+      echo "source /opt/ros/${ROS_DISTRO}/setup.bash"; \
+      echo ""; \
+    ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
+    && echo "" \
+    && ( \
+      echo ""; \
+      echo "# Dockerized-NorLab › Source ROS2 environment"; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
+      echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
+      echo ""; \
+    ) >> ~/.bashrc
 
-    #        && colcon build --symlink-install --merge-install"
+# To source ros in non-interactive & non-login shell
+ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
+
+# (NICE TO HAVE) ToDo: DN_CONTAINER_NAME is being set with the build arg instead of the env at runtime
+#      echo ""; \
+#      echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
+#      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
+#      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
+
+#        && colcon build --symlink-install --merge-install"
 
 # ...source & check ROS environment variable........................................................
 # Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables
