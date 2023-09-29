@@ -2,14 +2,15 @@
 
 #set -e  # exit script if any statement returns a non-true return value
 
-# Skip sourcing ros env if it as been already sourced (e.g. by /etc/profile.d/01-dn-source-ros.sh)
-if [[ -z $AMENT_PREFIX_PATH ]]; then
-  # Explicitly source ROS as we removed the dustynv ros_entrypoint.sh from .bashrc
-#  ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/install/setup.bash"
-  ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/setup.bash"
-  echo "sourcing ${ROS_ENV_SETUP}"
-  source "${ROS_ENV_SETUP}"
-fi
+### ToDo: assessment >> no need anymore as we added ros sourcing in Dockerfile.ros2-dn-custom (~/.bashrc and /etc/profile.d/)
+## Skip sourcing ros env if it as been already sourced (e.g. by /etc/profile.d/01-dn-source-ros.sh)
+#if [[ -z $AMENT_PREFIX_PATH ]]; then
+#  # Explicitly source ROS as we removed the dustynv ros_entrypoint.sh from .bashrc
+##  ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/install/setup.bash"
+#  ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/setup.bash"
+#  echo "sourcing ${ROS_ENV_SETUP}"
+#  source "${ROS_ENV_SETUP}"
+#fi
 
 #ROS_DEVEL_ENV_SETUP="${DN_DEV_WORKSPACE}/install/setup.bash"
 #echo "sourcing   ${ROS_DEVEL_ENV_SETUP}"
