@@ -89,7 +89,10 @@ WORKDIR ${DN_DEV_WORKSPACE}/src
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
+RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
     && echo \
     && echo "===Remove dustynv entrypoint from .bashrc. =============================================" \
@@ -114,6 +117,8 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
       echo ""; \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
       echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash\""; \
+      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
       echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
       echo "source /opt/ros/${ROS_DISTRO}/setup.bash"; \
       echo ""; \
@@ -122,6 +127,8 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && ( \
       echo ""; \
       echo "# Dockerized-NorLab › Source ROS2 environment"; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash\""; \
+      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
       echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
       echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
       echo ""; \
@@ -148,12 +155,18 @@ ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
 
 FROM ros-custom-install as test
 
-# (CRITICAL) ToDo: validate >> source /opt/ros/${ROS_DISTRO}/setup.bash VS source /opt/ros/${ROS_DISTRO}/install/setup.bash
-#RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
+RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && echo "Sanity check" \
-    && rosversion -d \
+    && echo ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
+    && echo ${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} \
+    && echo ${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} \
     && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy"
 
 
@@ -163,9 +176,12 @@ WORKDIR ${DN_DEV_WORKSPACE}
 ## (Priority) ToDo: validate >> next bloc ↓↓
 ## (Priority) ToDo: should be in the entrypoint instead >> next bloc ↓↓
 ## Note: ROS2 setup.bash location is in `${ROS_DISTRO}/install/` instead of ROS1 in `${ROS_DISTRO}/`
-#RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+#RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+#    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+#    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+#    && source /opt/ros/${ROS_DISTRO}/setup.bash \
 #    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-#    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_ -e DN_" # WE ARE HERE <-- (!)
+#    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_ -e DN_ # WE ARE HERE <-- (!)
 
 CMD [ "bash" ]
 

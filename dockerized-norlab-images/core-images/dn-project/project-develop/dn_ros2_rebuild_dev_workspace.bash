@@ -11,8 +11,6 @@ sudo apt-get update
 rosdep install --from-paths ./src --ignore-packages-from-source --rosdistro "${ROS_DISTRO}" --default-yes
 
 ## colcon build step: rebuild everything in the catkin workspace DN_DEV_WORKSPACE
-# (CRITICAL) ToDo: validate >> source /opt/ros/${ROS_DISTRO}/setup.bash VS source /opt/ros/${ROS_DISTRO}/install/setup.bash
-#source "/opt/ros/${ROS_DISTRO}/install/setup.bash"
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 colcon build --symlink-install
 # --merge-install

@@ -42,10 +42,10 @@ RUN ( \
 #   > /home/youruser${DN_DEV_WORKSPACE}/src:/opt/ros/melodic/share
 WORKDIR ${DN_DEV_WORKSPACE}
 
-# (CRITICAL) ToDo: validate >> source /opt/ros/${ROS_DISTRO}/setup.bash VS source /opt/ros/${ROS_DISTRO}/install/setup.bash
-#
-#RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
+RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_
 

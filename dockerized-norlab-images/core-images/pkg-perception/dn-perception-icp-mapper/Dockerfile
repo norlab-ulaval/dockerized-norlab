@@ -53,7 +53,10 @@ RUN git clone https://github.com/norlab-ulaval/mapper_config_template.git
 
 #WORKDIR ${PERCEP3D_LIB_PATH:?'Error › env variable empty'}
 WORKDIR ${DN_DEV_WORKSPACE}
-RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
         --cmake-args " -D CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${DN_CMAKE_INSTALL_PREFIX}"
 
@@ -73,7 +76,10 @@ RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
 ##    && unzip demo.zip \
 ##    && rm demo.zip
 ##
-##RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+##RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+##    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+##    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+##    && source /opt/ros/${ROS_DISTRO}/setup.bash \
 ##    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
 ##    && ros2 launch mapper_config_template mapper.launch \
 ##    && ros2 bag play ~/demo/demo --clock

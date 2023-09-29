@@ -2,10 +2,6 @@
 
 #set -e  # exit script if any statement returns a non-true return value
 
-
-
-# (CRITICAL) ToDo: validate >> source /opt/ros/${ROS_DISTRO}/setup.bash VS source /opt/ros/${ROS_DISTRO}/install/setup.bash
-#ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/install/setup.bash"
 ROS_ENV_SETUP="/opt/ros/${ROS_DISTRO}/setup.bash"
 echo "sourcing   ${ROS_ENV_SETUP}"
 source "${ROS_ENV_SETUP}"

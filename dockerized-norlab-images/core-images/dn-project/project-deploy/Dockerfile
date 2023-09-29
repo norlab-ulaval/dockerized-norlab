@@ -48,10 +48,10 @@ RUN echo "Sanity check"\
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
-
-# (CRITICAL) ToDo: validate >> source /opt/ros/${ROS_DISTRO}/setup.bash VS source /opt/ros/${ROS_DISTRO}/install/setup.bash
-#RUN source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
+RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install --event-handlers console_direct+
 
 
