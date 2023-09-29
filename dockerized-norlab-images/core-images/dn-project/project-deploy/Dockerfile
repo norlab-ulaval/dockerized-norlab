@@ -59,22 +59,20 @@ FROM package-project-src-code AS test
 
 USER "${DN_SSH_SERVER_USER}"
 
-# Note: The .bashrc files get sourced only for interactive shell, so use 'bash -i' when
-#       dockerfile build stage require to source ~/.bashrc.
-#       see https://stackoverflow.com/a/74017557 by Chuck Batson
-SHELL ["/bin/bash", "-i", "-c"]
+SHELL ["/bin/bash", "-c"]
 
 RUN echo "===Check that ROS source is available via the ssh daemon user====================" \
     && [[ $(whoami) == ${DN_SSH_SERVER_USER}  ]] \
-    && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && printenv \
+    && echo "" \
+    && echo "AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" \
     && python -c "import rclpy" \
     && echo "" \
     && echo "===ros2 install pkg sanity check=================================================" \
-    && $( [[ -n "$(ros2 pkg list | grep -e ros_core)" ]] || echo "Can't find ros_core localy" && exit 1 )  \
-    && $( [[ -n "$(ros2 pkg list | grep -e rclpy)" ]] || echo "Can't find rclpy localy" && exit 1 )  \
-    && $( [[ -n "$(ros2 pkg list | grep -e ackermann_msgs)" ]] || echo "Can't find ackermann_msgs localy" && exit 1 )  \
-    && $( [[ -n "$(ros2 pkg list | grep -e vesc_msgs)" ]] || echo "Can't find vesc_msgs localy" && exit 1 )
-
+    && [[ -n "$(ros2 pkg list | grep -e ros_core)" ]] ||  exit 1  \
+    && [[ -n "$(ros2 pkg list | grep -e rclpy)" ]] ||  exit 1  \
+    && [[ -n "$(ros2 pkg list | grep -e ackermann_msgs)" ]] ||  exit 1  \
+    && [[ -n "$(ros2 pkg list | grep -e vesc_msgs)" ]] ||  exit 1
 
 ENTRYPOINT [ "" ]
 

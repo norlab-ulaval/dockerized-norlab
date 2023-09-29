@@ -117,9 +117,9 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
       echo ""; \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
       echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash\""; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash from /etc/profile.d/\""; \
       echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from /etc/profile.d/\""; \
       echo "source /opt/ros/${ROS_DISTRO}/setup.bash"; \
       echo ""; \
     ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \

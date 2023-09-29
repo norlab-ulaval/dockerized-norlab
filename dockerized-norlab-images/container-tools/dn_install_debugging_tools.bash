@@ -65,11 +65,17 @@ echo "root:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
 #  echo ""; \
 #) >> /home/"${DN_SSH_SERVER_USER}"/.bashrc
 
-# Option 2: hardlink the root .bashrc to the debugger user .bashrc
+## Option 2: hardlink the root .bashrc to the debugger user .bashrc
 #sudo ln -fv /root/.bashrc "/home/${DN_SSH_SERVER_USER}/.bashrc"
+##
+## Note: The .bashrc files get sourced only for interactive shell, so use 'bash -i' when
+##       dockerfile build stage require to source ~/.bashrc.
+##       see https://stackoverflow.com/a/74017557 by Chuck Batson
+##       e.g. in dockerfile
+##       SHELL ["/bin/bash", "-i", "-c"]
 
-# Option 3 (CURRENT): rely on /etc/profile.d/
-# Note: this logic is currently implemented in dockerized-norlab-images/core-images/dn-project/project-develop/Dockerfile
+## Option 3 (CURRENT): rely on /etc/profile.d/
+## Note: this logic is currently implemented in dockerized-norlab-images/core-images/dn-project/project-develop/Dockerfile
 
 # ====Jetbrains IDE================================================================================
 
