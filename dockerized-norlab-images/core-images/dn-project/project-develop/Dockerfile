@@ -65,14 +65,12 @@ USER "${DN_SSH_SERVER_USER}"
 #       see https://stackoverflow.com/a/74017557 by Chuck Batson
 SHELL ["/bin/bash", "-i", "-c"]
 
-RUN echo "Check that ROS source is available via the ssh daemon user" \
+RUN echo "===Check that ROS source is available via the ssh daemon user====================" \
     && [[ $(whoami) == ${DN_SSH_SERVER_USER}  ]] \
-    && rosversion -d \
-    && printenv \
     && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy" \
     && echo "" \
-    && echo "ros2 install pkg sanity check" \
+    && echo "===ros2 install pkg sanity check=================================================" \
     && $( [[ -n "$(ros2 pkg list | grep -e ros_core)" ]] || echo "Can't find ros_core localy" && exit 1 )  \
     && $( [[ -n "$(ros2 pkg list | grep -e rclpy)" ]] || echo "Can't find rclpy localy" && exit 1 )  \
     && $( [[ -n "$(ros2 pkg list | grep -e ackermann_msgs)" ]] || echo "Can't find ackermann_msgs localy" && exit 1 )  \
