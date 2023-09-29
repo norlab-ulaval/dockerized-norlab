@@ -110,7 +110,7 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
     && rm --force ros_entrypoint.sh \
     && echo \
     && echo "===Execute ros sourcing system wide instead of in .bashrc===============================" \
-    && echo "(which is not executed in non-interactive shell)" \
+    && echo "(since .bashrc is not executed in non-interactive shell)" \
     && touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \

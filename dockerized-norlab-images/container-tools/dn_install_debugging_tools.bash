@@ -50,10 +50,11 @@ usermod -a -G video,sudo "${DN_SSH_SERVER_USER}"
 # user:newpassword
 echo "root:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
 
-# (Priority) ToDo: test without usermod
-#usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
-
 # ....add the ros distro source steps to debugger user..............................................
+
+usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
+# Note: Required for ssh in pycharm-debugger, otherwise it use .sh instead of .bash
+#       and result in not sourcing ros
 
 ## Option 1: source the root .bashrc in the debugger user
 #( \
