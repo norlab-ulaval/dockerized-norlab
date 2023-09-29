@@ -111,7 +111,7 @@ RUN ( \
       echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
       echo "alias tree='pwd && tree -L 1'"; \
       echo "alias tree2='tree -L 2'"; \
-      echo "alias dn_info='bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"; \
+      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"; \
     ) >> ~/.bashrc \
     && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
 

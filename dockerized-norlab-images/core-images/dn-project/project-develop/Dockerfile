@@ -51,8 +51,8 @@ RUN chmod +x /dn_ros2_entrypoint.bash \
     && ( \
           echo ""; \
           echo "# >>> dockerized-norlab aliases (from develop img)"; \
-          echo "alias dn_ros2_rebuild_dev_workspace='bash /dn_ros2_rebuild_dev_workspace.bash'"; \
-          echo "alias dn_fetch_ros_env='bash /dn_fetch_ros_env.bash'"; \
+          echo "alias dn_ros2_rebuild_dev_workspace='source /dn_ros2_rebuild_dev_workspace.bash'"; \
+          echo "alias dn_fetch_ros_env='source /dn_fetch_ros_env.bash'"; \
           echo ""; \
         ) >> ~/.bashrc
 
