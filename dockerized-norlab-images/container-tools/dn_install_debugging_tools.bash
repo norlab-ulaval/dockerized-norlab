@@ -54,7 +54,7 @@ echo "root:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
 
 usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
 # Note: Required for ssh in pycharm-debugger, otherwise it use .sh instead of .bash
-#       and result in not sourcing ros
+#       and result in not sourcing ros from .bashrc or /etc/profile.d/
 
 ## Option 1: source the root .bashrc in the debugger user
 #( \

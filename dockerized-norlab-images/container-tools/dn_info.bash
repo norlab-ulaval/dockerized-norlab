@@ -17,17 +17,17 @@ echo -e "In-container informations:"
 #${DN_CONTAINER_NAME} container info
 echo -e "\033[1;37m
 ${SP}DN container name:           ${DN_CONTAINER_NAME}
+${SP}DN user:                     $(whoami)
 ${SP}DN host name:                $(hostname)
 ${SP}DN image architecture:       ${DN_IMAGE_ARCHITECTURE}
-${SP}DN project src path:         ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-${SP}DN target project repo:      ${DN_PROJECT_GIT_NAME}
 ${SP}DN activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
 ${SP}
+${SP}DN target project repo:      https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
+${SP}DN project src path:         ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+${SP}
 ${SP}ROS distro:                  ${ROS_DISTRO}
-${SP}ROS package:                 ${ROS_PKG}
-${SP}ROS python version:          ${ROS_PYTHON_VERSION}
 ${SP}ROS domain id:               ${ROS_DOMAIN_ID}
-${SP}ROS master uri:              ${ROS_MASTER_URI}
+${SP}ROS container workspace:     ${DN_DEV_WORKSPACE}
 ${SP}
 ${SP}python3 version:             ${DN_PYTHON3_VERSION}
 ${SP}numpy version:               $(echo "${PCK_VERSION}" | grep numpy | sed 's/numpy==//g')
@@ -36,6 +36,7 @@ ${SP}torchvision version:         $(echo "${PCK_VERSION}" | grep -w torchvision 
 ${SP}numba version:               $(echo "${PCK_VERSION}" | grep numba | sed 's/numba==//g')
 ${SP}LLVMlite version:            $(echo "${PCK_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')
 \033[0m"
+#${SP}ROS python version:          ${ROS_PYTHON_VERSION}
 #${SP}PyCuda version:          $(echo "${PCK_VERSION}" | grep pycuda | sed 's/pycuda==//g')
 
 echo -e "In-container available alias:

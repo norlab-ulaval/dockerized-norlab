@@ -127,9 +127,9 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
     && ( \
       echo ""; \
       echo "# Dockerized-NorLab › Source ROS2 environment"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash\""; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash from ~/.bashrc\""; \
       echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash\""; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from ~/.bashrc\""; \
       echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
       echo ""; \
     ) >> ~/.bashrc
