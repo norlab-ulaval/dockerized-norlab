@@ -78,11 +78,10 @@ ENTRYPOINT [ "" ]
 
 FROM package-project-src-code AS final
 
-WORKDIR /
-
 COPY dn_ros2_entrypoint.bash /
 RUN chmod +x /dn_ros2_entrypoint.bash
 
+WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 ENTRYPOINT [ "/dn_ros2_entrypoint.bash" ]
 CMD [ "bash" ]
 

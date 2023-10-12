@@ -8,6 +8,7 @@ WORKDIR /dockerized-norlab
 COPY --from=context-dn-container-tools ./dn_test/try_pytorch.py ./dockerized-norlab-images/container-tools/dn_test/
 COPY --from=context-dn-container-tools ./dn_test/try_pytorch_cpu.py ./dockerized-norlab-images/container-tools/dn_test/
 
+WORKDIR /opt
 COPY requirements_deep_learning.txt /requirements_deep_learning.txt
 
 # Doc › pip install flag: https://pip.pypa.io/en/stable/cli/pip_install/#options

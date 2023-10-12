@@ -27,5 +27,5 @@ RUN ( \
 
 
 # ... Finish container setup ............................................................
-WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 CMD [ "bash" ]

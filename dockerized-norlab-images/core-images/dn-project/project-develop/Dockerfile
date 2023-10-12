@@ -79,7 +79,7 @@ ENTRYPOINT [ "" ]
 
 FROM project-specific-ros-setup AS final
 
-WORKDIR ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 ENTRYPOINT [ "/dn_ros2_entrypoint.bash" ]
 CMD [ "bash" ]
 

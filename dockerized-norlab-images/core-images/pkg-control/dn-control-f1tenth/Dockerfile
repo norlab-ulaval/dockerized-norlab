@@ -62,7 +62,7 @@ RUN pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir --verbose \
       'gym[classic_control,box2d]==0.19.0'
 
-WORKDIR /
+WORKDIR /opt
 RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
     && cd /f1tenth_gym  \
     && pip3 install -e .

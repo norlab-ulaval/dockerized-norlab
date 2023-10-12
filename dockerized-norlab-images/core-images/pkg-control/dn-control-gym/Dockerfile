@@ -4,10 +4,11 @@ ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 WORKDIR /dockerized-norlab
-
 COPY --from=context-dn-container-tools ./dn_test/try_gym.py ./dockerized-norlab-images/container-tools/dn_test/
 
 # ...Install simulator..............................................................................
+WORKDIR /opt
+
 # Dependencies
 #   box2d-py dependency: swig
 #   Gym headless server rendering require a virtual X server like xvfb

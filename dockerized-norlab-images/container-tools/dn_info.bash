@@ -3,13 +3,13 @@
 PCK_VERSION=$(pip3 list --format freeze)
 SP="    "
 
-TMP_CWD=$(pwd)
-cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_scripts/
+DN_INFO_TMP_CWD=$(pwd)
+cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_scripts/ || return 1
 source ./which_python_version.bash
 source ./which_architecture_and_os.bash
 DN_PYTHON3_VERSION=${PYTHON3_VERSION?err}
 DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err}
-cd "$TMP_CWD"
+cd "${DN_INFO_TMP_CWD}" || return 1
 
 echo
 
@@ -23,7 +23,7 @@ ${SP}DN image architecture:       ${DN_IMAGE_ARCHITECTURE}
 ${SP}DN activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
 ${SP}
 ${SP}DN target project repo:      https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
-${SP}DN project src path:         ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+${SP}DN project src path:         ${DN_PROJECT_PATH}
 ${SP}
 ${SP}ROS distro:                  ${ROS_DISTRO}
 ${SP}ROS domain id:               ${ROS_DOMAIN_ID}
