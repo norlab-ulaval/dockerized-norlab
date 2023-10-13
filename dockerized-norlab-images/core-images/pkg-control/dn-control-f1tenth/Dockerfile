@@ -64,7 +64,7 @@ RUN pip3 install --no-cache-dir --upgrade pip \
 
 WORKDIR /opt
 RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
-    && cd /f1tenth_gym  \
+    && cd ./f1tenth_gym  \
     && pip3 install -e .
 #    && pip3 install -e ".[dev]"
 
