@@ -37,4 +37,9 @@ RUN apt-get update \
       python3-tk \
     && rm -rf /var/lib/apt/lists/*
 
+#RUN cat <<END \
+#hello world \
+#END
+
+
 CMD [ "bash" ]

@@ -32,12 +32,6 @@ COPY dn_ros2_rebuild_dev_workspace.bash /
 COPY dn_ros2_entrypoint.bash /
 COPY dn_fetch_ros_env.bash /
 
-# (CRITICAL) ToDo: test using pytest-dotenv in pycharm (ref task NMO-360 ﹅→ Fix the ROS environment variable not loaded in PyCharm pytest run nightmare)
-# https://github.com/quiqua/pytest-dotenv
-# How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
-RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
-    && pip3 install --no-cache-dir --verbose  \
-        pytest-dotenv
 
 ## https://github.com/abrahammurciano/python-shell-source
 #RUN pip3 install --no-cache-dir --verbose --upgrade pip  \

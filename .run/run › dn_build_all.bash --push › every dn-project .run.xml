@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run › dn_build_all.bash --push › every dn-project " type="ShConfigurationType" folderName="build">
+  <configuration default="false" name="run › dn_build_all.bash --push › every dn-project " type="ShConfigurationType" folderName="build (remark: select daemon via docker context)">
     <option name="SCRIPT_TEXT" value="OVERIDE_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-project' ) &amp;&amp; ADD_DOCKER_FLAG=&quot;--push&quot; &amp;&amp; source dn_build_all.bash" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />

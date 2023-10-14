@@ -198,10 +198,14 @@ print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${EXECUTE_BUI
 print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
+if [ "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]; then
+    export $( docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" )
+    # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
+fi
+
 ## docker compose [-f <theComposeFile> ...] [options] [COMMAND] [ARGS...]
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
-
 show_and_execute_docker "$DOCKER_MANAGEMENT_COMMAND -f $EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE $DOCKER_COMPOSE_CMD_ARGS" "$CI_TEST"
 
 print_msg "Environment variables used by compose:\n

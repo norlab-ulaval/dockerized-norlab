@@ -16,6 +16,10 @@ RUN pip3 install --no-cache-dir --verbose -r /requirements_deep_learning.txt  \
     && rm -rf /requirements_deep_learning.txt \
     && echo \
     && echo "Sanity check" \
+    && python -c "import numpy" \
+    && python -c "import Cython" \
+    && python -c "import torch" \
+    && python -c "import torchvision" \
     && python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py \
     && echo \
     && ( \

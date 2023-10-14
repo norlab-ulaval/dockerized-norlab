@@ -2,7 +2,7 @@ name: ${DN_COMPOSE_NAME}
 
 services:
 
-  # ====Fast test service=======================================================================
+  # ====Fast test service==========================================================================
 #  dependencies-test:
 #    extends:
 #      file: ../global-service-builder/docker-compose.global-service.build.yaml
@@ -17,7 +17,7 @@ services:
 
   # ====Dockerized-NorLab dependencies=============================================================
 
-  # ....dependencies-core............................................................................
+  # ....dependencies-core..........................................................................
 
   dependencies-main: # ›› no push build service
     extends:
@@ -29,6 +29,22 @@ services:
       args:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+        TAG_VERSION: ${TAG_VERSION:?err}
+        PATH: ${PATH:?err}
+        LD_LIBRARY_PATH: ${LD_LIBRARY_PATH}
+        LD_PRELOAD: ${LD_PRELOAD}
+        CUDA_HOME: ${CUDA_HOME}
+        ROS_DISTRO: ${ROS_DISTRO:?err}
+        ROS_ROOT: ${ROS_ROOT:?err}
+        ROS_PYTHON_VERSION: ${ROS_PYTHON_VERSION:?err}
+        RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:?err}
+
+  dependencies-squashed-base-image-tester:
+    extends: dependencies-main
+    build:
+      target: squashed-base-image-tester
+    depends_on:
+      - dependencies-main
 
   dependencies-core:
     extends: dependencies-main
@@ -36,7 +52,7 @@ services:
     depends_on:
       - dependencies-main
 
-  # ....dependencies-prompt..........................................................................
+  # ....dependencies-prompt........................................................................
   dependencies-prompt:
     extends: dependencies-core
     build:
@@ -52,7 +68,7 @@ services:
     depends_on:
       - dependencies-core
 
-  # ....dependencies-python-science-stack............................................................
+  # ....dependencies-python-science-stack..........................................................
   dependencies-python-science-stack:
     extends: dependencies-core
     build:
@@ -64,7 +80,7 @@ services:
     depends_on:
       - dependencies-prompt
 
-  # ....dependencies-ros2-custom......................................................................
+  # ....dependencies-ros2-custom...................................................................
   dependencies-ros2-custom-main: # ›› no push build service
     extends: dependencies-main
     build:

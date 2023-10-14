@@ -1,7 +1,16 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
+ARG TAG_VERSION
+
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+
+# ===Remove Jetson-container unused install========================================================
+RUN rm --recursive --force /ros_deep_learning \
+  && rm --recursive --force /jetson-inference
+
+
+FROM nvcr.io/nvidia/l4t-jetpack:${TAG_VERSION:?err} AS squash-base-image
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -12,10 +21,61 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
+# Redefine environment variable from base-image build stage
+ARG PATH
+ARG LD_LIBRARY_PATH
+ARG LD_PRELOAD
+ARG CUDA_HOME
+ARG ROS_DISTRO
+ARG ROS_ROOT
+ARG ROS_PYTHON_VERSION
+ARG RMW_IMPLEMENTATION
 
-# ====Begin=========================================================================================
+ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
+ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
+ENV LD_PRELOAD=${LD_PRELOAD:?'Environment variable was not passed from base-image build stage'}
+ENV CUDA_HOME=${CUDA_HOME:?'Environment variable was not passed from base-image build stage'}
+ENV ROS_DISTRO=${ROS_DISTRO:?'Environment variable was not passed from base-image build stage'}
+ENV ROS_ROOT=${ROS_ROOT:?'Environment variable was not passed from base-image build stage'}
+ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passed from base-image build stage'}
+ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
 
-# ....Setup timezone and localization...............................................................
+
+COPY --from=base-image /lib /lib
+COPY --from=base-image /etc /etc
+COPY --from=base-image /usr /usr
+COPY --from=base-image /bin /bin
+COPY --from=base-image /var /var
+COPY --from=base-image /opt /opt
+COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
+
+
+FROM squash-base-image AS squashed-base-image-tester
+
+#RUN python -c "import torch" \
+#    && python -c "import torchvision" \
+#    && python -c "import numpy" \
+#    && python -c "import Cython"
+
+# Only test that the ros install from jetson-container was transfered ok between build-stages
+RUN python -c "import numpy" \
+    && echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && echo "Sanity check" \
+    && echo ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
+    && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
+    && python -c "import rclpy" \
+    && ros2 pkg list
+    # (CRITICAL) ToDo: validate >> last line
+
+
+# ====Begin Dockerized-NorLab======================================================================
+FROM squash-base-image AS core-dependencies
+
+# ....Setup timezone and localization..............................................................
 # change the locale from POSIX to UTF-8
 RUN apt-get update && \
     apt-get install --assume-yes --no-install-recommends \
@@ -27,7 +87,7 @@ RUN apt-get update && \
 ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
 
-# ....install development utilities.................................................................
+# ....install development utilities................................................................
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         apt-utils \
@@ -63,25 +123,30 @@ RUN apt-get update \
         psutil \
         tqdm \
         rich \
-        # . . install python general development package . . . . . . . . . . . .
+        python-dotenv \
+        # . . install python general development package. . . . . . . . . . . . . . . . . . . . . .
         pyyaml \
         termcolor \
         decorator \
         black[d] \
-        # . . Type check. . . . . . . . . . . . . . . . . . . . . . . . . . . .
+        # . . Type check. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
         pytype \
         mypy \
-        # . . Testing tools . . . . . . . . . . . . . . . . . . . . . . . . . .
+        # . . Testing tools . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
         pytest \
         pytest-benchmark \
-        pytest-mock \
-        python-dotenv \
-        pytest-env \
         mock \
+        pytest-mock \
+        pytest-env \
         pytest-instafail \
         pytest-xdist \
+        # (CRITICAL) ToDo: test using pytest-dotenv in pycharm (ref task NMO-360 ﹅→ Fix the ROS environment variable not loaded in PyCharm pytest run nightmare)
+        # https://github.com/quiqua/pytest-dotenv
+        # How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
+        pytest-dotenv \
     && pip3 install --no-cache-dir --ignore-installed  \
            pybind11
+
 
 
 ## Packages for older python version
@@ -89,8 +154,8 @@ RUN apt-get update \
 #            dataclasses
 
 
-# ===Final build step===============================================================================
-FROM base-image AS final
+# ===Final build step==============================================================================
+FROM core-dependencies AS final
 
 # ....Install norlab-shell-script-tool.............................................................
 WORKDIR /dockerized-norlab
@@ -101,7 +166,7 @@ RUN git clone https://github.com/norlab-ulaval/norlab-shell-script-tools.git ./u
     && source ./which_python_version.bash \
     && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}"
 
-# ....Add dn-container tools........................................................................
+# ....Add dn-container tools.......................................................................
 # ToDo: move this step at a later stage
 WORKDIR /dockerized-norlab
 COPY --from=context-dn-container-tools ./dn_info.bash ./dockerized-norlab-images/container-tools/

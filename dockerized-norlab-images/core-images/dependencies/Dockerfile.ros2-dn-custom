@@ -91,22 +91,16 @@ WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install \
     && echo \
     && echo "===Remove dustynv entrypoint from .bashrc. =============================================" \
     && echo "Note: Source ROS in the dn_ros2_entrypoint.bash instead" \
     && echo \
-    && cd /dockerized-norlab//utilities/norlab-shell-script-tools \
+    && cd /dockerized-norlab/utilities/norlab-shell-script-tools \
     && source .env.project \
     && cd src/function_library \
     && source ./general_utilities.bash \
     && seek_and_modify_string_in_file 'source /ros_entrypoint.sh' '' "$HOME/.bashrc" \
-    && echo \
-    && echo "===Remove Jetson-container unused install===============================================" \
-    && rm --recursive --force /ros_deep_learning \
-    && rm --recursive --force /jetson-inference \
     && rm --force ros_entrypoint.sh \
     && echo \
     && echo "===Execute ros sourcing system wide instead of in .bashrc===============================" \
@@ -167,7 +161,9 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
     && echo ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
     && echo ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
     && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
-    && python -c "import rclpy"
+    && python -c "import rclpy" \
+    && ros2 pkg list
+    # (CRITICAL) ToDo: validate >> this line ←
 
 
 FROM ros-custom-install as final
