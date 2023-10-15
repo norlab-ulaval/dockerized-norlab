@@ -198,9 +198,30 @@ print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${EXECUTE_BUI
 print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
+# ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 if [ "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]; then
-    export $( docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" )
-    # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
+  # shellcheck disable=SC2046
+  docker pull "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
+  && export $( docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
+   | grep \
+      -e ROS_DISTRO \
+      -e ROS_ROOT \
+      -e ROS_PYTHON_VERSION \
+      -e RMW_IMPLEMENTATION \
+      -e LD_PRELOAD \
+      -e OPENBLAS_CORETYPE \
+  )
+
+  print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT}
+  to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:${MSG_DIMMED_FORMAT}
+  $(printenv | grep \
+          -e ROS_DISTRO \
+          -e ROS_ROOT \
+          -e ROS_PYTHON_VERSION \
+          -e RMW_IMPLEMENTATION \
+          -e LD_PRELOAD \
+          -e OPENBLAS_CORETYPE)
+  ${MSG_END_FORMAT}"
 fi
 
 ## docker compose [-f <theComposeFile> ...] [options] [COMMAND] [ARGS...]

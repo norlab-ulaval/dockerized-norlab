@@ -21,26 +21,29 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-# Redefine environment variable from base-image build stage
-ARG PATH
-ARG LD_LIBRARY_PATH
-ARG LD_PRELOAD
-ARG CUDA_HOME
+# ....Redefine environment variable from base-image build stage....................................
 ARG ROS_DISTRO
 ARG ROS_ROOT
 ARG ROS_PYTHON_VERSION
 ARG RMW_IMPLEMENTATION
 
-ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
-ENV LD_PRELOAD=${LD_PRELOAD:?'Environment variable was not passed from base-image build stage'}
-ENV CUDA_HOME=${CUDA_HOME:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_DISTRO=${ROS_DISTRO:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_ROOT=${ROS_ROOT:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passed from base-image build stage'}
 ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
 
+# ....The following env var does not appear in every jetson-container ros base images............
+# LD_PRELOAD is for pytorch images
+ARG OPENBLAS_CORETYPE
 
+# OPENBLAS_CORETYPE is for ROS images
+ARG LD_PRELOAD
+
+ENV LD_PRELOAD=${LD_PRELOAD}
+ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
+
+
+# ....copy artifact from base-image................................................................
 COPY --from=base-image /lib /lib
 COPY --from=base-image /etc /etc
 COPY --from=base-image /usr /usr

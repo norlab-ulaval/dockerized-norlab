@@ -30,14 +30,13 @@ services:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         TAG_VERSION: ${TAG_VERSION:?err}
-        PATH: ${PATH:?err}
-        LD_LIBRARY_PATH: ${LD_LIBRARY_PATH}
-        LD_PRELOAD: ${LD_PRELOAD}
-        CUDA_HOME: ${CUDA_HOME}
         ROS_DISTRO: ${ROS_DISTRO:?err}
         ROS_ROOT: ${ROS_ROOT:?err}
         ROS_PYTHON_VERSION: ${ROS_PYTHON_VERSION:?err}
         RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:?err}
+        # The following env var does not appear in every jetson-container ros base images
+        LD_PRELOAD: ${LD_PRELOAD}
+        OPENBLAS_CORETYPE: ${OPENBLAS_CORETYPE}
 
   dependencies-squashed-base-image-tester:
     extends: dependencies-main
