@@ -9,8 +9,18 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
+# (CRITICAL) ToDo: validate using l4t-base instead of l4t-jetson <-- we are here
+#FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
+#FROM nvcr.io/nvidia/l4t-jetpack:${TAG_VERSION:?err} AS squash-base-image
+FROM nvcr.io/nvidia/l4t-base:${TAG_VERSION:?err} AS squash-base-image
+# Note:
+#   - The squash-base-image stage is a workaround to prevent the "max depth exceeded" error
+#        occuring when the maximum number of docker layer as been reached.
+#   - About nvidia l4t  base images:
+#       - nvcr.io/nvidia/l4t-base install the core CUDA ressources
+#       - nvcr.io/nvidia/l4t-jetpack install several dev package such as nvidia-cuda-dev and nvidia-tensorrt-dev
+#   - We use l4t-base as base image since we are copying all ressources from l4t-jetpack anyway
 
-FROM nvcr.io/nvidia/l4t-jetpack:${TAG_VERSION:?err} AS squash-base-image
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -22,28 +32,33 @@ ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
 # ....Redefine environment variable from base-image build stage....................................
+ARG PATH
+ARG LD_LIBRARY_PATH
 ARG ROS_DISTRO
 ARG ROS_ROOT
 ARG ROS_PYTHON_VERSION
 ARG RMW_IMPLEMENTATION
 
+ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
+ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_DISTRO=${ROS_DISTRO:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_ROOT=${ROS_ROOT:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passed from base-image build stage'}
 ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
 
 # ....The following env var does not appear in every jetson-container ros base images............
-# LD_PRELOAD is for pytorch images
-ARG OPENBLAS_CORETYPE
-
-# OPENBLAS_CORETYPE is for ROS images
+# LD_PRELOAD is for pytorch images and OPENBLAS_CORETYPE is for ROS images
 ARG LD_PRELOAD
+ARG OPENBLAS_CORETYPE
 
 ENV LD_PRELOAD=${LD_PRELOAD}
 ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 
 
 # ....copy artifact from base-image................................................................
+# Note: copying ROS ressources is relatively easy, however copying ressources installed
+#       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+#       Work around for minimizing maintenance: copy everything
 COPY --from=base-image /lib /lib
 COPY --from=base-image /etc /etc
 COPY --from=base-image /usr /usr
@@ -72,7 +87,6 @@ RUN python -c "import numpy" \
     && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy" \
     && ros2 pkg list
-    # (CRITICAL) ToDo: validate >> last line
 
 
 # ====Begin Dockerized-NorLab======================================================================

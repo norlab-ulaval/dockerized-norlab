@@ -30,13 +30,16 @@ services:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         TAG_VERSION: ${TAG_VERSION:?err}
-        ROS_DISTRO: ${ROS_DISTRO:?err}
-        ROS_ROOT: ${ROS_ROOT:?err}
-        ROS_PYTHON_VERSION: ${ROS_PYTHON_VERSION:?err}
-        RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:?err}
+        # Base image env var transfer
+        PATH: ${BASE_IMG_ENV_PATH:?err}
+        LD_LIBRARY_PATH: ${BASE_IMG_ENV_LD_LIBRARY_PATH:?err}
+        ROS_DISTRO: ${BASE_IMG_ENV_ROS_DISTRO:?err}
+        ROS_ROOT: ${BASE_IMG_ENV_ROS_ROOT:?err}
+        ROS_PYTHON_VERSION: ${BASE_IMG_ENV_ROS_PYTHON_VERSION:?err}
+        RMW_IMPLEMENTATION: ${BASE_IMG_ENV_RMW_IMPLEMENTATION:?err}
         # The following env var does not appear in every jetson-container ros base images
-        LD_PRELOAD: ${LD_PRELOAD}
-        OPENBLAS_CORETYPE: ${OPENBLAS_CORETYPE}
+        LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
+        OPENBLAS_CORETYPE: ${BASE_IMG_ENV_OPENBLAS_CORETYPE}
 
   dependencies-squashed-base-image-tester:
     extends: dependencies-main

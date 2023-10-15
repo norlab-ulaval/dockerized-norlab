@@ -163,7 +163,6 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
     && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy" \
     && ros2 pkg list
-    # (CRITICAL) ToDo: validate >> this line ←
 
 
 FROM ros-custom-install as final
