@@ -10,17 +10,28 @@ RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
 # (CRITICAL) ToDo: validate using l4t-base instead of l4t-jetson <-- we are here
-#FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
 #FROM nvcr.io/nvidia/l4t-jetpack:${TAG_VERSION:?err} AS squash-base-image
-FROM nvcr.io/nvidia/l4t-base:${TAG_VERSION:?err} AS squash-base-image
+#FROM nvcr.io/nvidia/l4t-base:${TAG_VERSION:?err} AS squash-base-image
+#FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
+FROM scratch AS squash-base-image
+COPY --from=base-image / /
 # Note:
 #   - The squash-base-image stage is a workaround to prevent the "max depth exceeded" error
 #        occuring when the maximum number of docker layer as been reached.
+#   - We use arm64v8/ubuntu:20.04 as base image since we are copying everything from l4t-jetpack anyway
 #   - About nvidia l4t  base images:
 #       - nvcr.io/nvidia/l4t-base install the core CUDA ressources
-#       - nvcr.io/nvidia/l4t-jetpack install several dev package such as nvidia-cuda-dev and nvidia-tensorrt-dev
-#   - We use l4t-base as base image since we are copying all ressources from l4t-jetpack anyway
-
+#       - nvcr.io/nvidia/l4t-jetpack
+#           - install several dev package such as nvidia-cuda-dev, nvidia-cudnn-dev and nvidia-tensorrt-dev
+#           - mod their dockerfile to install runtime version of all those packages
+#   - copying ROS ressources is relatively easy, however copying ressources installed
+#       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+#       Work around for minimizing maintenance: copy everything
+# Ref:
+#   - https://gitlab.com/nvidia/container-images/l4t-base
+#   - https://gitlab.com/nvidia/container-images/l4t-jetpack
+#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
+#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -55,17 +66,17 @@ ENV LD_PRELOAD=${LD_PRELOAD}
 ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 
 
-# ....copy artifact from base-image................................................................
-# Note: copying ROS ressources is relatively easy, however copying ressources installed
-#       via pip vs apt-get or via source installed or pytorch related is a nightmare.
-#       Work around for minimizing maintenance: copy everything
-COPY --from=base-image /lib /lib
-COPY --from=base-image /etc /etc
-COPY --from=base-image /usr /usr
-COPY --from=base-image /bin /bin
-COPY --from=base-image /var /var
-COPY --from=base-image /opt /opt
-COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
+## ....copy artifact from base-image................................................................
+## Note: copying ROS ressources is relatively easy, however copying ressources installed
+##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+##       Work around for minimizing maintenance: copy everything
+#COPY --from=base-image /lib /lib
+#COPY --from=base-image /etc /etc
+#COPY --from=base-image /usr /usr
+#COPY --from=base-image /bin /bin
+#COPY --from=base-image /var /var
+#COPY --from=base-image /opt /opt
+#COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
 
 FROM squash-base-image AS squashed-base-image-tester
@@ -77,7 +88,9 @@ FROM squash-base-image AS squashed-base-image-tester
 
 # Only test that the ros install from jetson-container was transfered ok between build-stages
 RUN python -c "import numpy" \
-    && echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+    && python -c "import pytest"
+
+RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
     && echo "Sanity check" \
     && echo ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \

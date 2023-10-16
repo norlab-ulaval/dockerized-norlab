@@ -218,36 +218,16 @@ if [ "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "dockerized-norlab-images/co
     | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
    )
 
-
-#   export \
-#      BASE_IMG_ENV_PATH=${PATH} \
-#      BASE_IMG_ENV_LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
-#      BASE_IMG_ENV_ROS_DISTRO=${ROS_DISTRO} \
-#      BASE_IMG_ENV_ROS_ROOT=${ROS_ROOT} \
-#      BASE_IMG_ENV_ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION} \
-#      BASE_IMG_ENV_RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION} \
-#      BASE_IMG_ENV_LD_PRELOAD=${LD_PRELOAD} \
-#      BASE_IMG_ENV_OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
-
-
-
-  print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT}
-  to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
-  ${MSG_DIMMED_FORMAT}$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')${MSG_END_FORMAT}"
-#      -e ROS_DISTRO \
-#      -e ROS_ROOT \
-#      -e ROS_PYTHON_VERSION \
-#      -e RMW_IMPLEMENTATION \
-#      -e LD_PRELOAD \
-#      -e OPENBLAS_CORETYPE \
-#    | sed 's;ROS_;    ROS_;' | sed 's;RMW_;    RMW_;' \
-#    | sed 's;LD_;    LD_;' | sed 's;OPENBLAS_;    OPENBLAS_;' )
+  print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
+    ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
+    ${MSG_END_FORMAT}"
 fi
 
 ## docker compose [-f <theComposeFile> ...] [options] [COMMAND] [ARGS...]
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
 show_and_execute_docker "$DOCKER_MANAGEMENT_COMMAND -f $EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE $DOCKER_COMPOSE_CMD_ARGS" "$CI_TEST"
+
 
 print_msg "Environment variables used by compose:\n
 ${MSG_DIMMED_FORMAT}    DOCKERIZED_NORLAB_VERSION=${DOCKERIZED_NORLAB_VERSION} ${MSG_END_FORMAT}
