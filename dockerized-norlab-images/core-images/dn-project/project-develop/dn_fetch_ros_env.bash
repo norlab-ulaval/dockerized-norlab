@@ -18,10 +18,24 @@ PYTHONPATH
 PATH
 LD_LIBRARY_PATH
 HOSTNAME
+RMW_IMPLEMENTATION
 "
+
+DISPLAY_FORWARDING="
+DISPLAY
+LIBGL_ALWAYS_INDIRECT
+QT_X11_NO_MITSHM
+"
+
 ENV_STRING=""
 for e in ${ROS_ENV}; do
   ENV_STRING+="$e=${!e};"
 done
 
-echo $ENV_STRING
+for e in ${DISPLAY_FORWARDING}; do
+  ENV_STRING+="$e=${!e};"
+done
+
+echo "$ENV_STRING"
+
+printenv | grep -i -e DN_ -e DN_PROJECT

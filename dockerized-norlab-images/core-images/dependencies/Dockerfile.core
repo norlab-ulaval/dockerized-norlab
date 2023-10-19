@@ -81,10 +81,7 @@ ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 
 FROM squash-base-image AS squashed-base-image-tester
 
-#RUN python -c "import torch" \
-#    && python -c "import torchvision" \
-#    && python -c "import numpy" \
-#    && python -c "import Cython"
+RUN dpkg --get-selections | grep nvidia
 
 # Only test that the ros install from jetson-container was transfered ok between build-stages
 RUN python -c "import numpy" \

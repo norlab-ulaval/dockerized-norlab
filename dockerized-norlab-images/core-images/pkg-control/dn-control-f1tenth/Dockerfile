@@ -4,8 +4,12 @@ ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 # ====Begin=============================================================================================
+# See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
 
+# Note: fix for `libGL error: No matching fbConfigs or visuals found`
+#       and `libGL error: failed to load driver: swrast` error
 ENV LIBGL_ALWAYS_INDIRECT=1
+
 ENV NVIDIA_VISIBLE_DEVICES \
     ${NVIDIA_VISIBLE_DEVICES:-all}
     # `all` if `NVIDIA_VISIBLE_DEVICES` is unset or null
@@ -72,9 +76,9 @@ RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
 # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
 # See known issues comment https://github.com/f1tenth/f1tenth_gym
 #RUN pip3 install pyglet==1.5.11
+#RUN pip3 install pyglet==1.5.20
 RUN pip3 install --no-cache-dir --upgrade  \
-    'pyglet<1.5.11' \
-    pyopengl
+    'pyglet<1.5.11'
 
 # ====End===============================================================================================
 CMD [ "bash" ]

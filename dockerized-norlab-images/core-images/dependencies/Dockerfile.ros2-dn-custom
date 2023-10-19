@@ -87,25 +87,27 @@ WORKDIR ${DN_DEV_WORKSPACE}/src
 #    && rosdep install --from-paths ./src --ignore-packages-from-source --rosdistro ${ROS_DISTRO} -y
 
 
+# ====Nuild ROS2 workspace=========================================================================
 WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && colcon build --symlink-install \
-    && echo \
-    && echo "===Remove dustynv entrypoint from .bashrc. =============================================" \
-    && echo "Note: Source ROS in the dn_ros2_entrypoint.bash instead" \
-    && echo \
-    && cd /dockerized-norlab/utilities/norlab-shell-script-tools \
-    && source .env.project \
+    && colcon build --symlink-install
+
+# ===Remove dustynv entrypoint from .bashrc. ======================================================
+# Note: Source ROS in the dn_ros2_entrypoint.bash instead"
+
+WORKDIR /dockerized-norlab/utilities/norlab-shell-script-tools
+RUN source .env.project \
     && cd src/function_library \
     && source ./general_utilities.bash \
     && seek_and_modify_string_in_file 'source /ros_entrypoint.sh' '' "$HOME/.bashrc" \
-    && rm --force ros_entrypoint.sh \
-    && echo \
-    && echo "===Execute ros sourcing system wide instead of in .bashrc===============================" \
-    && echo "(since .bashrc is not executed in non-interactive shell)" \
-    && touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
+    && rm --force /ros_entrypoint.sh
+
+# ===Execute ros sourcing system wide instead of in .bashrc========================================
+# (since .bashrc is not executed in non-interactive shell)
+
+RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \
       echo ""; \
@@ -138,14 +140,6 @@ ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
 #      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
 
 #        && colcon build --symlink-install --merge-install"
-
-# ...source & check ROS environment variable........................................................
-# Make sure that you have your environment properly setup. A good way to check is to ensure that environment variables
-# like ROS_ROOT and ROS_PACKAGE_PATH are set:
-#   $ printenv | grep ROS
-# Check the ROS_PACKAGE_PATH environment variable. It should include the directory you're in:
-#   $ echo $ROS_PACKAGE_PATH
-#   > /home/youruser${DN_DEV_WORKSPACE}/src:/opt/ros/melodic/share
 
 FROM ros-custom-install as test
 

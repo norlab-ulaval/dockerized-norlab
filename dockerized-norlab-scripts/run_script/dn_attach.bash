@@ -3,10 +3,10 @@
 # Convenient script for building all images specified in 'docker-compose.dn-dependencies.build.yaml'
 #
 # Usage:
-#   $ bash dn_attach.bash [<optional argument>]
+#   $ bash dn_attach.bash [<optional flag>] <container-name>
 #
 # Arguments:
-#   You can pass any docker build flag in <optional argument> eg.:
+#   You can pass any docker exec flag in <optional argument> eg.:
 #     --env=\"VAR=1\"        (to set environment variables)
 #
 
@@ -121,21 +121,21 @@ done
 # ....Display and xhost............................................................................
 # (CRITICAL) ToDo: Check the Dusty-nv implementation for X11 forwarding (ref task NMO-183 Fix GUI display issue)
 
-export DISPLAY=:0
-#echo "export DISPLAY=:0" >> ~/.bashrc
-
-# Note on xhost usage:
-#           $ xhost [[+-][family:]name]
+#export DISPLAY=:0
+##echo "export DISPLAY=:0" >> ~/.bashrc
 #
-#   familly:
-#     - local:      contains only one name, the empty string
-#     - inet:       Internet host (IPv4)
-#     - inet6:      Internet host (IPv6)
-#     - si:         Server Interpreted : si:<type>:<value>
-
-xhost +si:localuser:root
-#sudo xhost + # (Priority) todo:fixme!!
-#   (ref task NMO-87 🩹→ Find a secure and permanent solution for the xhost "display not available" problem)
+## Note on xhost usage:
+##           $ xhost [[+-][family:]name]
+##
+##   familly:
+##     - local:      contains only one name, the empty string
+##     - inet:       Internet host (IPv4)
+##     - inet6:      Internet host (IPv6)
+##     - si:         Server Interpreted : si:<type>:<value>
+#
+#xhost +si:localuser:root
+##sudo xhost + # (Priority) todo:fixme!!
+##   (ref task NMO-87 🩹→ Find a secure and permanent solution for the xhost "display not available" problem)
 
 # ====Begin=========================================================================================
 norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
