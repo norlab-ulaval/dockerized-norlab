@@ -36,15 +36,20 @@ COPY dn_expose_container_env_variables.bash /
 RUN chmod +x /dn_ros2_entrypoint.bash \
     && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
     && chmod +x /dn_fetch_ros_env_variables.bash \
-    && chmod +x /dn_expose_container_env_variables.bash \
-    && ( \
-          echo ""; \
-          echo "# >>> dockerized-norlab aliases (from develop img)"; \
-          echo "alias dn_ros2_rebuild_dev_workspace='source /dn_ros2_rebuild_dev_workspace.bash'"; \
-          echo "alias dn_fetch_ros_env_variables='source /dn_fetch_ros_env_variables.bash'"; \
-          echo "alias dn_expose_container_env_variables='source /dn_expose_container_env_variables.bash'"; \
-          echo ""; \
-        ) >> ~/.bashrc
+    && chmod +x /dn_expose_container_env_variables.bash
+
+#RUN chmod +x /dn_ros2_entrypoint.bash \
+#    && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
+#    && chmod +x /dn_fetch_ros_env_variables.bash \
+#    && chmod +x /dn_expose_container_env_variables.bash \
+#    && ( \
+#          echo ""; \
+#          echo "# >>> dockerized-norlab aliases (from develop img)"; \
+#          echo "alias dn_ros2_rebuild_dev_workspace='source /dn_ros2_rebuild_dev_workspace.bash'"; \
+#          echo "alias dn_fetch_ros_env_variables='source /dn_fetch_ros_env_variables.bash'"; \
+#          echo "alias dn_expose_container_env_variables='source /dn_expose_container_env_variables.bash'"; \
+#          echo ""; \
+#        ) >> ~/.bashrc
 
 WORKDIR /dn_container_env_variable/
 

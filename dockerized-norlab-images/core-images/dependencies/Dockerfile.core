@@ -205,17 +205,29 @@ RUN git clone https://github.com/norlab-ulaval/norlab-shell-script-tools.git ./u
     && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}"
 
 # ....Add dn-container tools.......................................................................
-# ToDo: move this step at a later stage
+# ToDo: assessement › move this step at a later stage
 WORKDIR /dockerized-norlab
 COPY --from=context-dn-container-tools ./dn_info.bash ./dockerized-norlab-images/container-tools/
+COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./dockerized-norlab-images/container-tools/
+
+#RUN ( \
+#      echo ""; \
+#      echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
+#      echo "alias tree='pwd && tree -L 1'"; \
+#      echo "alias tree2='tree -L 2'"; \
+#      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"; \
+#    ) >> ~/.bashrc \
+#    && echo "" \
+#    && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
 
 RUN ( \
       echo ""; \
       echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
-      echo "alias tree='pwd && tree -L 1'"; \
-      echo "alias tree2='tree -L 2'"; \
-      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"; \
+      echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash"; \
+      echo ""; \
     ) >> ~/.bashrc \
+    && echo  \
+    && echo "Sanity check" \
     && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
 
 CMD [ "bash" ]

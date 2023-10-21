@@ -9,10 +9,13 @@ source ./which_python_version.bash
 source ./which_architecture_and_os.bash
 DN_PYTHON3_VERSION=${PYTHON3_VERSION?err}
 DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err}
+
+cd ../function_library
+source ./prompt_utilities.bash
 cd "${DN_INFO_TMP_CWD}" || return 1
 
 echo
-
+draw_horizontal_line_across_the_terminal_window '.'
 echo -e "In-container informations:"
 #${DN_CONTAINER_NAME} container info
 echo -e "\033[1;37m
@@ -41,7 +44,10 @@ ${SP}LLVMlite version:            $(echo "${PCK_VERSION}" | grep llvmlite | sed 
 
 echo -e "In-container available alias:
 \033[1;37m
-$(alias | grep -e dn_ | sed "s;='.*;;" | sed "s;alias dn_;${SP}$ dn_;")
+$( \
+    cd /dockerized-norlab/dockerized-norlab-images/container-tools && \
+    sed "s;alias dn_;${SP}$ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | grep -e dn_ \
+ )
 \033[0m"
 #${SP}$ dn_info
 #${SP}$ dn_python3_check
@@ -58,8 +64,9 @@ ${SP}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_SSH_SERVER_USER}@$(host
 \033[0m"
 
 # (NICE TO HAVE) ToDo: Add >> procedure for configuring .env file
-echo -e "Terminal prompt › The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m or\033[1;37m Powerline10k\033[0m be installed on the host terminal.
-To change to a minimal prompt, either set permanently the ENV variable in\033[1;37m docker-compose.<spec>.run.yaml\033[0m:
+echo -e "Terminal prompt › The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m
+or\033[1;37m Powerline10k\033[0m be installed on the host terminal. To change to a minimal prompt,
+either set permanently the ENV variable in\033[1;37m docker-compose.<spec>.run.yaml\033[0m:
 ${SP}
 ${SP}services:
 ${SP}  develop: # the service name
@@ -71,16 +78,15 @@ or pass the following flag to \033[1;37mdn_attach\033[0m when connecting to a ru
 ${SP}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-container-name>
 \033[0m"
 
-# ToDo: Validate output › PYTHONPATH is not accessible the first time dn_info is called
-echo -e "If you're running a python interpreter in remote development, dont forget to add the python path pointing to the ROS package:
+echo -e "If you're running a python interpreter in remote development, dont forget to add the python path
+pointing to the ROS package:
 \033[1;37m
 ${SP} PYTHONPATH=${PYTHONPATH}
 \033[0m
-If you need to configure your IDE for remote development, execute
+To fetch container environment variables and expose them to the host computer through a mounted
+volume \033[1;37m dockerized-norlab-tools/dn_container_env_variable/ \033[0m making them availbale to configure your IDE
+(e.g.: PyCharm run configuration using EnvFile plugin https://github.com/Ashald/EnvFile) execute:
 \033[1;37m
 ${SP} $ dn_expose_container_env_variables
-\033[0m
-to fetch container environment variables and expose them to the host computer through a mounted volume
-\033[1;37m dockerized-norlab-tools/dn_container_env_variable/ \033[0m making them availbale to configure your IDE
-e.g.: PyCharm run configuration using EnvFile plugin (https://github.com/Ashald/EnvFile)
-"
+\033[0m "
+draw_horizontal_line_across_the_terminal_window '.'
