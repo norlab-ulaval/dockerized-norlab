@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Convenient script for building all images specified in 'docker-compose.dn-dependencies.build.yaml'
+# Convenient script
 #
 # Usage:
 #   $ bash dn_run_a_service.bash '<.env.build_matrix.*>' <service> [<optional command>]

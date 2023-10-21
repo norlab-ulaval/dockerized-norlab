@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Convenient script for building all images specified in 'docker-compose.dn-dependencies.build.yaml'
+# Convenient script for building all images by crwaling over all ".env.build_matrix.dn-*" file
 #
 # Usage:
 #   $ bash dn_build_all.bash [<optional flag>]
