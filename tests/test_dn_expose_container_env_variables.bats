@@ -68,7 +68,8 @@ teardown() {
 
 function export_DN_container_env() {
     # Muting on purpose so that it does not clash with bats framework:
-    # - PATH
+    # - (critical) PATH
+    # - (seams ok) PYTHONPATH
     # - HOSTNAME
     # - LD_PRELOAD
 
@@ -79,11 +80,11 @@ function export_DN_container_env() {
     export ROS_PYTHON_VERSION=3
     export ROS_DOMAIN_ID=1
     export ROS_LOCALHOST_ONLY=0
+    export PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages
     export AMENT_PREFIX_PATH=/opt/ros/foxy:/opt/ros/foxy/install
     export CMAKE_PREFIX_PATH=/opt/ros/foxy/install
     export COLCON_PREFIX_PATH=/opt/ros/foxy/install
     export PKG_CONFIG_PATH=/opt/ros/foxy/install/lib/aarch64-linux-gnu/pkgconfig:/opt/ros/foxy/install/lib/pkgconfig
-    export PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages
     export LD_LIBRARY_PATH=/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:
     export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
     export OPENBLAS_CORETYPE=ARMV8
@@ -176,14 +177,13 @@ function show_DN_container_env() {
 
   export_DN_container_env
   run bash ./$TESTED_FILE
-
-#  more ./.env.dn_expose_container_var  >&3
 #  tree -L 1 -a
 
   DN_CONTAINER_EXPOSE_ENV_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
   assert_file_exist $DN_CONTAINER_EXPOSE_ENV_PATH
-
   assert_file_not_empty $DN_CONTAINER_EXPOSE_ENV_PATH
+#  more $DN_CONTAINER_EXPOSE_ENV_PATH  >&3
+
 
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_VERSION=2"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "NVIDIA_VISIBLE_DEVICES=all"
@@ -198,7 +198,6 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "AMENT_PREFIX_PATH=/opt/ros/foxy:/opt/ros/foxy/install"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "CMAKE_PREFIX_PATH=/opt/ros/foxy/install"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "COLCON_PREFIX_PATH=/opt/ros/foxy/install"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_ACTIVATE_POWERLINE_PROMT=true"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "OPENBLAS_CORETYPE=ARMV8"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_GDB_SERVER_PORT=7777"
@@ -213,6 +212,21 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DISTRO=foxy"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "QT_X11_NO_MITSHM=1"
+
+}
+
+@test "running $TESTED_FILE › check PYTHONPATH › expect pass" {
+
+  export_DN_container_env
+  run bash ./$TESTED_FILE
+#  tree -L 1 -a
+
+  DN_CONTAINER_EXPOSE_ENV_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
+  assert_file_exist $DN_CONTAINER_EXPOSE_ENV_PATH
+  assert_file_not_empty $DN_CONTAINER_EXPOSE_ENV_PATH
+  more $DN_CONTAINER_EXPOSE_ENV_PATH  >&3
+
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=\${PYTHONPATH}:/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
 
 }
 

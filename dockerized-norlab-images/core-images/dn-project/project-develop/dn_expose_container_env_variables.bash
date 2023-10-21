@@ -40,8 +40,8 @@ touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable 
   echo "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"; \
   echo "COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH}"; \
   echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"; \
-  echo "PYTHONPATH=${PYTHONPATH}"; \
-  echo "PATH=${PATH}"; \
+  echo "PYTHONPATH=\${PYTHONPATH}:${PYTHONPATH}"; \
+  echo "PATH=\${PATH}:${PATH}"; \
   echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"; \
   echo "HOSTNAME=${HOSTNAME}"; \
   echo "RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}"; \
