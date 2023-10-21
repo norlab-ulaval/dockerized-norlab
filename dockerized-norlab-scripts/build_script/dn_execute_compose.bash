@@ -204,12 +204,16 @@ if [ "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "dockerized-norlab-images/co
   docker pull "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
   && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
     | grep \
+      -e CUDA_HOME= \
+      -e NVIDIA_ \
       -e LD_LIBRARY_PATH= \
       -e PATH= \
       -e ROS_ \
       -e RMW_IMPLEMENTATION= \
       -e LD_PRELOAD= \
       -e OPENBLAS_CORETYPE= \
+    | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
+    | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
     | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
     | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
     | sed 's;^ROS_;BASE_IMG_ENV_ROS_;' \

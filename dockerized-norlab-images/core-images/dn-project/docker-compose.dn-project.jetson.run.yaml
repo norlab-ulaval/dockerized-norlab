@@ -1,4 +1,3 @@
-version: "3.9"
 
 services:
   develop:
@@ -28,6 +27,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
       ## ....Add host volume you want to mount into the container..........................................................
+      - /home/snow/${DN_PROJECT_GIT_NAME}/dn_container_env_variable/:/dn_container_env_variable/:rw
 #      - /home/snow/NorLab_MPPI:/ros2_ws/src/NorLab_MPPI
       - /home/snow/${DN_PROJECT_GIT_NAME}:/ros2_ws/src/${DN_PROJECT_GIT_NAME}
     tty: true

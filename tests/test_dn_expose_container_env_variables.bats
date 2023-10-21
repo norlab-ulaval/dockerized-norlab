@@ -1,0 +1,217 @@
+#!/usr/bin/env bats
+#
+# Usage in docker container
+#   $ REPO_ROOT=$(pwd) && RUN_TESTS_IN_DIR='tests'
+#   $ docker run -it --rm -v "$REPO_ROOT:/code" bats/bats:latest "$RUN_TESTS_IN_DIR"
+#
+#   Note: "/code" is the working directory in the bats official image
+#
+# bats-core ref:
+#   - https://bats-core.readthedocs.io/en/stable/tutorial.html
+#   - https://bats-core.readthedocs.io/en/stable/writing-tests.html
+#   - https://opensource.com/article/19/2/testing-bash-bats
+#       ↳ https://github.com/dmlond/how_to_bats/blob/master/test/build.bats
+#
+# Helper library: 
+#   - https://github.com/bats-core/bats-assert
+#   - https://github.com/bats-core/bats-support
+#   - https://github.com/bats-core/bats-file
+#
+
+BATS_HELPER_PATH=/usr/lib/bats
+if [[ -d ${BATS_HELPER_PATH} ]]; then
+  load "${BATS_HELPER_PATH}/bats-support/load"
+  load "${BATS_HELPER_PATH}/bats-assert/load"
+  load "${BATS_HELPER_PATH}/bats-file/load"
+  load "bats_testing_tools/bats_helper_functions"
+  #load "${BATS_HELPER_PATH}/bats-detik/load" # << Kubernetes support
+else
+  echo -e "\n[\033[1;31mERROR\033[0m] $0 path to bats-core helper library unreachable at \"${BATS_HELPER_PATH}\"!"
+  echo '(press any key to exit)'
+  read -r -n 1
+  exit 1
+fi
+
+# ====Setup========================================================================================
+
+TESTED_FILE="dn_expose_container_env_variables.bash"
+TESTED_FILE_PATH="dockerized-norlab-images/core-images/dn-project/project-develop"
+
+setup_file() {
+  BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
+  pwd >&3 && tree -L 1 -a -hug >&3
+#  printenv >&3
+}
+
+setup() {
+  cd "$TESTED_FILE_PATH" || exit
+
+  # PRE CONDITION: Variable need to be set prior for this script
+  export DN_CONTAINER_NAME=IamF110-ctrl
+
+  source ./$TESTED_FILE
+
+}
+
+# ====Teardown=====================================================================================
+
+teardown() {
+  bats_print_run_env_variable_on_error
+}
+
+#teardown_file() {
+#    echo "executed once after finishing the last test"
+#}
+
+# ====Local helper fonction========================================================================
+
+function export_DN_container_env() {
+    # Muting on purpose so that it does not clash with bats framework:
+    # - PATH
+    # - HOSTNAME
+    # - LD_PRELOAD
+
+    # ROS related env
+    export ROS_DISTRO=foxy
+    export ROS_ROOT=/opt/ros/foxy
+    export ROS_VERSION=2
+    export ROS_PYTHON_VERSION=3
+    export ROS_DOMAIN_ID=1
+    export ROS_LOCALHOST_ONLY=0
+    export AMENT_PREFIX_PATH=/opt/ros/foxy:/opt/ros/foxy/install
+    export CMAKE_PREFIX_PATH=/opt/ros/foxy/install
+    export COLCON_PREFIX_PATH=/opt/ros/foxy/install
+    export PKG_CONFIG_PATH=/opt/ros/foxy/install/lib/aarch64-linux-gnu/pkgconfig:/opt/ros/foxy/install/lib/pkgconfig
+    export PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages
+    export LD_LIBRARY_PATH=/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:
+    export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    export OPENBLAS_CORETYPE=ARMV8
+
+    # Cuda related env
+    export CUDA_HOME=/usr/local/cuda
+    export NVIDIA_VISIBLE_DEVICES=all
+    export NVIDIA_DRIVER_CAPABILITIES=graphics
+#    export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
+
+    # Display forwarding related env
+    export DISPLAY=host.docker.internal:0
+    export LIBGL_ALWAYS_INDIRECT=1
+    export QT_X11_NO_MITSHM=1
+
+    # Dockerized-NorLab related env
+    export DN_DEV_WORKSPACE=/ros2_ws
+    export DN_PROJECT_PATH=/ros2_ws/src/f1tenth-redleader-controller
+    export DN_CONTAINER_NAME=IamF110-ctrl
+    export DN_ACTIVATE_POWERLINE_PROMT=true
+    export DN_GDB_SERVER_PORT=7777
+    export DN_PROJECT_GIT_NAME=f1tenth-redleader-controller
+    export DN_SSH_SERVER_PORT=2222
+    export DN_SSH_SERVER_USER=pycharm-debugger
+    export DN_PROJECT_GIT_DOMAIN=vaul-ulaval
+  }
+
+function show_DN_container_env() {
+      printenv | grep \
+         -e ROS_DISTRO \
+         -e ROS_ROOT \
+         -e ROS_VERSION \
+         -e ROS_PYTHON_VERSION \
+         -e ROS_DOMAIN_ID \
+         -e ROS_LOCALHOST_ONLY \
+         -e AMENT_PREFIX_PATH \
+         -e CMAKE_PREFIX_PATH \
+         -e COLCON_PREFIX_PATH \
+         -e PKG_CONFIG_PATH \
+         -e PYTHONPATH \
+         -e LD_LIBRARY_PATH \
+         -e RMW_IMPLEMENTATION \
+         -e OPENBLAS_CORETYPE \
+         -e CUDA_HOME \
+         -e NVIDIA_VISIBLE_DEVICES \
+         -e NVIDIA_DRIVER_CAPABILITIES \
+#         -e LD_PRELOAD \
+         -e DISPLAY \
+         -e LIBGL_ALWAYS_INDIRECT \
+         -e QT_X11_NO_MITSHM \
+         -e DN_DEV_WORKSPACE \
+         -e DN_PROJECT_PATH \
+         -e DN_CONTAINER_NAME \
+         -e DN_ACTIVATE_POWERLINE_PROMT \
+         -e DN_GDB_SERVER_PORT \
+         -e DN_PROJECT_GIT_NAME \
+         -e DN_SSH_SERVER_PORT \
+         -e DN_SSH_SERVER_USER \
+         -e DN_PROJECT_GIT_DOMAIN
+}
+
+# ====Test casses==================================================================================
+
+
+@test "running $TESTED_FILE from ok cwd › expect pass" {
+  cd "${BATS_DOCKER_WORKDIR}/${TESTED_FILE_PATH}"
+  run bash ./$TESTED_FILE
+  assert_success
+}
+
+@test "running $TESTED_FILE › DN_CONTAINER_NAME var unset › expect failure" {
+  unset DN_CONTAINER_NAME
+  run bash ./$TESTED_FILE
+  assert_output --partial "Variable unset"
+
+}
+
+@test "running $TESTED_FILE › check file/dir created › expect pass" {
+  run bash ./$TESTED_FILE
+  tree -L 2 -a
+
+  assert_dir_exist "/dn_container_env_variable/${DN_CONTAINER_NAME}"
+  cd "/dn_container_env_variable/${DN_CONTAINER_NAME}"
+  assert_file_exist ./.env.dn_expose_container_var
+}
+
+@test "running $TESTED_FILE › check env var agregated › expect pass" {
+
+  export_DN_container_env
+  run bash ./$TESTED_FILE
+
+#  more ./.env.dn_expose_container_var  >&3
+#  tree -L 1 -a
+
+  cd "/dn_container_env_variable/${DN_CONTAINER_NAME:?'Variable unset'}"
+  assert_file_not_empty ./.env.dn_expose_container_var
+
+  assert_file_contains ./.env.dn_expose_container_var "ROS_VERSION=2"
+  assert_file_contains ./.env.dn_expose_container_var "NVIDIA_VISIBLE_DEVICES=all"
+  assert_file_contains ./.env.dn_expose_container_var "LIBGL_ALWAYS_INDIRECT=1"
+  assert_file_contains ./.env.dn_expose_container_var "PKG_CONFIG_PATH=/opt/ros/foxy/install/lib/aarch64-linux-gnu/pkgconfig:/opt/ros/foxy/install/lib/pkgconfig"
+  assert_file_contains ./.env.dn_expose_container_var "ROS_PYTHON_VERSION=3"
+  assert_file_contains ./.env.dn_expose_container_var "NVIDIA_DRIVER_CAPABILITIES=graphics"
+  assert_file_contains ./.env.dn_expose_container_var "ROS_DOMAIN_ID=1"
+  assert_file_contains ./.env.dn_expose_container_var "DN_DEV_WORKSPACE=/ros2_ws"
+  assert_file_contains ./.env.dn_expose_container_var "DN_PROJECT_PATH=/ros2_ws/src/f1tenth-redleader-controller"
+  assert_file_contains ./.env.dn_expose_container_var "DN_CONTAINER_NAME=IamF110-ctrl"
+  assert_file_contains ./.env.dn_expose_container_var "AMENT_PREFIX_PATH=/opt/ros/foxy:/opt/ros/foxy/install"
+  assert_file_contains ./.env.dn_expose_container_var "CMAKE_PREFIX_PATH=/opt/ros/foxy/install"
+  assert_file_contains ./.env.dn_expose_container_var "COLCON_PREFIX_PATH=/opt/ros/foxy/install"
+  assert_file_contains ./.env.dn_expose_container_var "PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
+  assert_file_contains ./.env.dn_expose_container_var "DN_ACTIVATE_POWERLINE_PROMT=true"
+  assert_file_contains ./.env.dn_expose_container_var "OPENBLAS_CORETYPE=ARMV8"
+  assert_file_contains ./.env.dn_expose_container_var "DN_GDB_SERVER_PORT=7777"
+  assert_file_contains ./.env.dn_expose_container_var "DN_PROJECT_GIT_NAME=f1tenth-redleader-controller"
+  assert_file_contains ./.env.dn_expose_container_var "DISPLAY=host.docker.internal:0"
+  assert_file_contains ./.env.dn_expose_container_var "DN_SSH_SERVER_PORT=2222"
+  assert_file_contains ./.env.dn_expose_container_var "LD_LIBRARY_PATH=/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:"
+  assert_file_contains ./.env.dn_expose_container_var "ROS_LOCALHOST_ONLY=0"
+  assert_file_contains ./.env.dn_expose_container_var "DN_SSH_SERVER_USER=pycharm-debugger"
+  assert_file_contains ./.env.dn_expose_container_var "ROS_ROOT=/opt/ros/foxy"
+  assert_file_contains ./.env.dn_expose_container_var "DN_PROJECT_GIT_DOMAIN=vaul-ulaval"
+  assert_file_contains ./.env.dn_expose_container_var "ROS_DISTRO=foxy"
+  assert_file_contains ./.env.dn_expose_container_var "RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
+  assert_file_contains ./.env.dn_expose_container_var "QT_X11_NO_MITSHM=1"
+
+}
+
+#@test 'fail()' {
+#  fail 'this test always fails'
+#}
+

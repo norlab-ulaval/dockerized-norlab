@@ -42,31 +42,42 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-# ....Redefine environment variable from base-image build stage....................................
+# ....Transfer environment variable from base-images...............................................
+# En var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
+ARG CUDA_HOME
+ARG NVIDIA_VISIBLE_DEVICES
+ARG NVIDIA_DRIVER_CAPABILITIES
 ARG PATH
 ARG LD_LIBRARY_PATH
+
+ENV CUDA_HOME=${CUDA_HOME:?'Environment variable was not passed from base-image build stage'}
+ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage'}
+ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'}
+ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
+ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
+
+# En var added by jetson-container 'dustynv/ros' base images
 ARG ROS_DISTRO
 ARG ROS_ROOT
 ARG ROS_PYTHON_VERSION
 ARG RMW_IMPLEMENTATION
 
-ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_DISTRO=${ROS_DISTRO:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_ROOT=${ROS_ROOT:?'Environment variable was not passed from base-image build stage'}
 ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passed from base-image build stage'}
 ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
 
-# ....The following env var does not appear in every jetson-container ros base images............
-# LD_PRELOAD is for pytorch images and OPENBLAS_CORETYPE is for ROS images
+# ....The following env var does not appear in every jetson-container ros base images..............
+# En var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
-ARG OPENBLAS_CORETYPE
-
-ENV LD_PRELOAD=${LD_PRELOAD}
 ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 
+# En var added by jetson-container pytorch related base images
+ARG OPENBLAS_CORETYPE
+ENV LD_PRELOAD=${LD_PRELOAD}
 
-## ....copy artifact from base-image................................................................
+
+## ....copy artifact from base-image...............................................................
 ## Note: copying ROS ressources is relatively easy, however copying ressources installed
 ##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
 ##       Work around for minimizing maintenance: copy everything

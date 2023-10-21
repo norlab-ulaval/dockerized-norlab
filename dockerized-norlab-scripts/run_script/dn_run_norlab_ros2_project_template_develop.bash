@@ -1,7 +1,13 @@
 #!/bin/bash
 
 # ››› Display and xhost ››› . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-# (CRITICAL) ToDo: Check the Dusty-nv implementation for X11 forwarding (ref task NMO-183 Fix GUI display issue)
+# (Priority) ToDo: assessment >> display forwarding between remote device and local [Ubuntu+MacOs]
+#   check: https://www.notion.so/redleader962/e4713bb868d949b1ab93351c564f66e7?pvs=4#a5e0797fb87f4f2aa1e3c628e9492a94
+#   ref task NMO-183 Fix GUI display issue
+# ToDo: validate >> check jetson-container implementation
+#     from https://github.com/dusty-nv/jetson-containers/blob/master/run.sh
+
+
 
 export DISPLAY=:0
 #sudo xhost + # (Priority) todo:fixme!!

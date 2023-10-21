@@ -30,27 +30,24 @@ FROM debugging-tools AS project-specific-ros-setup
 WORKDIR /
 COPY dn_ros2_rebuild_dev_workspace.bash /
 COPY dn_ros2_entrypoint.bash /
-COPY dn_fetch_ros_env.bash /
+COPY dn_fetch_ros_env_variables.bash /
+COPY dn_expose_container_env_variables.bash /
 
-
-## https://github.com/abrahammurciano/python-shell-source
-#RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
-#    && pip3 install --no-cache-dir --verbose  \
-#        shell-source
-
-# set read/write permission to entrypoint file and joystick dir js0
 RUN chmod +x /dn_ros2_entrypoint.bash \
     && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
-    && chmod +x /dn_fetch_ros_env.bash \
+    && chmod +x /dn_fetch_ros_env_variables.bash \
     && ( \
           echo ""; \
           echo "# >>> dockerized-norlab aliases (from develop img)"; \
           echo "alias dn_ros2_rebuild_dev_workspace='source /dn_ros2_rebuild_dev_workspace.bash'"; \
-          echo "alias dn_fetch_ros_env='source /dn_fetch_ros_env.bash'"; \
+          echo "alias dn_fetch_ros_env_variables='source /dn_fetch_ros_env_variables.bash'"; \
           echo ""; \
         ) >> ~/.bashrc
 
+WORKDIR /dn_container_env_variable/
+
 FROM project-specific-ros-setup AS test
+WORKDIR /
 
 USER "${DN_SSH_SERVER_USER}"
 
@@ -69,6 +66,12 @@ RUN echo "===Check that ROS source is available via the ssh daemon user=========
     && [[ -n "$(ros2 pkg list | grep -e ackermann_msgs)" ]] ||  exit 1  \
     && [[ -n "$(ros2 pkg list | grep -e vesc_msgs)" ]] ||  exit 1
 
+RUN dn_expose_container_env_variables.bash
+RUN dn_ros2_rebuild_dev_workspace.bash
+RUN dn_ros2_entrypoint.bash
+RUN dn_fetch_ros_env_variables.bash
+
+# unset entrypoint for running test stage
 ENTRYPOINT [ "" ]
 
 FROM project-specific-ros-setup AS final
