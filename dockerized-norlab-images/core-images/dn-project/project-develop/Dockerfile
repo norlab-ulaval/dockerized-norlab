@@ -28,19 +28,21 @@ RUN source ./dn_install_debugging_tools.bash \
 FROM debugging-tools AS project-specific-ros-setup
 
 WORKDIR /
-COPY dn_ros2_rebuild_dev_workspace.bash /
 COPY dn_ros2_entrypoint.bash /
+COPY dn_ros2_rebuild_dev_workspace.bash /
 COPY dn_fetch_ros_env_variables.bash /
 COPY dn_expose_container_env_variables.bash /
 
 RUN chmod +x /dn_ros2_entrypoint.bash \
     && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
     && chmod +x /dn_fetch_ros_env_variables.bash \
+    && chmod +x /dn_expose_container_env_variables.bash \
     && ( \
           echo ""; \
           echo "# >>> dockerized-norlab aliases (from develop img)"; \
           echo "alias dn_ros2_rebuild_dev_workspace='source /dn_ros2_rebuild_dev_workspace.bash'"; \
           echo "alias dn_fetch_ros_env_variables='source /dn_fetch_ros_env_variables.bash'"; \
+          echo "alias dn_expose_container_env_variables='source /dn_expose_container_env_variables.bash'"; \
           echo ""; \
         ) >> ~/.bashrc
 
@@ -50,7 +52,6 @@ FROM project-specific-ros-setup AS test
 WORKDIR /
 
 USER "${DN_SSH_SERVER_USER}"
-
 SHELL ["/bin/bash", "-c"]
 
 RUN echo "===Check that ROS source is available via the ssh daemon user====================" \
@@ -66,10 +67,16 @@ RUN echo "===Check that ROS source is available via the ssh daemon user=========
     && [[ -n "$(ros2 pkg list | grep -e ackermann_msgs)" ]] ||  exit 1  \
     && [[ -n "$(ros2 pkg list | grep -e vesc_msgs)" ]] ||  exit 1
 
-RUN dn_expose_container_env_variables.bash
-RUN dn_ros2_rebuild_dev_workspace.bash
-RUN dn_ros2_entrypoint.bash
-RUN dn_fetch_ros_env_variables.bash
+USER "root"
+SHELL ["/bin/bash", "-c"]
+
+RUN bash dn_expose_container_env_variables.bash \
+    && TMP_DOTENV_EXPOSE_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}" \
+    && [[ -f "${TMP_DOTENV_EXPOSE_PATH}" ]] || exit 1
+
+RUN bash dn_ros2_rebuild_dev_workspace.bash
+RUN bash dn_ros2_entrypoint.bash
+RUN bash dn_fetch_ros_env_variables.bash
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "" ]

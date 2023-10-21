@@ -1,8 +1,10 @@
 #!/bin/bash
 #
 # Fetch container environment variables and expose them to the host
-# through a mounted volume "dn_container_env_variable" making them
-# availbale for sourcing in IDE eg. PyCharm run configuration
+# through a mounted volume "dockerized-norlab-tools/dn_container_env_variable/"
+# making them availbale to sourcing in any IDEs.
+# e.g.: PyCharm run configuration using EnvFile plugin (https://github.com/Ashald/EnvFile)
+#
 #
 #
 # Usage:
@@ -23,9 +25,7 @@
 #   to stdout
 #
 
-mkdir -p "/dn_container_env_variable/${DN_CONTAINER_NAME:?'Variable unset'}" || return 1
-
-touch "/dn_container_env_variable/${DN_CONTAINER_NAME}/.env.dn_expose_container_var"
+touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable unset'}"
 
 ( \
   echo ""; \
@@ -69,6 +69,6 @@ touch "/dn_container_env_variable/${DN_CONTAINER_NAME}/.env.dn_expose_container_
   echo "DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}"; \
   echo "DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN}"; \
   echo ""; \
-) > "/dn_container_env_variable/${DN_CONTAINER_NAME}/.env.dn_expose_container_var"
+) > "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
 
 

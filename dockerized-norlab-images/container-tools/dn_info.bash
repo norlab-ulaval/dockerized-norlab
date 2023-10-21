@@ -46,6 +46,7 @@ ${SP}$ dn_python3_check
 ${SP}$ dn_gym_check
 ${SP}$ dn_ros2_rebuild_dev_workspace
 ${SP}$ dn_fetch_ros_env
+${SP}$ dn_expose_container_env_variables
 \033[0m
 "
 

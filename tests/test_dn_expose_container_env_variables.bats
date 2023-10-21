@@ -39,7 +39,7 @@ TESTED_FILE_PATH="dockerized-norlab-images/core-images/dn-project/project-develo
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
-  pwd >&3 && tree -L 1 -a -hug >&3
+#  pwd >&3 && tree -L 1 -a -hug >&3
 #  printenv >&3
 }
 
@@ -48,6 +48,7 @@ setup() {
 
   # PRE CONDITION: Variable need to be set prior for this script
   export DN_CONTAINER_NAME=IamF110-ctrl
+  mkdir -p /dn_container_env_variable
 
   source ./$TESTED_FILE
 
@@ -164,9 +165,11 @@ function show_DN_container_env() {
   run bash ./$TESTED_FILE
   tree -L 2 -a
 
-  assert_dir_exist "/dn_container_env_variable/${DN_CONTAINER_NAME}"
-  cd "/dn_container_env_variable/${DN_CONTAINER_NAME}"
-  assert_file_exist ./.env.dn_expose_container_var
+  assert_dir_exist "/dn_container_env_variable"
+
+  DN_CONTAINER_EXPOSE_ENV_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
+  assert_file_exist $DN_CONTAINER_EXPOSE_ENV_PATH
+
 }
 
 @test "running $TESTED_FILE › check env var agregated › expect pass" {
@@ -177,37 +180,39 @@ function show_DN_container_env() {
 #  more ./.env.dn_expose_container_var  >&3
 #  tree -L 1 -a
 
-  cd "/dn_container_env_variable/${DN_CONTAINER_NAME:?'Variable unset'}"
-  assert_file_not_empty ./.env.dn_expose_container_var
+  DN_CONTAINER_EXPOSE_ENV_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
+  assert_file_exist $DN_CONTAINER_EXPOSE_ENV_PATH
 
-  assert_file_contains ./.env.dn_expose_container_var "ROS_VERSION=2"
-  assert_file_contains ./.env.dn_expose_container_var "NVIDIA_VISIBLE_DEVICES=all"
-  assert_file_contains ./.env.dn_expose_container_var "LIBGL_ALWAYS_INDIRECT=1"
-  assert_file_contains ./.env.dn_expose_container_var "PKG_CONFIG_PATH=/opt/ros/foxy/install/lib/aarch64-linux-gnu/pkgconfig:/opt/ros/foxy/install/lib/pkgconfig"
-  assert_file_contains ./.env.dn_expose_container_var "ROS_PYTHON_VERSION=3"
-  assert_file_contains ./.env.dn_expose_container_var "NVIDIA_DRIVER_CAPABILITIES=graphics"
-  assert_file_contains ./.env.dn_expose_container_var "ROS_DOMAIN_ID=1"
-  assert_file_contains ./.env.dn_expose_container_var "DN_DEV_WORKSPACE=/ros2_ws"
-  assert_file_contains ./.env.dn_expose_container_var "DN_PROJECT_PATH=/ros2_ws/src/f1tenth-redleader-controller"
-  assert_file_contains ./.env.dn_expose_container_var "DN_CONTAINER_NAME=IamF110-ctrl"
-  assert_file_contains ./.env.dn_expose_container_var "AMENT_PREFIX_PATH=/opt/ros/foxy:/opt/ros/foxy/install"
-  assert_file_contains ./.env.dn_expose_container_var "CMAKE_PREFIX_PATH=/opt/ros/foxy/install"
-  assert_file_contains ./.env.dn_expose_container_var "COLCON_PREFIX_PATH=/opt/ros/foxy/install"
-  assert_file_contains ./.env.dn_expose_container_var "PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
-  assert_file_contains ./.env.dn_expose_container_var "DN_ACTIVATE_POWERLINE_PROMT=true"
-  assert_file_contains ./.env.dn_expose_container_var "OPENBLAS_CORETYPE=ARMV8"
-  assert_file_contains ./.env.dn_expose_container_var "DN_GDB_SERVER_PORT=7777"
-  assert_file_contains ./.env.dn_expose_container_var "DN_PROJECT_GIT_NAME=f1tenth-redleader-controller"
-  assert_file_contains ./.env.dn_expose_container_var "DISPLAY=host.docker.internal:0"
-  assert_file_contains ./.env.dn_expose_container_var "DN_SSH_SERVER_PORT=2222"
-  assert_file_contains ./.env.dn_expose_container_var "LD_LIBRARY_PATH=/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:"
-  assert_file_contains ./.env.dn_expose_container_var "ROS_LOCALHOST_ONLY=0"
-  assert_file_contains ./.env.dn_expose_container_var "DN_SSH_SERVER_USER=pycharm-debugger"
-  assert_file_contains ./.env.dn_expose_container_var "ROS_ROOT=/opt/ros/foxy"
-  assert_file_contains ./.env.dn_expose_container_var "DN_PROJECT_GIT_DOMAIN=vaul-ulaval"
-  assert_file_contains ./.env.dn_expose_container_var "ROS_DISTRO=foxy"
-  assert_file_contains ./.env.dn_expose_container_var "RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
-  assert_file_contains ./.env.dn_expose_container_var "QT_X11_NO_MITSHM=1"
+  assert_file_not_empty $DN_CONTAINER_EXPOSE_ENV_PATH
+
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_VERSION=2"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "NVIDIA_VISIBLE_DEVICES=all"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "LIBGL_ALWAYS_INDIRECT=1"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PKG_CONFIG_PATH=/opt/ros/foxy/install/lib/aarch64-linux-gnu/pkgconfig:/opt/ros/foxy/install/lib/pkgconfig"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_PYTHON_VERSION=3"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "NVIDIA_DRIVER_CAPABILITIES=graphics"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DOMAIN_ID=1"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_DEV_WORKSPACE=/ros2_ws"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_PATH=/ros2_ws/src/f1tenth-redleader-controller"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_CONTAINER_NAME=IamF110-ctrl"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "AMENT_PREFIX_PATH=/opt/ros/foxy:/opt/ros/foxy/install"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "CMAKE_PREFIX_PATH=/opt/ros/foxy/install"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "COLCON_PREFIX_PATH=/opt/ros/foxy/install"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_ACTIVATE_POWERLINE_PROMT=true"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "OPENBLAS_CORETYPE=ARMV8"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_GDB_SERVER_PORT=7777"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_NAME=f1tenth-redleader-controller"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DISPLAY=host.docker.internal:0"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_PORT=2222"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "LD_LIBRARY_PATH=/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_LOCALHOST_ONLY=0"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_USER=pycharm-debugger"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_ROOT=/opt/ros/foxy"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_DOMAIN=vaul-ulaval"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DISTRO=foxy"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "QT_X11_NO_MITSHM=1"
 
 }
 
