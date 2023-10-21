@@ -3,6 +3,10 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS debugging-tools
 
+# Set python to print stdin/sderr in real-time for dev/debug
+# Note: set to 0 for deploy as it affect performances
+ENV PYTHONUNBUFFERED=1
+
 # ....ssh and gdb server config....................................................................
 # ssh port, remaped from default 22 to 2222
 ENV DN_SSH_SERVER_PORT=${DN_SSH_SERVER_PORT:-2222}

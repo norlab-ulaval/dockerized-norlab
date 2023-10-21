@@ -68,6 +68,7 @@ touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable 
   echo "DN_SSH_SERVER_PORT=${DN_SSH_SERVER_PORT}"; \
   echo "DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}"; \
   echo "DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN}"; \
+  echo "PYTHONUNBUFFERED=${PYTHONUNBUFFERED}"; \
   echo ""; \
 ) > "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
 
