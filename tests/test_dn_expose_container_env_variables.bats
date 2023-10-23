@@ -204,7 +204,6 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_NAME=f1tenth-redleader-controller"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DISPLAY=host.docker.internal:0"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_PORT=2222"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "LD_LIBRARY_PATH=/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_LOCALHOST_ONLY=0"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_USER=pycharm-debugger"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_ROOT=/opt/ros/foxy"
@@ -212,10 +211,12 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DISTRO=foxy"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "QT_X11_NO_MITSHM=1"
-
 }
 
-@test "running $TESTED_FILE › check PYTHONPATH › expect pass" {
+@test "running $TESTED_FILE › check PYTHONPATH and LD_LIBRARY_PATH › expect pass" {
+
+  echo "PYTHONPATH=${PYTHONPATH}"
+  echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
 
   export_DN_container_env
   run bash ./$TESTED_FILE
@@ -227,6 +228,7 @@ function show_DN_container_env() {
   more $DN_CONTAINER_EXPOSE_ENV_PATH  >&3
 
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=\${PYTHONPATH}:/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:"
 
 }
 
