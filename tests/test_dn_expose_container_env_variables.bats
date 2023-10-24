@@ -110,6 +110,8 @@ function export_DN_container_env() {
     export DN_SSH_SERVER_PORT=2222
     export DN_SSH_SERVER_USER=pycharm-debugger
     export DN_PROJECT_GIT_DOMAIN=vaul-ulaval
+
+    export PYTHONUNBUFFERED=1
   }
 
 function show_DN_container_env() {
@@ -211,12 +213,14 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DISTRO=foxy"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "QT_X11_NO_MITSHM=1"
+
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "LD_LIBRARY_PATH=/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:"
 }
 
-@test "running $TESTED_FILE › check PYTHONPATH and LD_LIBRARY_PATH › expect pass" {
+@test "running $TESTED_FILE › check PYTHONPATH › expect pass" {
 
   echo "PYTHONPATH=${PYTHONPATH}"
-  echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+#  echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
 
   export_DN_container_env
   run bash ./$TESTED_FILE
@@ -228,7 +232,6 @@ function show_DN_container_env() {
   more $DN_CONTAINER_EXPOSE_ENV_PATH  >&3
 
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=\${PYTHONPATH}:/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/opt/ros/foxy/lib/aarch64-linux-gnu:/opt/ros/foxy/lib:/opt/ros/foxy/install/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/install/lib:/usr/local/cuda/lib64:/usr/local/cuda/lib64:"
 
 }
 
