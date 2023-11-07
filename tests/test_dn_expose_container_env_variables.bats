@@ -48,15 +48,11 @@ setup_file() {
   mkdir -p /ros2_ws_mock/install/
   touch /ros2_ws_mock/install/local_setup.bash
 
-  set -o allexport
-  source /dockerized-norlab/.env.dockerized-norlab || return 1
-  set +o allexport
-
   assert_file_exist /dockerized-norlab/utilities/norlab-shell-script-tools/src/function_library/prompt_utilities.bash
   assert_file_exist /ros2_ws_mock/install/local_setup.bash
 
 #  pwd >&3 && tree -L 1 -a -hug >&3
-  printenv >&3
+#  printenv >&3
 }
 
 setup() {
@@ -65,6 +61,12 @@ setup() {
   # PRE CONDITION: Variable need to be set prior for this script
   export DN_DEV_WORKSPACE=/ros2_ws_mock
   mkdir -p /dn_container_env_variable
+
+  set -o allexport
+  source /dockerized-norlab/.env.dockerized-norlab || return 1
+  set +o allexport
+
+  export PROJECT_PROMPT_NAME=dockerized-norlab
 
   source ./$TESTED_FILE
 }
@@ -180,6 +182,11 @@ function show_DN_container_env() {
   unset DN_DEV_WORKSPACE
   run source ./$TESTED_FILE
   assert_output --partial "Variable DN_DEV_WORKSPACE unset"
+  export DN_DEV_WORKSPACE=/ros2_ws_mock
+
+  unset DN_CONTAINER_NAME
+  run source ./$TESTED_FILE
+  assert_output --partial "Variable DN_CONTAINER_NAME unset"
 }
 
 @test "running $TESTED_FILE › check file/dir created › expect pass" {
