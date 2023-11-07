@@ -11,6 +11,8 @@ DN_PYTHON3_VERSION=${PYTHON3_VERSION?err}
 DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err}
 
 cd ../function_library
+# ToDo: refactor >> env variable dependencies logic
+#   - check implementation in dockerized-norlab-images/core-images/dn-project/project-develop/dn_expose_container_env_variables.bash
 source ./prompt_utilities.bash
 cd "${DN_INFO_TMP_CWD}" || return 1
 

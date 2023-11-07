@@ -39,8 +39,6 @@ TESTED_FILE_PATH="dockerized-norlab-images/core-images/dn-project/project-develo
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
-#  pwd >&3 && tree -L 1 -a -hug >&3
-#  printenv >&3
 
   mkdir -p /dockerized-norlab/utilities/norlab-shell-script-tools
 
@@ -50,10 +48,15 @@ setup_file() {
   mkdir -p /ros2_ws_mock/install/
   touch /ros2_ws_mock/install/local_setup.bash
 
-  assert_file_exist /dockerized-norlab/.env.dockerized-norlab
+  set -o allexport
+  source /dockerized-norlab/.env.dockerized-norlab || return 1
+  set +o allexport
+
   assert_file_exist /dockerized-norlab/utilities/norlab-shell-script-tools/src/function_library/prompt_utilities.bash
   assert_file_exist /ros2_ws_mock/install/local_setup.bash
 
+#  pwd >&3 && tree -L 1 -a -hug >&3
+  printenv >&3
 }
 
 setup() {

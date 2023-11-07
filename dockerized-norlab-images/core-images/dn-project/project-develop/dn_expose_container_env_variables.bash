@@ -26,11 +26,9 @@
 #
 
 DN_EXPOSE_TMP_CWD=$(pwd)
-cd /dockerized-norlab  || return 1
-source .env.dockerized-norlab
 # (Priority) ToDo: NMO-386 fix: DN_PROJECT_GIT_NAME vs PROJECT_GIT_NAME logic
 PROJECT_GIT_NAME=${DN_PROJECT_GIT_NAME:?err}
-cd ./utilities/norlab-shell-script-tools/src/function_library || return 1
+cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/function_library || return 1
 source ./prompt_utilities.bash
 cd "${DN_EXPOSE_TMP_CWD}" || return 1
 
