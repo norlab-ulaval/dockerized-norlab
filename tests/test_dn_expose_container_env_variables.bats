@@ -41,17 +41,29 @@ setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 #  pwd >&3 && tree -L 1 -a -hug >&3
 #  printenv >&3
+
+  mkdir -p /dockerized-norlab/utilities/norlab-shell-script-tools
+
+  cp  /code/dockerized-norlab/.env.dockerized-norlab /dockerized-norlab/
+  cp -r /code/dockerized-norlab/utilities/norlab-shell-script-tools /dockerized-norlab/utilities/
+
+  mkdir -p /ros2_ws_mock/install/
+  touch /ros2_ws_mock/install/local_setup.bash
+
+  assert_file_exist /dockerized-norlab/.env.dockerized-norlab
+  assert_file_exist /dockerized-norlab/utilities/norlab-shell-script-tools/src/function_library/prompt_utilities.bash
+  assert_file_exist /ros2_ws_mock/install/local_setup.bash
+
 }
 
 setup() {
   cd "$TESTED_FILE_PATH" || exit
 
   # PRE CONDITION: Variable need to be set prior for this script
-  export DN_CONTAINER_NAME=IamF110-ctrl
+  export DN_DEV_WORKSPACE=/ros2_ws_mock
   mkdir -p /dn_container_env_variable
 
   source ./$TESTED_FILE
-
 }
 
 # ====Teardown=====================================================================================
@@ -60,9 +72,13 @@ teardown() {
   bats_print_run_env_variable_on_error
 }
 
-#teardown_file() {
-#    echo "executed once after finishing the last test"
-#}
+teardown_file() {
+    rm -r -f /dockerized-norlab/
+    rm -r -f /ros2_ws_mock/
+    assert_dir_not_exist /dockerized-norlab/
+    assert_dir_not_exist /ros2_ws_mock/
+    unset $DN_DEV_WORKSPACE
+}
 
 # ====Local helper fonction========================================================================
 
@@ -101,15 +117,15 @@ function export_DN_container_env() {
     export QT_X11_NO_MITSHM=1
 
     # Dockerized-NorLab related env
-    export DN_DEV_WORKSPACE=/ros2_ws
-    export DN_PROJECT_PATH=/ros2_ws/src/f1tenth-redleader-controller
-    export DN_CONTAINER_NAME=IamF110-ctrl
+    export DN_DEV_WORKSPACE=/ros2_ws_mock
+    export DN_PROJECT_PATH=/ros2_ws_mock/src/f1tenth-redleader-controller
+    export DN_CONTAINER_NAME=IamProject-test
     export DN_ACTIVATE_POWERLINE_PROMT=true
     export DN_GDB_SERVER_PORT=7777
-    export DN_PROJECT_GIT_NAME=f1tenth-redleader-controller
+    export DN_PROJECT_GIT_NAME=dockerized-norlab-project-mock
     export DN_SSH_SERVER_PORT=2222
     export DN_SSH_SERVER_USER=pycharm-debugger
-    export DN_PROJECT_GIT_DOMAIN=vaul-ulaval
+    export DN_PROJECT_GIT_DOMAIN=norlab-ulaval
 
     export PYTHONUNBUFFERED=1
   }
@@ -153,19 +169,18 @@ function show_DN_container_env() {
 
 @test "running $TESTED_FILE from ok cwd › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}/${TESTED_FILE_PATH}"
-  run bash ./$TESTED_FILE
+  run source ./$TESTED_FILE
   assert_success
 }
 
-@test "running $TESTED_FILE › DN_CONTAINER_NAME var unset › expect failure" {
-  unset DN_CONTAINER_NAME
-  run bash ./$TESTED_FILE
-  assert_output --partial "Variable unset"
-
+@test "running $TESTED_FILE › var unset › expect failure" {
+  unset DN_DEV_WORKSPACE
+  run source ./$TESTED_FILE
+  assert_output --partial "Variable DN_DEV_WORKSPACE unset"
 }
 
 @test "running $TESTED_FILE › check file/dir created › expect pass" {
-  run bash ./$TESTED_FILE
+  run source ./$TESTED_FILE
   tree -L 2 -a
 
   assert_dir_exist "/dn_container_env_variable"
@@ -178,7 +193,7 @@ function show_DN_container_env() {
 @test "running $TESTED_FILE › check env var agregated › expect pass" {
 
   export_DN_container_env
-  run bash ./$TESTED_FILE
+  run source ./$TESTED_FILE
 #  tree -L 1 -a
 
   DN_CONTAINER_EXPOSE_ENV_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
@@ -194,22 +209,22 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_PYTHON_VERSION=3"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "NVIDIA_DRIVER_CAPABILITIES=graphics"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DOMAIN_ID=1"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_DEV_WORKSPACE=/ros2_ws"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_PATH=/ros2_ws/src/f1tenth-redleader-controller"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_CONTAINER_NAME=IamF110-ctrl"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_DEV_WORKSPACE=/ros2_ws_mock"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_PATH=/ros2_ws_mock/src/f1tenth-redleader-controller"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_CONTAINER_NAME=IamProject-test"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "AMENT_PREFIX_PATH=/opt/ros/foxy:/opt/ros/foxy/install"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "CMAKE_PREFIX_PATH=/opt/ros/foxy/install"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "COLCON_PREFIX_PATH=/opt/ros/foxy/install"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_ACTIVATE_POWERLINE_PROMT=true"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "OPENBLAS_CORETYPE=ARMV8"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_GDB_SERVER_PORT=7777"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_NAME=f1tenth-redleader-controller"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_NAME=dockerized-norlab-project-mock"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DISPLAY=host.docker.internal:0"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_PORT=2222"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_LOCALHOST_ONLY=0"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_USER=pycharm-debugger"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_ROOT=/opt/ros/foxy"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_DOMAIN=vaul-ulaval"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_DOMAIN=norlab-ulaval"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DISTRO=foxy"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "QT_X11_NO_MITSHM=1"
@@ -223,7 +238,7 @@ function show_DN_container_env() {
 #  echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
 
   export_DN_container_env
-  run bash ./$TESTED_FILE
+  run source ./$TESTED_FILE
 #  tree -L 1 -a
 
   DN_CONTAINER_EXPOSE_ENV_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
