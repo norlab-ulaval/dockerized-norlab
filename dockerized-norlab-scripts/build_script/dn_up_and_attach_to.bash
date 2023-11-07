@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Convenient script for spinning a specific service from the 'docker-compose.dn-dependencies.build.yaml'
+# Convenient script for spinning a specific service from the docker compose
+# file define in a .env.build_matrix
 #
 # Usage:
 #   $ bash dn_up_and_attach_to.bash '<.env.build_matrix.*>' <theService>
@@ -12,7 +13,7 @@
 clear
 
 DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
-shift # Remove argument value
+THE_SERVICE="${2:?' Missing the docker compose service to run mandatory argument'}"
 
 if [[ $( basename "$(pwd)" ) = build_script ]]; then
     cd ../..
@@ -25,7 +26,7 @@ fi
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${DOTENV_BUILD_MATRIX}"\
                                                             --fail-fast \
                                                             -- up --build --detach --wait \
-                                                            --no-deps "$1"
+                                                            --no-deps "${THE_SERVICE}"
 
 
 #CN=$(grep -A3 'project-develop:' ${THE_COMPOSE_FILE} | tail -n1); CN=${CN//*container_name: /}; echo "$CN"
@@ -38,5 +39,5 @@ else
 
   bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${DOTENV_BUILD_MATRIX}"\
                                                               --fail-fast \
-                                                              -- exec "$1" bash
+                                                              -- exec "${THE_SERVICE}" bash
 fi

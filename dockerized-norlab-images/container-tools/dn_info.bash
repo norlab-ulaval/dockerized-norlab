@@ -31,6 +31,7 @@ ${SP}
 ${SP}ROS distro:                  ${ROS_DISTRO}
 ${SP}ROS domain id:               ${ROS_DOMAIN_ID}
 ${SP}ROS container workspace:     ${DN_DEV_WORKSPACE}
+${SP}RMW_IMPLEMENTATION:          ${RMW_IMPLEMENTATION}
 ${SP}
 ${SP}python3 version:             ${DN_PYTHON3_VERSION}
 ${SP}numpy version:               $(echo "${PCK_VERSION}" | grep numpy | sed 's/numpy==//g')

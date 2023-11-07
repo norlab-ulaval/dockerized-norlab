@@ -25,6 +25,16 @@
 #   to stdout
 #
 
+DN_EXPOSE_TMP_CWD=$(pwd)
+cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/function_library/ || return 1
+source ./prompt_utilities.bash
+cd "${DN_EXPOSE_TMP_CWD}" || return 1
+
+
+# (Priority) ToDo: implement >> add flag option to source or not the /ros2_ws overlay
+print_msg "Sourcing ${DN_DEV_WORKSPACE:?error} ros overlay"
+source "${DN_DEV_WORKSPACE}/install/local_setup.bash"
+
 touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable unset'}"
 
 ( \
