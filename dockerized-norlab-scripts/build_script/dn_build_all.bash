@@ -14,8 +14,8 @@
 #             e.g.: $ ADD_DOCKER_FLAG=--push --dry-run && source dn_build_all.bash
 #   - Read OVERIDE_DOCKER_CMD         Use to quickly overide the docker command
 #             e.g.: $ OVERIDE_DOCKER_CMD=push
-#   - Read OVERIDE_BUILD_MATRIX_LIST  Use to quickly overide the build matrix list
-#             e.g.: $ OVERIDE_BUILD_MATRIX_LIST=( '.env.build_matrix.dev' ) && source dn_build_all.bash
+#   - Read NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY  Use to quickly overide the build matrix list
+#             e.g.: $ NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev.dn' ) && source dn_build_all.bash
 #
 
 clear
@@ -84,13 +84,13 @@ SUB_SCRIPT_FLAGS=$@
 
 # ....execute all build matrix.....................................................................
 
-# (Priority) ToDo: refactor out 'DOTENV_BUILD_MATRIX_LIST' env var to '.env.build_matrix.main'
-#DOTENV_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-dependencies' '.env.build_matrix.dn-control' '.env.build_matrix.dn-control-deep' '.env.build_matrix.dn-perception' )
-DOTENV_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-dependencies' '.env.build_matrix.dn-control' '.env.build_matrix.dn-control-deep' '.env.build_matrix.dn-perception' '.env.build_matrix.dn-project' )
-#OVERIDE_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-project' )
-#OVERIDE_BUILD_MATRIX_LIST=( '.env.build_matrix.dev' )
+# (Priority) ToDo: refactor out 'NBS_DOTENV_BUILD_MATRIX_ARRAY' env var to '.env.build_matrix.main'
+#NBS_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dn-dependencies' '.env.build_matrix.dn-control' '.env.build_matrix.dn-control-deep' '.env.build_matrix.dn-perception' )
+NBS_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dn-dependencies' '.env.build_matrix.dn-control' '.env.build_matrix.dn-control-deep' '.env.build_matrix.dn-perception' '.env.build_matrix.dn-project' )
+#NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dn-project' )
+#NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev.dn' )
 
-CRAWL_BUILD_MATRIX=( "${OVERIDE_BUILD_MATRIX_LIST[*]:-${DOTENV_BUILD_MATRIX_LIST[@]}}" )
+CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]}}" )
 
 for EACH_BUILD_MATRIX in "${CRAWL_BUILD_MATRIX[@]}" ; do
     bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \

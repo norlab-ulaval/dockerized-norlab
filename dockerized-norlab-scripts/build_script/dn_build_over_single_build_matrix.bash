@@ -32,7 +32,7 @@ DOCKER_CMD=build
 #DOCKER_CMD="build --dry-run"
 
 # ....setup........................................................................................
-DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
+NBS_DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
 # Note: 'ADD_DOCKER_FLAG' is set via commandline for convenience
@@ -40,5 +40,5 @@ DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${ADD_DOCKER_FLAG:-""}"
 
 # ....execute.......................................................................................
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                                    "$DOTENV_BUILD_MATRIX" \
+                                    "$NBS_DOTENV_BUILD_MATRIX" \
                                     "$@" -- "$DOCKER_COMMAND_W_FLAGS"

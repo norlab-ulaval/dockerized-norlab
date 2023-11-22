@@ -23,7 +23,7 @@ DOCKER_COMPOSE_CMD_ARGS='build' # eg: 'build --no-cache --push' or 'up --build -
 BUILD_STATUS_PASS=0
 DN_EXECUTE_COMPOSE_FLAGS=''
 
-DOTENV_BUILD_MATRIX="${1:?'Missing the dotenv build matrix file mandatory argument'}"
+NBS_DOTENV_BUILD_MATRIX="${1:?'Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
 # ....Pre-condition................................................................................
@@ -34,8 +34,8 @@ if [[ ! -f ".env.dockerized-norlab" ]]; then
   exit 1
 fi
 
-if [[ ! -f "${DOTENV_BUILD_MATRIX}" ]]; then
-  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file '${DOTENV_BUILD_MATRIX}'"
+if [[ ! -f "${NBS_DOTENV_BUILD_MATRIX}" ]]; then
+  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file '${NBS_DOTENV_BUILD_MATRIX}'"
   echo '(press any key to exit)'
   read -r -n 1
   exit 1
@@ -44,7 +44,7 @@ fi
 # ....Load environment variables from file.........................................................
 set -o allexport
 source .env.dockerized-norlab
-source "$DOTENV_BUILD_MATRIX"
+source "$NBS_DOTENV_BUILD_MATRIX"
 source "${BUILD_MATRIX_MAIN:?'Main .env.build_matrix file name missing'}"
 set +o allexport
 
@@ -309,7 +309,7 @@ done
 # ====Show feedback================================================================================
 print_env_var_build_matrix 'used by compose'
 
-STR_BUILT_SERVICES=$( docker compose -f "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services | sed 's/^/   - /' )
+STR_BUILT_SERVICES=$( docker compose -f "${DN_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services | sed 's/^/   - /' )
 export STR_BUILT_SERVICES
 for tag in "${IMAGE_TAG_CRAWLED[@]}"; do
   STR_IMAGE_TAG_CRAWLED="${STR_IMAGE_TAG_CRAWLED}\n   ${tag}${MSG_END_FORMAT}"

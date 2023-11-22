@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run › dn_run_a_service.bash (dev  OPTION_FLAG=--build )" type="ShConfigurationType" folderName="development ( .env.build_matrix.dev )" editBeforeRun="true">
+  <configuration default="false" name="run › dn_run_a_service.bash (dev  OPTION_FLAG=--build )" type="ShConfigurationType" folderName="development ( .env.build_matrix.dev.dn )" editBeforeRun="true">
     <option name="SCRIPT_TEXT" value="" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_run_a_service.bash" />
-    <option name="SCRIPT_OPTIONS" value=".env.build_matrix.dev dependencies-core" />
+    <option name="SCRIPT_OPTIONS" value=".env.build_matrix.dev.dn dependencies-core" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
     <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
