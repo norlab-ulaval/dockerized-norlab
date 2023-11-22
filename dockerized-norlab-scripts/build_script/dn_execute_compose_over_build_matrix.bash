@@ -155,6 +155,7 @@ while [ $# -gt 0 ]; do
     #    set -x
     export BUILDKIT_PROGRESS=plain
     shift # Remove argument (--docker-debug-logs)
+
     ;;
   --fail-fast)
     set -e
@@ -254,6 +255,7 @@ for EACH_DN_VERSION in "${FREEZED_DN_MATRIX_DOCKERIZED_NORLAB_VERSIONS[@]}"; do
         EACH_TAG_PKG=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://')
 
         if [[ ${TEAMCITY_VERSION} ]]; then
+          # ToDo: missing $EACH_OS_NAME and $DN_EXECUTE_COMPOSE_FLAGS
           echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} -- ${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT_TEAMCITY}|n']"
           echo " "
         fi

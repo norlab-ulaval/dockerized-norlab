@@ -3,6 +3,7 @@
 # Convenient script for building all images by crwaling over all ".env.build_matrix.dn-*" file
 #
 # Usage:
+
 #   $ bash dn_build_all.bash [<optional flag>]
 #
 # Arguments:
@@ -83,6 +84,7 @@ SUB_SCRIPT_FLAGS=$@
 
 # ....execute all build matrix.....................................................................
 
+# (Priority) ToDo: refactor out 'DOTENV_BUILD_MATRIX_LIST' env var to '.env.build_matrix.main'
 #DOTENV_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-dependencies' '.env.build_matrix.dn-control' '.env.build_matrix.dn-control-deep' '.env.build_matrix.dn-perception' )
 DOTENV_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-dependencies' '.env.build_matrix.dn-control' '.env.build_matrix.dn-control-deep' '.env.build_matrix.dn-perception' '.env.build_matrix.dn-project' )
 #OVERIDE_BUILD_MATRIX_LIST=( '.env.build_matrix.dn-project' )
