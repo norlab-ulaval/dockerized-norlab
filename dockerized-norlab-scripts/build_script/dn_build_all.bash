@@ -26,7 +26,7 @@ elif [[ $( basename $(pwd) ) = dockerized-norlab-scripts ]]; then
     cd ..
 fi
 
-# ....Pre-condition.................................................................................
+# ....Pre-condition................................................................................
 if [[ ! -f  ".env.dockerized-norlab" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_build_all.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
   echo '(press any key to exit)'
@@ -34,7 +34,7 @@ if [[ ! -f  ".env.dockerized-norlab" ]]; then
   exit 1
 fi
 
-# ....Load environment variables from file....................................................................
+# ....Load environment variables from file.........................................................
 set -o allexport
 source .env.dockerized-norlab
 set +o allexport
@@ -43,7 +43,7 @@ set -o allexport
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
-# ....Helper function...............................................................................
+# ....Helper function..............................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD=$(pwd)
@@ -65,7 +65,7 @@ function agregate_build_logs() {
   ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS=("${ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS[@]}" "${STR_BUILD_MATRIX_SERVICES_AND_TAGS}")
 }
 
-# ====Begin=========================================================================================
+# ====Begin========================================================================================
 DOCKER_CMD=${OVERIDE_DOCKER_CMD:-build}
 
 # ....manual config.................................................................................
@@ -102,7 +102,7 @@ for EACH_BUILD_MATRIX in "${CRAWL_BUILD_MATRIX[@]}" ; do
 done
 
 # ....show build matrix feedback...................................................................
-norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
+norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
 print_msg_done "${MSG_DIMMED_FORMAT}dn_build_all.bash${MSG_END_FORMAT} execution summary"
 echo -e "${MSG_DIMMED_FORMAT}"

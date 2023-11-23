@@ -14,22 +14,24 @@
 #   Dont use "set -e" in this script as it will affect the build system policy, use the --fail-fast flag instead
 #
 
-# ....Default.......................................................................................
-DOCKERIZED_NORLAB_VERSION='latest'
-BASE_IMAGE='dustynv/ros'
-OS_NAME='l4t'
-TAG_PACKAGE='foxy-pytorch-l4t'
-TAG_VERSION='r35.2.1'
-#LPM_JOB_ID='0'
-DOCKER_MANAGEMENT_COMMAND='compose'
-DOCKER_COMPOSE_CMD_ARGS='build'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
-CI_TEST=false
+# ....Default......................................................................................
+# (CRITICAL) ToDo: refactor env var setting related to docker compose cmd. Return an error if not set explicitly via flag or use new mechanism to register build arg (NMO-396)
+#REPOSITORY_VERSION='latest'
+#BASE_IMAGE='dustynv/ros'
+#OS_NAME='l4t'
+#TAG_PACKAGE='foxy-pytorch-l4t'
+#TAG_VERSION='r35.2.1'
+##LPM_JOB_ID='0'
 
-EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
+_DOCKER_MANAGEMENT_COMMAND='compose'
+_DOCKER_COMPOSE_CMD_ARGS='build'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
+_CI_TEST=false
+
+NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
 shift # Remove argument value
 
 
-# ....Pre-condition.................................................................................
+# ....Pre-condition................................................................................
 if [[ ! -f  ".env.dockerized-norlab" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
   echo '(press any key to exit)'
@@ -38,14 +40,14 @@ if [[ ! -f  ".env.dockerized-norlab" ]]; then
 fi
 
 
-if [[ ! -f  "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" ]]; then
-  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' can't find the docker-compose.yaml file '${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}'"
+if [[ ! -f  "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" ]]; then
+  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' can't find the docker-compose.yaml file '${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}'"
   echo '(press any key to exit)'
   read -r -n 1
   exit 1
 fi
 
-# ....Load environment variables from file....................................................................
+# ....Load environment variables from file.........................................................
 set -o allexport
 source .env.dockerized-norlab
 set +o allexport
@@ -54,17 +56,17 @@ set -o allexport
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
-# ....Helper function...............................................................................
+# ....Helper function..............................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
-TMP_CWD=$(pwd)
+TMP_CWD_EC=$(pwd)
 cd ./utilities/norlab-shell-script-tools/src/function_library
 source ./prompt_utilities.bash
 source ./docker_utilities.bash
 source ./general_utilities.bash
 source ./teamcity_utilities.bash
 source ./terminal_splash.bash
-cd "$TMP_CWD"
+cd "$TMP_CWD_EC"
 
 
 function print_help_in_terminal() {
@@ -89,13 +91,13 @@ function print_help_in_terminal() {
 
   \033[1m
     [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
-                                              command and arguments (default to '${DOCKER_COMPOSE_CMD_ARGS}').
+                                              command and arguments (default to '${_DOCKER_COMPOSE_CMD_ARGS}').
                                               Note: passing script flag via docker --build-arg can be tricky,
                                                     pass them in the docker-compose.yaml if you experience problem.
 "
 }
 
-# ....TeamCity service message logic.................................................................
+# ....TeamCity service message logic...............................................................
 if [[ ${TEAMCITY_VERSION} ]]; then
   export IS_TEAMCITY_RUN=true
   TC_VERSION="TEAMCITY_VERSION=${TEAMCITY_VERSION}"
@@ -105,22 +107,22 @@ fi
 #printenv
 print_msg "IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN} ${TC_VERSION}"
 
-# ====Begin=========================================================================================
+# ====Begin========================================================================================
 SHOW_SPLASH_EC="${SHOW_SPLASH_EC:-true}"
 
 if [[ "${SHOW_SPLASH_EC}" == 'true' ]]; then
-  norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
+  norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 fi
 
 print_formated_script_header 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
 
-# ....Script command line flags.....................................................................
+# ....Script command line flags....................................................................
 while [ $# -gt 0 ]; do
 
   case $1 in
   --dockerized-norlab-version)
-    DOCKERIZED_NORLAB_VERSION="${2}"
+    REPOSITORY_VERSION="${2}"
     shift # Remove argument (--dockerized-norlab-version)
     shift # Remove argument value
     ;;
@@ -151,7 +153,7 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--docker-debug-logs)
     ;;
   --buildx-bake)
-    DOCKER_MANAGEMENT_COMMAND='buildx bake'
+    _DOCKER_MANAGEMENT_COMMAND='buildx bake'
     shift # Remove argument (--buildx-bake)
     ;;
   --fail-fast)
@@ -159,7 +161,7 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--fail-fast)
     ;;
   --ci-test-force-runing-docker-cmd)
-    CI_TEST=true
+    _CI_TEST=true
     shift # Remove argument (--ci-test-force-runing-docker-cmd)
     ;;
   -h | --help)
@@ -168,7 +170,7 @@ while [ $# -gt 0 ]; do
     ;;
   --) # no more option
     shift
-    DOCKER_COMPOSE_CMD_ARGS=$@
+    _DOCKER_COMPOSE_CMD_ARGS=$@
     break
     ;;
   *) # Default case
@@ -178,28 +180,29 @@ while [ $# -gt 0 ]; do
 
 done
 
-# ...................................................................................................
-# Note: DOCKERIZED_NORLAB_VERSION will be used to fetch the repo at release tag (ref task NMO-252)
-export DOCKERIZED_NORLAB_VERSION="${DOCKERIZED_NORLAB_VERSION}"
+# ..................................................................................................
+# Note: REPOSITORY_VERSION will be used to fetch the repo at release tag (ref task NMO-252)
+export REPOSITORY_VERSION="${REPOSITORY_VERSION}"
 export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE}"
 export TAG_VERSION="${TAG_VERSION}"
 
 export PROJECT_TAG="${OS_NAME}-${TAG_VERSION}"
+
 export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
-export DN_IMAGE_TAG="DN-${DOCKERIZED_NORLAB_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
+export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
 
 print_msg "Environment variables set for compose:\n
-${MSG_DIMMED_FORMAT}    DOCKERIZED_NORLAB_VERSION=${DOCKERIZED_NORLAB_VERSION} ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
 "
 
-print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT}"
+print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${_DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT}"
 print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
 # ToDo: modularity feat › refactor clause as a callback pre bash script and add `source <callback-pre.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
-if [ "${EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]; then
+if [ "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]; then
   # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 
   # shellcheck disable=SC2046
@@ -232,15 +235,15 @@ fi
 ## docker compose [-f <theComposeFile> ...] [options] [COMMAND] [ARGS...]
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
-show_and_execute_docker "$DOCKER_MANAGEMENT_COMMAND -f $EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE $DOCKER_COMPOSE_CMD_ARGS" "$CI_TEST"
+show_and_execute_docker "$_DOCKER_MANAGEMENT_COMMAND -f $NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE $_DOCKER_COMPOSE_CMD_ARGS" "$_CI_TEST"
 
 # ToDo: modularity feat › add `source <callback-post.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
 
 print_msg "Environment variables used by compose:\n
-${MSG_DIMMED_FORMAT}    DOCKERIZED_NORLAB_VERSION=${DOCKERIZED_NORLAB_VERSION} ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}"
 
 print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
-# ====Teardown======================================================================================
-cd "${TMP_CWD}"
+# ====Teardown=====================================================================================
+cd "${TMP_CWD_EC}"

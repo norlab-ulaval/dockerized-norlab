@@ -17,7 +17,7 @@
 
 clear
 
-NBS_DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
+_DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
 if [[ $( basename "$(pwd)" ) = build_script ]]; then
@@ -32,7 +32,7 @@ fi
 # Notes;
 #   - be advised that docker compose run command bypass the container_name field of the .yaml file so you can spin the same service multiple time and all container will have a unique name
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                "${NBS_DOTENV_BUILD_MATRIX}" \
+                "${_DOTENV_BUILD_MATRIX}" \
                 --fail-fast \
                 -- run "${OPTION_FLAG:-""}" --rm \
                 --no-deps "$@"

@@ -113,7 +113,7 @@ setup_file() {
                                                 -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"DN_MATRIX_L4T_SUPPORTED_VERSIONS\=\(r11.1.1 r22.2.2\)".*
+  assert_output --regexp .*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS\=\(r11.1.1 r22.2.2\)".*
 #  bats_print_run_env_variable
 }
 

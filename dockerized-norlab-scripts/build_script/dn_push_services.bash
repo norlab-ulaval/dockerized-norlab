@@ -10,7 +10,7 @@
 #   - [<optional flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
 #
 
-NBS_DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
+_DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
 
@@ -23,7 +23,7 @@ fi
 
 # (NICE TO HAVE) ToDo: refactor to use 'dn_build_all.bash' with ADD_DOCKER_FLAG, OVERIDE_DOCKER_CMD and NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY
 
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${NBS_DOTENV_BUILD_MATRIX}"\
+bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${_DOTENV_BUILD_MATRIX}"\
                  "$@" -- push
 
 # docker compose push relevant flags:
