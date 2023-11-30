@@ -21,7 +21,7 @@ elif [[ $( basename "$(pwd)" ) = dockerized-norlab-scripts ]]; then
 fi
 
 
-# (NICE TO HAVE) ToDo: refactor to use 'dn_build_all.bash' with ADD_DOCKER_FLAG, OVERIDE_DOCKER_CMD and NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY
+# (NICE TO HAVE) ToDo: refactor to use 'dn_build_all.bash' with NBS_OVERRIDE_ADD_DOCKER_FLAG, NBS_OVERRIDE_DOCKER_CMD and NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY
 
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${_DOTENV_BUILD_MATRIX}"\
                  "$@" -- push

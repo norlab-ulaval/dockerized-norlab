@@ -24,24 +24,25 @@
 ##LPM_JOB_ID='0'
 
 _DOCKER_MANAGEMENT_COMMAND='compose'
-_DOCKER_COMPOSE_CMD_ARGS='build'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
+_DOCKER_COMPOSE_CMD_ARGS='build --dry-run'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 _CI_TEST=false
 
-NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
+_COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
 shift # Remove argument value
 
 
 # ....Pre-condition................................................................................
-if [[ ! -f  ".env.dockerized-norlab" ]]; then
+  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+if [[ ! -f  ".env.norlab-build-system" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
   echo '(press any key to exit)'
   read -r -n 1
   exit 1
 fi
 
-
-if [[ ! -f  "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" ]]; then
-  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' can't find the docker-compose.yaml file '${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}'"
+  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+if [[ ! -f  "${_COMPOSE_FILE}" ]]; then
+  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' can't find the docker-compose.yaml file '${_COMPOSE_FILE}' at $(pwd)"
   echo '(press any key to exit)'
   read -r -n 1
   exit 1
@@ -49,18 +50,20 @@ fi
 
 # ....Load environment variables from file.........................................................
 set -o allexport
-source .env.dockerized-norlab
+source .env.norlab-build-system
+source "${NS2T_PATH:?'Variable not set'}"/.env.project
 set +o allexport
 
 set -o allexport
-source ./utilities/norlab-shell-script-tools/.env.project
+# (Priority) ToDo: move at the last possible execution step
+source .env.dockerized-norlab
 set +o allexport
 
 # ....Helper function..............................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD_EC=$(pwd)
-cd ./utilities/norlab-shell-script-tools/src/function_library
+cd "$NS2T_PATH"/src/function_library
 source ./prompt_utilities.bash
 source ./docker_utilities.bash
 source ./general_utilities.bash
@@ -197,45 +200,55 @@ ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
 "
 
-print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${_DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT}"
+print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${_COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${_DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT}"
 print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
 # ToDo: modularity feat › refactor clause as a callback pre bash script and add `source <callback-pre.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
-if [ "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]; then
-  # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 
-  # shellcheck disable=SC2046
-  docker pull "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
-  && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
-    | grep \
-      -e CUDA_HOME= \
-      -e NVIDIA_ \
-      -e LD_LIBRARY_PATH= \
-      -e PATH= \
-      -e ROS_ \
-      -e RMW_IMPLEMENTATION= \
-      -e LD_PRELOAD= \
-      -e OPENBLAS_CORETYPE= \
-    | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
-    | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
-    | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
-    | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
-    | sed 's;^ROS_;BASE_IMG_ENV_ROS_;' \
-    | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
-    | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
-    | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
-   )
+function callback_execute_compose_pre() {
 
-  print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
-    ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
-    ${MSG_END_FORMAT}"
-fi
+  if [[ ! -f ${_COMPOSE_FILE} ]]; then
+    print_msg_error_and_exit "docker-compose file ${_COMPOSE_FILE} is unreachable"
+  fi
+
+  if [[ "${_COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]]; then
+    # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
+
+    # shellcheck disable=SC2046
+    docker pull "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
+    && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
+      | grep \
+        -e CUDA_HOME= \
+        -e NVIDIA_ \
+        -e LD_LIBRARY_PATH= \
+        -e PATH= \
+        -e ROS_ \
+        -e RMW_IMPLEMENTATION= \
+        -e LD_PRELOAD= \
+        -e OPENBLAS_CORETYPE= \
+      | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
+      | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
+      | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
+      | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
+      | sed 's;^ROS_;BASE_IMG_ENV_ROS_;' \
+      | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
+      | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
+      | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
+     )
+
+    print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
+      ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
+      ${MSG_END_FORMAT}"
+  fi
+}
+
+callback_execute_compose_pre
 
 ## docker compose [-f <theComposeFile> ...] [options] [COMMAND] [ARGS...]
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
-show_and_execute_docker "$_DOCKER_MANAGEMENT_COMMAND -f $NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE $_DOCKER_COMPOSE_CMD_ARGS" "$_CI_TEST"
+show_and_execute_docker "$_DOCKER_MANAGEMENT_COMMAND -f $_COMPOSE_FILE $_DOCKER_COMPOSE_CMD_ARGS" "$_CI_TEST"
 
 # ToDo: modularity feat › add `source <callback-post.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
 

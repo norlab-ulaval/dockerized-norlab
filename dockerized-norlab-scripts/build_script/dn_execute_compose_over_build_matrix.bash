@@ -10,6 +10,9 @@
 # Arguments:
 #   see function print_help_in_terminal or execute the script with the --help flag
 #
+# Global:
+#   Write STR_BUILD_MATRIX_SERVICES_AND_TAGS to build_all.log
+#
 # Note:
 #   Dont use "set -e" in this script as it will affect the build system policy, use the --fail-fast flag instead
 #
@@ -19,44 +22,63 @@
 #set -x
 
 # ....Default......................................................................................
-_DOCKER_COMPOSE_CMD_ARGS='build' # eg: 'build --no-cache --push' or 'up --build --force-recreate'
+_DOCKER_COMPOSE_CMD_ARGS='build --dry-run' # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 _BUILD_STATUS_PASS=0
 _EXECUTE_COMPOSE_FLAGS=''
+
+#echo "@=$*" # ToDo: on task end >> delete this line ←
 
 _DOTENV_BUILD_MATRIX="${1:?'Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
 # ....Pre-condition................................................................................
-if [[ ! -f ".env.dockerized-norlab" ]]; then
+  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+if [[ ! -f ".env.norlab-build-system" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
   echo '(press any key to exit)'
   read -r -n 1
   exit 1
 fi
 
+set -o allexport
+source .env.norlab-build-system
+set +o allexport
+
+  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
 if [[ ! -f "${_DOTENV_BUILD_MATRIX}" ]]; then
-  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file '${_DOTENV_BUILD_MATRIX}'"
+  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in _DOTENV_BUILD_MATRIX='${_DOTENV_BUILD_MATRIX:?err}'"
   echo '(press any key to exit)'
   read -r -n 1
   exit 1
 fi
 
 # ....Load environment variables from file.........................................................
+
+#
+# The main .env.build_matrix to load
+#
+NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
+
 set -o allexport
-source .env.dockerized-norlab
 source "$_DOTENV_BUILD_MATRIX"
 source "${NBS_BUILD_MATRIX_MAIN:?'The name of the main .env.build_matrix file is missing'}"
 set +o allexport
 
+
 set -o allexport
-source ./utilities/norlab-shell-script-tools/.env.project
+source ${NS2T_PATH:?'Variable not set'}/.env.project
+set +o allexport
+
+set -o allexport
+# (Priority) ToDo: move this line at the latest possible step
+source .env.dockerized-norlab
 set +o allexport
 
 # ....Helper function..............................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD_ECOBM=$(pwd)
-cd ./utilities/norlab-shell-script-tools/src/function_library
+cd "$NS2T_PATH"/src/function_library
 source ./prompt_utilities.bash
 source ./docker_utilities.bash
 source ./general_utilities.bash
@@ -184,25 +206,35 @@ done
 # .................................................................................................
 print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
 
-## Freeze build matrix env variable to prevent override by dn_execute_compose.bash when reloading .env/build_matrix
-FREEZED_NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}"
-FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS=("${NBS_MATRIX_REPOSITORY_VERSIONS[@]}")
-FREEZED_NBS_MATRIX_SUPPORTED_OS=("${NBS_MATRIX_SUPPORTED_OS[@]}")
-FREEZED_NBS_MATRIX_L4T_SUPPORTED_VERSIONS=("${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
-FREEZED_NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
-FREEZED_NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
-FREEZED_NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
+### Freeze build matrix env variable to prevent override by dn_execute_compose.bash when reloading .env/build_matrix
+#FREEZED_NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}"
+#FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS=("${NBS_MATRIX_REPOSITORY_VERSIONS[@]}")
+#FREEZED_NBS_MATRIX_SUPPORTED_OS=("${NBS_MATRIX_SUPPORTED_OS[@]}")
+#FREEZED_NBS_MATRIX_L4T_SUPPORTED_VERSIONS=("${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
+#FREEZED_NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
+#FREEZED_NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
+#FREEZED_NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
+
+# Freeze build matrix env variable to prevent accidental override
+# Note: declare -r ==> set as read-only, declare -a  ==> set as an array
+declare -r NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE
+declare -ra NBS_MATRIX_REPOSITORY_VERSIONS
+declare -ra NBS_MATRIX_SUPPORTED_OS
+declare -ra NBS_MATRIX_L4T_SUPPORTED_VERSIONS
+declare -ra NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG
+declare -ra NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS
+declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG
 
 function print_env_var_build_matrix() {
   local SUP_TEXT=$1
   print_msg "Environment variables ${MSG_EMPH_FORMAT}(build matrix)${MSG_END_FORMAT} $SUP_TEXT:\n
-${MSG_DIMMED_FORMAT}    NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${FREEZED_NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_REPOSITORY_VERSIONS=(${FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_SUPPORTED_OS=(${FREEZED_NBS_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_SUPPORTED_VERSIONS=(${FREEZED_NBS_MATRIX_L4T_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${FREEZED_NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${FREEZED_NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${FREEZED_NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_REPOSITORY_VERSIONS=(${NBS_MATRIX_REPOSITORY_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_SUPPORTED_OS=(${NBS_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_SUPPORTED_VERSIONS=(${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
 "
 }
 
@@ -210,26 +242,26 @@ print_env_var_build_matrix 'set for compose'
 
 # ====Crawl build matrix===========================================================================
 # Note: EACH_DN_VERSION is used for container labeling and to fetch the repo at release tag
-for EACH_DN_VERSION in "${FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
+for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
   teamcity_service_msg_blockOpened_custom "Bloc=${EACH_DN_VERSION}"
 
-  if [[ -z ${FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS[*]} ]] || [[ ! ${FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS} ]]; then
-    echo "FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS=${FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS[*]}"
+  if [[ -z ${NBS_MATRIX_REPOSITORY_VERSIONS[*]} ]] || [[ ! ${NBS_MATRIX_REPOSITORY_VERSIONS} ]]; then
+    echo "NBS_MATRIX_REPOSITORY_VERSIONS=${NBS_MATRIX_REPOSITORY_VERSIONS[*]}"
     print_msg_error_and_exit "Can't crawl Dockerized-NorLab supported version array because it's empty!"
   fi
 
-  for EACH_OS_NAME in "${FREEZED_NBS_MATRIX_SUPPORTED_OS[@]}"; do
+  for EACH_OS_NAME in "${NBS_MATRIX_SUPPORTED_OS[@]}"; do
     teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_NAME}"
 
     unset CRAWL_OS_VERSIONS
     unset CRAWL_BASE_IMAGES_AND_PKG
 
     if [[ ${EACH_OS_NAME} == 'ubuntu' ]]; then
-      CRAWL_OS_VERSIONS=("${FREEZED_NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
-      CRAWL_BASE_IMAGES_AND_PKG=("${FREEZED_NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
+      CRAWL_OS_VERSIONS=("${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
+      CRAWL_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
     elif [[ ${EACH_OS_NAME} == 'l4t' ]]; then
-      CRAWL_OS_VERSIONS=("${FREEZED_NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
-      CRAWL_BASE_IMAGES_AND_PKG=("${FREEZED_NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
+      CRAWL_OS_VERSIONS=("${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
+      CRAWL_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
     else
       print_msg_error_and_exit "${EACH_OS_NAME} not supported!"
     fi
@@ -345,7 +377,16 @@ if [[ ${TEAMCITY_VERSION} ]]; then
     echo -e "##teamcity[addBuildTag '${tc_build_tag}']"
   done
 fi
+
 # ====Teardown=====================================================================================
+unset NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE
+unset NBS_MATRIX_REPOSITORY_VERSIONS
+unset NBS_MATRIX_SUPPORTED_OS
+unset NBS_MATRIX_L4T_SUPPORTED_VERSIONS
+unset NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG
+unset NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS
+unset NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG
+
 cd "${TMP_CWD_ECOBM}"
 
 # shellcheck disable=SC2086

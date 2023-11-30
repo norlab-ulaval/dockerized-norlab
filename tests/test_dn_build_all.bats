@@ -41,6 +41,14 @@ TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
+
+  set -o allexport
+  source .env.norlab-build-system
+  set +o allexport
+
+  NBS_OVERRIDE_BUILD_MATRIX_MAIN='tests/.env.build_matrix.main.mock' && export NBS_OVERRIDE_BUILD_MATRIX_MAIN
+  NBS_BUILD_MATRIX_CONFIG=tests/build_matrix_config && export NBS_BUILD_MATRIX_CONFIG
+
 #  pwd >&3 && tree -L 2 -a -hug utilities/ >&3
 #  printenv >&3
 }
@@ -51,9 +59,9 @@ setup_file() {
 
 # ====Teardown======================================================================================
 
-#teardown() {
-#  bats_print_run_env_variable_on_error
-#}
+teardown() {
+  bats_print_run_env_variable_on_error
+}
 
 #teardown_file() {
 #    echo "executed once after finishing the last test"
@@ -61,21 +69,34 @@ setup_file() {
 
 # ====Test casses===================================================================================
 
-@test "running $TESTED_FILE from root, 'build_script/' or 'dockerized-norlab-scripts/'  › expect pass" {
+  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+@test "running $TESTED_FILE from non 'root' › expect error" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"
-  run bash ./$TESTED_FILE --fail-fast
-  assert_success
-  refute_output  --partial "No such file or directory"
+  # Note:
+  #  - "echo 'Y'" is for sending an keyboard input to the 'read' command which expect a single character
+  #    run bash -c "echo 'Y' | bash ./function_library/$TESTED_FILE"
+  #  - Alt: Use the 'yes [n]' command which optionaly send n time
+  run bash -c "yes 1 | bash ./$TESTED_FILE  --fail-fast"
+#  bats_print_run_env_variable
+  assert_failure 1
+  assert_output --partial "'$TESTED_FILE' script must be sourced from"
+}
 
-  cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
-  run bash ./build_script/$TESTED_FILE --fail-fast
-  assert_success
-  refute_output  --partial "No such file or directory"
-
+@test "running $TESTED_FILE from 'root' › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE --fail-fast
+
+  assert_equal "$(basename $(pwd))" "dockerized-norlab"
+  assert_file_exist .env.norlab-build-system
+  assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
+  assert_file_exist ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock
+
+  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+  assert_file_exist '/code/dockerized-norlab/build_matrix_config/test/.env.build_matrix.mock'
+#  assert_file_exist tests/.env.build_matrix.main.mock
+
+  run bash -c "export NBS_OVERRIDE_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN} && source ./${TESTED_FILE_PATH}/$TESTED_FILE --fail-fast"
   assert_success
-  refute_output  --partial "No such file or directory"
+  refute_output  --partial "'$TESTED_FILE' script must be sourced from"
 }
 
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
@@ -96,14 +117,15 @@ setup_file() {
 
 }
 
-@test "env variable ADD_DOCKER_FLAG pass to script › ok" {
-  local ADD_DOCKER_FLAG="--push"
+
+@test "env variable NBS_OVERRIDE_ADD_DOCKER_FLAG pass to script › ok" {
+  local NBS_OVERRIDE_ADD_DOCKER_FLAG="--push"
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
                          --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                          --os-name-build-matrix-override 'l4t' \
                          --l4t-version-build-matrix-override 'r33.3.3' \
                          --fail-fast
 
-  assert_output --regexp .*"docker compose -f".*"build ${ADD_DOCKER_FLAG}".*
+  assert_output --regexp .*"docker compose -f".*"build ${NBS_OVERRIDE_ADD_DOCKER_FLAG}".*
 #  bats_print_run_env_variable
 }

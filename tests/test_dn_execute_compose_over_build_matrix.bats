@@ -41,8 +41,11 @@ TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
-#  pwd >&3 && tree -L 2 -a -hug utilities/ >&3
+#  pwd >&3 && tree -L 2 -a -hug >&3
 #  printenv >&3
+
+  NBS_OVERRIDE_BUILD_MATRIX_MAIN=tests/.env.build_matrix.main.mock && export NBS_OVERRIDE_BUILD_MATRIX_MAIN
+  NBS_BUILD_MATRIX_CONFIG=tests/build_matrix_config && export NBS_BUILD_MATRIX_CONFIG
 }
 
 #setup() {
@@ -62,22 +65,23 @@ setup_file() {
 
 # ====Test casses===================================================================================
 
+  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
   # Note:
   #  - "echo 'Y'" is for sending an keyboard input to the 'read' command which expect a single character
   #    run bash -c "echo 'Y' | bash ./function_library/$TESTED_FILE"
   #  - Alt: Use the 'yes [n]' command which optionaly send n time
-  run bash -c "yes 1 | bash ./build_script/$TESTED_FILE 'tests/.env.build_matrix.mock'"
+  run bash -c "yes 1 | bash ./build_script/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock"
 #  bats_print_run_env_variable
   assert_failure 1
   assert_output --partial "'$TESTED_FILE' script must be sourced from"
 }
 
-
+  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock'"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock"
   assert_success
   refute_output  --partial "No such file or directory"
 #  bats_print_run_env_variable
@@ -91,13 +95,13 @@ setup_file() {
 
   run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE '.env.build_matrix.unreachable'"
   assert_failure
-  assert_output --partial "'$TESTED_FILE' can't find dotenv build matrix file '.env.build_matrix.unreachable'"
+  assert_output --partial "'$TESTED_FILE' can't find dotenv build matrix file in _DOTENV_BUILD_MATRIX='.env.build_matrix.unreachable'"
 #  bats_print_run_env_variable
 }
 
 @test "docker command are passed to show_and_execute_docker" {
   local DOCKER_CMD="build --no-cache --push"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' --fail-fast -- ${DOCKER_CMD}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock --fail-fast -- ${DOCKER_CMD}"
   assert_success
   assert_output --regexp .*"Skipping the execution of Docker command".*
   assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}".*
@@ -105,10 +109,15 @@ setup_file() {
 }
 
 @test "dotenv build matrix file argument › ok" {
+  assert_equal "$(basename $(pwd))" "dockerized-norlab"
+  assert_file_exist .env.norlab-build-system
+  assert_file_exist ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock
+
+#  skip "failling, need to be investigated" # ToDo: on task end >> delete this line ←
   local DOCKER_CMD="version"
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -121,7 +130,7 @@ setup_file() {
   local DOCKER_CMD="version"
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -142,7 +151,7 @@ setup_file() {
   mock_docker_command_exit_error
   fake_IS_TEAMCITY_RUN
   set +e
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -162,7 +171,7 @@ setup_file() {
   mock_docker_command_exit_error
   fake_IS_TEAMCITY_RUN
   set +e
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock \
                                                 --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
   set -e
@@ -174,7 +183,7 @@ setup_file() {
 @test "flags that set env variable" {
   set +e
   mock_docker_command_exit_ok
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock \
                                                 --ci-test-force-runing-docker-cmd \
                                                 --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                                                 --os-name-build-matrix-override 'l4t' \
@@ -188,7 +197,7 @@ setup_file() {
 }
 
 @test "flag --help" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock \
                                                                  --fail-fast \
                                                                  --help
   assert_success
@@ -197,7 +206,7 @@ setup_file() {
 
 @test "flag --buildx-bake" {
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' --buildx-bake --fail-fast -- ${DOCKER_CMD}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock --buildx-bake --fail-fast -- ${DOCKER_CMD}"
 
   assert_success
   assert_output --regexp .*"docker buildx bake -f ".*"${DOCKER_CMD}"

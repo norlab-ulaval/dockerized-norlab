@@ -30,6 +30,7 @@ source .env.dockerized-norlab
 set +o allexport
 
 set -o allexport
+# ToDo: refactor > use NS2T_PATH set somewhere
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
@@ -37,6 +38,7 @@ set +o allexport
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD=$(pwd)
+# ToDo: refactor > use NS2T_PATH set somewhere
 cd ./utilities/norlab-shell-script-tools/src/function_library
 source ./prompt_utilities.bash
 source ./terminal_splash.bash
