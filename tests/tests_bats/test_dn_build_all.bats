@@ -23,7 +23,7 @@ if [[ -d ${BATS_HELPER_PATH} ]]; then
   load "${BATS_HELPER_PATH}/bats-support/load"
   load "${BATS_HELPER_PATH}/bats-assert/load"
   load "${BATS_HELPER_PATH}/bats-file/load"
-  load "bats_testing_tools/bats_helper_functions"
+  load "${SRC_CODE_PATH}/${N2ST_BATS_TESTING_TOOLS_RELATIVE_PATH}/bats_helper_functions"
   load "bats_testing_tools/bats_helper_functions_local"
   #load "${BATS_HELPER_PATH}/bats-detik/load" # << Kubernetes support
 else

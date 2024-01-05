@@ -14,7 +14,7 @@
 #   - Read NBS_OVERRIDE_BUILD_MATRIX_MAIN          Use to quickly change the .env.build_matrix.main file
 #   - Read NBS_OVERRIDE_ADD_DOCKER_FLAG            Use to quickly add docker flag at runtime
 #             e.g.: $ NBS_OVERRIDE_ADD_DOCKER_FLAG=--push --dry-run && source dn_build_all.bash
-#   - Read NBS_OVERRIDE_DOCKER_CMD         Use to quickly overide the docker command
+#   - Read NBS_OVERRIDE_DOCKER_CMD                 Use to quickly overide the docker command
 #             e.g.: $ NBS_OVERRIDE_DOCKER_CMD=push
 #   - Read NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY  Use to quickly overide the build matrix list
 #             e.g.: $ NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev.dn' ) && source dn_build_all.bash
