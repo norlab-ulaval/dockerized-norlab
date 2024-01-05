@@ -1,4 +1,5 @@
 #!/bin/bash
+# =================================================================================================
 #
 # Convenient script for building all images specified in in a dotenv build matrix file
 #
@@ -13,10 +14,10 @@
 #   - Read NBS_OVERRIDE_ADD_DOCKER_FLAG    Use to quickly add docker flag at runtime
 #                               e.g.: $ NBS_OVERRIDE_ADD_DOCKER_FLAG=--push myService && bash dn_build_over_single_build_matrix.bash
 #
-
+# =================================================================================================
 clear
 
-# ====Begin=========================================================================================
+# ====Begin========================================================================================
 DOCKER_CMD=build
 # ....manual config.................................................................................
 
@@ -31,7 +32,9 @@ shift # Remove argument value
 # Note: 'NBS_OVERRIDE_ADD_DOCKER_FLAG' is set via commandline for convenience
 _DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${NBS_OVERRIDE_ADD_DOCKER_FLAG:-""}"
 
-# ....execute.......................................................................................
+#_DOCKER_COMMAND_W_FLAGS="build --dry-run" # (CRITICAL) ToDo: on task end >> delete this line ←
+
+# ....execute......................................................................................
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
                                     "$_DOTENV_BUILD_MATRIX" \
                                     "$@" -- "$_DOCKER_COMMAND_W_FLAGS"

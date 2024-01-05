@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run › dn_build_all.bash --push › every dn-control-deep" type="ShConfigurationType" folderName="build (remark: select daemon via docker context)">
+  <configuration default="false" name="run › dn_build_all.bash --push › every dn-control-deep" type="ShConfigurationType" folderName="[DN] build (remark: select daemon via docker context)">
     <option name="SCRIPT_TEXT" value="NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dn-control-deep' ) &amp;&amp; NBS_OVERRIDE_ADD_DOCKER_FLAG=&quot;--push&quot; &amp;&amp; source dn_build_all.bash" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />

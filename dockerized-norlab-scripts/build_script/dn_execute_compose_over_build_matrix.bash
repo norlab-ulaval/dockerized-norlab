@@ -1,4 +1,5 @@
 #!/bin/bash
+# =================================================================================================
 #
 # Execute build matrix on docker compose docker-compose.dn-dependencies.build.yaml
 #
@@ -16,27 +17,41 @@
 # Note:
 #   Dont use "set -e" in this script as it will affect the build system policy, use the --fail-fast flag instead
 #
+# =================================================================================================
 
 ## Debug flags
 #set -v
 #set -x
 
 # ....Default......................................................................................
-_DOCKER_COMPOSE_CMD_ARGS='build --dry-run' # eg: 'build --no-cache --push' or 'up --build --force-recreate'
+DOCKER_COMPOSE_CMD_ARGS='build --dry-run' # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 _BUILD_STATUS_PASS=0
-_EXECUTE_COMPOSE_FLAGS=''
-
-#echo "@=$*" # ToDo: on task end >> delete this line ←
+EXECUTE_COMPOSE_FLAGS=''
 
 _DOTENV_BUILD_MATRIX="${1:?'Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
 # ....Pre-condition................................................................................
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+
+MSG_ERROR_FORMAT="${MSG_ERROR_FORMAT}"
+MSG_END_FORMAT="\033[0m"
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+  # This script is being run, ie: __name__="__main__"
+  echo
+else
+  # This script is being sourced, ie: __name__="__source__"
+  if [[ ${_CI_TEST} != true ]]; then
+    echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] Execute this script in a subshell i.e.: $ bash dn_execute_compose_over_build_matrix.bash" 1>&2
+    exit 1
+  fi
+fi
+
+
+
+
 if [[ ! -f ".env.norlab-build-system" ]]; then
-  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
-  echo '(press any key to exit)'
-  read -r -n 1
+  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' script must be executed from the project root!\n Curent working directory is '$(pwd)'" 1>&2
   exit 1
 fi
 
@@ -44,11 +59,9 @@ set -o allexport
 source .env.norlab-build-system
 set +o allexport
 
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+
 if [[ ! -f "${_DOTENV_BUILD_MATRIX}" ]]; then
-  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in _DOTENV_BUILD_MATRIX='${_DOTENV_BUILD_MATRIX:?err}'"
-  echo '(press any key to exit)'
-  read -r -n 1
+  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in _DOTENV_BUILD_MATRIX='${_DOTENV_BUILD_MATRIX:?err}'" 1>&2
   exit 1
 fi
 
@@ -58,6 +71,14 @@ fi
 # The main .env.build_matrix to load
 #
 NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
+
+
+
+if [[ ! -f "${NBS_BUILD_MATRIX_MAIN}" ]]; then
+  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in _DOTENV_BUILD_MATRIX='${NBS_BUILD_MATRIX_MAIN:?err}'" 1>&2
+  exit 1
+fi
+
 
 set -o allexport
 source "$_DOTENV_BUILD_MATRIX"
@@ -113,7 +134,7 @@ function print_help_in_terminal() {
 
   \033[1m
     [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
-                                              command and arguments (default to '${_DOCKER_COMPOSE_CMD_ARGS}')
+                                              command and arguments (default to '${DOCKER_COMPOSE_CMD_ARGS}')
 "
 }
 
@@ -169,7 +190,7 @@ while [ $# -gt 0 ]; do
     shift # Remove argument value
     ;;
   --buildx-bake)
-      export _EXECUTE_COMPOSE_FLAGS="${_EXECUTE_COMPOSE_FLAGS} --buildx-bake"
+      export EXECUTE_COMPOSE_FLAGS="${EXECUTE_COMPOSE_FLAGS} --buildx-bake"
       shift # Remove argument (--buildx-bake)
       ;;
   --docker-debug-logs)
@@ -184,7 +205,7 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--fail-fast)
     ;;
   --ci-test-force-runing-docker-cmd)
-    export _EXECUTE_COMPOSE_FLAGS="${_EXECUTE_COMPOSE_FLAGS} --ci-test-force-runing-docker-cmd"
+    export EXECUTE_COMPOSE_FLAGS="${EXECUTE_COMPOSE_FLAGS} --ci-test-force-runing-docker-cmd"
     shift # Remove argument (--ci-test-force-runing-docker-cmd)
     ;;
   -h | --help)
@@ -193,7 +214,7 @@ while [ $# -gt 0 ]; do
     ;;
   --) # no more option
     shift
-    _DOCKER_COMPOSE_CMD_ARGS=$@
+    DOCKER_COMPOSE_CMD_ARGS="$*"
     break
     ;;
   *) # Default case
@@ -206,24 +227,15 @@ done
 # .................................................................................................
 print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
 
-### Freeze build matrix env variable to prevent override by dn_execute_compose.bash when reloading .env/build_matrix
-#FREEZED_NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE="${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}"
-#FREEZED_NBS_MATRIX_REPOSITORY_VERSIONS=("${NBS_MATRIX_REPOSITORY_VERSIONS[@]}")
-#FREEZED_NBS_MATRIX_SUPPORTED_OS=("${NBS_MATRIX_SUPPORTED_OS[@]}")
-#FREEZED_NBS_MATRIX_L4T_SUPPORTED_VERSIONS=("${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
-#FREEZED_NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
-#FREEZED_NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=("${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
-#FREEZED_NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
-
-# Freeze build matrix env variable to prevent accidental override
-# Note: declare -r ==> set as read-only, declare -a  ==> set as an array
-declare -r NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE
-declare -ra NBS_MATRIX_REPOSITORY_VERSIONS
-declare -ra NBS_MATRIX_SUPPORTED_OS
-declare -ra NBS_MATRIX_L4T_SUPPORTED_VERSIONS
-declare -ra NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG
-declare -ra NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS
-declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG
+## Freeze build matrix env variable to prevent accidental override
+## Note: declare -r ==> set as read-only, declare -a  ==> set as an array
+declare -r NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}
+declare -ra NBS_MATRIX_REPOSITORY_VERSIONS=(${NBS_MATRIX_REPOSITORY_VERSIONS[@]})
+declare -ra NBS_MATRIX_SUPPORTED_OS=(${NBS_MATRIX_SUPPORTED_OS[@]})
+declare -ra NBS_MATRIX_L4T_SUPPORTED_VERSIONS=(${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]})
+declare -ra NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]})
+declare -ra NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]})
+declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]})
 
 function print_env_var_build_matrix() {
   local SUP_TEXT=$1
@@ -287,8 +299,8 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         EACH_TAG_PKG=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://')
 
         if [[ ${TEAMCITY_VERSION} ]]; then
-          # ToDo: missing $EACH_OS_NAME and $_EXECUTE_COMPOSE_FLAGS
-          echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} -- ${_DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT_TEAMCITY}|n']"
+          # ToDo: missing $EACH_OS_NAME and $EXECUTE_COMPOSE_FLAGS
+          echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} -- ${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT_TEAMCITY}|n']"
           echo " "
         fi
 
@@ -300,8 +312,8 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           --os-name "${EACH_OS_NAME}" \
           --tag-package "${EACH_TAG_PKG}" \
           --tag-version "${EACH_OS_VERSION}" \
-          $_EXECUTE_COMPOSE_FLAGS \
-          -- $_DOCKER_COMPOSE_CMD_ARGS
+          ${EXECUTE_COMPOSE_FLAGS} \
+          -- "${DOCKER_COMPOSE_CMD_ARGS}"
 
 
         # ....Collect image tags exported by dn_execute_compose.bash...............................
@@ -364,7 +376,7 @@ ${STR_IMAGE_TAG_CRAWLED}"
 
 print_msg_done "FINAL › Build matrix completed with command
 ${MSG_DIMMED_FORMAT}
-    $ docker compose -f ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${_DOCKER_COMPOSE_CMD_ARGS}
+    $ docker compose -f ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS}
 ${MSG_END_FORMAT}
 ${STR_BUILD_MATRIX_SERVICES_AND_TAGS}"
 
@@ -379,14 +391,6 @@ if [[ ${TEAMCITY_VERSION} ]]; then
 fi
 
 # ====Teardown=====================================================================================
-unset NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE
-unset NBS_MATRIX_REPOSITORY_VERSIONS
-unset NBS_MATRIX_SUPPORTED_OS
-unset NBS_MATRIX_L4T_SUPPORTED_VERSIONS
-unset NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG
-unset NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS
-unset NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG
-
 cd "${TMP_CWD_ECOBM}"
 
 # shellcheck disable=SC2086

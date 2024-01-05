@@ -1,6 +1,7 @@
 #!/bin/bash
+# =================================================================================================
 #
-# Convenient script for building all images by crwaling over all ".env.build_matrix.dn-*" file
+# Convenient script for building all images by crawling over all ".env.build_matrix.dn-*" file
 #
 # Usage:
 
@@ -19,14 +20,13 @@
 #             e.g.: $ NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev.dn' ) && source dn_build_all.bash
 #   - Read STR_BUILD_MATRIX_SERVICES_AND_TAGS from build_all.log
 #
+# =================================================================================================
 clear
 
 # ....Pre-condition................................................................................
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+
 if [[ ! -f  ".env.norlab-build-system" ]]; then
-  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_build_all.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
-  echo '(press any key to exit)'
-  read -r -n 1
+  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_build_all.bash' script must be executed from the project root!\n Curent working directory is '$(pwd)'"  1>&2
   exit 1
 fi
 
@@ -71,21 +71,24 @@ function agregate_build_logs() {
 }
 
 # ====Begin========================================================================================
-_DOCKER_CMD=${NBS_OVERRIDE_DOCKER_CMD:-build}
+DOCKER_CMD=${NBS_OVERRIDE_DOCKER_CMD:-"build"}
 
 # ....manual config................................................................................
 
-#_DOCKER_CMD="push --ignore-push-failures"
-#_DOCKER_CMD="up --build"
-#_DOCKER_CMD="build --dry-run"
+#DOCKER_CMD="push --ignore-push-failures"
+#DOCKER_CMD="up --build"
+#DOCKER_CMD="build --dry-run"
+#DOCKER_CMD=( build --dry-run )
+#DOCKER_CMD=( build )
 
 #export DOCKER_CONTEXT=desktop-linux
 #export DOCKER_CONTEXT=jetson-nx-redleader-daemon
 
 # ....setup........................................................................................
 # Note: 'NBS_OVERRIDE_ADD_DOCKER_FLAG' is set via commandline for convenience
-_DOCKER_COMMAND_W_FLAGS="$_DOCKER_CMD ${NBS_OVERRIDE_ADD_DOCKER_FLAG:-""}"
-_SUB_SCRIPT_FLAGS=$@
+#DOCKER_COMMAND_W_FLAGS="build --dry-run"
+DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${NBS_OVERRIDE_ADD_DOCKER_FLAG:-""}"
+SUB_SCRIPT_FLAGS=$@
 
 # ....execute all build matrix.....................................................................
 _CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]}}" )
@@ -93,9 +96,9 @@ _CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV
 for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
 
   # (CRITICAL) ToDo: refactor path to 'dn_execute_compose_over_build_matrix.bash' >> make it portable
-  source ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
+  bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
                         "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/$EACH_BUILD_MATRIX" \
-                        ${_SUB_SCRIPT_FLAGS} -- "${_DOCKER_COMMAND_W_FLAGS}"
+                        ${SUB_SCRIPT_FLAGS} -- "${DOCKER_COMMAND_W_FLAGS}"
 
     fetch_build_log
     agregate_build_logs

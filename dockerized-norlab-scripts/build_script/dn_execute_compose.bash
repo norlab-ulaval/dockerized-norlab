@@ -1,4 +1,5 @@
 #!/bin/bash
+# =================================================================================================
 #
 # Build and run a single container based on docker compose docker-compose.dn-dependencies.build.yaml
 #
@@ -13,6 +14,7 @@
 # Note:
 #   Dont use "set -e" in this script as it will affect the build system policy, use the --fail-fast flag instead
 #
+# =================================================================================================
 
 # ....Default......................................................................................
 # (CRITICAL) ToDo: refactor env var setting related to docker compose cmd. Return an error if not set explicitly via flag or use new mechanism to register build arg (NMO-396)
@@ -23,16 +25,16 @@
 #TAG_VERSION='r35.2.1'
 ##LPM_JOB_ID='0'
 
-_DOCKER_MANAGEMENT_COMMAND='compose'
-_DOCKER_COMPOSE_CMD_ARGS='build --dry-run'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
+DOCKER_MANAGEMENT_COMMAND=compose
+DOCKER_COMPOSE_CMD_ARGS='build --dry-run'  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
 _CI_TEST=false
 
-_COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
+COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
 shift # Remove argument value
 
 
 # ....Pre-condition................................................................................
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+
 if [[ ! -f  ".env.norlab-build-system" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' script must be sourced from the project root!\n Curent working directory is '$(pwd)'"
   echo '(press any key to exit)'
@@ -40,9 +42,9 @@ if [[ ! -f  ".env.norlab-build-system" ]]; then
   exit 1
 fi
 
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
-if [[ ! -f  "${_COMPOSE_FILE}" ]]; then
-  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' can't find the docker-compose.yaml file '${_COMPOSE_FILE}' at $(pwd)"
+
+if [[ ! -f  "${COMPOSE_FILE}" ]]; then
+  echo -e "\n[\033[1;31mERROR\033[0m] 'dn_execute_compose.bash' can't find the docker-compose.yaml file '${COMPOSE_FILE}' at $(pwd)"
   echo '(press any key to exit)'
   read -r -n 1
   exit 1
@@ -94,7 +96,7 @@ function print_help_in_terminal() {
 
   \033[1m
     [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
-                                              command and arguments (default to '${_DOCKER_COMPOSE_CMD_ARGS}').
+                                              command and arguments (default to '${DOCKER_COMPOSE_CMD_ARGS}').
                                               Note: passing script flag via docker --build-arg can be tricky,
                                                     pass them in the docker-compose.yaml if you experience problem.
 "
@@ -156,7 +158,7 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--docker-debug-logs)
     ;;
   --buildx-bake)
-    _DOCKER_MANAGEMENT_COMMAND='buildx bake'
+    DOCKER_MANAGEMENT_COMMAND='buildx bake'
     shift # Remove argument (--buildx-bake)
     ;;
   --fail-fast)
@@ -173,7 +175,7 @@ while [ $# -gt 0 ]; do
     ;;
   --) # no more option
     shift
-    _DOCKER_COMPOSE_CMD_ARGS=$@
+    DOCKER_COMPOSE_CMD_ARGS="$*"
     break
     ;;
   *) # Default case
@@ -200,7 +202,7 @@ ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG
 ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
 "
 
-print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${_COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${_DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT}"
+print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS}${MSG_END_FORMAT}"
 print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
@@ -208,11 +210,11 @@ print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 
 function callback_execute_compose_pre() {
 
-  if [[ ! -f ${_COMPOSE_FILE} ]]; then
-    print_msg_error_and_exit "docker-compose file ${_COMPOSE_FILE} is unreachable"
+  if [[ ! -f ${COMPOSE_FILE} ]]; then
+    print_msg_error_and_exit "docker-compose file ${COMPOSE_FILE} is unreachable"
   fi
 
-  if [[ "${_COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]]; then
+  if [[ "${COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]]; then
     # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 
     # shellcheck disable=SC2046
@@ -248,7 +250,8 @@ callback_execute_compose_pre
 ## docker compose [-f <theComposeFile> ...] [options] [COMMAND] [ARGS...]
 ## docker compose build [OPTIONS] [SERVICE...]
 ## docker compose run [OPTIONS] SERVICE [COMMAND] [ARGS...]
-show_and_execute_docker "$_DOCKER_MANAGEMENT_COMMAND -f $_COMPOSE_FILE $_DOCKER_COMPOSE_CMD_ARGS" "$_CI_TEST"
+n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS}" "$_CI_TEST"
+#docker compose build --help
 
 # ToDo: modularity feat › add `source <callback-post.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
 

@@ -46,16 +46,19 @@ setup_file() {
   source .env.norlab-build-system
   set +o allexport
 
-  NBS_OVERRIDE_BUILD_MATRIX_MAIN='tests/.env.build_matrix.main.mock' && export NBS_OVERRIDE_BUILD_MATRIX_MAIN
-  NBS_BUILD_MATRIX_CONFIG=tests/build_matrix_config && export NBS_BUILD_MATRIX_CONFIG
 
 #  pwd >&3 && tree -L 2 -a -hug utilities/ >&3
 #  printenv >&3
 }
 
-#setup() {
+setup() {
 #  cd "$TESTED_FILE_PATH" || exit
-#}
+#  mock_docker_command_exit_ok
+
+#  NBS_BUILD_MATRIX_CONFIG=tests/build_matrix_config && export NBS_BUILD_MATRIX_CONFIG
+  export NBS_OVERRIDE_BUILD_MATRIX_MAIN='tests/.env.build_matrix.main.mock'
+
+}
 
 # ====Teardown======================================================================================
 
@@ -69,38 +72,37 @@ teardown() {
 
 # ====Test casses===================================================================================
 
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+
 @test "running $TESTED_FILE from non 'root' › expect error" {
+#  skip "tmp dev"
+
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"
-  # Note:
-  #  - "echo 'Y'" is for sending an keyboard input to the 'read' command which expect a single character
-  #    run bash -c "echo 'Y' | bash ./function_library/$TESTED_FILE"
-  #  - Alt: Use the 'yes [n]' command which optionaly send n time
-  run bash -c "yes 1 | bash ./$TESTED_FILE  --fail-fast"
-#  bats_print_run_env_variable
+  run bash ./$TESTED_FILE  --fail-fast
   assert_failure 1
-  assert_output --partial "'$TESTED_FILE' script must be sourced from"
+  assert_output --partial "'$TESTED_FILE' script must be executed from the project root"
 }
 
 @test "running $TESTED_FILE from 'root' › expect pass" {
+#  skip "tmp dev"
+
   cd "${BATS_DOCKER_WORKDIR}"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
-  assert_file_exist ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock
+  assert_file_exist ./build_matrix_config/test/.env.build_matrix.mock
 
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
-  assert_file_exist '/code/dockerized-norlab/build_matrix_config/test/.env.build_matrix.mock'
-#  assert_file_exist tests/.env.build_matrix.main.mock
 
-  run bash -c "export NBS_OVERRIDE_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN} && source ./${TESTED_FILE_PATH}/$TESTED_FILE --fail-fast"
+
+  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--fail-fast" -- "build --dry-run"
   assert_success
-  refute_output  --partial "'$TESTED_FILE' script must be sourced from"
+  refute_output --partial "'$TESTED_FILE' script must be executed from the project root"
 }
 
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE \
+#  skip "tmp dev"
+
+  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" \
                             --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                             --os-name-build-matrix-override 'l4t' \
                             --l4t-version-build-matrix-override 'r33.3.3' \
@@ -109,17 +111,19 @@ teardown() {
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*
 
-  assert_output --regexp .*"DN-v8.8.8-foxy-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DN-v8.8.8-foxy-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v8.8.8-humble-ros-core-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v8.8.8-humble-pytorch-l4t-r33.3.3".*
 
-  refute_output --regexp .*"DN-v9.9.9-foxy-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DN-v9.9.9-foxy-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v9.9.9-humble-ros-core-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v9.9.9-humble-pytorch-l4t-r11.1.1".*
 
 }
 
 
 @test "env variable NBS_OVERRIDE_ADD_DOCKER_FLAG pass to script › ok" {
-  local NBS_OVERRIDE_ADD_DOCKER_FLAG="--push"
+#  skip "tmp dev"
+
+  local NBS_OVERRIDE_ADD_DOCKER_FLAG="--push --dry-run"
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
                          --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                          --os-name-build-matrix-override 'l4t' \

@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run bats tests  › 'tests/test_dn_build_all.bats'" type="ShConfigurationType" folderName="bats tests">
+  <configuration default="false" name="run bats tests  › 'tests/test_dn_build_all.bats'" type="ShConfigurationType" folderName="[DN] bats tests">
     <option name="SCRIPT_TEXT" value="" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/tests/run_bats_core_test.bash" />
+    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/tests/run_bats_core_test_in_n2st.bash" />
     <option name="SCRIPT_OPTIONS" value="tests/test_dn_build_all.bats" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
     <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />

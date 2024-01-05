@@ -1,4 +1,5 @@
 #!/bin/bash
+# =================================================================================================
 #
 # Convenient script
 #
@@ -14,7 +15,7 @@
 #   - Read OPTION_FLAG       Use to quickly add docker flag at runtime
 #                            e.g.: $ OPTION_FLAG=--build
 #
-
+# =================================================================================================
 clear
 
 _DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"

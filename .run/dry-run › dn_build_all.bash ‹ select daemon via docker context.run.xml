@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="dry-run › dn_build_all.bash ‹ select daemon via docker context" type="ShConfigurationType" folderName="docker dry-run">
+  <configuration default="false" name="dry-run › dn_build_all.bash ‹ select daemon via docker context" type="ShConfigurationType" folderName="[DN] docker dry-run">
     <option name="SCRIPT_TEXT" value="" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_build_all.bash" />
@@ -9,7 +9,7 @@
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
     <option name="INTERPRETER_PATH" value="/bin/zsh" />
     <option name="INTERPRETER_OPTIONS" value="" />
-    <option name="EXECUTE_IN_TERMINAL" value="true" />
+    <option name="EXECUTE_IN_TERMINAL" value="false" />
     <option name="EXECUTE_SCRIPT_FILE" value="true" />
     <envs>
       <env name="NBS_OVERRIDE_ADD_DOCKER_FLAG" value="--dry-run" />

@@ -1,4 +1,5 @@
 #!/bin/bash
+# =================================================================================================
 #
 # Convenient script for pushing all images specified in 'docker-compose.dn-dependencies.build.yaml'
 #
@@ -9,6 +10,7 @@
 #   - <.env.build_matrix.*>  Dotenv build matrix file
 #   - [<optional flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
 #
+# =================================================================================================
 
 _DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value

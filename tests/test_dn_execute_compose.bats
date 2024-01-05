@@ -61,7 +61,7 @@ setup_file() {
 
 # ====Test casses==================================================================================
 
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
   # Note:
@@ -74,7 +74,7 @@ setup_file() {
   assert_output --partial "'$TESTED_FILE' script must be sourced from"
 }
 
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}"
   run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${TEST_DOCKER_COMPOSE_FILE}"

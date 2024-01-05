@@ -1,4 +1,5 @@
 #!/bin/bash
+# =================================================================================================
 #
 # Convenient script for stopping services specified in 'docker-compose.dn-dependencies.build.yaml'.
 # All will be stopped if no argument are given.
@@ -10,6 +11,7 @@
 #   - <.env.build_matrix.*>  Dotenv build matrix file
 #   - [services]              The service to stop
 #
+# =================================================================================================
 
 _DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value

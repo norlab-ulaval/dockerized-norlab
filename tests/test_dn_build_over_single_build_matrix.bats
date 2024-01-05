@@ -67,21 +67,6 @@ setup_file() {
 # ====Test casses===================================================================================
 
 
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
-@test "running $TESTED_FILE from root, 'build_script/' or 'dockerized-norlab-scripts/'  › expect pass" {
-  cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"
-  # Note:
-    #  - "echo 'Y'" is for sending an keyboard input to the 'read' command which expect a single character
-    #    run bash -c "echo 'Y' | bash ./function_library/$TESTED_FILE"
-    #  - Alt: Use the 'yes [n]' command which optionaly send n time
-    run bash -c "yes 1 | bash ./${TESTED_FILE} ${NBS_BUILD_MATRIX_CONFIG}/test/.env.build_matrix.mock"
-  #  bats_print_run_env_variable
-    assert_failure 1
-    assert_output --partial "'$TESTED_FILE' script must be sourced from"
-
-}
-
-# (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
 @test "running $TESTED_FILE from 'root' › expect pass" {
 #  cd "${BATS_DOCKER_WORKDIR}"
 #  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "$NBS_BUILD_MATRIX_CONFIG/test/.env.build_matrix.mock"

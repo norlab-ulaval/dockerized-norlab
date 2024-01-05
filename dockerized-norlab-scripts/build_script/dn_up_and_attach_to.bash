@@ -1,4 +1,5 @@
 #!/bin/bash
+# =================================================================================================
 #
 # Convenient script for spinning a specific service from the docker compose
 # file define in a .env.build_matrix
@@ -9,7 +10,7 @@
 # Arguments:
 #   - <theService>              The service to attach once all are up
 #
-
+# =================================================================================================
 clear
 
 _DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"

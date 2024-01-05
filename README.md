@@ -37,7 +37,7 @@ Containerized development workflow for perception3D, control or robot low level 
 - Multi OS versions:
   - Jetpack: `r35.2.1`, `r32.7.1` ...
   - Ubuntu: `focal` (in progress: `bionic` and `jammy`)
-- Multi architectures: `l4t/arm64` (in progress: `linux/arm64`, `x86`)
+- Multi architectures: `l4t/arm64` (in progress: `linux/arm64`, `linux/x86`)
  
 ### Why
 1. custom dependency management; 

@@ -61,26 +61,26 @@ setup_file() {
 
 # ====Test casses===================================================================================
 
-  # (CRITICAL) ToDo: fixme!! (ref task NMO-424 fix: rethink all the cwd dir validation and path resolution both in src end in test)
+
 @test "running $TESTED_FILE from root, 'build_script/' or 'dockerized-norlab-scripts/'  › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"
-  run bash ./$TESTED_FILE test/.env.build_matrix.mock
+  run bash ./$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
-  run bash ./build_script/$TESTED_FILE test/.env.build_matrix.mock
+  run bash ./build_script/$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE test/.env.build_matrix.mock
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 }
 
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'test/.env.build_matrix.mock' \
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'build_matrix_config/test/.env.build_matrix.mock' \
                                               --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                                               --os-name-build-matrix-override 'l4t' \
                                               --l4t-version-build-matrix-override 'r33.3.3'
