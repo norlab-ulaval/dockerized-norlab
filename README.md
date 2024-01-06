@@ -1,3 +1,4 @@
+[//]: # ( ==== Logo ================================================== )
 <div align="center">
 <br>
 <br>
@@ -5,39 +6,58 @@
 <img src="visual/norlab_logo_acronym_dark.png" width="200">
 </a>
 <br>
-<br>
 
+[//]: # ( ==== Title ================================================= )
 # _Dockerized-NorLab_
 
 </div>
 
-
-[//]: # (<b>Project related link: </b> &nbsp; )
+[//]: # ( ==== Hyperlink ============================================= )
 <div align="center">
 <p>
 <sup>
-<a href="https://hub.docker.com/repositories/norlabulaval">norlabulaval</a> (Docker Hub) 
-&nbsp; • &nbsp;  
+<a href="https://http://132.203.26.125:8111">NorLab TeamCity GUI</a>
+(VPN/intranet access) &nbsp; • &nbsp;  
+<a href="https://hub.docker.com/repositories/norlabulaval">norlabulaval</a>
+(Docker Hub) &nbsp;
 <a href="https://github.com/dusty-nv/jetson-containers">Jetson-Containers</a> 
-&nbsp; • &nbsp;  
-<a href="https://norlab.youtrack.cloud/agiles/121-26/current?query=aggregate%20Subtask%20of:%20NMO-136,%20NMO-316,%20NMO-317,%20NMO-322,%20NMO-324,%20NMO-321">agile board</a> (YouTrack)
+&nbsp; • &nbsp;
 </sup>
-</p>
+</p>  
+
+[//]: # ( ==== Description =========================================== )
+
+**Containerized development workflow for NorLab perception or control projects leveraging [_docker_](https://www.docker.com) and [_nvidia-docker_](https://github.com/NVIDIA/nvidia-docker)
+technology..**
+<br>
+<br>
+
+[//]: # ( ==== Badges ================================================ )
+
+[![semantic-release: conventional commits](https://img.shields.io/badge/semantic--release-conventional_commits-453032?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+<img alt="GitHub release (with filter)" src="https://img.shields.io/github/v/release/norlab-ulaval/dockerized-norlab">
+
+<img src="https://img.shields.io/static/v1?label=JetBrains TeamCity&message=CI/CD&color=green?style=plastic&logo=teamcity" />
+
+<br>
+
+[//]: # ( ==== Maintainer ============================================ )
+
+Maintainer: [Luc Coupal](https://redleader962.github.io)
+
 </div>
+<br>
 
-Maintainer: [Luc Coupal](https://redleader962.github.io) 
+[//]: # ( ==== Body ================================================== )
 
-### What
-Containerized development workflow for perception3D, control or robot low level project leveraging [_nvidia-docker_](https://github.com/NVIDIA/nvidia-docker) technology.
-
-#### Features
+### Features
 - Multi ros distros: `foxy`, `humble` ...
 - Multi ros packages: `core`, `base`, `desktop`
 - Multi packages: `libpoitmatcher`, `pytorch`, `torchvision`, `numba`, `stable-baseline`, `f1tenth-gym` ...
 - Multi OS versions:
   - Jetpack: `r35.2.1`, `r32.7.1` ...
   - Ubuntu: `focal` (in progress: `bionic` and `jammy`)
-- Multi architectures: `l4t/arm64` (in progress: `linux/arm64`, `x86`)
+- Multi architectures: `l4t/arm64` (in progress: `linux/arm64`, `linux/x86`)
  
 ### Why
 1. custom dependency management; 

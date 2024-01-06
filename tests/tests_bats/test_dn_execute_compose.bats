@@ -23,7 +23,7 @@ if [[ -d ${BATS_HELPER_PATH} ]]; then
   load "${BATS_HELPER_PATH}/bats-support/load"
   load "${BATS_HELPER_PATH}/bats-assert/load"
   load "${BATS_HELPER_PATH}/bats-file/load"
-  load "bats_testing_tools/bats_helper_functions"
+  load "${SRC_CODE_PATH}/${N2ST_BATS_TESTING_TOOLS_RELATIVE_PATH}/bats_helper_functions"
   #load "${BATS_HELPER_PATH}/bats-detik/load" # << Kubernetes support
 else
   echo -e "\n[\033[1;31mERROR\033[0m] $0 path to bats-core helper library unreachable at \"${BATS_HELPER_PATH}\"!"
@@ -32,7 +32,7 @@ else
   exit 1
 fi
 
-# ====Setup=========================================================================================
+# ====Setup========================================================================================
 TESTED_FILE="dn_execute_compose.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
@@ -49,7 +49,7 @@ setup_file() {
 #  cd "$TESTED_FILE_PATH" || exit
 #}
 
-# ====Teardown======================================================================================
+# ====Teardown=====================================================================================
 
 #teardown() {
 #  bats_print_run_env_variable_on_error
@@ -59,7 +59,8 @@ setup_file() {
 #    echo "executed once after finishing the last test"
 #}
 
-# ====Test casses===================================================================================
+# ====Test casses==================================================================================
+
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
@@ -72,6 +73,7 @@ setup_file() {
   assert_failure 1
   assert_output --partial "'$TESTED_FILE' script must be sourced from"
 }
+
 
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}"
@@ -133,7 +135,7 @@ setup_file() {
                                             --fail-fast
 
   assert_not_empty "$IS_TEAMCITY_RUN"
-  assert_equal "${DOCKERIZED_NORLAB_VERSION}" 'v1'
+  assert_equal "${REPOSITORY_VERSION}" 'v1'
   assert_equal "${BASE_IMAGE}" 'dustynv/pytorch'
   assert_equal "${TAG_PACKAGE}" '2.1'
   assert_equal "${TAG_VERSION}" 'r35.0.0'

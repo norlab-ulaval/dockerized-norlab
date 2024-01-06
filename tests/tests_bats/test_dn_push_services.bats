@@ -23,7 +23,7 @@ if [[ -d ${BATS_HELPER_PATH} ]]; then
   load "${BATS_HELPER_PATH}/bats-support/load"
   load "${BATS_HELPER_PATH}/bats-assert/load"
   load "${BATS_HELPER_PATH}/bats-file/load"
-  load "bats_testing_tools/bats_helper_functions"
+  load "${SRC_CODE_PATH}/${N2ST_BATS_TESTING_TOOLS_RELATIVE_PATH}/bats_helper_functions"
   load "bats_testing_tools/bats_helper_functions_local"
   #load "${BATS_HELPER_PATH}/bats-detik/load" # << Kubernetes support
 else
@@ -36,7 +36,7 @@ fi
 
 
 # ====Setup=========================================================================================
-TESTED_FILE="dn_build_over_single_build_matrix.bash"
+TESTED_FILE="dn_push_services.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 setup_file() {
@@ -61,31 +61,32 @@ setup_file() {
 
 # ====Test casses===================================================================================
 
+
 @test "running $TESTED_FILE from root, 'build_script/' or 'dockerized-norlab-scripts/'  › expect pass" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"
-  run bash ./$TESTED_FILE tests/.env.build_matrix.mock
+  run bash ./$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
-  run bash ./build_script/$TESTED_FILE tests/.env.build_matrix.mock
+  run bash ./build_script/$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE tests/.env.build_matrix.mock
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 }
 
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'tests/.env.build_matrix.mock' \
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'build_matrix_config/test/.env.build_matrix.mock' \
                                               --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                                               --os-name-build-matrix-override 'l4t' \
                                               --l4t-version-build-matrix-override 'r33.3.3'
 
   assert_success
-  assert_output --regexp .*"docker compose -f".*"build".*
+  assert_output --regexp .*"docker compose -f".*"push".*
 
   assert_output --regexp .*"DN-v8.8.8-humble-ros-core-l4t-r33.3.3".*
   assert_output --regexp .*"DN-v8.8.8-humble-pytorch-l4t-r33.3.3".*

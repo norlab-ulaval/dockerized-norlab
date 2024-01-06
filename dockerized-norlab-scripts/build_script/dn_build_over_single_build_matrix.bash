@@ -1,4 +1,5 @@
 #!/bin/bash
+# =================================================================================================
 #
 # Convenient script for building all images specified in in a dotenv build matrix file
 #
@@ -10,20 +11,13 @@
 #   - [<optional-flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
 #
 # Global
-#   - Read ADD_DOCKER_FLAG    Use to quickly add docker flag at runtime
-#                               e.g.: $ ADD_DOCKER_FLAG=--push myService && bash dn_build_over_single_build_matrix.bash
+#   - Read NBS_OVERRIDE_ADD_DOCKER_FLAG    Use to quickly add docker flag at runtime
+#                               e.g.: $ NBS_OVERRIDE_ADD_DOCKER_FLAG=--push myService && bash dn_build_over_single_build_matrix.bash
 #
-
+# =================================================================================================
 clear
 
-if [[ $( basename $(pwd) ) = build_script ]]; then
-    cd ../..
-elif [[ $( basename $(pwd) ) = dockerized-norlab-scripts ]]; then
-    cd ..
-fi
-
-
-# ====Begin=========================================================================================
+# ====Begin========================================================================================
 DOCKER_CMD=build
 # ....manual config.................................................................................
 
@@ -32,13 +26,15 @@ DOCKER_CMD=build
 #DOCKER_CMD="build --dry-run"
 
 # ....setup........................................................................................
-DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
+_DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
-# Note: 'ADD_DOCKER_FLAG' is set via commandline for convenience
-DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${ADD_DOCKER_FLAG:-""}"
+# Note: 'NBS_OVERRIDE_ADD_DOCKER_FLAG' is set via commandline for convenience
+_DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${NBS_OVERRIDE_ADD_DOCKER_FLAG:-""}"
 
-# ....execute.......................................................................................
+#_DOCKER_COMMAND_W_FLAGS="build --dry-run" # (CRITICAL) ToDo: on task end >> delete this line ←
+
+# ....execute......................................................................................
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                                    "$DOTENV_BUILD_MATRIX" \
-                                    "$@" -- "$DOCKER_COMMAND_W_FLAGS"
+                                    "$_DOTENV_BUILD_MATRIX" \
+                                    "$@" -- "$_DOCKER_COMMAND_W_FLAGS"
