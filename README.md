@@ -27,7 +27,9 @@
 
 [//]: # ( ==== Description =========================================== )
 
-**Containerized development workflow for NorLab perception or control projects leveraging [_docker_](https://www.docker.com) and [_nvidia-docker_](https://github.com/NVIDIA/nvidia-docker)
+**Containerized development workflow for NorLab perception or control projects
+<br>
+leveraging [_docker_](https://www.docker.com) and [_nvidia-docker_](https://github.com/NVIDIA/nvidia-docker)
 technology..**
 <br>
 <br>
@@ -39,6 +41,7 @@ technology..**
 
 <img src="https://img.shields.io/static/v1?label=JetBrains TeamCity&message=CI/CD&color=green?style=plastic&logo=teamcity" />
 
+<br>
 <br>
 
 [//]: # ( ==== Maintainer ============================================ )
