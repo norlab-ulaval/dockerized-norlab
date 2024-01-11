@@ -43,11 +43,19 @@ setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 #  pwd >&3 && tree -L 2 -a -hug utilities/ >&3
 #  printenv >&3
+
+
 }
 
-#setup() {
-#  cd "$TESTED_FILE_PATH" || exit
-#}
+setup() {
+#  cd "$TESTED_FILE_PATH" || exit 1
+
+  NBS_PATH=${BATS_DOCKER_WORKDIR}/utilities/norlab-build-system
+  cd "${NBS_PATH}"
+  source "import_norlab_build_system_lib.bash" || exit 1
+
+  cd "${BATS_DOCKER_WORKDIR}" || exit 1
+}
 
 # ====Teardown=====================================================================================
 
@@ -64,41 +72,41 @@ setup_file() {
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
-  # Note:
-  #  - "echo 'Y'" is for sending an keyboard input to the 'read' command which expect a single character
-  #    run bash -c "echo 'Y' | bash ./function_library/$TESTED_FILE"
-  #  - Alt: Use the 'yes [n]' command which optionaly send n time
-  run bash -c "yes 1 | bash ./build_script/$TESTED_FILE ${TEST_DOCKER_COMPOSE_FILE}"
-#  bats_print_run_env_variable
-  assert_failure 1
-  assert_output --partial "'$TESTED_FILE' script must be sourced from"
-}
 
+  source ./build_script/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE}
+
+  assert_failure 1
+  assert_output --regexp .*"\[".*"DN ERROR".*"\]".*"'dn::execute_compose' function must be executed from the project root!"
+}
 
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
-  cd "${BATS_DOCKER_WORKDIR}"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${TEST_DOCKER_COMPOSE_FILE}"
+
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE}
+
   assert_success
-  refute_output  --partial "No such file or directory"
+  refute_output --regexp .*"\[".*"DN ERROR".*"\]".*"'dn::execute_compose' function must be executed from the project root!"
 #  bats_print_run_env_variable
 }
 
+@test "missing docker-compose.yaml file mandatory argument › expect fail" {
 
-@test "missing docker-compose.yaml file mandatory argument › expect pass" {
-  cd "${BATS_DOCKER_WORKDIR}"
-  run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE"
-  assert_failure
-  assert_output --partial "Missing the docker-compose.yaml file mandatory argument"
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose
 
-  run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'docker-compose.unreachable.yaml'"
+  assert_output --partial 'Missing the docker-compose.yaml file mandatory argument'
+
+  run dn::execute_compose "docker-compose.unreachable.yaml"
   assert_failure
-  assert_output --partial "'$TESTED_FILE' can't find the docker-compose.yaml file 'docker-compose.unreachable.yaml'"
+  assert_output --regexp .*"\[".*"DN ERROR".*"\]".*"'dn::execute_compose' can't find the docker-compose.yaml file 'docker-compose.unreachable.yaml'"
 #  bats_print_run_env_variable
 }
 
-@test "docker command are passed to show_and_execute_docker" {
+@test "docker command are passed to show and execute docker" {
   local DOCKER_CMD="build --no-cache --push"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${TEST_DOCKER_COMPOSE_FILE} --fail-fast -- ${DOCKER_CMD}"
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --fail-fast -- ${DOCKER_CMD}
   assert_success
   assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}"
 #  bats_print_run_env_variable
@@ -108,8 +116,11 @@ setup_file() {
   local DOCKER_CMD="version"
   mock_docker_command_exit_ok
   set +e
-  source ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOCKER_COMPOSE_FILE}" \
-                                            --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                    --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+  DOCKER_EXIT_CODE=$?
+
   set -e
   assert_equal "$DOCKER_EXIT_CODE" 0
 }
@@ -118,21 +129,25 @@ setup_file() {
   local DOCKER_CMD="version"
   mock_docker_command_exit_error
   set +e
-  source ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOCKER_COMPOSE_FILE}" \
-                                            --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                    --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+  DOCKER_EXIT_CODE=$?
+
   set -e
   assert_equal "$DOCKER_EXIT_CODE" 1
 }
 
 @test "flags that set env variable" {
-  source ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOCKER_COMPOSE_FILE}" \
-                                            --dockerized-norlab-version v1 \
-                                            --base-image dustynv/pytorch \
-                                            --os-name arbitratyName \
-                                            --tag-package 2.1 \
-                                            --tag-version r35.0.0 \
-                                            --docker-debug-logs \
-                                            --fail-fast
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                        --dockerized-norlab-version v1 \
+                        --base-image dustynv/pytorch \
+                        --os-name arbitratyName \
+                        --tag-package 2.1 \
+                        --tag-version r35.0.0 \
+                        --docker-debug-logs \
+                        --fail-fast
 
   assert_not_empty "$IS_TEAMCITY_RUN"
   assert_equal "${REPOSITORY_VERSION}" 'v1'
@@ -146,19 +161,21 @@ setup_file() {
 }
 
 @test "flag --help" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOCKER_COMPOSE_FILE}" \
-                                                                --fail-fast \
-                                                                --help
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                                    --fail-fast \
+                                    --help
   assert_success
-  assert_output --regexp .*"${TESTED_FILE} <docker-compose.yaml> \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
+  assert_output --regexp .*"dn::execute_compose <docker-compose.yaml> \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
 }
 
 @test "flag --buildx-bake" {
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${TEST_DOCKER_COMPOSE_FILE} --buildx-bake --fail-fast -- ${DOCKER_CMD}"
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --buildx-bake --fail-fast -- ${DOCKER_CMD}
 
   assert_success
   assert_output --regexp .*"docker buildx bake -f ".*"${DOCKER_CMD}"
+
 #  bats_print_run_env_variable
 }
-

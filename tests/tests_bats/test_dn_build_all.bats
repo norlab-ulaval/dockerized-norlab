@@ -43,7 +43,7 @@ setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 
   set -o allexport
-  source .env.norlab-build-system
+  source .env.dockerized-norlab-build-system
   set +o allexport
 
 
@@ -88,7 +88,7 @@ teardown() {
   cd "${BATS_DOCKER_WORKDIR}"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
-  assert_file_exist .env.norlab-build-system
+  assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
   assert_file_exist ./build_matrix_config/test/.env.build_matrix.mock
 

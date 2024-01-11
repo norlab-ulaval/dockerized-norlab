@@ -1,7 +1,7 @@
 #!/bin/bash
 # =================================================================================================
 #
-# Convenient script for pushing all images specified in 'docker-compose.dn-dependencies.build.yaml'
+# Convenient script for pushing all images specified in a 'docker-compose.<project-name>.build.yaml'
 #
 # Usage:
 #   $ bash dn_push_services.bash '<.env.build_matrix.*>' [<optional flag>]

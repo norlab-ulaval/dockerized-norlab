@@ -29,18 +29,18 @@ fi
 
 # ....Load environment variables from file....................................................................
 set -o allexport
-source .env.dockerized-norlab
+source .env.dockerized-norlab-project
 set +o allexport
 
 set -o allexport
-# ToDo: refactor > use NS2T_PATH set somewhere
+# ToDo: refactor > use N2ST_PATH set somewhere
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
 # ....Helper function...............................................................................
 
 TMP_CWD=$(pwd)
-# ToDo: refactor > use NS2T_PATH set somewhere
+# ToDo: refactor > use N2ST_PATH set somewhere
 cd ./utilities/norlab-shell-script-tools/src/function_library
 source ./prompt_utilities.bash
 source ./terminal_splash.bash

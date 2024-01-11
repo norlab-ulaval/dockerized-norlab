@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run › dn_build_all.bash --push › every dn-project " type="ShConfigurationType" folderName="[DN] C | build (remark: select daemon via docker context)">
-    <option name="SCRIPT_TEXT" value="NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dn-project' ) &amp;&amp; NBS_OVERRIDE_ADD_DOCKER_FLAG=&quot;--push&quot; &amp;&amp; source dn_build_all.bash" />
+  <configuration default="false" name="run › dn_build_all.bash --push --dry-run › every dn-project " type="ShConfigurationType" folderName="[DN] C | build (remark: select daemon via docker context)">
+    <option name="SCRIPT_TEXT" value="NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( 'prod/.env.build_matrix.dn-project' ) &amp;&amp; NBS_OVERRIDE_ADD_DOCKER_FLAG=&quot;--push --dry-run&quot; &amp;&amp; source dockerized-norlab-scripts/build_script/dn_build_all.bash --fail-fast" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
-    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script" />
+    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
     <option name="INTERPRETER_PATH" value="/bin/zsh" />
     <option name="INTERPRETER_OPTIONS" value="" />

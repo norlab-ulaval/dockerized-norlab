@@ -5,7 +5,7 @@
 #
 # Usage:
 
-#   $ bash dn_build_all.bash [<optional flag>]
+#   $ [bash|source] dn_build_all.bash [<optional flag>]
 #
 # Arguments:
 #   - [<optional flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
@@ -21,11 +21,13 @@
 #   - Read STR_BUILD_MATRIX_SERVICES_AND_TAGS from build_all.log
 #
 # =================================================================================================
-clear
+#clear
+#set -x # (CRITICAL) ToDo: on task end >> delete this line ←
+SUB_SCRIPT_FLAGS=$@
 
 # ....Pre-condition................................................................................
 
-if [[ ! -f  ".env.norlab-build-system" ]]; then
+if [[ ! -f  ".env.dockerized-norlab-build-system" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_build_all.bash' script must be executed from the project root!\n Curent working directory is '$(pwd)'"  1>&2
   exit 1
 fi
@@ -38,11 +40,11 @@ fi
 NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
 
 set -o allexport
-source .env.norlab-build-system
+source .env.dockerized-norlab-build-system
 source "$NBS_BUILD_MATRIX_MAIN"
 
 # Set PROJECT_GIT_REMOTE_URL
-source "${NS2T_PATH:?'Variable not set'}"/.env.project
+source "${N2ST_PATH:?'Variable not set'}"/.env.project
 set +o allexport
 
 
@@ -51,7 +53,7 @@ set +o allexport
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD_BA=$(pwd)
-cd "$NS2T_PATH"/src/function_library
+cd "$N2ST_PATH"/src/function_library
 source ./prompt_utilities.bash
 source ./terminal_splash.bash
 cd "$TMP_CWD_BA"
@@ -88,12 +90,16 @@ DOCKER_CMD=${NBS_OVERRIDE_DOCKER_CMD:-"build"}
 # Note: 'NBS_OVERRIDE_ADD_DOCKER_FLAG' is set via commandline for convenience
 #DOCKER_COMMAND_W_FLAGS="build --dry-run"
 DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${NBS_OVERRIDE_ADD_DOCKER_FLAG:-""}"
-SUB_SCRIPT_FLAGS=$@
 
 # ....execute all build matrix.....................................................................
 _CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]}}" )
 
 for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
+
+  echo "bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash
+                               ${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/$EACH_BUILD_MATRIX
+                               ${SUB_SCRIPT_FLAGS} -- ${DOCKER_COMMAND_W_FLAGS}"
+
 
   # (CRITICAL) ToDo: refactor path to 'dn_execute_compose_over_build_matrix.bash' >> make it portable
   bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
@@ -106,8 +112,8 @@ done
 
 # ....show build matrix feedback...................................................................
 set -o allexport
-# (CRITICAL) ToDo: refactor '.env.dockerized-norlab' >> make it portable (eg .env or set the file name via env var)
-source .env.dockerized-norlab
+# (CRITICAL) ToDo: refactor '.env.dockerized-norlab-project' >> make it portable (eg .env or set the file name via env var)
+source .env.dockerized-norlab-project
 set +o allexport
 norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
@@ -122,3 +128,5 @@ for each_services_and_tags in "${_ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS[@]}"; d
   echo -e "${MSG_END_FORMAT}"
 done
 print_formated_script_footer 'dn_build_all.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
+
+

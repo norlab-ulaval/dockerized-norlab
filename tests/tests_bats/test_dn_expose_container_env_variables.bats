@@ -42,7 +42,7 @@ setup_file() {
 
   mkdir -p /dockerized-norlab/utilities/norlab-shell-script-tools
 
-  cp  /code/dockerized-norlab/.env.dockerized-norlab /dockerized-norlab/
+  cp  /code/dockerized-norlab/.env.dockerized-norlab-project /dockerized-norlab/
   cp -r /code/dockerized-norlab/utilities/norlab-shell-script-tools /dockerized-norlab/utilities/
 
   mkdir -p /ros2_ws_mock/install/
@@ -63,7 +63,7 @@ setup() {
   mkdir -p /dn_container_env_variable
 
   set -o allexport
-  source /dockerized-norlab/.env.dockerized-norlab || return 1
+  source /dockerized-norlab/.env.dockerized-norlab-project || return 1
   set +o allexport
 
   export PROJECT_PROMPT_NAME=dockerized-norlab
