@@ -11,8 +11,8 @@
 #   - [<optional-flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
 #
 # Global
-#   - Read NBS_OVERRIDE_ADD_DOCKER_FLAG    Use to quickly add docker flag at runtime
-#                               e.g.: $ NBS_OVERRIDE_ADD_DOCKER_FLAG=--push myService && bash dn_build_over_single_build_matrix.bash
+#   - Read NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG    Use to quickly add docker flag at runtime
+#                               e.g.: $ NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push myService" && bash dn_build_over_single_build_matrix.bash
 #
 # =================================================================================================
 clear
@@ -29,8 +29,8 @@ DOCKER_CMD=build
 _DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
 
-# Note: 'NBS_OVERRIDE_ADD_DOCKER_FLAG' is set via commandline for convenience
-_DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${NBS_OVERRIDE_ADD_DOCKER_FLAG:-""}"
+# Note: 'NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG' is set via commandline for convenience
+_DOCKER_COMMAND_W_FLAGS="$DOCKER_CMD ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG:-""}"
 
 #_DOCKER_COMMAND_W_FLAGS="build --dry-run" # (CRITICAL) ToDo: on task end >> delete this line ←
 

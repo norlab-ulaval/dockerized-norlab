@@ -26,11 +26,11 @@ fi
 
 # ....Load environment variables from file....................................................................
 set -o allexport
-source .env.dockerized-norlab
+source .env.dockerized-norlab-project
 set +o allexport
 
 set -o allexport
-# ToDo: refactor > use NS2T_PATH set somewhere
+# ToDo: refactor > use N2ST_PATH set somewhere
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
@@ -38,7 +38,7 @@ set +o allexport
 ## import shell functions from norlab-shell-script-tools utilities library
 
 TMP_CWD=$(pwd)
-# ToDo: refactor > use NS2T_PATH set somewhere
+# ToDo: refactor > use N2ST_PATH set somewhere
 cd ./utilities/norlab-shell-script-tools/src/function_library
 source ./prompt_utilities.bash
 source ./terminal_splash.bash
@@ -140,7 +140,7 @@ done
 ##   (ref task NMO-87 🩹→ Find a secure and permanent solution for the xhost "display not available" problem)
 
 # ====Begin=========================================================================================
-norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
+n2st::norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
 # Fetch all container name, strip those unrelated one and test for exact name
 if [[ $(docker ps --all --format "{{.Names}} {{.State}}" | grep ${THE_CONTAINER_NAME}) == "${THE_CONTAINER_NAME} exited" ]]; then

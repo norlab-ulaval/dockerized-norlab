@@ -43,9 +43,8 @@ setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 
   set -o allexport
-  source .env.norlab-build-system
+  source .env.dockerized-norlab-build-system
   set +o allexport
-
 
 #  pwd >&3 && tree -L 2 -a -hug utilities/ >&3
 #  printenv >&3
@@ -53,9 +52,7 @@ setup_file() {
 
 setup() {
 #  cd "$TESTED_FILE_PATH" || exit
-#  mock_docker_command_exit_ok
 
-#  NBS_BUILD_MATRIX_CONFIG=tests/build_matrix_config && export NBS_BUILD_MATRIX_CONFIG
   export NBS_OVERRIDE_BUILD_MATRIX_MAIN='tests/.env.build_matrix.main.mock'
 
 }
@@ -88,7 +85,7 @@ teardown() {
   cd "${BATS_DOCKER_WORKDIR}"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
-  assert_file_exist .env.norlab-build-system
+  assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
   assert_file_exist ./build_matrix_config/test/.env.build_matrix.mock
 
@@ -120,16 +117,38 @@ teardown() {
 }
 
 
-@test "env variable NBS_OVERRIDE_ADD_DOCKER_FLAG pass to script › ok" {
+@test "env variable NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG pass to script › ok" {
 #  skip "tmp dev"
 
-  local NBS_OVERRIDE_ADD_DOCKER_FLAG="--push --dry-run"
+  local NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push --dry-run"
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
                          --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
                          --os-name-build-matrix-override 'l4t' \
-                         --l4t-version-build-matrix-override 'r33.3.3' \
-                         --fail-fast
+                         --l4t-version-build-matrix-override 'r33.3.3'
 
-  assert_output --regexp .*"docker compose -f".*"build ${NBS_OVERRIDE_ADD_DOCKER_FLAG}".*
+  assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
+
+  local NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="push --dry-run"
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
+                         --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
+                         --os-name-build-matrix-override 'l4t' \
+                         --l4t-version-build-matrix-override 'r33.3.3'
+
+  assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
+
+}
+
+@test "use docker cmd buildx bake › ok" {
+#  skip "tmp dev"
+
+  local NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="--print"
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
+                        --buildx-bake \
+                        --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
+                        --os-name-build-matrix-override 'l4t' \
+                        --l4t-version-build-matrix-override 'r33.3.3'
+
+  assert_output --regexp "FINAL › Build matrix completed with command".*"docker buildx bake -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
+
 #  bats_print_run_env_variable
 }

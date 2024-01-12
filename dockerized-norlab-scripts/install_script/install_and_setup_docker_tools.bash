@@ -29,27 +29,27 @@ fi
 
 # ....Load environment variables from file....................................................................
 set -o allexport
-source .env.dockerized-norlab
+source .env.dockerized-norlab-project
 set +o allexport
 
 set -o allexport
-# ToDo: refactor > use NS2T_PATH set somewhere
+# ToDo: refactor > use N2ST_PATH set somewhere
 source ./utilities/norlab-shell-script-tools/.env.project
 set +o allexport
 
 # ....Helper function...............................................................................
 
 TMP_CWD=$(pwd)
-# ToDo: refactor > use NS2T_PATH set somewhere
+# ToDo: refactor > use N2ST_PATH set somewhere
 cd ./utilities/norlab-shell-script-tools/src/function_library
 source ./prompt_utilities.bash
 source ./terminal_splash.bash
 cd "$TMP_CWD"
 
 # ====Begin========================================================================================================
-print_formated_script_header 'install_and_setup_docker_tools.bash' '='
+n2st::print_formated_script_header 'install_and_setup_docker_tools.bash' '='
 
-print_msg_awaiting_input "Do you want to install Docker tools (Linux)?"
+n2st::print_msg_awaiting_input "Do you want to install Docker tools (Linux)?"
 echo
 TMP_MSG="(press 'Y' to install, or press any other key to skip) "
 echo_centering_str "${TMP_MSG}" "\033[2m" " "
@@ -63,17 +63,17 @@ if [[ ${INPUT} == "Y" ]] || [[ ${INPUT} == "y" ]]; then
 fi
 unset INPUT
 echo
-print_msg "Current available docker context"
+n2st::print_msg "Current available docker context"
 echo
 docker context ls
 echo
 echo
-print_msg "Current available docker builder instance"
+n2st::print_msg "Current available docker builder instance"
 echo
 docker buildx ls
 echo
 
-print_msg_awaiting_input "Do you want to configure a docker multi-arch builder instance?"
+n2st::print_msg_awaiting_input "Do you want to configure a docker multi-arch builder instance?"
 echo
 TMP_MSG="(press 'Y' to install, or press any other key to skip)"
 echo_centering_str "${TMP_MSG}"  "\033[2m" " "
@@ -81,7 +81,7 @@ echo
 read -n 1 -r -a INPUT
 echo
 if [[ ${INPUT} == "Y" ]] || [[ ${INPUT} == "y" ]]; then
-  print_msg "Create a new docker builder instance and context"
+  n2st::print_msg "Create a new docker builder instance and context"
 
   # ..................................................................................................
 #  docker buildx rm multi-arch-builder
@@ -126,12 +126,12 @@ if [[ ${INPUT} == "Y" ]] || [[ ${INPUT} == "y" ]]; then
 
 
   echo
-  print_msg "Current available docker context"
+  n2st::print_msg "Current available docker context"
   echo
   docker context ls
   echo
   echo
-  print_msg "Current available docker builder instance"
+  n2st::print_msg "Current available docker builder instance"
   echo
   docker buildx ls
   echo
@@ -140,6 +140,6 @@ if [[ ${INPUT} == "Y" ]] || [[ ${INPUT} == "y" ]]; then
 fi
 
 
-print_formated_script_footer 'install_and_setup_docker_tools.bash' '='
+n2st::print_formated_script_footer 'install_and_setup_docker_tools.bash' '='
 # ====Teardown=====================================================================================================
 cd "${TMP_CWD}"

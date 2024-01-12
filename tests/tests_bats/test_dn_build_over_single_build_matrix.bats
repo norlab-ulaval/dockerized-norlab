@@ -43,7 +43,7 @@ setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 
   set -o allexport
-  source .env.norlab-build-system
+  source .env.dockerized-norlab-build-system
   set +o allexport
 
 #  pwd >&3 && tree -L 2 -a -hug utilities/ >&3

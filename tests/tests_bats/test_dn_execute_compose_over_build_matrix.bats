@@ -46,11 +46,17 @@ setup_file() {
 
   export NBS_OVERRIDE_BUILD_MATRIX_MAIN=tests/.env.build_matrix.main.mock
   export BUILD_MATRIX_CONFIG_FILE=build_matrix_config/test/.env.build_matrix.mock
+
 }
 
-#setup() {
-#  cd "$TESTED_FILE_PATH" || exit
-#}
+setup() {
+
+  NBS_PATH=${BATS_DOCKER_WORKDIR}/utilities/norlab-build-system
+  cd "${NBS_PATH}"
+  source "import_norlab_build_system_lib.bash" || exit 1
+
+  cd "$BATS_DOCKER_WORKDIR" || exit
+}
 
 # ====Teardown======================================================================================
 
@@ -66,7 +72,7 @@ setup_file() {
 # ====Test casses===================================================================================
 
 
-@test "sourcing $TESTED_FILE from bad cwd › expect fail" {
+@test "executing $TESTED_FILE from bad cwd › expect fail" {
 #  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
@@ -77,7 +83,7 @@ setup_file() {
 }
 
 
-@test "sourcing $TESTED_FILE from ok cwd › expect pass" {
+@test "executing $TESTED_FILE from ok cwd › expect pass" {
 #  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
@@ -116,7 +122,7 @@ setup_file() {
 #  skip "tmp dev"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
-  assert_file_exist .env.norlab-build-system
+  assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist "${BUILD_MATRIX_CONFIG_FILE}"
 
   local DOCKER_CMD="version"
