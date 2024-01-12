@@ -1,34 +1,40 @@
-[//]: # ( ==== Logo ================================================== )
 <div align="center">
+
+[//]: # ( ==== Logo ================================================== )
 <br>
 <br>
 <a href="https://norlab.ulaval.ca">
-<img src="visual/norlab_logo_acronym_dark.png" width="200">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="/visual/norlab_logo_acronym_light.png">
+      <source media="(prefers-color-scheme: light)" srcset="/visual/norlab_logo_acronym_dark.png">
+      <img alt="Shows an the dark NorLab logo in light mode and light NorLab logo in dark mode." src="/visual/norlab_logo_acronym_dark.png" width="175">
+    </picture>
 </a>
+<br>
 <br>
 
 [//]: # ( ==== Title ================================================= )
 # _Dockerized-NorLab_
 
-</div>
 
 [//]: # ( ==== Hyperlink ============================================= )
-<div align="center">
-<p>
 <sup>
-<a href="https://http://132.203.26.125:8111">NorLab TeamCity GUI</a>
-(VPN/intranet access) &nbsp; • &nbsp;  
+<a href="http://132.203.26.125:8111">NorLab TeamCity GUI</a>
+(VPN/intranet access) &nbsp; • &nbsp;
 <a href="https://hub.docker.com/repositories/norlabulaval">norlabulaval</a>
 (Docker Hub) &nbsp;
 <a href="https://github.com/dusty-nv/jetson-containers">Jetson-Containers</a> 
 &nbsp; • &nbsp;
 </sup>
-</p>  
+<br>
+<br>
 
 [//]: # ( ==== Description =========================================== )
 
-**Containerized development workflow for NorLab perception or control projects leveraging [_docker_](https://www.docker.com) and [_nvidia-docker_](https://github.com/NVIDIA/nvidia-docker)
-technology..**
+**Containerized development workflow for NorLab perception or control projects
+<br>
+leveraging [_docker_](https://www.docker.com) and [_nvidia-docker_](https://github.com/NVIDIA/nvidia-docker)
+technology.**
 <br>
 <br>
 
@@ -36,17 +42,25 @@ technology..**
 
 [![semantic-release: conventional commits](https://img.shields.io/badge/semantic--release-conventional_commits-453032?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 <img alt="GitHub release (with filter)" src="https://img.shields.io/github/v/release/norlab-ulaval/dockerized-norlab">
+<a href="http://132.203.26.125:8111"><img src="https://img.shields.io/static/v1?label=JetBrains TeamCity&message=CI/CD&color=green?style=plastic&logo=teamcity" /></a>
 
-<img src="https://img.shields.io/static/v1?label=JetBrains TeamCity&message=CI/CD&color=green?style=plastic&logo=teamcity" />
+[//]: # (Dockerhub image badge)
+[//]: # (<a href="https://hub.docker.com/repository/docker/norlabulaval/dn-dependencies/"> <img alt="Docker Image Version &#40;latest semver&#41;" src="https://img.shields.io/docker/v/norlabulaval/dn-dependencies?logo=docker&label=dn-dependencies"> </a>)
+[//]: # (<a href="https://hub.docker.com/repository/docker/norlabulaval/dn-control-deep-rl/"> <img alt="Docker Image Version &#40;latest semver&#41;" src="https://img.shields.io/docker/v/norlabulaval/dn-control-deep-rl?logo=docker&label=dn-control-deep-rl"> </a>)
+
+
 
 <br>
 
 [//]: # ( ==== Maintainer ============================================ )
+<sub>
+Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
+</sub>
 
-Maintainer: [Luc Coupal](https://redleader962.github.io)
-
-</div>
 <br>
+<hr style="color:lightgray;background-color:lightgray">
+</div>
+
 
 [//]: # ( ==== Body ================================================== )
 
