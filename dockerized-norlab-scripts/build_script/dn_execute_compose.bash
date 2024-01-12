@@ -60,23 +60,10 @@ function dn::execute_compose() {
   set +o allexport
 
   set -o allexport
-  # (StandBy) iceboxed: move at the last possible execution step
   source .env.dockerized-norlab-project
   set +o allexport
 
-  # ....Helper function............................................................................
-  ## import shell functions from norlab-shell-script-tools utilities library
-
-# ToDo: on task end >> delete next bloc ↓↓
-#  local TMP_CWD_EC=$(pwd)
-#  cd "$N2ST_PATH"/src/function_library
-#  source ./prompt_utilities.bash
-#  source ./docker_utilities.bash
-#  source ./general_utilities.bash
-#  source ./teamcity_utilities.bash
-#  source ./terminal_splash.bash
-#  cd "$TMP_CWD_EC"
-#
+  # ....DN functions...............................................................................
 
   function print_help_in_terminal() {
     echo -e "\n
@@ -113,17 +100,17 @@ function dn::execute_compose() {
   else
     export IS_TEAMCITY_RUN=false
   fi
-  #printenv
-  print_msg "IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN} ${TC_VERSION}"
+
+  n2st::print_msg "IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN} ${TC_VERSION}"
 
   # ====Begin======================================================================================
   SHOW_SPLASH_EC="${SHOW_SPLASH_EC:-true}"
 
   if [[ "${SHOW_SPLASH_EC}" == 'true' ]]; then
-    norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
+    n2st::norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
   fi
 
-  print_formated_script_header 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
+  n2st::print_formated_script_header 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
 
   # ....Script command line flags..................................................................
@@ -162,7 +149,7 @@ function dn::execute_compose() {
       shift # Remove argument (--docker-debug-logs)
       ;;
     --buildx-bake)
-      print_msg_warning "Be advise, the DN --buildx-bake flag is still in developemenmt. Use at your own risk"
+      n2st::print_msg_warning "Be advise, the DN --buildx-bake flag is still in developemenmt. Use at your own risk"
       DOCKER_MANAGEMENT_COMMAND=( buildx bake )
       shift # Remove argument (--buildx-bake)
       ;;
@@ -201,14 +188,14 @@ function dn::execute_compose() {
   export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
   export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
 
-  print_msg "Environment variables set for ${DOCKER_MANAGEMENT_COMMAND[*]}:\n
+  n2st::print_msg "Environment variables set for ${DOCKER_MANAGEMENT_COMMAND[*]}:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   "
 
-  print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
-  print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
+  n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
+  n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
   #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
   # ToDo: modularity feat › refactor clause as a callback pre bash script and add `source <callback-pre.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
@@ -227,7 +214,7 @@ function dn::execute_compose() {
   # =================================================================================================
   function dn::callback_execute_compose_pre() {
     if [[ ! -f ${COMPOSE_FILE:?err} ]]; then
-      print_msg_error_and_exit "docker-compose file ${COMPOSE_FILE} is unreachable"
+      n2st::print_msg_error_and_exit "docker-compose file ${COMPOSE_FILE} is unreachable"
     fi
 
     if [[ "${COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]]; then
@@ -258,7 +245,7 @@ function dn::execute_compose() {
           | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
          )
 
-      print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
+      n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
         ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
         ${MSG_END_FORMAT}"
     fi
@@ -270,12 +257,12 @@ function dn::execute_compose() {
 
   # ToDo: modularity feat › add `source <callback-post.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
 
-  print_msg "Environment variables used by compose:\n
+  n2st::print_msg "Environment variables used by compose:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}"
 
-  print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
+  n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
   # ====Teardown===================================================================================
   cd "${TMP_CWD_EC}"

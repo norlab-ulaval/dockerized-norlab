@@ -24,10 +24,11 @@ fi
 
 
 
-bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${_DOTENV_BUILD_MATRIX}"\
-                                                            --fail-fast \
-                                                            -- up --build --detach --wait \
-                                                            --no-deps "${THE_SERVICE}"
+bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
+                                                  "${_DOTENV_BUILD_MATRIX}"\
+                                                  --fail-fast \
+                                                  -- up --build --detach --wait \
+                                                  --no-deps "${THE_SERVICE}"
 
 
 #CN=$(grep -A3 'project-develop:' ${THE_COMPOSE_FILE} | tail -n1); CN=${CN//*container_name: /}; echo "$CN"
@@ -38,7 +39,8 @@ if [[ -n $TEAMCITY_VERSION ]]; then
   echo -e "${DS_MSG_EMPH_FORMAT}The container is running inside a TeamCity agent >> keep container detached${DS_MSG_END_FORMAT}"
 else
 
-  bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${_DOTENV_BUILD_MATRIX}"\
-                                                              --fail-fast \
-                                                              -- exec "${THE_SERVICE}" bash
+  bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
+                                                  "${_DOTENV_BUILD_MATRIX}" \
+                                                  --fail-fast \
+                                                  -- exec "${THE_SERVICE}" bash
 fi

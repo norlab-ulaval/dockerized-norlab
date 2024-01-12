@@ -140,7 +140,7 @@ done
 ##   (ref task NMO-87 🩹→ Find a secure and permanent solution for the xhost "display not available" problem)
 
 # ====Begin=========================================================================================
-norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
+n2st::norlab_splash "${DN_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
 # Fetch all container name, strip those unrelated one and test for exact name
 if [[ $(docker ps --all --format "{{.Names}} {{.State}}" | grep ${THE_CONTAINER_NAME}) == "${THE_CONTAINER_NAME} exited" ]]; then

@@ -63,10 +63,7 @@ fi
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   # This script is being run, ie: __name__="__main__"
 
-  # import shell functions from utilities library
-#  cd "${N2ST_PATH:?err}"
-#  source import_norlab_shell_script_tools_lib.bash || exit 1
-
+  # import shell functions from norlab-shell-script-tools utilities library
   cd "${NBS_PATH:?err}"
   source import_norlab_build_system_lib.bash || exit 1
 
@@ -100,27 +97,18 @@ fi
 cd "${DN_PATH}" || exit 1
 
 set -o allexport
-source .env.dockerized-norlab-project
-source "$_DOTENV_BUILD_MATRIX"
-source "${NBS_BUILD_MATRIX_MAIN:?'The name of the main .env.build_matrix file is missing'}"
+source .env.dockerized-norlab-project || exit 1
+source "$_DOTENV_BUILD_MATRIX" || exit 1
+source "${NBS_BUILD_MATRIX_MAIN:?'The name of the main .env.build_matrix file is missing'}" || exit 1
 set +o allexport
 
 
 set -o allexport
-source "${N2ST_PATH:?'Variable not set'}"/.env.project
+source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
 set +o allexport
 
-# ....Helper function..............................................................................
-## import shell functions from norlab-shell-script-tools utilities library
-
-# ToDo: on task end >> delete next bloc ↓↓
-#cd "$N2ST_PATH"/src/function_library
-#source ./prompt_utilities.bash
-#source ./docker_utilities.bash
-#source ./general_utilities.bash
-#source ./teamcity_utilities.bash
-#source ./terminal_splash.bash
-#cd "$TMP_CWD_ECOBM"
+# ....DN functions.................................................................................
+cd "${DN_PATH}" || exit 1
 
 set -o allexport
 source dockerized-norlab-scripts/build_script/dn_execute_compose.bash || exit 1
@@ -158,7 +146,7 @@ function print_help_in_terminal() {
 }
 
 # ToDo: refactor out to 'norlab-shell-script-tools'
-function teamcity_service_msg_blockOpened_custom() {
+function dn::teamcity_service_msg_blockOpened_custom() {
   local THE_MSG=$1
   if [[ ${IS_TEAMCITY_RUN} == true ]]; then
     echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${THE_MSG}']"
@@ -166,7 +154,7 @@ function teamcity_service_msg_blockOpened_custom() {
 }
 
 # ToDo: refactor out to 'norlab-shell-script-tools'
-function teamcity_service_msg_blockClosed_custom() {
+function dn::teamcity_service_msg_blockClosed_custom() {
   local THE_MSG=$1
   if [[ ${IS_TEAMCITY_RUN} == true ]]; then
     echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} ${THE_MSG}']"
@@ -174,11 +162,11 @@ function teamcity_service_msg_blockClosed_custom() {
 }
 
 # ====Begin=========================================================================================
-norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
+n2st::norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
-set_is_teamcity_run_environment_variable
+n2st::set_is_teamcity_run_environment_variable
 
-print_formated_script_header 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
+n2st::print_formated_script_header 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
 # ....Script command line flags....................................................................
 while [ $# -gt 0 ]; do
@@ -210,7 +198,7 @@ while [ $# -gt 0 ]; do
     ;;
   --buildx-bake)
     # (NICE TO HAVE) ToDo: finish implement
-    print_msg "dn_execute_compose_over_build_matrix.bash › set --buildx-bake flag"
+    n2st::print_msg "dn_execute_compose_over_build_matrix.bash › set --buildx-bake flag"
     DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --buildx-bake )
     STR_DOCKER_MANAGEMENT_COMMAND="buildx bake"
     shift # Remove argument (--buildx-bake)
@@ -220,7 +208,6 @@ while [ $# -gt 0 ]; do
     #    set -x
     export BUILDKIT_PROGRESS=plain
     shift # Remove argument (--docker-debug-logs)
-
     ;;
   --fail-fast)
     set -e
@@ -247,21 +234,21 @@ while [ $# -gt 0 ]; do
 done
 
 # .................................................................................................
-print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
+n2st::print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
 
 ## Freeze build matrix env variable to prevent accidental override
 ## Note: declare -r ==> set as read-only, declare -a  ==> set as an array
 declare -r NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}
-declare -ra NBS_MATRIX_REPOSITORY_VERSIONS=(${NBS_MATRIX_REPOSITORY_VERSIONS[@]})
-declare -ra NBS_MATRIX_SUPPORTED_OS=(${NBS_MATRIX_SUPPORTED_OS[@]})
-declare -ra NBS_MATRIX_L4T_SUPPORTED_VERSIONS=(${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]})
-declare -ra NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]})
-declare -ra NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]})
-declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]})
+declare -ra NBS_MATRIX_REPOSITORY_VERSIONS=( "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}" )
+declare -ra NBS_MATRIX_SUPPORTED_OS=( "${NBS_MATRIX_SUPPORTED_OS[@]}" )
+declare -ra NBS_MATRIX_L4T_SUPPORTED_VERSIONS=( "${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}" )
+declare -ra NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=( "${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}" )
+declare -ra NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=( "${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}" )
+declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=( "${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}" )
 
-function print_env_var_build_matrix() {
+function dn::print_env_var_build_matrix() {
   local SUP_TEXT=$1
-  print_msg "Environment variables ${MSG_EMPH_FORMAT}(build matrix)${MSG_END_FORMAT} $SUP_TEXT:\n
+  n2st::print_msg "Environment variables ${MSG_EMPH_FORMAT}(build matrix)${MSG_END_FORMAT} $SUP_TEXT:\n
 ${MSG_DIMMED_FORMAT}    NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_REPOSITORY_VERSIONS=(${NBS_MATRIX_REPOSITORY_VERSIONS[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_SUPPORTED_OS=(${NBS_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
@@ -272,20 +259,20 @@ ${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_UBUN
 "
 }
 
-print_env_var_build_matrix "set for ${STR_DOCKER_MANAGEMENT_COMMAND}"
+dn::print_env_var_build_matrix "set for ${STR_DOCKER_MANAGEMENT_COMMAND}"
 
 # ====Crawl build matrix===========================================================================
 # Note: EACH_DN_VERSION is used for container labeling and to fetch the repo at release tag
 for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
-  teamcity_service_msg_blockOpened_custom "Bloc=${EACH_DN_VERSION}"
+  dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_DN_VERSION}"
 
   if [[ -z ${NBS_MATRIX_REPOSITORY_VERSIONS[*]} ]] || [[ ! ${NBS_MATRIX_REPOSITORY_VERSIONS} ]]; then
     echo "NBS_MATRIX_REPOSITORY_VERSIONS=${NBS_MATRIX_REPOSITORY_VERSIONS[*]}"
-    print_msg_error_and_exit "Can't crawl Dockerized-NorLab supported version array because it's empty!"
+    n2st::print_msg_error_and_exit "Can't crawl Dockerized-NorLab supported version array because it's empty!"
   fi
 
   for EACH_OS_NAME in "${NBS_MATRIX_SUPPORTED_OS[@]}"; do
-    teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_NAME}"
+    dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_NAME}"
 
     unset CRAWL_OS_VERSIONS
     unset CRAWL_BASE_IMAGES_AND_PKG
@@ -297,19 +284,19 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
       CRAWL_OS_VERSIONS=("${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
       CRAWL_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
     else
-      print_msg_error_and_exit "${EACH_OS_NAME} not supported!"
+      n2st::print_msg_error_and_exit "${EACH_OS_NAME} not supported!"
     fi
 
     if [[ -z ${CRAWL_OS_VERSIONS[*]} ]]; then
-      print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} supported version array because it's empty!"
+      n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} supported version array because it's empty!"
     fi
 
     if [[ -z ${CRAWL_BASE_IMAGES_AND_PKG[*]} ]]; then
-      print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images and pkg array because it's empty!"
+      n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images and pkg array because it's empty!"
     fi
 
     for EACH_OS_VERSION in "${CRAWL_OS_VERSIONS[@]}"; do
-      teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_VERSION}"
+      dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_VERSION}"
 
       for EACH_BASE_IMAGES_AND_PKG in "${CRAWL_BASE_IMAGES_AND_PKG[@]}"; do
 
@@ -340,7 +327,6 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         DOCKER_EXIT_CODE=$?
 
         # ....Collect image tags exported by dn_execute_compose.bash...............................
-        # Global: Read 'DOCKER_EXIT_CODE' env variable exported by function show_and_execute_docker
         if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
           MSG_STATUS="${MSG_DONE_FORMAT}Pass ${MSG_DIMMED_FORMAT}›"
           MSG_STATUS_TC_TAG="Pass ›"
@@ -357,8 +343,8 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
         # Collect image tags exported by dn_execute_compose.bash
         # Global: Read 'DN_IMAGE_TAG' env variable exported by dn_execute_compose.bash
-        IMAGE_TAG_CRAWLED=("${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG}")
-        IMAGE_TAG_CRAWLED_TC=("${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}")
+        IMAGE_TAG_CRAWLED=( "${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG:?"Env variable not set"}" )
+        IMAGE_TAG_CRAWLED_TC=( "${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}" )
         # .........................................................................................
 
         if [[ ${TEAMCITY_VERSION} ]]; then
@@ -366,15 +352,15 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         fi
 
       done
-      teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_VERSION}"
+      dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_VERSION}"
     done
-    teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_NAME}"
+    dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_NAME}"
   done
-  teamcity_service_msg_blockClosed_custom "Bloc=${EACH_DN_VERSION}"
+  dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_DN_VERSION}"
 done
 
 # ====Show feedback================================================================================
-print_env_var_build_matrix "used by ${STR_DOCKER_MANAGEMENT_COMMAND}"
+dn::print_env_var_build_matrix "used by ${STR_DOCKER_MANAGEMENT_COMMAND}"
 
 STR_BUILT_SERVICES=$( docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services | sed 's/^/   - /' )
 export STR_BUILT_SERVICES
@@ -397,13 +383,13 @@ ${STR_IMAGE_TAG_CRAWLED}"
 ) > ./dockerized-norlab-scripts/build_script/build_all.log
 
 
-print_msg_done "FINAL › Build matrix completed with command
+n2st::print_msg_done "FINAL › Build matrix completed with command
 ${MSG_DIMMED_FORMAT}
     $ docker ${STR_DOCKER_MANAGEMENT_COMMAND} -f ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}
 ${MSG_END_FORMAT}
 ${STR_BUILD_MATRIX_SERVICES_AND_TAGS}"
 
-print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
+n2st::print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
 # ====TeamCity service message=====================================================================
 if [[ ${TEAMCITY_VERSION} ]]; then

@@ -58,11 +58,11 @@ BUILD_LOG_PATH=./dockerized-norlab-scripts/build_script/build_all.log
 touch "$BUILD_LOG_PATH"
 unset _ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS
 
-function fetch_build_log() {
+function dn::fetch_build_log() {
   set -o allexport; source "$BUILD_LOG_PATH"; set +o allexport
 }
 
-function agregate_build_logs() {
+function dn::agregate_build_logs() {
   _ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS=("${_ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS[@]}" "${STR_BUILD_MATRIX_SERVICES_AND_TAGS}")
 }
 
@@ -99,8 +99,8 @@ for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
                         "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/$EACH_BUILD_MATRIX" \
                         $@ -- "${DOCKER_COMMAND_W_FLAGS}"
 
-    fetch_build_log
-    agregate_build_logs
+    dn::fetch_build_log
+    dn::agregate_build_logs
 done
 
 # ....show build matrix feedback...................................................................
@@ -108,18 +108,18 @@ set -o allexport
 # (CRITICAL) ToDo: refactor '.env.dockerized-norlab-project' >> make it portable (eg .env or set the file name via env var)
 source .env.dockerized-norlab-project
 set +o allexport
-norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
+n2st::norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
-print_msg_done "${MSG_DIMMED_FORMAT}dn_build_all.bash${MSG_END_FORMAT} execution summary"
+n2st::print_msg_done "${MSG_DIMMED_FORMAT}dn_build_all.bash${MSG_END_FORMAT} execution summary"
 echo -e "${MSG_DIMMED_FORMAT}"
-draw_horizontal_line_across_the_terminal_window '.'
+n2st::draw_horizontal_line_across_the_terminal_window '.'
 echo -e "${MSG_END_FORMAT}"
 for each_services_and_tags in "${_ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS[@]}"; do
   echo -e "${each_services_and_tags}\n"
   echo -e "${MSG_DIMMED_FORMAT}"
-  draw_horizontal_line_across_the_terminal_window '.'
+  n2st::draw_horizontal_line_across_the_terminal_window '.'
   echo -e "${MSG_END_FORMAT}"
 done
-print_formated_script_footer 'dn_build_all.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
+n2st::print_formated_script_footer 'dn_build_all.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
 

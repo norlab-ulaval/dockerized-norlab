@@ -15,8 +15,8 @@ source ./prompt_utilities.bash
 cd "${DN_INFO_TMP_CWD}" || return 1
 
 echo
-draw_horizontal_line_across_the_terminal_window '.'
-# (NICE TO HAVE) ToDo: refactor  using 'print_msg' fct
+n2st::draw_horizontal_line_across_the_terminal_window '.'
+# (NICE TO HAVE) ToDo: refactor  using 'n2st::print_msg' fct
 echo -e "In-container informations:"
 #${DN_CONTAINER_NAME} container info
 echo -e "\033[1;37m
@@ -91,4 +91,4 @@ volume \033[1;37m dockerized-norlab-tools/dn_container_env_variable/ \033[0m mak
 \033[1;37m
 ${SP} $ dn_expose_container_env_variables
 \033[0m "
-draw_horizontal_line_across_the_terminal_window '.'
+n2st::draw_horizontal_line_across_the_terminal_window '.'
