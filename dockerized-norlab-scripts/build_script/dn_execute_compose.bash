@@ -29,7 +29,7 @@ function dn::execute_compose() {
   shift # Remove argument value
 
   # ....Default....................................................................................
-  local DOCKER_MANAGEMENT_COMMAND=(compose)
+  local DOCKER_MANAGEMENT_COMMAND=( compose )
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
   _CI_TEST=false
 
@@ -163,7 +163,7 @@ function dn::execute_compose() {
       ;;
     --buildx-bake)
       print_msg_warning "Be advise, the DN --buildx-bake flag is still in developemenmt. Use at your own risk"
-      DOCKER_MANAGEMENT_COMMAND=(buildx bake)
+      DOCKER_MANAGEMENT_COMMAND=( buildx bake )
       shift # Remove argument (--buildx-bake)
       ;;
     --fail-fast)
@@ -201,13 +201,13 @@ function dn::execute_compose() {
   export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
   export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
 
-  print_msg "Environment variables set for compose:\n
+  print_msg "Environment variables set for ${DOCKER_MANAGEMENT_COMMAND[*]}:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   "
 
-  print_msg "Executing docker compose command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
+  print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
   #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
@@ -225,35 +225,38 @@ function dn::execute_compose() {
   #   Read DEPENDENCIES_BASE_IMAGE_TAG
   #
   # =================================================================================================
-  function callback_execute_compose_pre() {
-    if [[ ! -f ${COMPOSE_FILE} ]]; then
+  function dn::callback_execute_compose_pre() {
+    if [[ ! -f ${COMPOSE_FILE:?err} ]]; then
       print_msg_error_and_exit "docker-compose file ${COMPOSE_FILE} is unreachable"
     fi
 
     if [[ "${COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]]; then
       # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 
+      DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
+      echo "DOCKER_IMG=${DOCKER_IMG}"
+
       # shellcheck disable=SC2046
-      docker pull "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
-      && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}" \
-        | grep \
-          -e CUDA_HOME= \
-          -e NVIDIA_ \
-          -e LD_LIBRARY_PATH= \
-          -e PATH= \
-          -e ROS_ \
-          -e RMW_IMPLEMENTATION= \
-          -e LD_PRELOAD= \
-          -e OPENBLAS_CORETYPE= \
-        | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
-        | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
-        | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
-        | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
-        | sed 's;^ROS_;BASE_IMG_ENV_ROS_;' \
-        | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
-        | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
-        | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
-       )
+      docker pull "${DOCKER_IMG}" \
+        && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DOCKER_IMG}" \
+          | grep \
+            -e CUDA_HOME= \
+            -e NVIDIA_ \
+            -e LD_LIBRARY_PATH= \
+            -e PATH= \
+            -e ROS_ \
+            -e RMW_IMPLEMENTATION= \
+            -e LD_PRELOAD= \
+            -e OPENBLAS_CORETYPE= \
+          | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
+          | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
+          | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
+          | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
+          | sed 's;^ROS_;BASE_IMG_ENV_ROS_;' \
+          | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
+          | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
+          | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
+         )
 
       print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
         ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
@@ -261,7 +264,7 @@ function dn::execute_compose() {
     fi
   }
 
-  callback_execute_compose_pre
+  dn::callback_execute_compose_pre
 
   n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
 

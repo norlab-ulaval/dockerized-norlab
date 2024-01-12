@@ -8,12 +8,14 @@ function fake_IS_TEAMCITY_RUN() {
 
 function mock_docker_command_exit_ok() {
     function docker() {
+      local tmp=$@
       return 0
     }
 }
 
 function mock_docker_command_exit_error() {
     function docker() {
+      local tmp=$@
       echo "Error" 1>&2
       return 1
     }

@@ -26,8 +26,9 @@
 # ....Default......................................................................................
 _BUILD_STATUS_PASS=0
 
-declare -a DOCKER_COMPOSE_CMD_ARGS
-declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS
+declare -a DOCKER_COMPOSE_CMD_ARGS=()
+declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
+STR_DOCKER_MANAGEMENT_COMMAND="compose"
 
 #
 # The main .env.build_matrix to load
@@ -208,10 +209,12 @@ while [ $# -gt 0 ]; do
     shift # Remove argument value
     ;;
   --buildx-bake)
-      # (NICE TO HAVE) ToDo: finish implement
-      export DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=( "${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]}" "--buildx-bake" )
-      shift # Remove argument (--buildx-bake)
-      ;;
+    # (NICE TO HAVE) ToDo: finish implement
+    print_msg "dn_execute_compose_over_build_matrix.bash › set --buildx-bake flag"
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --buildx-bake )
+    STR_DOCKER_MANAGEMENT_COMMAND="buildx bake"
+    shift # Remove argument (--buildx-bake)
+    ;;
   --docker-debug-logs)
     #    set -v
     #    set -x
@@ -224,7 +227,7 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--fail-fast)
     ;;
   --ci-test-force-runing-docker-cmd)
-    export DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=( "${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]}" "--ci-test-force-runing-docker-cmd" )
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --ci-test-force-runing-docker-cmd )
     shift # Remove argument (--ci-test-force-runing-docker-cmd)
     ;;
   -h | --help)
@@ -269,7 +272,7 @@ ${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_UBUN
 "
 }
 
-print_env_var_build_matrix 'set for compose'
+print_env_var_build_matrix "set for ${STR_DOCKER_MANAGEMENT_COMMAND}"
 
 # ====Crawl build matrix===========================================================================
 # Note: EACH_DN_VERSION is used for container labeling and to fetch the repo at release tag
@@ -371,7 +374,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 done
 
 # ====Show feedback================================================================================
-print_env_var_build_matrix 'used by compose'
+print_env_var_build_matrix "used by ${STR_DOCKER_MANAGEMENT_COMMAND}"
 
 STR_BUILT_SERVICES=$( docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services | sed 's/^/   - /' )
 export STR_BUILT_SERVICES
@@ -396,7 +399,7 @@ ${STR_IMAGE_TAG_CRAWLED}"
 
 print_msg_done "FINAL › Build matrix completed with command
 ${MSG_DIMMED_FORMAT}
-    $ docker compose -f ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}
+    $ docker ${STR_DOCKER_MANAGEMENT_COMMAND} -f ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}
 ${MSG_END_FORMAT}
 ${STR_BUILD_MATRIX_SERVICES_AND_TAGS}"
 

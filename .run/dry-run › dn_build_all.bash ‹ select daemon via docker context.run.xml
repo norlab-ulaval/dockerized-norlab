@@ -12,7 +12,7 @@
     <option name="EXECUTE_IN_TERMINAL" value="false" />
     <option name="EXECUTE_SCRIPT_FILE" value="true" />
     <envs>
-      <env name="NBS_OVERRIDE_ADD_DOCKER_FLAG" value="--dry-run" />
+      <env name="NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG" value="build --dry-run" />
     </envs>
     <method v="2" />
   </configuration>
