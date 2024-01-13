@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="run › dn_build_over_single_build_matrix.bash (dev NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=build --push) " type="ShConfigurationType" folderName="[DN] development ( .env.build_matrix.dev.dn )">
-    <option name="SCRIPT_TEXT" value="NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=&quot;build --push&quot; &amp;&amp; source dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash .env.build_matrix.dev.dn --fail-fast" />
+    <option name="SCRIPT_TEXT" value="NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=&quot;build --push&quot; &amp;&amp; source dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash build_matrix_config/dev/.env.build_matrix.dev.main --fail-fast" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash" />
     <option name="SCRIPT_OPTIONS" value=".env.build_matrix.dev.dn --fail-fast" />

@@ -54,7 +54,7 @@ _DOTENV_BUILD_MATRIX="${1:?'Missing the dotenv build matrix file mandatory argum
 shift # Remove argument value
 
 if [[ ! -f "${_DOTENV_BUILD_MATRIX}" ]]; then
-  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in _DOTENV_BUILD_MATRIX='${_DOTENV_BUILD_MATRIX:?err}'" 1>&2
+  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file '${_DOTENV_BUILD_MATRIX:?err}'" 1>&2
   exit 1
 fi
 
@@ -234,7 +234,9 @@ while [ $# -gt 0 ]; do
 done
 
 # .................................................................................................
-n2st::print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
+_DOTENV_BUILD_MATRIX_STR="$( basename $(dirname "${_DOTENV_BUILD_MATRIX}"))/$( basename "${_DOTENV_BUILD_MATRIX}" )"
+
+n2st::print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}${_DOTENV_BUILD_MATRIX_STR}${MSG_END_FORMAT}"
 
 ## Freeze build matrix env variable to prevent accidental override
 ## Note: declare -r ==> set as read-only, declare -a  ==> set as an array

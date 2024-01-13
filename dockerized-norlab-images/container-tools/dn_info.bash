@@ -3,16 +3,16 @@
 PCK_VERSION=$(pip3 list --format freeze)
 SP="    "
 
-DN_INFO_TMP_CWD=$(pwd)
-cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_scripts/ || return 1
-source ./which_python_version.bash
-source ./which_architecture_and_os.bash
+# ToDo: validate (ref task NMO-385 sub-task NMO-485 fix: Project related env var overridden issue)
+cd "${DN_CONTAINER_TOOLS_PATH:?err}" || exit 1
+source import_dockerized_norlab_container_tools.bash
+
+n2st::set_which_python3_version
 DN_PYTHON3_VERSION=${PYTHON3_VERSION?err}
+
+n2st::set_which_architecture_and_os
 DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err}
 
-cd ../function_library
-source ./prompt_utilities.bash
-cd "${DN_INFO_TMP_CWD}" || return 1
 
 echo
 n2st::draw_horizontal_line_across_the_terminal_window '.'
@@ -47,7 +47,7 @@ ${SP}LLVMlite version:            $(echo "${PCK_VERSION}" | grep llvmlite | sed 
 echo -e "In-container available alias:
 \033[1;37m
 $( \
-    cd /dockerized-norlab/dockerized-norlab-images/container-tools && \
+    cd ${DN_PATH}/dockerized-norlab-images/container-tools && \
     sed "s;alias dn_;${SP}$ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | grep -e dn_ \
  )
 \033[0m"

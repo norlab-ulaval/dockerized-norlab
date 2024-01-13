@@ -195,18 +195,34 @@ RUN apt-get update \
 # ===Final build step==============================================================================
 FROM core-dependencies AS final
 
-# ....Install norlab-shell-script-tool.............................................................
-WORKDIR /dockerized-norlab
+ENV DN_PATH=/dockerized-norlab
+ENV DN_CONTAINER_TOOLS_PATH=${DN_PATH}/dockerized-norlab-images/container-tools
+ENV N2ST_PATH=${DN_PATH}/utilities/norlab-shell-script-tools
 
-RUN git clone https://github.com/norlab-ulaval/norlab-shell-script-tools.git ./utilities/norlab-shell-script-tools/ \
-    && echo "Sanity check"  \
-    && cd ./utilities/norlab-shell-script-tools/src/utility_scripts \
-    && source ./which_python_version.bash \
+WORKDIR ${DN_PATH}
+
+COPY --from=context-dn-container-tools ./import_dockerized_norlab_container_tools.bash ./dockerized-norlab-images/container-tools/
+
+# ....Install norlab-shell-script-tool and norlab-build-system tools...............................
+COPY --from=context-dn-submodules ./norlab-shell-script-tools ${N2ST_PATH}
+
+RUN echo "Sanity check"  \
+    && cd ${DN_CONTAINER_TOOLS_PATH} || exit 1 \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_python3_version \
     && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}"
+
+## (Priority) ToDo: on task end >> delete next bloc ↓↓
+#RUN git clone https://github.com/norlab-ulaval/norlab-shell-script-tools.git ./utilities/norlab-shell-script-tools/ \
+#    && echo "Sanity check"  \
+#    && cd ./utilities/norlab-shell-script-tools/src/utility_scripts \
+#    && source ./which_python_version.bash \
+#    && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}"
 
 # ....Add dn-container tools.......................................................................
 # ToDo: assessement › move this step at a later stage
-WORKDIR /dockerized-norlab
+WORKDIR ${DN_PATH}
+
 COPY --from=context-dn-container-tools ./dn_info.bash ./dockerized-norlab-images/container-tools/
 COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./dockerized-norlab-images/container-tools/
 
@@ -215,15 +231,15 @@ COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./dockerized-norlab-
 #      echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
 #      echo "alias tree='pwd && tree -L 1'"; \
 #      echo "alias tree2='tree -L 2'"; \
-#      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"; \
+#      echo "alias dn_info='source ${DN_PATH}/dockerized-norlab-images/container-tools/dn_info.bash'"; \
 #    ) >> ~/.bashrc \
 #    && echo "" \
-#    && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
+#    && bash ${DN_PATH}/dockerized-norlab-images/container-tools/dn_info.bash
 
 RUN ( \
       echo ""; \
       echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
-      echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash"; \
+      echo "source ${DN_PATH}/dockerized-norlab-images/container-tools/dn_bash_alias.bash"; \
       echo ""; \
     ) >> ~/.bashrc \
     && echo  \

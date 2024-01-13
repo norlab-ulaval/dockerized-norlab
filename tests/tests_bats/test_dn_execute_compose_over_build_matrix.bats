@@ -103,7 +103,7 @@ setup() {
 
   run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE '.env.build_matrix.unreachable'"
   assert_failure
-  assert_output --partial "'$TESTED_FILE' can't find dotenv build matrix file in _DOTENV_BUILD_MATRIX='.env.build_matrix.unreachable'"
+  assert_output --partial "'$TESTED_FILE' can't find dotenv build matrix file '.env.build_matrix.unreachable'"
 #  bats_print_run_env_variable
 }
 

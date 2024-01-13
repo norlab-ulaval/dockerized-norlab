@@ -42,16 +42,17 @@ TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 
-  set -o allexport
-  source .env.dockerized-norlab-build-system
-  set +o allexport
+  export TEST_DOTENV_BUILD_MATRIX="test/.env.build_matrix.mock"
+  export TEST_DOTENV_BUILD_MATRIX_MAIN="build_matrix_config/${TEST_DOTENV_BUILD_MATRIX}.main"
+
 
 #  pwd >&3 && tree -L 2 -a -hug utilities/ >&3
 #  printenv >&3
 }
 
 #setup() {
-#  cd "$TESTED_FILE_PATH" || exit
+##  cd "$TESTED_FILE_PATH" || exit
+#
 #}
 
 # ====Teardown======================================================================================
@@ -68,23 +69,24 @@ setup_file() {
 
 
 @test "running $TESTED_FILE from 'root' › expect pass" {
-#  cd "${BATS_DOCKER_WORKDIR}"
-#  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "$NBS_BUILD_MATRIX_CONFIG/test/.env.build_matrix.mock"
-#  assert_success
-#  refute_output  --partial "No such file or directory"
 
-  cd "${BATS_DOCKER_WORKDIR}"
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "$NBS_BUILD_MATRIX_CONFIG/test/.env.build_matrix.mock"
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE \
+              "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}" \
+              --fail-fast
+
   assert_success
-  refute_output  --partial "'$TESTED_FILE' script must be sourced from"
+
+  refute_output  --partial "No such file or directory"
+  assert_output --regexp .*"\[".*"NBS".*"\]".*"Build images specified in".*"dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml".*"following".*"${TEST_DOTENV_BUILD_MATRIX}".*
 }
 
 
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
-  run bash -c "source ./${TESTED_FILE_PATH}/$TESTED_FILE '$NBS_BUILD_MATRIX_CONFIG/test/.env.build_matrix.mock' \
-                                              --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
-                                              --os-name-build-matrix-override 'l4t' \
-                                              --l4t-version-build-matrix-override 'r33.3.3'"
+
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}" \
+                  --dockerized-norlab-version-build-matrix-override "v8.8.8" \
+                  --os-name-build-matrix-override "l4t" \
+                  --l4t-version-build-matrix-override "r33.3.3"
 
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*

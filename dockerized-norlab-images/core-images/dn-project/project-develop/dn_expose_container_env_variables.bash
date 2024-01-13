@@ -26,10 +26,9 @@
 #
 
 DN_EXPOSE_TMP_CWD=$(pwd)
-cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/function_library || return 1
-source ./prompt_utilities.bash
-cd "${DN_EXPOSE_TMP_CWD}" || return 1
-
+cd "${DN_CONTAINER_TOOLS_PATH:?err}" || exit 1
+source import_dockerized_norlab_container_tools.bash
+cd "${DN_EXPOSE_TMP_CWD}" || exit 1
 
 # (Priority) ToDo: implement >> add flag option to source or not the /ros2_ws overlay
 n2st::print_msg "Sourcing ${DN_DEV_WORKSPACE:?'Variable DN_DEV_WORKSPACE unset'} ros overlay"

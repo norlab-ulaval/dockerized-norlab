@@ -97,7 +97,7 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
 # ===Remove dustynv entrypoint from .bashrc. ======================================================
 # Note: Source ROS in the dn_ros2_entrypoint.bash instead"
 
-WORKDIR /dockerized-norlab/utilities/norlab-shell-script-tools
+WORKDIR ${DN_PATH}/utilities/norlab-shell-script-tools
 RUN source .env.project \
     && cd src/function_library \
     && source ./general_utilities.bash \

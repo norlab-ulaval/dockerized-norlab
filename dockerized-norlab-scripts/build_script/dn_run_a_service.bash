@@ -33,7 +33,7 @@ fi
 # Notes;
 #   - be advised that docker compose run command bypass the container_name field of the .yaml file so you can spin the same service multiple time and all container will have a unique name
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                "${_DOTENV_BUILD_MATRIX}" \
+                "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" \
                 --fail-fast \
                 -- run "${OPTION_FLAG:-""}" --rm \
                 --no-deps "$@"

@@ -40,15 +40,27 @@ TESTED_FILE_PATH="dockerized-norlab-images/core-images/dn-project/project-develo
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 
-  mkdir -p /dockerized-norlab/utilities/norlab-shell-script-tools
+  export DN_PATH=/code/dockerized-norlab
+  export DN_PATH_MOCK_DIR=/dockerized-norlab
 
-  cp  /code/dockerized-norlab/.env.dockerized-norlab-project /dockerized-norlab/
-  cp -r /code/dockerized-norlab/utilities/norlab-shell-script-tools /dockerized-norlab/utilities/
+  mkdir -p "${DN_PATH_MOCK_DIR}/utilities/norlab-shell-script-tools"
+  mkdir -p "${DN_PATH_MOCK_DIR}/dockerized-norlab-images/container-tools"
+
+  cp  "${DN_PATH}/.env.dockerized-norlab-project" "${DN_PATH_MOCK_DIR}/"
+  cp -r "${DN_PATH}/utilities/norlab-shell-script-tools" "${DN_PATH_MOCK_DIR}/utilities/"
 
   mkdir -p /ros2_ws_mock/install/
   touch /ros2_ws_mock/install/local_setup.bash
 
-  assert_file_exist /dockerized-norlab/utilities/norlab-shell-script-tools/src/function_library/prompt_utilities.bash
+#  pwd >&3 && tree -L 3 -a "${DN_PATH}"/dockerized-norlab-images/ >&3
+#  pwd >&3 && tree -L 3 -a "${DN_PATH}"/utilities/ >&3
+#  printenv >&3
+
+  assert_file_exist "${DN_PATH_MOCK_DIR}/utilities/norlab-shell-script-tools/src/function_library/prompt_utilities.bash"
+  assert_file_exist "${DN_PATH_MOCK_DIR}/utilities/norlab-shell-script-tools/.git"
+  assert_file_exist "${DN_PATH}/utilities/norlab-shell-script-tools/src/function_library/prompt_utilities.bash"
+  assert_file_exist "${DN_PATH}/utilities/norlab-shell-script-tools/.git"
+  assert_file_exist "${DN_PATH}/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash"
   assert_file_exist /ros2_ws_mock/install/local_setup.bash
 
 #  pwd >&3 && tree -L 1 -a -hug >&3
@@ -58,13 +70,16 @@ setup_file() {
 setup() {
   cd "$TESTED_FILE_PATH" || exit
 
+
   # PRE CONDITION: Variable need to be set prior for this script
   export DN_DEV_WORKSPACE=/ros2_ws_mock
   mkdir -p /dn_container_env_variable
 
   set -o allexport
-  source /dockerized-norlab/.env.dockerized-norlab-project || return 1
+  source "${DN_PATH}"/.env.dockerized-norlab-project || return 1
   set +o allexport
+
+  export DN_CONTAINER_TOOLS_PATH="${DN_PATH}/dockerized-norlab-images/container-tools"
 
   export PROJECT_PROMPT_NAME=dockerized-norlab
 

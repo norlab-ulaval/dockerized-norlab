@@ -48,7 +48,7 @@ source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
 cd "${NBS_PATH:?'Variable not set'}"  || exit 1
 source import_norlab_build_system_lib.bash || exit 1
 
-cd "${DN_PATH}" || exit 1
+cd "${DN_PATH:?'Variable not set'}" || exit 1
 set +o allexport
 
 

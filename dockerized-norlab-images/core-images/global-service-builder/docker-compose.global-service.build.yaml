@@ -49,6 +49,8 @@ services:
       dockerfile: Dockerfile
       additional_contexts:
         context-dn-container-tools: ../../container-tools/
+        context-dn-submodules: ../../../utilities/
+        context-dn-root: ../../../
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
       platforms:
