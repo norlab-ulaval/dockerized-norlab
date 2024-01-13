@@ -41,12 +41,12 @@ TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
-#  pwd >&3 && tree -L 2 -a -hug >&3
-#  printenv >&3
 
   export NBS_OVERRIDE_BUILD_MATRIX_MAIN=tests/.env.build_matrix.main.mock
   export BUILD_MATRIX_CONFIG_FILE=build_matrix_config/test/.env.build_matrix.mock
 
+#  pwd >&3 && tree -L 2 -a -hug >&3
+#  printenv >&3
 }
 
 setup() {
@@ -154,10 +154,10 @@ setup() {
   assert_output --regexp .*"Pass".*"DN-latest-humble-pytorch-l4t-r11.1.1".*
   assert_output --regexp .*"Pass".*"DN-latest-humble-pytorch-l4t-r22.2.2".*
   assert_output --regexp .*"Pass".*"DN-latest-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v9.9.9-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v9.9.9-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v9.9.9-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v9.9.9-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
 #  bats_print_run_env_variable
 }
 
@@ -178,10 +178,10 @@ setup() {
   assert_output --regexp .*"Fail".*"DN-latest-humble-pytorch-l4t-r11.1.1".*
   assert_output --regexp .*"Fail".*"DN-latest-humble-pytorch-l4t-r22.2.2".*
   assert_output --regexp .*"Fail".*"DN-latest-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v9.9.9-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v9.9.9-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v9.9.9-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v9.9.9-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
 }
 
 @test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
@@ -207,15 +207,15 @@ setup() {
   set +e
   mock_docker_command_exit_ok
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
-                                      --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
+                                      --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r33.3.3'
   set -e
-  assert_output --regexp .*"Pass".*"DN-v8.8.8-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"Pass".*"DN-v8.8.8-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
 
-  refute_output --regexp .*"Pass".*"DN-v9.9.9-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"Pass".*"DN-v9.9.9-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
 }
 
 @test "flag --help" {

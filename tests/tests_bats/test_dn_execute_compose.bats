@@ -141,7 +141,6 @@ setup() {
 @test "flags that set env variable" {
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
-                        --dockerized-norlab-version v1 \
                         --base-image dustynv/pytorch \
                         --os-name arbitratyName \
                         --tag-package 2.1 \
@@ -149,15 +148,35 @@ setup() {
                         --docker-debug-logs \
                         --fail-fast
 
+#                        --dockerized-norlab-version v0.3.0 \
+
   assert_not_empty "$IS_TEAMCITY_RUN"
-  assert_equal "${REPOSITORY_VERSION}" 'v1'
+#  assert_equal "${REPOSITORY_VERSION}" 'v0.3.0'
+  assert_equal "${REPOSITORY_VERSION}" 'latest'
   assert_equal "${BASE_IMAGE}" 'dustynv/pytorch'
   assert_equal "${TAG_PACKAGE}" '2.1'
   assert_equal "${TAG_VERSION}" 'r35.0.0'
   assert_equal "${PROJECT_TAG}" 'arbitratyName-r35.0.0'
   assert_equal "${BUILDKIT_PROGRESS}" plain
   assert_equal "${DEPENDENCIES_BASE_IMAGE_TAG}" '2.1-r35.0.0'
-  assert_equal "${DN_IMAGE_TAG}" 'DN-v1-2.1-r35.0.0'
+  assert_equal "${DN_IMAGE_TAG}" 'DN-latest-2.1-r35.0.0'
+}
+
+@test "repository version checkout" {
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                        --dockerized-norlab-version v0.2.0 \
+                        --base-image dustynv/pytorch \
+                        --os-name arbitratyName \
+                        --tag-package 2.1 \
+                        --tag-version r35.0.0 \
+                        --docker-debug-logs \
+                        --fail-fast
+
+  assert_output --regexp .*"\[".*"NBS".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"NBS".*"\]".*"Repository checkout at tag"
+
+#  assert_output --partial "switching to 'tags/v0.2.0'"
+
 }
 
 @test "flag --help" {

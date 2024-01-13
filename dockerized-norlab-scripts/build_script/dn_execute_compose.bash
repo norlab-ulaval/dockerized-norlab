@@ -194,13 +194,31 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   "
 
+  # ....Repository version checkout logic..........................................................
+  if [[ "${REPOSITORY_VERSION}" != 'latest' ]]; then
+    cd "${DN_PATH:?err}" || exit 1
+
+    n2st::print_msg "Git fetch tag list"
+    git fetch --tags
+    git tag --list
+
+    GITHUB_TAG="${REPOSITORY_VERSION}"
+
+    if [[ -z ${BATS_VERSION} ]]; then
+      # Execute if not run in bats test framework
+      git checkout tags/"${GITHUB_TAG}"
+    fi
+    n2st::print_msg "Repository checkout at tag $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
+
+  fi
+
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
   #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
   # ToDo: modularity feat › refactor clause as a callback pre bash script and add `source <callback-pre.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
 
-  # =================================================================================================
+  # ===============================================================================================
   # Pre docker command execution callback
   #
   # Usage:
@@ -211,7 +229,7 @@ function dn::execute_compose() {
   #   Read DEPENDENCIES_BASE_IMAGE
   #   Read DEPENDENCIES_BASE_IMAGE_TAG
   #
-  # =================================================================================================
+  # ===============================================================================================
   function dn::callback_execute_compose_pre() {
     if [[ ! -f ${COMPOSE_FILE:?err} ]]; then
       n2st::print_msg_error_and_exit "docker-compose file ${COMPOSE_FILE} is unreachable"
@@ -250,7 +268,6 @@ function dn::execute_compose() {
         ${MSG_END_FORMAT}"
     fi
   }
-
   dn::callback_execute_compose_pre
 
   n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
@@ -263,9 +280,6 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}"
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
-
-  # ====Teardown===================================================================================
-  cd "${TMP_CWD_EC}"
 
   return "${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
 }
