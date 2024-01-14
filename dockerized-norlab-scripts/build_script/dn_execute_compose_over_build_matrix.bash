@@ -322,12 +322,12 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         if [[ "${EACH_DN_VERSION}" != 'latest' ]]; then
           cd "${DN_PATH:?err}" || exit 1
 
-#          if [[ ${TEAMCITY_VERSION} ]]; then
-#            git clone https://github.com/norlab-ulaval/dockerized-norlab.git
-#          fi
+          if [[ ${TEAMCITY_VERSION} ]]; then
+            # Solution for "error: object directory ... .git/objects does not exist"
+            n2st::print_msg "Git fetch all remote"
+            git fetch --all
+          fi
 
-          n2st::print_msg "Git fetch all remote"
-          git fetch --all
 
           n2st::print_msg "Git fetch tag list"
           git tag --list
