@@ -194,53 +194,17 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   "
 
-  # ....Repository version checkout logic..........................................................
-  if [[ "${REPOSITORY_VERSION}" != 'latest' ]]; then
-    cd "${DN_PATH:?err}" || exit 1
-
-    n2st::print_msg "Git fetch tag list"
-    git fetch --tags
-    git tag --list
-
-    # Execute if not run in bats test framework
-    if [[ -z ${BATS_VERSION} ]]; then
-      if [[ "${REPOSITORY_VERSION}" == 'bleeding-edge' ]]; then
-        if [[ "$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)" != "dev" ]]; then
-          git checkout dev
-        fi
-      else
-        git checkout tags/"${REPOSITORY_VERSION}"
-      fi
-    fi
-
-    n2st::print_msg "Repository checkout at tag $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
-
-  fi
-
+  # ....Execute docker command.....................................................................
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
   #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
   # ToDo: modularity feat › refactor clause as a callback pre bash script and add `source <callback-pre.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
 
-
-  # ....If defined › execute dn::callback_execute_compose_pre......................................
-  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
-    source "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash"
-    dn::callback_execute_compose_pre
-  fi
-
-  # ....Execute docker command.....................................................................
   n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
 
-  # ....If defined › execute dn::callback_execute_compose_pre......................................
-  # ToDo: modularity feat › add `source <callback-post.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
-  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
-    source "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash"
-    dn::callback_execute_compose_post
-  fi
 
-  # ====Show feedback==============================================================================
+  # ....Show feedback..............................................................................
   n2st::print_msg "Environment variables used by compose:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}

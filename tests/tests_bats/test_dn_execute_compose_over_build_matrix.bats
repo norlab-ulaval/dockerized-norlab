@@ -239,3 +239,17 @@ setup() {
 #  bats_print_run_env_variable
 }
 
+
+@test "repository version checkout" {
+
+  cd "${BATS_DOCKER_WORKDIR}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}" \
+                        --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
+                        --os-name-build-matrix-override 'l4t' \
+                        --l4t-version-build-matrix-override 'r33.3.3' \
+                        --fail-fast
+
+  assert_output --regexp .*"\[".*"NBS".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"NBS".*"\]".*"Repository checkout at tag"
+
+#  assert_output --partial "switching to 'tags/v0.2.0'"
+}

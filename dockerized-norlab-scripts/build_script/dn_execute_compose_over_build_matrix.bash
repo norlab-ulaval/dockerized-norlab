@@ -126,14 +126,16 @@ function print_help_in_terminal() {
       --os-name-build-matrix-override l4t
                           The operating system name. Override must be a single value
                           (default to array sequence specified in .env.build_matrix)
+      --ubuntu-version-build-matrix-override jammy
+                          Named operating system version. Override must be a single value
+                          (default to array sequence specified in .env.build_matrix)
       --l4t-version-build-matrix-override r35.2.1
                           Named operating system version. Override must be a single value
                           (default to array sequence specified in .env.build_matrix)
                           Note: L4T container tags (e.g. r35.2.1) should match the L4T version
                           on the Jetson otherwize cuda driver won't be accessible
                           (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
-      --ubuntu-version-build-matrix-override jammy
-      --buildx-bake            Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
+      --buildx-bake       Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
       --docker-debug-logs
                           Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
       --fail-fast         Exit script at first encountered error
@@ -315,6 +317,37 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           echo
         fi
 
+
+        # ....Repository version checkout logic..........................................................
+        if [[ "${EACH_DN_VERSION}" != 'latest' ]]; then
+          cd "${DN_PATH:?err}" || exit 1
+
+          n2st::print_msg "Git fetch tag list"
+          git fetch --tags
+          git tag --list
+
+          # Execute if not run in bats test framework
+          if [[ -z ${BATS_VERSION} ]]; then
+            if [[ "${EACH_DN_VERSION}" == 'bleeding-edge' ]]; then
+              if [[ "$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)" != "dev" ]]; then
+                git checkout dev
+              fi
+            else
+              git checkout tags/"${EACH_DN_VERSION}"
+            fi
+          fi
+
+          n2st::print_msg "Repository checkout at tag $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
+        fi
+
+
+        # ....If defined › execute dn::callback_execute_compose_pre................................
+        if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
+          source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
+          dn::callback_execute_compose_pre
+        fi
+
+        # ....Execute docker command...............................................................
         # shellcheck disable=SC2086
         dn::execute_compose \
           ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} \
@@ -327,6 +360,12 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           -- ${DOCKER_COMPOSE_CMD_ARGS[@]}
 
         DOCKER_EXIT_CODE=$?
+
+        # ....If defined › execute dn::callback_execute_compose_pre................................
+        if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
+          source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash"
+          dn::callback_execute_compose_post
+        fi
 
         # ....Collect image tags exported by dn_execute_compose.bash...............................
         if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
