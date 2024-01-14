@@ -212,7 +212,18 @@ function dn::execute_compose() {
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
   #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
-  # ToDo: modularity feat › refactor clause as a callback pre bash script and add `source <callback-pre.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
+  # (CRITICAL) ToDo: assessment if still usefull >> next bloc ↓↓
+#  # Note:
+#  #   - BUILDKIT_CONTEXT_KEEP_GIT_DIR is for setting buildkit to keep the .git directory in the container
+#  #     Source https://docs.docker.com/build/building/context/#keep-git-directory
+#  export BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
+
+  # ...Docker cmd conditional logic..................................................................
+  if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]]; then
+    unset DOCKER_COMPOSE_CMD_ARGS[0]
+    DOCKER_COMPOSE_CMD_ARGS=( build --build-arg "BUILDKIT_CONTEXT_KEEP_GIT_DIR=1" ${DOCKER_COMPOSE_CMD_ARGS[@]})
+  fi
+
 
   n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
 

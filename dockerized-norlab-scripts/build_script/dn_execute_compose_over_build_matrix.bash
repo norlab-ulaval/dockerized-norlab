@@ -26,7 +26,7 @@
 # ....Default......................................................................................
 _BUILD_STATUS_PASS=0
 
-declare -a DOCKER_COMPOSE_CMD_ARGS=()
+declare -a DOCKER_COMPOSE_CMD_ARGS=( build )
 declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
 STR_DOCKER_MANAGEMENT_COMMAND="compose"
 
@@ -235,6 +235,7 @@ while [ $# -gt 0 ]; do
 
 done
 
+
 # .................................................................................................
 _DOTENV_BUILD_MATRIX_STR="$( basename $(dirname "${_DOTENV_BUILD_MATRIX}"))/$( basename "${_DOTENV_BUILD_MATRIX}" )"
 
@@ -311,6 +312,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         EACH_BASE_IMAGE=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/:.*//')
         # shellcheck disable=SC2001
         EACH_TAG_PKG=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://')
+
 
         if [[ ${TEAMCITY_VERSION} ]]; then
           echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --os-name ${EACH_OS_NAME} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[*]} -- ${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT_TEAMCITY}|n']"

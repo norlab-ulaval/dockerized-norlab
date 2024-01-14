@@ -29,21 +29,32 @@ function dn::source_lib(){
   # Note: can handle both sourcing cases
   #   i.e. from within a script or from an interactive terminal session
   _PATH_TO_SCRIPT="$(realpath "${BASH_SOURCE[0]:-'.'}")"
-  _REPO_ROOT="$(dirname "${_PATH_TO_SCRIPT}")"
+  DN_ROOT="$(dirname "${_PATH_TO_SCRIPT}")"
 
   # ....Load environment variables from file.......................................................
-  cd "${_REPO_ROOT}" || exit 1
+  cd "${DN_ROOT}" || exit 1
   set -o allexport
-  source .env.dockerized-norlab-build-system
   source .env.dockerized-norlab-project
   set +o allexport
 
   # ....Source DN dependencies.....................................................................
-  cd "${N2ST_PATH:?"Variable not set"}" || exit 1
-  source "import_norlab_shell_script_tools_lib.bash"
+  # . . Import NBS lib . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+  set -o allexport
+  source .env.dockerized-norlab-build-system
+  set +o allexport
 
   cd "${NBS_PATH:?"Variable not set"}" || exit 1
   source "import_norlab_build_system_lib.bash"
+
+  # . . Import N2ST lib . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  cd "${DN_ROOT}" || exit 1
+  set -o allexport
+  source .env.dockerized-norlab-build-system
+  set +o allexport
+
+  # Note: Import last so that N2ST_PATH point to the DN submodule path instead of NBS submodule path
+  cd "${N2ST_PATH:?"Variable not set"}" || exit 1
+  source "import_norlab_shell_script_tools_lib.bash"
 
 #  # ....Source DN functions.......................................................................
 #  cd "${NBS_PATH}/src/function_library" || exit 1
