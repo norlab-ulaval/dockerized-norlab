@@ -322,18 +322,19 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         if [[ "${EACH_DN_VERSION}" != 'latest' ]]; then
           cd "${DN_PATH:?err}" || exit 1
 
-          if [[ ${TEAMCITY_VERSION} ]]; then
-            # Solution for "error: object directory ... .git/objects does not exist"
-            # Ref: https://youtrack.jetbrains.com/issue/TW-47412
-            git repack -a -d
-          fi
+#          if [[ ${TEAMCITY_VERSION} ]]; then
+#            git clone https://github.com/norlab-ulaval/dockerized-norlab.git
+#          fi
+
+          n2st::print_msg "Git fetch all remote"
+          git fetch --all
 
           n2st::print_msg "Git fetch tag list"
-          git fetch --tags --verbose
           git tag --list
 
           # Execute if not run in bats test framework
           if [[ -z ${BATS_VERSION} ]]; then
+            n2st::print_msg "Execute git checkout"
             if [[ "${EACH_DN_VERSION}" == 'bleeding-edge' ]]; then
               if [[ "$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)" != "dev" ]]; then
                 git checkout dev
