@@ -202,12 +202,17 @@ function dn::execute_compose() {
     git fetch --tags
     git tag --list
 
-    GITHUB_TAG="${REPOSITORY_VERSION}"
-
+    # Execute if not run in bats test framework
     if [[ -z ${BATS_VERSION} ]]; then
-      # Execute if not run in bats test framework
-      git checkout tags/"${GITHUB_TAG}"
+      if [[ "${REPOSITORY_VERSION}" == 'bleeding-edge' ]]; then
+        if [[ "$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)" != "dev" ]]; then
+          git checkout dev
+        fi
+      else
+        git checkout tags/"${REPOSITORY_VERSION}"
+      fi
     fi
+
     n2st::print_msg "Repository checkout at tag $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
 
   fi
