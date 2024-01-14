@@ -52,7 +52,7 @@ RUN apt-get update \
 #  - https://docs.docker.com/engine/reference/builder/#using-arg-variables
 
 
-RUN && cd ${N2ST_PATH} || exit 1 \
+RUN cd ${N2ST_PATH} || exit 1 \
     && source import_norlab_shell_script_tools_lib.bash \
     && n2st::set_which_python3_version \
     && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
@@ -96,10 +96,11 @@ COPY prompt/config_files/config.json config_files/
 COPY prompt/config_files/themes/shell/dockerized_snow.json config_files/themes/shell/dockerized_snow.json
 COPY prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/colorschemes/shell/dockerized_snow.json
 
-RUN && cd ${N2ST_PATH} || exit 1 \
+RUN cd ${N2ST_PATH} || exit 1 \
     && source import_norlab_shell_script_tools_lib.bash \
     && n2st::set_which_python3_version \
     && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
+    && cd $POWERLINE_TMP \
     && mkdir -p $POWERLINE_DIR/config_files/ \
     && mkdir -p $POWERLINE_DIR/config_files/themes/shell/ \
     && mkdir -p $POWERLINE_DIR/config_files/colorschemes/shell/ \
