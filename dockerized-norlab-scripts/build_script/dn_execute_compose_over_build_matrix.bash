@@ -322,9 +322,15 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         if [[ "${EACH_DN_VERSION}" != 'latest' ]]; then
           cd "${DN_PATH:?err}" || exit 1
 
+          if [[ ${TEAMCITY_VERSION} ]]; then
+            # Solution for "error: object directory ... .git/objects does not exist"
+            # Ref: https://youtrack.jetbrains.com/issue/TW-47412
+            git repack -a -d
+          fi
+
           n2st::print_msg "Git fetch tag list"
           git fetch --tags --verbose
-#          git tag --list
+          git tag --list
 
           # Execute if not run in bats test framework
           if [[ -z ${BATS_VERSION} ]]; then
@@ -337,7 +343,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             fi
           fi
 
-          n2st::print_msg "Repository checkout at tag $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
+          n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
         fi
 
 
