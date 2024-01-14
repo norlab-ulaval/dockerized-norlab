@@ -18,7 +18,7 @@ function dn::callback_execute_compose_pre() {
     n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
   fi
 
-  if [[ "${NBS_COMPOSE_DIR}" == "dockerized-norlab-images/core-images/dependencies/" ]]; then
+  if [[ "${NBS_COMPOSE_DIR}" == "dockerized-norlab-images/core-images/dependencies" ]]; then
     # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
