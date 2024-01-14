@@ -223,62 +223,24 @@ function dn::execute_compose() {
 
   # ToDo: modularity feat › refactor clause as a callback pre bash script and add `source <callback-pre.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
 
-  # ===============================================================================================
-  # Pre docker command execution callback
-  #
-  # Usage:
-  #   $ callback_execute_compose_pre()
-  #
-  # Globals:
-  #   Read COMPOSE_FILE
-  #   Read DEPENDENCIES_BASE_IMAGE
-  #   Read DEPENDENCIES_BASE_IMAGE_TAG
-  #
-  # ===============================================================================================
-  function dn::callback_execute_compose_pre() {
-    if [[ ! -f ${COMPOSE_FILE:?err} ]]; then
-      n2st::print_msg_error_and_exit "docker-compose file ${COMPOSE_FILE} is unreachable"
-    fi
 
-    if [[ "${COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]]; then
-      # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
+  # ....If defined › execute dn::callback_execute_compose_pre......................................
+  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
+    source "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash"
+    dn::callback_execute_compose_pre
+  fi
 
-      DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
-      echo "DOCKER_IMG=${DOCKER_IMG}"
-
-      # shellcheck disable=SC2046
-      docker pull "${DOCKER_IMG}" \
-        && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DOCKER_IMG}" \
-          | grep \
-            -e CUDA_HOME= \
-            -e NVIDIA_ \
-            -e LD_LIBRARY_PATH= \
-            -e PATH= \
-            -e ROS_ \
-            -e RMW_IMPLEMENTATION= \
-            -e LD_PRELOAD= \
-            -e OPENBLAS_CORETYPE= \
-          | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
-          | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
-          | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
-          | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
-          | sed 's;^ROS_;BASE_IMG_ENV_ROS_;' \
-          | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
-          | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
-          | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
-         )
-
-      n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
-        ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
-        ${MSG_END_FORMAT}"
-    fi
-  }
-  dn::callback_execute_compose_pre
-
+  # ....Execute docker command.....................................................................
   n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
 
+  # ....If defined › execute dn::callback_execute_compose_pre......................................
   # ToDo: modularity feat › add `source <callback-post.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
+  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
+    source "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash"
+    dn::callback_execute_compose_post
+  fi
 
+  # ====Show feedback==============================================================================
   n2st::print_msg "Environment variables used by compose:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
