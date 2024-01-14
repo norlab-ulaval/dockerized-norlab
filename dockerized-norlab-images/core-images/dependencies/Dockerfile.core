@@ -70,11 +70,11 @@ ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passe
 # ....The following env var does not appear in every jetson-container ros base images..............
 # En var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
-ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
+ENV LD_PRELOAD=${LD_PRELOAD}
 
 # En var added by jetson-container pytorch related base images
 ARG OPENBLAS_CORETYPE
-ENV LD_PRELOAD=${LD_PRELOAD}
+ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 
 
 ## ....copy artifact from base-image...............................................................

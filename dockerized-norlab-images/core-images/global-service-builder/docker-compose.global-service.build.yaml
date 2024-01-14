@@ -55,5 +55,5 @@ services:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
       platforms:
         - "linux/arm64/v8"
-    pull_policy: never
+    pull_policy: missing
 

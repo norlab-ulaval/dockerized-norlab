@@ -108,7 +108,7 @@ setup() {
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --fail-fast -- ${DOCKER_CMD}
   assert_success
-  assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}"
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
 #  bats_print_run_env_variable
 }
 
@@ -160,6 +160,22 @@ setup() {
   assert_equal "${BUILDKIT_PROGRESS}" plain
   assert_equal "${DEPENDENCIES_BASE_IMAGE_TAG}" '2.1-r35.0.0'
   assert_equal "${DN_IMAGE_TAG}" 'DN-latest-2.1-r35.0.0'
+}
+
+@test "docker compose build conditional logic" {
+#  skip "tmp dev"
+
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                      --base-image dustynv/pytorch \
+                      --os-name arbitratyName \
+                      --tag-package 2.1 \
+                      --tag-version r35.0.0 \
+                      --docker-debug-logs \
+                      --fail-fast \
+                      -- build dependencies-core
+
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 dependencies-core".*"since the script is executed inside a docker container".*
 }
 
 @test "flag --help" {
