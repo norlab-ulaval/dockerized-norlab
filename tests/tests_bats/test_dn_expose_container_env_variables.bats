@@ -46,9 +46,6 @@ setup_file() {
   mkdir -p "${DN_PATH_MOCK_DIR}/utilities/norlab-shell-script-tools"
   mkdir -p "${DN_PATH_MOCK_DIR}/dockerized-norlab-images/container-tools"
 
-  cp  "${DN_PATH}/.env.dockerized-norlab-project" "${DN_PATH_MOCK_DIR}/"
-  cp -r "${DN_PATH}/utilities/norlab-shell-script-tools" "${DN_PATH_MOCK_DIR}/utilities/"
-
   mkdir -p /ros2_ws_mock/install/
   touch /ros2_ws_mock/install/local_setup.bash
 
@@ -56,11 +53,10 @@ setup_file() {
 #  pwd >&3 && tree -L 3 -a "${DN_PATH}"/utilities/ >&3
 #  printenv >&3
 
-  assert_file_exist "${DN_PATH_MOCK_DIR}/utilities/norlab-shell-script-tools/src/function_library/prompt_utilities.bash"
-  assert_file_exist "${DN_PATH_MOCK_DIR}/utilities/norlab-shell-script-tools/.git"
   assert_file_exist "${DN_PATH}/utilities/norlab-shell-script-tools/src/function_library/prompt_utilities.bash"
   assert_file_exist "${DN_PATH}/utilities/norlab-shell-script-tools/.git"
   assert_file_exist "${DN_PATH}/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash"
+
   assert_file_exist /ros2_ws_mock/install/local_setup.bash
 
 #  pwd >&3 && tree -L 1 -a -hug >&3
