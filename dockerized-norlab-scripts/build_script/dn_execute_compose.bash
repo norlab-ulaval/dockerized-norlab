@@ -196,7 +196,7 @@ function dn::execute_compose() {
 
   if [[ ${IS_TEAMCITY_RUN} == true ]]; then
     # Prevent Teamcity DISPLAY unset warning in build log file
-    DISPLAY=${DISPLAY:-':0'}
+    DISPLAY=${DISPLAY:-':0'} && export DISPLAY
   fi
 
   # ....If defined › execute dn::callback_execute_compose_pre......................................
