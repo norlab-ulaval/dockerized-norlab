@@ -56,6 +56,8 @@ services:
   dependencies-core:
     extends: dependencies-main
     image: ${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG:?err}
+    build:
+      target: final
     depends_on:
       - dependencies-main
 
