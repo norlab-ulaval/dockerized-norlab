@@ -25,8 +25,10 @@
 #   to stdout
 #
 
+DN_PATH=$(git rev-parse --show-toplevel)
 DN_EXPOSE_TMP_CWD=$(pwd)
-cd "${DN_CONTAINER_TOOLS_PATH:?err}" || exit 1
+
+cd "${DN_PATH}/dockerized-norlab-images/container-tools" || exit 1
 source import_dockerized_norlab_container_tools.bash
 cd "${DN_EXPOSE_TMP_CWD}" || exit 1
 

@@ -16,8 +16,6 @@
 #
 # =================================================================================================
 
-# ToDo: unit-test (ref task NMO-486 test: implement import_dockerized_norlab_tools.bash bats tests)
-
 MSG_DIMMED_FORMAT="\033[1;2m"
 MSG_ERROR_FORMAT="\033[1;31m"
 MSG_END_FORMAT="\033[0m"

@@ -69,7 +69,7 @@ setup() {
   source "${DN_PATH}"/.env.dockerized-norlab-project || return 1
   set +o allexport
 
-  export DN_CONTAINER_TOOLS_PATH="${DN_PATH}/dockerized-norlab-images/container-tools"
+#  export DN_CONTAINER_TOOLS_PATH="${DN_PATH}/dockerized-norlab-images/container-tools"
 
   export PROJECT_PROMPT_NAME=dockerized-norlab
 

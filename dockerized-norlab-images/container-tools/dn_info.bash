@@ -4,7 +4,7 @@ PCK_VERSION=$(pip3 list --format freeze)
 SP="    "
 
 # ToDo: validate (ref task NMO-385 sub-task NMO-485 fix: Project related env var overridden issue)
-cd "${DN_CONTAINER_TOOLS_PATH:?err}" || exit 1
+cd /dockerized-norlab/dockerized-norlab-images/container-tools || exit 1
 source import_dockerized_norlab_container_tools.bash
 
 n2st::set_which_python3_version

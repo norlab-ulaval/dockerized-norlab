@@ -195,19 +195,21 @@ RUN apt-get update \
 # ===Final build step==============================================================================
 FROM core-dependencies AS final
 
-ENV DN_PATH=/dockerized-norlab
-ENV DN_CONTAINER_TOOLS_PATH=${DN_PATH}/dockerized-norlab-images/container-tools
-ENV N2ST_PATH=${DN_PATH}/utilities/norlab-shell-script-tools
+#ENV DN_CONTAINER_TOOLS_PATH=${DN_PATH}/dockerized-norlab-images/container-tools
 
-WORKDIR ${DN_PATH}
+WORKDIR /dockerized-norlab
+COPY --from=context-dn-root ./.git ./.git
 
-COPY --from=context-dn-container-tools ./import_dockerized_norlab_container_tools.bash ./dockerized-norlab-images/container-tools/
 
 # ....Install norlab-shell-script-tool and norlab-build-system tools...............................
-COPY --from=context-dn-submodules ./norlab-shell-script-tools ${N2ST_PATH}
+WORKDIR /dockerized-norlab/utilities/norlab-shell-script-tools
+COPY --from=context-dn-submodules ./norlab-shell-script-tools/ .
+#COPY --from=context-dn-submodules ./norlab-shell-script-tools/.git ./git
 
-RUN echo "Sanity check"  \
-    && cd ${DN_CONTAINER_TOOLS_PATH} || exit 1 \
+WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+COPY --from=context-dn-container-tools ./import_dockerized_norlab_container_tools.bash ./
+
+RUN echo "Sanity check" \
     && source import_dockerized_norlab_container_tools.bash \
     && n2st::set_which_python3_version \
     && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}"
@@ -221,25 +223,27 @@ RUN echo "Sanity check"  \
 
 # ....Add dn-container tools.......................................................................
 # ToDo: assessement › move this step at a later stage
-WORKDIR ${DN_PATH}
 
-COPY --from=context-dn-container-tools ./dn_info.bash ./dockerized-norlab-images/container-tools/
-COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./dockerized-norlab-images/container-tools/
+WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+COPY --from=context-dn-container-tools ./dn_info.bash ./
+COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./
 
 #RUN ( \
 #      echo ""; \
 #      echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
 #      echo "alias tree='pwd && tree -L 1'"; \
 #      echo "alias tree2='tree -L 2'"; \
-#      echo "alias dn_info='source ${DN_PATH}/dockerized-norlab-images/container-tools/dn_info.bash'"; \
+#      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"; \
 #    ) >> ~/.bashrc \
 #    && echo "" \
-#    && bash ${DN_PATH}/dockerized-norlab-images/container-tools/dn_info.bash
+#    && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
+
+WORKDIR /dockerized-norlab
 
 RUN ( \
       echo ""; \
       echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
-      echo "source ${DN_PATH}/dockerized-norlab-images/container-tools/dn_bash_alias.bash"; \
+      echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash"; \
       echo ""; \
     ) >> ~/.bashrc \
     && echo  \
