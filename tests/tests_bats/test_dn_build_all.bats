@@ -53,7 +53,7 @@ setup_file() {
 setup() {
 #  cd "$TESTED_FILE_PATH" || exit
 
-  export NBS_OVERRIDE_BUILD_MATRIX_MAIN='tests/.env.build_matrix.main.mock'
+  export NBS_OVERRIDE_BUILD_MATRIX_MAIN=build_matrix_config/test/.env.build_matrix.main.mock
 
 }
 
@@ -87,7 +87,6 @@ teardown() {
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
-  assert_file_exist ./build_matrix_config/test/.env.build_matrix.mock
 
 
 

@@ -42,7 +42,7 @@ TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 
-  export NBS_OVERRIDE_BUILD_MATRIX_MAIN=tests/.env.build_matrix.main.mock
+  export NBS_OVERRIDE_BUILD_MATRIX_MAIN=build_matrix_config/test/.env.build_matrix.main.mock
   export BUILD_MATRIX_CONFIG_FILE=build_matrix_config/test/.env.build_matrix.mock
 
 #  pwd >&3 && tree -L 2 -a -hug >&3

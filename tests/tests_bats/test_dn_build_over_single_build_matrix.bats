@@ -43,7 +43,7 @@ setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
 
   export TEST_DOTENV_BUILD_MATRIX="test/.env.build_matrix.mock"
-  export TEST_DOTENV_BUILD_MATRIX_MAIN="build_matrix_config/${TEST_DOTENV_BUILD_MATRIX}.main"
+  export TEST_DOTENV_BUILD_MATRIX_MAIN="build_matrix_config/test/.env.build_matrix.main.mock"
 
 
 #  pwd >&3 && tree -L 2 -a -hug utilities/ >&3

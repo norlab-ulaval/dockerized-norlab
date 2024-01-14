@@ -14,11 +14,11 @@
 # ===============================================================================================
 function dn::callback_execute_compose_pre() {
 
-  if [[ ! -f ${COMPOSE_FILE:?err} ]]; then
-    n2st::print_msg_error_and_exit "docker-compose file ${COMPOSE_FILE} is unreachable"
+  if [[ ! -d ${NBS_COMPOSE_DIR:?err} ]]; then
+    n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
   fi
 
-  if [[ "${COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]]; then
+  if [[ "${NBS_COMPOSE_DIR}" == "dockerized-norlab-images/core-images/dependencies/" ]]; then
     # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
