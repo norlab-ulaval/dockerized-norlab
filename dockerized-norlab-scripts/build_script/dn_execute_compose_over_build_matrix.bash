@@ -348,13 +348,8 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         fi
 
 
-        # ....If defined › execute dn::callback_execute_compose_pre................................
-        if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
-          source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
-          dn::callback_execute_compose_pre
-        fi
-
         # ....Execute docker command...............................................................
+
         # shellcheck disable=SC2086
         dn::execute_compose \
           ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} \
@@ -368,11 +363,6 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
         DOCKER_EXIT_CODE=$?
 
-        # ....If defined › execute dn::callback_execute_compose_pre................................
-        if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
-          source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash"
-          dn::callback_execute_compose_post
-        fi
 
         # ....Collect image tags exported by dn_execute_compose.bash...............................
         if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then

@@ -194,6 +194,14 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   "
 
+  # ....If defined › execute dn::callback_execute_compose_pre......................................
+  NBS_COMPOSE_DIR=$( dirname "$COMPOSE_FILE" )
+
+  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
+    source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
+    dn::callback_execute_compose_pre
+  fi
+
   # ....Execute docker command.....................................................................
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
@@ -203,6 +211,11 @@ function dn::execute_compose() {
 
   n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
 
+  # ....If defined › execute dn::callback_execute_compose_pre......................................
+  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
+    source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash"
+    dn::callback_execute_compose_post
+  fi
 
   # ....Show feedback..............................................................................
   n2st::print_msg "Environment variables used by compose:\n
