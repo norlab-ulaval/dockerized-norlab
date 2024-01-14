@@ -194,6 +194,11 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   "
 
+  if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+    # Prevent Teamcity DISPLAY unset warning in build log file
+    DISPLAY=${DISPLAY:-':0'}
+  fi
+
   # ....If defined › execute dn::callback_execute_compose_pre......................................
   NBS_COMPOSE_DIR=$( dirname "$COMPOSE_FILE" )
 
