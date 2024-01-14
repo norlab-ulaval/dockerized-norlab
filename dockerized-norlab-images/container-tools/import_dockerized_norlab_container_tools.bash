@@ -29,9 +29,7 @@ function dn::source_lib(){
   # Note: can handle both sourcing cases
   #   i.e. from within a script or from an interactive terminal session
   local _PATH_TO_SCRIPT="$(realpath "${BASH_SOURCE[0]:-'.'}")"
-  _PATH_TO_SCRIPT_DIR="$(dirname "${_PATH_TO_SCRIPT}")"
-  cd "${_PATH_TO_SCRIPT_DIR}/../.."
-  DN_PATH=$(pwd)
+  DN_PATH=$(realpath "$(dirname "${_PATH_TO_SCRIPT}")/../..")
 
   # ....Source DN dependencies.....................................................................
   N2ST_PATH=${DN_PATH}/utilities/norlab-shell-script-tools
