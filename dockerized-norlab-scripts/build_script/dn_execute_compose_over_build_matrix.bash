@@ -323,8 +323,8 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           cd "${DN_PATH:?err}" || exit 1
 
           n2st::print_msg "Git fetch tag list"
-          git fetch --tags
-          git tag --list
+          git fetch --tags --verbose
+#          git tag --list
 
           # Execute if not run in bats test framework
           if [[ -z ${BATS_VERSION} ]]; then
