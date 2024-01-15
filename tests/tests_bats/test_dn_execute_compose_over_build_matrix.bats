@@ -250,7 +250,6 @@ setup() {
                         --l4t-version-build-matrix-override 'r33.3.3' \
                         --fail-fast
 
-  assert_output --regexp .*"\[".*"NBS".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"NBS".*"\]".*"Repository checkout ›"
-#  assert_output --regexp .*"\[".*"NBS".*"\]".*"Repository checkout ›".*
+  assert_output --regexp .*"\[".*"NBS".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"NBS".*"\]".*"\[".*"NBS warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"NBS".*"\]".*"Repository checkout".*
 
 }

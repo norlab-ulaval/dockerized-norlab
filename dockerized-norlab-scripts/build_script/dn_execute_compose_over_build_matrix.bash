@@ -314,41 +314,38 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         EACH_TAG_PKG=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://')
 
 
-        if [[ ${TEAMCITY_VERSION} ]]; then
+        if [[ ${IS_TEAMCITY_RUN} == true ]]; then
           echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --os-name ${EACH_OS_NAME} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[*]} -- ${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT_TEAMCITY}|n']"
           echo
         fi
 
 
         # ....Repository version checkout logic..........................................................
-        cd "${DN_PATH:?err}" || exit 1
+        if [[ "${EACH_DN_VERSION}" != 'latest' ]] && [[ "${EACH_DN_VERSION}" != 'bleeding' ]]; then
+          cd "${DN_PATH:?err}" || exit 1
 
-        if [[ ${TEAMCITY_VERSION} ]]; then
-          # Solution for "error: object directory ... .git/objects does not exist"
-          n2st::print_msg "Git fetch all remote"
-          git fetch --all
-        fi
-
-        if [[ "${EACH_DN_VERSION}" != 'latest' ]]; then
+          if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+            # Solution for "error: object directory ... .git/objects does not exist"
+            n2st::print_msg "Git fetch all remote"
+            git fetch --all
+          fi
 
           n2st::print_msg "Git fetch tag list"
+          # Note: keep it here as a testing tool
           git tag --list
 
           # Execute if not run in bats test framework
           if [[ -z ${BATS_VERSION} ]]; then
             n2st::print_msg "Execute git checkout"
-            if [[ "${EACH_DN_VERSION}" == 'bleeding-edge' ]]; then
-              if [[ "$(git symbolic-ref -q --short HEAD)" != "dev" ]]; then
-                git checkout dev
-              fi
-            else
-              git checkout tags/"${EACH_DN_VERSION}"
-            fi
+            git checkout tags/"${EACH_DN_VERSION}"
+#            n2st::print_msg_warning "Repository checkout › $(git describe --all --exact-match)"
+          else
+            n2st::print_msg_warning "Bats test run › skip \"Execute git checkout\""
           fi
 
         fi
 
-        n2st::print_msg_warning "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
+        n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
 
 
         # ....Execute docker command...............................................................
@@ -376,7 +373,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           MSG_STATUS_TC_TAG="Fail ›"
           _BUILD_STATUS_PASS=$DOCKER_EXIT_CODE
 
-          if [[ ${TEAMCITY_VERSION} ]]; then
+          if [[ ${IS_TEAMCITY_RUN} == true ]]; then
             # Fail the build › Will appear on the TeamCity Build Results page
             echo -e "##teamcity[buildProblem description='BUILD FAIL with docker exit code: ${_BUILD_STATUS_PASS}']"
           fi
@@ -388,7 +385,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         IMAGE_TAG_CRAWLED_TC=( "${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}" )
         # .........................................................................................
 
-        if [[ ${TEAMCITY_VERSION} ]]; then
+        if [[ ${IS_TEAMCITY_RUN} == true ]]; then
           echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash']"
         fi
 
@@ -433,7 +430,7 @@ ${STR_BUILD_MATRIX_SERVICES_AND_TAGS}"
 n2st::print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
 # ====TeamCity service message=====================================================================
-if [[ ${TEAMCITY_VERSION} ]]; then
+if [[ ${IS_TEAMCITY_RUN} == true ]]; then
   # Tag added to the TeamCity build via a service message
   for tc_build_tag in "${IMAGE_TAG_CRAWLED_TC[@]}"; do
     echo -e "##teamcity[addBuildTag '${tc_build_tag}']"

@@ -42,7 +42,7 @@ services:
 
   global-service-builder:
     extends: global-service-dev # ToDo: on dev task end >> mute this line ←
-    pull_policy: build
+    pull_policy: missing # Note: enforce pulling image only if not available in cache
     labels:
       org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
     build:
