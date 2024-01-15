@@ -3,7 +3,7 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
-WORKDIR ${DN_PATH}
+WORKDIR /dockerized-norlab
 COPY --from=context-dn-container-tools ./dn_test/try_gym.py ./dockerized-norlab-images/container-tools/dn_test/
 
 # ...Install simulator..............................................................................
@@ -48,10 +48,10 @@ RUN apt-get update \
         gym-notebook-wrapper \
     && echo \
     && echo "Sanity check" \
-    && python ${DN_PATH}/dockerized-norlab-images/container-tools/dn_test/try_gym.py \
+    && python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py \
     && echo \
     && ( \
-        echo "alias dn_gym_check='python3 ${DN_PATH}/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
+        echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
         ) >> ~/.bashrc
 
 

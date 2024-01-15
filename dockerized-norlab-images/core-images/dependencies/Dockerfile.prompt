@@ -7,6 +7,8 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS promt-tools
 ENV DN_CONTAINER_NAME=${DN_CONTAINER_NAME:-IamNorLab}
 ENV DN_ACTIVATE_POWERLINE_PROMT="${DN_ACTIVATE_POWERLINE_PROMT:-true}"
 
+SHELL ["/bin/bash", "-c"]
+
 # ...Configure prompt................................................................................
 # ♜ Doc: https://powerline.readthedocs.io
 
@@ -51,8 +53,14 @@ RUN apt-get update \
 #  - How to use combination of ARG and ENV in Dockerfile to prevent unsupported modifier in substitution?: https://stackoverflow.com/questions/68935923/how-to-use-combination-of-arg-and-env-in-dockerfile-to-prevent-unsupported-modif
 #  - https://docs.docker.com/engine/reference/builder/#using-arg-variables
 
-WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-RUN source import_dockerized_norlab_container_tools.bash \
+WORKDIR /dockerized-norlab
+#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+
+# ToDo: on dev task end >> mute this line
+RUN tree -L 1
+
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
     && n2st::set_which_python3_version \
     && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
     && ( \
@@ -95,8 +103,9 @@ COPY prompt/config_files/config.json config_files/
 COPY prompt/config_files/themes/shell/dockerized_snow.json config_files/themes/shell/dockerized_snow.json
 COPY prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/colorschemes/shell/dockerized_snow.json
 
-WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-RUN source import_dockerized_norlab_container_tools.bash \
+#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
     && n2st::set_which_python3_version \
     && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
     && cd $POWERLINE_TMP \

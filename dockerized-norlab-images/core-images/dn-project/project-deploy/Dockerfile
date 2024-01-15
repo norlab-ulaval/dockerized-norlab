@@ -18,7 +18,7 @@ ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
 ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 
 # ....install debugging tools......................................................................
-WORKDIR ${DN_PATH}/dockerized-norlab-images/container-tools
+WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 RUN source ./dn_install_debugging_tools.bash \

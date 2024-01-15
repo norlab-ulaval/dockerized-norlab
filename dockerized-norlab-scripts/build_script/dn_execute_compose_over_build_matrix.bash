@@ -346,8 +346,9 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             fi
           fi
 
-          n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
         fi
+
+        n2st::print_msg_warning "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)"
 
 
         # ....Execute docker command...............................................................

@@ -42,6 +42,7 @@ services:
 
   global-service-builder:
     extends: global-service-dev # ToDo: on dev task end >> mute this line ←
+#    pull_policy: build # ToDo: on dev task end >> mute this line ←
     labels:
       org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
     build:
@@ -55,5 +56,4 @@ services:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
       platforms:
         - "linux/arm64/v8"
-    pull_policy: missing
 

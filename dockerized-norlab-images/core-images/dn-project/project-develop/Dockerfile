@@ -26,7 +26,7 @@ ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
 ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 
 # ....install debugging tools......................................................................
-WORKDIR ${DN_PATH}/dockerized-norlab-images/container-tools
+WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 RUN source ./dn_install_debugging_tools.bash \
@@ -35,16 +35,22 @@ RUN source ./dn_install_debugging_tools.bash \
 
 FROM debugging-tools AS project-specific-ros-setup
 
-WORKDIR /
-COPY dn_ros2_entrypoint.bash /
-COPY dn_ros2_rebuild_dev_workspace.bash /
-COPY dn_fetch_ros_env_variables.bash /
-COPY dn_expose_container_env_variables.bash /
+WORKDIR /dockerized-norlab/dockerized-norlab-images/core-images/dn-project/project-develop
+COPY ./dn_ros2_entrypoint.bash ./
+COPY ./dn_ros2_rebuild_dev_workspace.bash ./
+COPY ./dn_fetch_ros_env_variables.bash ./
+COPY ./dn_expose_container_env_variables.bash ./
 
-RUN chmod +x /dn_ros2_entrypoint.bash \
-    && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
-    && chmod +x /dn_fetch_ros_env_variables.bash \
-    && chmod +x /dn_expose_container_env_variables.bash
+RUN chmod +x dn_ros2_entrypoint.bash \
+    && chmod +x dn_ros2_rebuild_dev_workspace.bash \
+    && chmod +x dn_fetch_ros_env_variables.bash \
+    && chmod +x dn_expose_container_env_variables.bash
+
+# Create soft link in the root dir
+RUN ln -s dn_ros2_entrypoint.bash /dn_ros2_entrypoint.bash \
+    && ln -s dn_ros2_rebuild_dev_workspace.bash /dn_ros2_rebuild_dev_workspace.bash \
+    && ln -s dn_fetch_ros_env_variables.bash /dn_fetch_ros_env_variables.bash \
+    && ln -s dn_expose_container_env_variables.bash /dn_expose_container_env_variables.bash
 
 #RUN chmod +x /dn_ros2_entrypoint.bash \
 #    && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
