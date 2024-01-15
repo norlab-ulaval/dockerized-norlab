@@ -47,10 +47,10 @@ RUN chmod +x dn_ros2_entrypoint.bash \
     && chmod +x dn_expose_container_env_variables.bash
 
 # Create soft link in the root dir
-RUN ln -s dn_ros2_entrypoint.bash /dn_ros2_entrypoint.bash \
-    && ln -s dn_ros2_rebuild_dev_workspace.bash /dn_ros2_rebuild_dev_workspace.bash \
-    && ln -s dn_fetch_ros_env_variables.bash /dn_fetch_ros_env_variables.bash \
-    && ln -s dn_expose_container_env_variables.bash /dn_expose_container_env_variables.bash
+RUN ln -s $(pwd)/dn_ros2_entrypoint.bash /dn_ros2_entrypoint.bash \
+    && ln -s $(pwd)/dn_ros2_rebuild_dev_workspace.bash /dn_ros2_rebuild_dev_workspace.bash \
+    && ln -s $(pwd)/dn_fetch_ros_env_variables.bash /dn_fetch_ros_env_variables.bash \
+    && ln -s $(pwd)/dn_expose_container_env_variables.bash /dn_expose_container_env_variables.bash
 
 #RUN chmod +x /dn_ros2_entrypoint.bash \
 #    && chmod +x /dn_ros2_rebuild_dev_workspace.bash \

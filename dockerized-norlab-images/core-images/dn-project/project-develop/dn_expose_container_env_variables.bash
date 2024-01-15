@@ -25,7 +25,11 @@
 #   to stdout
 #
 
-DN_PATH=$(git rev-parse --show-toplevel)
+if [[ -d /dockerized-norlab ]]; then
+    DN_PATH=/dockerized-norlab
+else
+  DN_PATH=$(git rev-parse --show-toplevel)
+fi
 DN_EXPOSE_TMP_CWD=$(pwd)
 
 cd "${DN_PATH}/dockerized-norlab-images/container-tools" || exit 1
