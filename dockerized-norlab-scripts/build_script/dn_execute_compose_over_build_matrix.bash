@@ -321,15 +321,15 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
 
         # ....Repository version checkout logic..........................................................
+        cd "${DN_PATH:?err}" || exit 1
+
+        if [[ ${TEAMCITY_VERSION} ]]; then
+          # Solution for "error: object directory ... .git/objects does not exist"
+          n2st::print_msg "Git fetch all remote"
+          git fetch --all
+        fi
+
         if [[ "${EACH_DN_VERSION}" != 'latest' ]]; then
-          cd "${DN_PATH:?err}" || exit 1
-
-          if [[ ${TEAMCITY_VERSION} ]]; then
-            # Solution for "error: object directory ... .git/objects does not exist"
-            n2st::print_msg "Git fetch all remote"
-            git fetch --all
-          fi
-
 
           n2st::print_msg "Git fetch tag list"
           git tag --list
@@ -338,7 +338,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           if [[ -z ${BATS_VERSION} ]]; then
             n2st::print_msg "Execute git checkout"
             if [[ "${EACH_DN_VERSION}" == 'bleeding-edge' ]]; then
-              if [[ "$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)" != "dev" ]]; then
+              if [[ "$(git symbolic-ref -q --short HEAD)" != "dev" ]]; then
                 git checkout dev
               fi
             else

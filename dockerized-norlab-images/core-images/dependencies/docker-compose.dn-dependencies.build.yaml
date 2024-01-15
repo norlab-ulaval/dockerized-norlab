@@ -22,13 +22,13 @@ services:
     extends:
       file: ../global-service-builder/docker-compose.global-service.build.yaml
       service: global-service-builder
-    image: ${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG:?err}
     build:
       context: .
       dockerfile: Dockerfile.core
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dn-base-image-jetson
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG:?err}
 
   # ....dependencies-prompt........................................................................
   dependencies-prompt:
@@ -41,8 +41,8 @@ services:
     environment:
       DN_ACTIVATE_POWERLINE_PROMT: false
       DN_CONTAINER_NAME: IamInteractive
-    container_name: IamInteractive
     image: ${DN_HUB:?err}/dn-dependencies-prompt:${DN_IMAGE_TAG:?err}
+    container_name: IamInteractive
     depends_on:
       - dependencies-core
 
