@@ -13,7 +13,7 @@ services:
 #      args:
 #        BASE_IMAGE: nvcr.io/nvidia/l4t-jetpack
 #        BASE_IMAGE_TAG: r35.2.1
-#    image: ${DN_HUB:?err}/dn-dependencies-test:r35.2.1
+#    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-test:r35.2.1
 
   # ====Dockerized-NorLab dependencies=============================================================
 
@@ -46,7 +46,7 @@ services:
         OPENBLAS_CORETYPE: ${BASE_IMG_ENV_OPENBLAS_CORETYPE}
         # Base image env var transfer (jetson-container pytorch related)
         LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
-    image: ${DN_HUB:?err}/dn-base-image-jetson:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson:${DN_IMAGE_TAG:?err}
 
   base-image-tester:
     extends: base-image

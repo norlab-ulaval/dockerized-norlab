@@ -13,7 +13,7 @@ services:
 #      args:
 #        BASE_IMAGE: nvcr.io/nvidia/l4t-jetpack
 #        BASE_IMAGE_TAG: r35.2.1
-#    image: ${DN_HUB:?err}/dn-dependencies-test:r35.2.1
+#    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-test:r35.2.1
 
   # ====Dockerized-NorLab dependencies=============================================================
 
@@ -26,9 +26,9 @@ services:
       context: .
       dockerfile: Dockerfile.core
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dn-base-image-jetson
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-core:${DN_IMAGE_TAG:?err}
 
   # ....dependencies-prompt........................................................................
   dependencies-prompt:
@@ -36,12 +36,12 @@ services:
     build:
       dockerfile: Dockerfile.prompt
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies-core
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-core
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     environment:
       DN_ACTIVATE_POWERLINE_PROMT: false
       DN_CONTAINER_NAME: IamInteractive
-    image: ${DN_HUB:?err}/dn-dependencies-prompt:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-prompt:${DN_IMAGE_TAG:?err}
     container_name: IamInteractive
     depends_on:
       - dependencies-core
@@ -52,9 +52,9 @@ services:
     build:
       dockerfile: Dockerfile.python-science-stack
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies-prompt
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-prompt
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dn-dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-prompt
 
@@ -67,7 +67,7 @@ services:
     build:
       dockerfile: Dockerfile.ros2-dn-custom
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies-python-science-stack
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-python-science-stack
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-python-science-stack
@@ -81,10 +81,14 @@ services:
 
   dependencies-ros2-custom:
     extends: dependencies-ros2-custom-main
-    build:
-      tags:
-        - ${DN_HUB:?err}/dn-dependencies:${DN_IMAGE_TAG:?err}
-    image: ${DN_HUB:?err}/dn-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-ros2-custom-main
+
+  # ....dependencies (full)........................................................................
+  dependencies-full:
+    extends: dependencies-ros2-custom
+    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-ros2-custom
 

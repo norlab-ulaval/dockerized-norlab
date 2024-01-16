@@ -11,12 +11,12 @@ services:
     build:
       context: dn-perception
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dn-dependencies
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-full
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
 
   dn-perception:
     extends: dn-perception-main
-    image: ${DN_HUB:?err}/dn-perception:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-perception:${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception-main
 
@@ -27,7 +27,7 @@ services:
 #    build:
 #      context: dn-perception-libpointmatcher
 #      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dn-perception
+#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception
 #    depends_on:
 #      - dn-perception
 #
@@ -40,7 +40,7 @@ services:
 #
 #  dn-perception-libpointmatcher:
 #    extends: dn-perception-libpointmatcher-main
-#    image: ${DN_HUB:?err}/dn-perception-libpointmatcher:${DN_IMAGE_TAG:?err}
+#    image: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher:${DN_IMAGE_TAG:?err}
 #    depends_on:
 #      - dn-perception-libpointmatcher-main
 
@@ -51,7 +51,7 @@ services:
 #    build:
 #      context: dn-perception-icp-mapper
 #      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dn-perception-libpointmatcher
+#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher
 #    depends_on:
 #      - dn-perception-libpointmatcher
 #
@@ -64,6 +64,6 @@ services:
 #
 #  dn-perception-icp-mapper:
 #    extends: dn-perception-icp-mapper-main
-#    image: ${DN_HUB:?err}/dn-perception-icp-mapper:${DN_IMAGE_TAG:?err}
+#    image: ${DN_HUB:?err}/dockerized-norlab-perception-icp-mapper:${DN_IMAGE_TAG:?err}
 #    depends_on:
 #      - dn-perception-icp-mapper-main
