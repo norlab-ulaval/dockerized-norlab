@@ -1,16 +1,16 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run › dn_build_over_single_build_matrix.bash (dev --fail-fast)" type="ShConfigurationType" folderName="[DN] development ( .env.build_matrix.dev.dn )">
-    <option name="SCRIPT_TEXT" value="" />
+  <configuration default="false" name="run › dn_build_over_single_build_matrix.bash (dev)" type="ShConfigurationType" folderName="[DN] development ( .env.build_matrix.dev )">
+    <option name="SCRIPT_TEXT" value="bash dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash build_matrix_config/dev/.env.build_matrix.main.dev --fail-fast" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash" />
-    <option name="SCRIPT_OPTIONS" value=".env.build_matrix.dev.dn --fail-fast" />
+    <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
     <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
     <option name="INTERPRETER_PATH" value="/bin/zsh" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="EXECUTE_IN_TERMINAL" value="true" />
-    <option name="EXECUTE_SCRIPT_FILE" value="true" />
+    <option name="EXECUTE_SCRIPT_FILE" value="false" />
     <envs />
     <method v="2" />
   </configuration>

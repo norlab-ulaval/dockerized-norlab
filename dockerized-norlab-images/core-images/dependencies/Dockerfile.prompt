@@ -7,6 +7,8 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS promt-tools
 ENV DN_CONTAINER_NAME=${DN_CONTAINER_NAME:-IamNorLab}
 ENV DN_ACTIVATE_POWERLINE_PROMT="${DN_ACTIVATE_POWERLINE_PROMT:-true}"
 
+SHELL ["/bin/bash", "-c"]
+
 # ...Configure prompt................................................................................
 # ♜ Doc: https://powerline.readthedocs.io
 
@@ -51,9 +53,15 @@ RUN apt-get update \
 #  - How to use combination of ARG and ENV in Dockerfile to prevent unsupported modifier in substitution?: https://stackoverflow.com/questions/68935923/how-to-use-combination-of-arg-and-env-in-dockerfile-to-prevent-unsupported-modif
 #  - https://docs.docker.com/engine/reference/builder/#using-arg-variables
 
+WORKDIR /dockerized-norlab
+#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 
-RUN cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_scripts/ \
-    && source ./which_python_version.bash \
+# ToDo: on dev task end >> mute this line
+RUN tree -L 1
+
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_python3_version \
     && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
     && ( \
         ## Note: powerline-daemon and powerline10k are OS specific app.
@@ -95,9 +103,12 @@ COPY prompt/config_files/config.json config_files/
 COPY prompt/config_files/themes/shell/dockerized_snow.json config_files/themes/shell/dockerized_snow.json
 COPY prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/colorschemes/shell/dockerized_snow.json
 
-RUN cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_scripts/ \
-    && source ./which_python_version.bash \
+#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_python3_version \
     && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
+    && cd $POWERLINE_TMP \
     && mkdir -p $POWERLINE_DIR/config_files/ \
     && mkdir -p $POWERLINE_DIR/config_files/themes/shell/ \
     && mkdir -p $POWERLINE_DIR/config_files/colorschemes/shell/ \
@@ -113,7 +124,6 @@ RUN cd /dockerized-norlab/utilities/norlab-shell-script-tools/src/utility_script
 #RUN export DS_LOGO=$'\U22EF\U1D412\U22EF'  # ⋯𝐒⋯        mathematical bold capital s (U+1D412)
 #RUN export DS_LOGO=$'\U1D516' >> ~/.bashrc # 𝔖         mathematical fraktur capital s U+1D516
 #RUN export DS_LOGO=$'\U1D57E' >> ~/.bashrc # 𝕾         mathematical bold fraktur capital s U+1D57E
-
 
 CMD [ "bash" ]
 

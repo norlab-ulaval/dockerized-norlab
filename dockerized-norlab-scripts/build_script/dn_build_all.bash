@@ -15,7 +15,7 @@
 #   - Read NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG            Use to quickly add docker flag at runtime
 #             e.g.: $ NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push --dry-run" && source dn_build_all.bash
 #   - Read NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY  Use to quickly overide the build matrix list
-#             e.g.: $ NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev.dn' ) && source dn_build_all.bash
+#             e.g.: $ NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev' ) && source dn_build_all.bash
 #   - Read STR_BUILD_MATRIX_SERVICES_AND_TAGS from build_all.log
 #
 # =================================================================================================
@@ -48,7 +48,7 @@ source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
 cd "${NBS_PATH:?'Variable not set'}"  || exit 1
 source import_norlab_build_system_lib.bash || exit 1
 
-cd "${DN_PATH}" || exit 1
+cd "${DN_PATH:?'Variable not set'}" || exit 1
 set +o allexport
 
 

@@ -25,10 +25,10 @@ fi
 
 
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                                                  "${_DOTENV_BUILD_MATRIX}"\
-                                                  --fail-fast \
-                                                  -- up --build --detach --wait \
-                                                  --no-deps "${THE_SERVICE}"
+                        "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" \
+                        --fail-fast \
+                        -- up --build --detach --wait \
+                        --no-deps "${THE_SERVICE}"
 
 
 #CN=$(grep -A3 'project-develop:' ${THE_COMPOSE_FILE} | tail -n1); CN=${CN//*container_name: /}; echo "$CN"
@@ -40,7 +40,7 @@ if [[ -n $TEAMCITY_VERSION ]]; then
 else
 
   bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-                                                  "${_DOTENV_BUILD_MATRIX}" \
-                                                  --fail-fast \
-                                                  -- exec "${THE_SERVICE}" bash
+                        "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" \
+                        --fail-fast \
+                        -- exec "${THE_SERVICE}" bash
 fi

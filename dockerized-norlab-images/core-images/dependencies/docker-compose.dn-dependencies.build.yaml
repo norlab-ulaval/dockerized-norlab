@@ -18,8 +18,7 @@ services:
   # ====Dockerized-NorLab dependencies=============================================================
 
   # ....dependencies-core..........................................................................
-
-  dependencies-main: # ›› no push build service
+  dependencies-core:
     extends:
       file: ../global-service-builder/docker-compose.global-service.build.yaml
       service: global-service-builder
@@ -27,37 +26,9 @@ services:
       context: .
       dockerfile: Dockerfile.core
       args:
-        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
-        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-        TAG_VERSION: ${TAG_VERSION:?err}
-        # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
-        CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:?err}
-        NVIDIA_VISIBLE_DEVICES: ${BASE_IMG_ENV_NVIDIA_VISIBLE_DEVICES:?err}
-        NVIDIA_DRIVER_CAPABILITIES: ${BASE_IMG_ENV_NVIDIA_DRIVER_CAPABILITIES:?err}
-        PATH: ${BASE_IMG_ENV_PATH:?err}
-        LD_LIBRARY_PATH: ${BASE_IMG_ENV_LD_LIBRARY_PATH:?err}
-        # Base image env var transfer (jetson-container 'dustynv/ros' base specific)
-        ROS_DISTRO: ${BASE_IMG_ENV_ROS_DISTRO:?err}
-        ROS_ROOT: ${BASE_IMG_ENV_ROS_ROOT:?err}
-        ROS_PYTHON_VERSION: ${BASE_IMG_ENV_ROS_PYTHON_VERSION:?err}
-        RMW_IMPLEMENTATION: ${BASE_IMG_ENV_RMW_IMPLEMENTATION:?err}
-        # The following env var does not appear in every jetson-container 'dustynv/ros' base images
-        OPENBLAS_CORETYPE: ${BASE_IMG_ENV_OPENBLAS_CORETYPE}
-        # Base image env var transfer (jetson-container pytorch related)
-        LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
-
-  dependencies-squashed-base-image-tester:
-    extends: dependencies-main
-    build:
-      target: squashed-base-image-tester
-    depends_on:
-      - dependencies-main
-
-  dependencies-core:
-    extends: dependencies-main
+        BASE_IMAGE: ${DN_HUB:?err}/dn-base-image-jetson
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG:?err}
-    depends_on:
-      - dependencies-main
 
   # ....dependencies-prompt........................................................................
   dependencies-prompt:
@@ -70,8 +41,8 @@ services:
     environment:
       DN_ACTIVATE_POWERLINE_PROMT: false
       DN_CONTAINER_NAME: IamInteractive
-    container_name: IamInteractive
     image: ${DN_HUB:?err}/dn-dependencies-prompt:${DN_IMAGE_TAG:?err}
+    container_name: IamInteractive
     depends_on:
       - dependencies-core
 
@@ -89,7 +60,10 @@ services:
 
   # ....dependencies-ros2-custom...................................................................
   dependencies-ros2-custom-main: # ›› no push build service
-    extends: dependencies-main
+    extends: dependencies-python-science-stack
+    #    extends:
+#      file: ../base_image/docker-compose.jetson.build.yaml
+#      service: base-image
     build:
       dockerfile: Dockerfile.ros2-dn-custom
       args:

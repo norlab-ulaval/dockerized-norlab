@@ -41,6 +41,11 @@ TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
+
+  export TEST_DOTENV_BUILD_MATRIX="test/.env.build_matrix.mock"
+  export TEST_DOTENV_BUILD_MATRIX_MAIN="build_matrix_config/test/.env.build_matrix.main.mock"
+
+
 #  pwd >&3 && tree -L 2 -a -hug utilities/ >&3
 #  printenv >&3
 }
@@ -63,36 +68,29 @@ setup_file() {
 
 
 @test "running $TESTED_FILE from root, 'build_script/' or 'dockerized-norlab-scripts/'  › expect pass" {
-  cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"
-  run bash ./$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
-  assert_success
-  refute_output  --partial "No such file or directory"
 
-  cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
-  run bash ./build_script/$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
-  assert_success
-  refute_output  --partial "No such file or directory"
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE \
+              "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}" \
+              --fail-fast
 
-  cd "${BATS_DOCKER_WORKDIR}"
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE build_matrix_config/test/.env.build_matrix.mock
   assert_success
   refute_output  --partial "No such file or directory"
 }
 
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE 'build_matrix_config/test/.env.build_matrix.mock' \
-                                              --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}" \
+                                              --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                                               --os-name-build-matrix-override 'l4t' \
                                               --l4t-version-build-matrix-override 'r33.3.3'
 
   assert_success
   assert_output --regexp .*"docker compose -f".*"push".*
 
-  assert_output --regexp .*"DN-v8.8.8-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DN-v8.8.8-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
 
-  refute_output --regexp .*"DN-v9.9.9-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DN-v9.9.9-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
 
 #  bats_print_run_env_variable
 }

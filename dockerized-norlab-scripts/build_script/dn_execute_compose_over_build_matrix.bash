@@ -26,9 +26,10 @@
 # ....Default......................................................................................
 _BUILD_STATUS_PASS=0
 
-declare -a DOCKER_COMPOSE_CMD_ARGS=()
+declare -a DOCKER_COMPOSE_CMD_ARGS=( build )
 declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
 STR_DOCKER_MANAGEMENT_COMMAND="compose"
+DOCKER_FORCE_PUSH=false
 
 #
 # The main .env.build_matrix to load
@@ -54,7 +55,7 @@ _DOTENV_BUILD_MATRIX="${1:?'Missing the dotenv build matrix file mandatory argum
 shift # Remove argument value
 
 if [[ ! -f "${_DOTENV_BUILD_MATRIX}" ]]; then
-  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in _DOTENV_BUILD_MATRIX='${_DOTENV_BUILD_MATRIX:?err}'" 1>&2
+  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file '${_DOTENV_BUILD_MATRIX:?err}'" 1>&2
   exit 1
 fi
 
@@ -126,18 +127,22 @@ function print_help_in_terminal() {
       --os-name-build-matrix-override l4t
                           The operating system name. Override must be a single value
                           (default to array sequence specified in .env.build_matrix)
+      --ubuntu-version-build-matrix-override jammy
+                          Named operating system version. Override must be a single value
+                          (default to array sequence specified in .env.build_matrix)
       --l4t-version-build-matrix-override r35.2.1
                           Named operating system version. Override must be a single value
                           (default to array sequence specified in .env.build_matrix)
                           Note: L4T container tags (e.g. r35.2.1) should match the L4T version
                           on the Jetson otherwize cuda driver won't be accessible
                           (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
-      --ubuntu-version-build-matrix-override jammy
-      --buildx-bake            Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
+      --force-push        Execute docker compose push right after the docker
+                          main command (to use when using buildx docker-container driver)
       --docker-debug-logs
                           Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
       --fail-fast         Exit script at first encountered error
       --ci-test-force-runing-docker-cmd
+      --buildx-bake       (experimental) Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
 
   \033[1m
     [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
@@ -209,6 +214,10 @@ while [ $# -gt 0 ]; do
     export BUILDKIT_PROGRESS=plain
     shift # Remove argument (--docker-debug-logs)
     ;;
+  --force-push)
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --force-push )
+    shift # Remove argument (--force-push)
+    ;;
   --fail-fast)
     set -e
     shift # Remove argument (--fail-fast)
@@ -233,8 +242,11 @@ while [ $# -gt 0 ]; do
 
 done
 
+
 # .................................................................................................
-n2st::print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}.env.build_matrix${MSG_END_FORMAT}"
+_DOTENV_BUILD_MATRIX_STR="$( basename $(dirname "${_DOTENV_BUILD_MATRIX}"))/$( basename "${_DOTENV_BUILD_MATRIX}" )"
+
+n2st::print_msg "Build images specified in ${MSG_DIMMED_FORMAT}${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}${MSG_END_FORMAT} following ${MSG_DIMMED_FORMAT}${_DOTENV_BUILD_MATRIX_STR}${MSG_END_FORMAT}"
 
 ## Freeze build matrix env variable to prevent accidental override
 ## Note: declare -r ==> set as read-only, declare -a  ==> set as an array
@@ -308,10 +320,42 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         # shellcheck disable=SC2001
         EACH_TAG_PKG=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://')
 
-        if [[ ${TEAMCITY_VERSION} ]]; then
+
+        if [[ ${IS_TEAMCITY_RUN} == true ]]; then
           echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --os-name ${EACH_OS_NAME} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[*]} -- ${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT_TEAMCITY}|n']"
           echo
         fi
+
+
+        # ....Repository version checkout logic..........................................................
+        if [[ "${EACH_DN_VERSION}" != 'latest' ]] && [[ "${EACH_DN_VERSION}" != 'bleeding' ]] && [[ "${EACH_DN_VERSION}" != 'hot' ]]; then
+          cd "${DN_PATH:?err}" || exit 1
+
+          if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+            # Solution for "error: object directory ... .git/objects does not exist"
+            n2st::print_msg "Git fetch all remote"
+            git fetch --all
+          fi
+
+          n2st::print_msg "Git fetch tag list"
+          # Note: keep it here as a testing tool
+          git tag --list
+
+          # Execute if not run in bats test framework
+          if [[ -z ${BATS_VERSION} ]]; then
+            n2st::print_msg "Execute git checkout"
+            git checkout tags/"${EACH_DN_VERSION}"
+#            n2st::print_msg_warning "Repository checkout › $(git describe --all --exact-match)"
+          else
+            n2st::print_msg_warning "Bats test run › skip \"Execute git checkout\""
+          fi
+
+        fi
+
+        n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
+
+
+        # ....Execute docker command...............................................................
 
         # shellcheck disable=SC2086
         dn::execute_compose \
@@ -326,6 +370,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
         DOCKER_EXIT_CODE=$?
 
+
         # ....Collect image tags exported by dn_execute_compose.bash...............................
         if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
           MSG_STATUS="${MSG_DONE_FORMAT}Pass ${MSG_DIMMED_FORMAT}›"
@@ -335,7 +380,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           MSG_STATUS_TC_TAG="Fail ›"
           _BUILD_STATUS_PASS=$DOCKER_EXIT_CODE
 
-          if [[ ${TEAMCITY_VERSION} ]]; then
+          if [[ ${IS_TEAMCITY_RUN} == true ]]; then
             # Fail the build › Will appear on the TeamCity Build Results page
             echo -e "##teamcity[buildProblem description='BUILD FAIL with docker exit code: ${_BUILD_STATUS_PASS}']"
           fi
@@ -347,7 +392,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         IMAGE_TAG_CRAWLED_TC=( "${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}" )
         # .........................................................................................
 
-        if [[ ${TEAMCITY_VERSION} ]]; then
+        if [[ ${IS_TEAMCITY_RUN} == true ]]; then
           echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash']"
         fi
 
@@ -392,7 +437,7 @@ ${STR_BUILD_MATRIX_SERVICES_AND_TAGS}"
 n2st::print_formated_script_footer 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
 # ====TeamCity service message=====================================================================
-if [[ ${TEAMCITY_VERSION} ]]; then
+if [[ ${IS_TEAMCITY_RUN} == true ]]; then
   # Tag added to the TeamCity build via a service message
   for tc_build_tag in "${IMAGE_TAG_CRAWLED_TC[@]}"; do
     echo -e "##teamcity[addBuildTag '${tc_build_tag}']"

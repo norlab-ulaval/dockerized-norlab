@@ -1,37 +1,9 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-ARG TAG_VERSION
+#ARG TAG_VERSION
 
-FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
-
-# ===Remove Jetson-container unused install========================================================
-RUN rm --recursive --force /ros_deep_learning \
-  && rm --recursive --force /jetson-inference
-
-# (CRITICAL) ToDo: validate using l4t-base instead of l4t-jetson <-- we are here
-#FROM nvcr.io/nvidia/l4t-jetpack:${TAG_VERSION:?err} AS squash-base-image
-#FROM nvcr.io/nvidia/l4t-base:${TAG_VERSION:?err} AS squash-base-image
-#FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
-FROM scratch AS squash-base-image
-COPY --from=base-image / /
-# Note:
-#   - The squash-base-image stage is a workaround to prevent the "max depth exceeded" error
-#        occuring when the maximum number of docker layer as been reached.
-#   - We use arm64v8/ubuntu:20.04 as base image since we are copying everything from l4t-jetpack anyway
-#   - About nvidia l4t  base images:
-#       - nvcr.io/nvidia/l4t-base install the core CUDA ressources
-#       - nvcr.io/nvidia/l4t-jetpack
-#           - install several dev package such as nvidia-cuda-dev, nvidia-cudnn-dev and nvidia-tensorrt-dev
-#           - mod their dockerfile to install runtime version of all those packages
-#   - copying ROS ressources is relatively easy, however copying ressources installed
-#       via pip vs apt-get or via source installed or pytorch related is a nightmare.
-#       Work around for minimizing maintenance: copy everything
-# Ref:
-#   - https://gitlab.com/nvidia/container-images/l4t-base
-#   - https://gitlab.com/nvidia/container-images/l4t-jetpack
-#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
-#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS dependencies
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -42,76 +14,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-# ....Transfer environment variable from base-images...............................................
-# En var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
-ARG CUDA_HOME
-ARG NVIDIA_VISIBLE_DEVICES
-ARG NVIDIA_DRIVER_CAPABILITIES
-ARG PATH
-ARG LD_LIBRARY_PATH
-
-ENV CUDA_HOME=${CUDA_HOME:?'Environment variable was not passed from base-image build stage'}
-ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage'}
-ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'}
-ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
-
-# En var added by jetson-container 'dustynv/ros' base images
-ARG ROS_DISTRO
-ARG ROS_ROOT
-ARG ROS_PYTHON_VERSION
-ARG RMW_IMPLEMENTATION
-
-ENV ROS_DISTRO=${ROS_DISTRO:?'Environment variable was not passed from base-image build stage'}
-ENV ROS_ROOT=${ROS_ROOT:?'Environment variable was not passed from base-image build stage'}
-ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passed from base-image build stage'}
-ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
-
-# ....The following env var does not appear in every jetson-container ros base images..............
-# En var added by jetson-container 'dustynv/ros' base images
-ARG LD_PRELOAD
-ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
-
-# En var added by jetson-container pytorch related base images
-ARG OPENBLAS_CORETYPE
-ENV LD_PRELOAD=${LD_PRELOAD}
-
-
-## ....copy artifact from base-image...............................................................
-## Note: copying ROS ressources is relatively easy, however copying ressources installed
-##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
-##       Work around for minimizing maintenance: copy everything
-#COPY --from=base-image /lib /lib
-#COPY --from=base-image /etc /etc
-#COPY --from=base-image /usr /usr
-#COPY --from=base-image /bin /bin
-#COPY --from=base-image /var /var
-#COPY --from=base-image /opt /opt
-#COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
-
-
-FROM squash-base-image AS squashed-base-image-tester
-
-RUN dpkg --get-selections | grep nvidia
-
-# Only test that the ros install from jetson-container was transfered ok between build-stages
-RUN python -c "import numpy" \
-    && python -c "import pytest"
-
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && echo "Sanity check" \
-    && echo ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
-    && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
-    && python -c "import rclpy" \
-    && ros2 pkg list
-
-
 # ====Begin Dockerized-NorLab======================================================================
-FROM squash-base-image AS core-dependencies
 
 # ....Setup timezone and localization..............................................................
 # change the locale from POSIX to UTF-8
@@ -192,23 +95,29 @@ RUN apt-get update \
 #            dataclasses
 
 
-# ===Final build step==============================================================================
-FROM core-dependencies AS final
-
-# ....Install norlab-shell-script-tool.............................................................
+# ===Setup submodule===============================================================================
 WORKDIR /dockerized-norlab
+COPY --from=context-dn-root ./.git ./.git
 
-RUN git clone https://github.com/norlab-ulaval/norlab-shell-script-tools.git ./utilities/norlab-shell-script-tools/ \
-    && echo "Sanity check"  \
-    && cd ./utilities/norlab-shell-script-tools/src/utility_scripts \
-    && source ./which_python_version.bash \
+# ....Install norlab-shell-script-tool and norlab-build-system tools...............................
+WORKDIR /dockerized-norlab/utilities/norlab-shell-script-tools
+COPY --from=context-dn-submodules ./norlab-shell-script-tools/ .
+
+WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+COPY --from=context-dn-container-tools . .
+
+RUN source import_dockerized_norlab_container_tools.bash \
+    && echo "Sanity check" \
+    && n2st::set_which_python3_version \
     && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}"
+
 
 # ....Add dn-container tools.......................................................................
 # ToDo: assessement › move this step at a later stage
-WORKDIR /dockerized-norlab
-COPY --from=context-dn-container-tools ./dn_info.bash ./dockerized-norlab-images/container-tools/
-COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./dockerized-norlab-images/container-tools/
+
+#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+#COPY --from=context-dn-container-tools ./dn_info.bash ./
+#COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./
 
 #RUN ( \
 #      echo ""; \
@@ -219,6 +128,8 @@ COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./dockerized-norlab-
 #    ) >> ~/.bashrc \
 #    && echo "" \
 #    && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
+
+WORKDIR /dockerized-norlab
 
 RUN ( \
       echo ""; \

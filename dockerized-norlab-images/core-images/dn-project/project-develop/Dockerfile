@@ -35,16 +35,22 @@ RUN source ./dn_install_debugging_tools.bash \
 
 FROM debugging-tools AS project-specific-ros-setup
 
-WORKDIR /
-COPY dn_ros2_entrypoint.bash /
-COPY dn_ros2_rebuild_dev_workspace.bash /
-COPY dn_fetch_ros_env_variables.bash /
-COPY dn_expose_container_env_variables.bash /
+WORKDIR /dockerized-norlab/dockerized-norlab-images/core-images/dn-project/project-develop
+COPY ./dn_ros2_entrypoint.bash ./
+COPY ./dn_ros2_rebuild_dev_workspace.bash ./
+COPY ./dn_fetch_ros_env_variables.bash ./
+COPY ./dn_expose_container_env_variables.bash ./
 
-RUN chmod +x /dn_ros2_entrypoint.bash \
-    && chmod +x /dn_ros2_rebuild_dev_workspace.bash \
-    && chmod +x /dn_fetch_ros_env_variables.bash \
-    && chmod +x /dn_expose_container_env_variables.bash
+RUN chmod +x dn_ros2_entrypoint.bash \
+    && chmod +x dn_ros2_rebuild_dev_workspace.bash \
+    && chmod +x dn_fetch_ros_env_variables.bash \
+    && chmod +x dn_expose_container_env_variables.bash
+
+# Create soft link in the root dir
+RUN ln -s $(pwd)/dn_ros2_entrypoint.bash /dn_ros2_entrypoint.bash \
+    && ln -s $(pwd)/dn_ros2_rebuild_dev_workspace.bash /dn_ros2_rebuild_dev_workspace.bash \
+    && ln -s $(pwd)/dn_fetch_ros_env_variables.bash /dn_fetch_ros_env_variables.bash \
+    && ln -s $(pwd)/dn_expose_container_env_variables.bash /dn_expose_container_env_variables.bash
 
 #RUN chmod +x /dn_ros2_entrypoint.bash \
 #    && chmod +x /dn_ros2_rebuild_dev_workspace.bash \

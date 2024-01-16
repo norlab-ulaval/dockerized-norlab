@@ -53,7 +53,7 @@ setup_file() {
 setup() {
 #  cd "$TESTED_FILE_PATH" || exit
 
-  export NBS_OVERRIDE_BUILD_MATRIX_MAIN='tests/.env.build_matrix.main.mock'
+  export NBS_OVERRIDE_BUILD_MATRIX_MAIN=build_matrix_config/test/.env.build_matrix.main.mock
 
 }
 
@@ -87,7 +87,6 @@ teardown() {
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
-  assert_file_exist ./build_matrix_config/test/.env.build_matrix.mock
 
 
 
@@ -100,7 +99,7 @@ teardown() {
 #  skip "tmp dev"
 
   run source "./${TESTED_FILE_PATH}/$TESTED_FILE" \
-                            --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
+                            --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                             --os-name-build-matrix-override 'l4t' \
                             --l4t-version-build-matrix-override 'r33.3.3' \
                             --fail-fast
@@ -108,11 +107,11 @@ teardown() {
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*
 
-  assert_output --regexp .*"DN-v8.8.8-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DN-v8.8.8-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
 
-  refute_output --regexp .*"DN-v9.9.9-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DN-v9.9.9-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
 
 }
 
@@ -122,7 +121,7 @@ teardown() {
 
   local NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push --dry-run"
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
-                         --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
+                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                          --os-name-build-matrix-override 'l4t' \
                          --l4t-version-build-matrix-override 'r33.3.3'
 
@@ -130,7 +129,7 @@ teardown() {
 
   local NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="push --dry-run"
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
-                         --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
+                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                          --os-name-build-matrix-override 'l4t' \
                          --l4t-version-build-matrix-override 'r33.3.3'
 
@@ -144,7 +143,7 @@ teardown() {
   local NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="--print"
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
                         --buildx-bake \
-                        --dockerized-norlab-version-build-matrix-override 'v8.8.8' \
+                        --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                         --os-name-build-matrix-override 'l4t' \
                         --l4t-version-build-matrix-override 'r33.3.3'
 

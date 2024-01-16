@@ -99,6 +99,22 @@
               }
             ],
             "countMatches": true
+          },
+          {
+            "files": [
+              ".env.build_matrix.main.release"
+            ],
+            "from": "NBS_MATRIX_REPOSITORY_VERSIONS=( 'v.*..*.*' 'latest' )",
+            "to": "NBS_MATRIX_REPOSITORY_VERSIONS=( 'v${nextRelease.version}' 'latest' )",
+            "results": [
+              {
+                "file": ".env.build_matrix.main.release",
+                "hasChanged": true,
+                "numMatches": 1,
+                "numReplacements": 1
+              }
+            ],
+            "countMatches": true
           }
         ]
       }
@@ -110,7 +126,7 @@
           "CHANGELOG.md",
           "version.txt"
         ],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        "message": "chore(release): ${nextRelease.version} [skip ci][execute dockerhub release]\n\n${nextRelease.notes}"
       }
     ]
   ]

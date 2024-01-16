@@ -32,6 +32,7 @@ function dn::execute_compose() {
   local DOCKER_MANAGEMENT_COMMAND=( compose )
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
   _CI_TEST=false
+  DOCKER_FORCE_PUSH=false
 
   # (CRITICAL) ToDo: refactor env var setting related to docker compose cmd. Return an error if not set explicitly via flag or use new mechanism to register build arg (NMO-396)
   REPOSITORY_VERSION='latest'
@@ -80,10 +81,12 @@ function dn::execute_compose() {
                                                 Note: L4T container tags (e.g. r35.2.1) should match the L4T version
                                                 on the Jetson otherwize cuda driver won't be accessible
                                                 (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
-        --buildx-bake                           Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
+        --force-push                            Execute docker compose push right after the docker
+                                                main command (to use when using buildx docker-container driver)
         --docker-debug-logs                     Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
         --fail-fast                             Exit script at first encountered error
         --ci-test-force-runing-docker-cmd
+        --buildx-bake                           (experimental) Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
 
     \033[1m
       [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
@@ -153,6 +156,11 @@ function dn::execute_compose() {
       DOCKER_MANAGEMENT_COMMAND=( buildx bake )
       shift # Remove argument (--buildx-bake)
       ;;
+    --force-push)
+      n2st::print_msg_warning "Be advise, the DN --force-push flag does not support specifiying service manualy via ie docker compose build <my-cool-service>. It will iterate over each service define in the comnpose file."
+      DOCKER_FORCE_PUSH=true
+      shift # Remove argument (--force-push)
+      ;;
     --fail-fast)
       set -e
       shift # Remove argument (--fail-fast)
@@ -194,69 +202,71 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   "
 
+  if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+    # Prevent Teamcity DISPLAY unset warning in build log file
+    DISPLAY=${DISPLAY:-':0'} && export DISPLAY
+  fi
+
+  # ....If defined › execute dn::callback_execute_compose_pre......................................
+  NBS_COMPOSE_DIR=$( dirname "$COMPOSE_FILE" )
+
+  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
+    source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
+    dn::callback_execute_compose_pre
+  fi
+
+  # ....Execute docker command.....................................................................
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
   #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
-  # ToDo: modularity feat › refactor clause as a callback pre bash script and add `source <callback-pre.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
 
-  # =================================================================================================
-  # Pre docker command execution callback
-  #
-  # Usage:
-  #   $ callback_execute_compose_pre()
-  #
-  # Globals:
-  #   Read COMPOSE_FILE
-  #   Read DEPENDENCIES_BASE_IMAGE
-  #   Read DEPENDENCIES_BASE_IMAGE_TAG
-  #
-  # =================================================================================================
-  function dn::callback_execute_compose_pre() {
-    if [[ ! -f ${COMPOSE_FILE:?err} ]]; then
-      n2st::print_msg_error_and_exit "docker-compose file ${COMPOSE_FILE} is unreachable"
-    fi
+  # ...Docker cmd conditional logic................................................................
 
-    if [[ "${COMPOSE_FILE}" == "dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml" ]]; then
-      # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
+  # (CRITICAL) ToDo: assessment if still usefull >> next bloc ↓↓
+#  # Note:
+#  #   - BUILDKIT_CONTEXT_KEEP_GIT_DIR is for setting buildkit to keep the .git directory in the container
+#  #     Source https://docs.docker.com/build/building/context/#keep-git-directory
+#  export BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
 
-      DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
-      echo "DOCKER_IMG=${DOCKER_IMG}"
+  if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_MANAGEMENT_COMMAND[*]} != "buildx bake" ]]; then
+    unset DOCKER_COMPOSE_CMD_ARGS[0]
+    DOCKER_COMPOSE_CMD_ARGS=( build --build-arg "BUILDKIT_CONTEXT_KEEP_GIT_DIR=1" ${DOCKER_COMPOSE_CMD_ARGS[@]})
+  fi
 
-      # shellcheck disable=SC2046
-      docker pull "${DOCKER_IMG}" \
-        && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DOCKER_IMG}" \
-          | grep \
-            -e CUDA_HOME= \
-            -e NVIDIA_ \
-            -e LD_LIBRARY_PATH= \
-            -e PATH= \
-            -e ROS_ \
-            -e RMW_IMPLEMENTATION= \
-            -e LD_PRELOAD= \
-            -e OPENBLAS_CORETYPE= \
-          | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
-          | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
-          | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
-          | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
-          | sed 's;^ROS_;BASE_IMG_ENV_ROS_;' \
-          | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
-          | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
-          | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
-         )
+  if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
+    declare -a STR_BUILT_SERVICES
+    STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services) )
 
-      n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG}${MSG_END_FORMAT}:
-        ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
-        ${MSG_END_FORMAT}"
-    fi
-  }
+    for each_service in ${STR_BUILT_SERVICES[@]}; do
+      n2st::print_msg "Execute docker build and push for service ${each_service}"
 
-  dn::callback_execute_compose_pre
+      # ...Execute docker command for each service.................................................
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
+      MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
 
-  n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
+      # ...Force pushing docker images to registry.................................................
+      # Note: this is the best workaround when building multi-architecture images across multi-stage
+      #       and multi-compose-file as multi-aarch image can't be loaded in the local registry and the
+      #       docker compose build --push command is not reliable in buildx builder docker-container driver
+      n2st::teamcity_service_msg_blockOpened "Force push to docker registry now"
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
+      n2st::teamcity_service_msg_blockClosed "Force push to docker registry now"
 
-  # ToDo: modularity feat › add `source <callback-post.bash>` with auto discovery logic eg: path specified in the .env.build_matrix
+    done
+  else
+    # ...Execute docker command....................................................................
+    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
+    MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+  fi
 
+  # ....If defined › execute dn::callback_execute_compose_pre......................................
+  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
+    source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash"
+    dn::callback_execute_compose_post
+  fi
+
+  # ....Show feedback..............................................................................
   n2st::print_msg "Environment variables used by compose:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
@@ -264,10 +274,7 @@ function dn::execute_compose() {
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
-  # ====Teardown===================================================================================
-  cd "${TMP_CWD_EC}"
-
-  return "${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+  return "${MAIN_DOCKER_EXIT_CODE}"
 }
 
 

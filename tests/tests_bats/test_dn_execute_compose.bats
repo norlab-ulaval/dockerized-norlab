@@ -24,6 +24,7 @@ if [[ -d ${BATS_HELPER_PATH} ]]; then
   load "${BATS_HELPER_PATH}/bats-assert/load"
   load "${BATS_HELPER_PATH}/bats-file/load"
   load "${SRC_CODE_PATH}/${N2ST_BATS_TESTING_TOOLS_RELATIVE_PATH}/bats_helper_functions"
+  load "bats_testing_tools/bats_helper_functions_local"
   #load "${BATS_HELPER_PATH}/bats-detik/load" # << Kubernetes support
 else
   echo -e "\n[\033[1;31mERROR\033[0m] $0 path to bats-core helper library unreachable at \"${BATS_HELPER_PATH}\"!"
@@ -36,8 +37,8 @@ fi
 TESTED_FILE="dn_execute_compose.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
-TEST_DOCKER_COMPOSE_FILE_PATH=dockerized-norlab-images/core-images/dependencies
-TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.dn-dependencies.build.yaml"
+TEST_DOCKER_COMPOSE_FILE_PATH=dockerized-norlab-images/core-images/base_image
+TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.jetson.build.yaml"
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
@@ -108,7 +109,7 @@ setup() {
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --fail-fast -- ${DOCKER_CMD}
   assert_success
-  assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}"
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
 #  bats_print_run_env_variable
 }
 
@@ -141,7 +142,6 @@ setup() {
 @test "flags that set env variable" {
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
-                        --dockerized-norlab-version v1 \
                         --base-image dustynv/pytorch \
                         --os-name arbitratyName \
                         --tag-package 2.1 \
@@ -149,15 +149,51 @@ setup() {
                         --docker-debug-logs \
                         --fail-fast
 
+#                        --dockerized-norlab-version v0.3.0 \
+
   assert_not_empty "$IS_TEAMCITY_RUN"
-  assert_equal "${REPOSITORY_VERSION}" 'v1'
+#  assert_equal "${REPOSITORY_VERSION}" 'v0.3.0'
+  assert_equal "${REPOSITORY_VERSION}" 'latest'
   assert_equal "${BASE_IMAGE}" 'dustynv/pytorch'
   assert_equal "${TAG_PACKAGE}" '2.1'
   assert_equal "${TAG_VERSION}" 'r35.0.0'
   assert_equal "${PROJECT_TAG}" 'arbitratyName-r35.0.0'
   assert_equal "${BUILDKIT_PROGRESS}" plain
   assert_equal "${DEPENDENCIES_BASE_IMAGE_TAG}" '2.1-r35.0.0'
-  assert_equal "${DN_IMAGE_TAG}" 'DN-v1-2.1-r35.0.0'
+  assert_equal "${DN_IMAGE_TAG}" 'DN-latest-2.1-r35.0.0'
+}
+
+@test "docker compose build conditional logic" {
+#  skip "tmp dev"
+
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                      --base-image dustynv/pytorch \
+                      --os-name arbitratyName \
+                      --tag-package 2.1 \
+                      --tag-version r35.0.0 \
+                      --docker-debug-logs \
+                      --fail-fast \
+                      -- build base-image-tester
+
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 base-image-tester".*"since the script is executed inside a docker container".*
+}
+
+@test "flag --force-push" {
+#  skip "tmp dev"
+
+  mock_docker_command_config_services
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                      --base-image dustynv/pytorch \
+                      --os-name arbitratyName \
+                      --tag-package 2.1 \
+                      --tag-version r35.0.0 \
+                      --fail-fast \
+                      --force-push \
+                      -- build
+
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"since the script is executed inside a docker container".*"Force push to docker registry now".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml push mock-service-one".*"since the script is executed inside a docker container".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"since the script is executed inside a docker container".*"Force push to docker registry now".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml push mock-service-two".*"since the script is executed inside a docker container".*
 }
 
 @test "flag --help" {
