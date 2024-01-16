@@ -26,6 +26,5 @@ fi
 
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
                 "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" \
-                --fail-fast \
                 -- down "$@"
 

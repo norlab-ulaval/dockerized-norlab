@@ -28,6 +28,7 @@ services:
       dockerfile: Dockerfile.jetson
       target: squash-base-image
       args:
+#        TMP_TEST: ${TMP_TEST:?err} # (CRITICAL) ToDo: on task end >> delete this line ←
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         TAG_VERSION: ${TAG_VERSION:?err}

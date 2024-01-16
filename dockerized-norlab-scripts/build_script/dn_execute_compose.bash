@@ -31,8 +31,10 @@ function dn::execute_compose() {
   # ....Default....................................................................................
   local DOCKER_MANAGEMENT_COMMAND=( compose )
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
-  _CI_TEST=false
-  DOCKER_FORCE_PUSH=false
+  local _CI_TEST=false
+  local DOCKER_FORCE_PUSH=false
+  unset DOCKER_EXIT_CODE
+  local MAIN_DOCKER_EXIT_CODE=1
 
   # (CRITICAL) ToDo: refactor env var setting related to docker compose cmd. Return an error if not set explicitly via flag or use new mechanism to register build arg (NMO-396)
   REPOSITORY_VERSION='latest'
@@ -259,7 +261,8 @@ function dn::execute_compose() {
       #       docker compose build --push command is not reliable in buildx builder docker-container driver
       n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
       n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
-      n2st::teamcity_service_msg_blockClosed "Force push to docker registry now"
+      unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
+      n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
 
     done
   else

@@ -94,7 +94,7 @@ for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
                                $* -- ${DOCKER_COMMAND_W_FLAGS}"
 
 
-  # (CRITICAL) ToDo: refactor path to 'dn_execute_compose_over_build_matrix.bash' >> make it portable
+  cd "${DN_PATH:?'Variable not set'}" || exit 1
   bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
                         "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/$EACH_BUILD_MATRIX" \
                         $@ -- "${DOCKER_COMMAND_W_FLAGS}"
@@ -110,16 +110,32 @@ source .env.dockerized-norlab-project
 set +o allexport
 n2st::norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 
+
 n2st::print_msg_done "${MSG_DIMMED_FORMAT}dn_build_all.bash${MSG_END_FORMAT} execution summary"
 echo -e "${MSG_DIMMED_FORMAT}"
 n2st::draw_horizontal_line_across_the_terminal_window '.'
 echo -e "${MSG_END_FORMAT}"
+
+RAISE_ERROR=false
 for each_services_and_tags in "${_ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS[@]}"; do
   echo -e "${each_services_and_tags}\n"
   echo -e "${MSG_DIMMED_FORMAT}"
   n2st::draw_horizontal_line_across_the_terminal_window '.'
   echo -e "${MSG_END_FORMAT}"
+  if [[ "${each_services_and_tags}" == *'Fail'*  ]]; then
+    RAISE_ERROR=true
+  fi
 done
+
+# ====Teardown=====================================================================================
 n2st::print_formated_script_footer 'dn_build_all.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
+
+cd "${DN_PATH:?'Variable not set'}" || exit 1
+
+if [[ $RAISE_ERROR == true ]]; then
+  exit 1
+else
+  exit 0
+fi
 
 
