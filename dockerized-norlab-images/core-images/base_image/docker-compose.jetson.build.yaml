@@ -19,7 +19,7 @@ services:
 
   # ....dependencies-core..........................................................................
 
-  base-image: # ›› no push build service
+  base-image-jetson: # ›› no push build service
     extends:
       file: ../global-service-builder/docker-compose.global-service.build.yaml
       service: global-service-builder
@@ -49,8 +49,8 @@ services:
     image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson:${DN_IMAGE_TAG:?err}
 
   base-image-tester:
-    extends: base-image
+    extends: base-image-jetson
     build:
       target: squashed-base-image-tester
     depends_on:
-      - base-image
+      - base-image-jetson

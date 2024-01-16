@@ -61,9 +61,6 @@ services:
   # ....dependencies-ros2-custom...................................................................
   dependencies-ros2-custom-main: # ›› no push build service
     extends: dependencies-python-science-stack
-    #    extends:
-#      file: ../base_image/docker-compose.jetson.build.yaml
-#      service: base-image
     build:
       dockerfile: Dockerfile.ros2-dn-custom
       args:
