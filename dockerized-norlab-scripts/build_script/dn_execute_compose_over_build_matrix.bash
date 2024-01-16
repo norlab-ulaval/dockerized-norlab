@@ -29,6 +29,7 @@ _BUILD_STATUS_PASS=0
 declare -a DOCKER_COMPOSE_CMD_ARGS=( build )
 declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
 STR_DOCKER_MANAGEMENT_COMMAND="compose"
+DOCKER_FORCE_PUSH=false
 
 #
 # The main .env.build_matrix to load
@@ -135,11 +136,13 @@ function print_help_in_terminal() {
                           Note: L4T container tags (e.g. r35.2.1) should match the L4T version
                           on the Jetson otherwize cuda driver won't be accessible
                           (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
-      --buildx-bake       Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
+      --force-push        Execute docker compose push right after the docker
+                          main command (to use when using buildx docker-container driver)
       --docker-debug-logs
                           Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
       --fail-fast         Exit script at first encountered error
       --ci-test-force-runing-docker-cmd
+      --buildx-bake       (experimental) Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
 
   \033[1m
     [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
@@ -210,6 +213,10 @@ while [ $# -gt 0 ]; do
     #    set -x
     export BUILDKIT_PROGRESS=plain
     shift # Remove argument (--docker-debug-logs)
+    ;;
+  --force-push)
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --force-push )
+    shift # Remove argument (--force-push)
     ;;
   --fail-fast)
     set -e
@@ -321,7 +328,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
 
         # ....Repository version checkout logic..........................................................
-        if [[ "${EACH_DN_VERSION}" != 'latest' ]] && [[ "${EACH_DN_VERSION}" != 'bleeding' ]]; then
+        if [[ "${EACH_DN_VERSION}" != 'latest' ]] && [[ "${EACH_DN_VERSION}" != 'bleeding' ]] && [[ "${EACH_DN_VERSION}" != 'hot' ]]; then
           cd "${DN_PATH:?err}" || exit 1
 
           if [[ ${IS_TEAMCITY_RUN} == true ]]; then

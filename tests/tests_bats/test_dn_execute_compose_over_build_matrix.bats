@@ -219,6 +219,22 @@ setup() {
 }
 
 
+@test "flag --force-push is passed to dn_execute_compose.bash" {
+#  skip "tmp dev"
+
+  local _CI_TEST=true
+  mock_docker_command_config_services
+#  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --force-push -- build"
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+                              --force-push \
+                              --ci-test-force-runing-docker-cmd \
+                              -- build
+
+  assert_success
+
+  assert_output --regexp .*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"NBS".*"\]".*"Force push to docker registry now".*"\[".*"NBS".*"\]".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-one".*"completed successfully and exited docker.".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"NBS".*"\]".*"Force push to docker registry now".*"\[".*"NBS".*"\]".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-two".*"completed successfully and exited docker.".*
+}
+
 @test "flag --help" {
 #  skip "tmp dev"
 

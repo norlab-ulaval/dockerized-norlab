@@ -20,3 +20,11 @@ function mock_docker_command_exit_error() {
       return 1
     }
 }
+
+function mock_docker_command_config_services() {
+    function docker() {
+      local tmp=$@
+      echo "mock-service-one mock-service-two"
+      return 0
+    }
+}

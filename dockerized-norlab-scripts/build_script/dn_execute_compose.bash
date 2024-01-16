@@ -32,6 +32,7 @@ function dn::execute_compose() {
   local DOCKER_MANAGEMENT_COMMAND=( compose )
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
   _CI_TEST=false
+  DOCKER_FORCE_PUSH=false
 
   # (CRITICAL) ToDo: refactor env var setting related to docker compose cmd. Return an error if not set explicitly via flag or use new mechanism to register build arg (NMO-396)
   REPOSITORY_VERSION='latest'
@@ -80,10 +81,12 @@ function dn::execute_compose() {
                                                 Note: L4T container tags (e.g. r35.2.1) should match the L4T version
                                                 on the Jetson otherwize cuda driver won't be accessible
                                                 (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
-        --buildx-bake                           Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
+        --force-push                            Execute docker compose push right after the docker
+                                                main command (to use when using buildx docker-container driver)
         --docker-debug-logs                     Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
         --fail-fast                             Exit script at first encountered error
         --ci-test-force-runing-docker-cmd
+        --buildx-bake                           (experimental) Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
 
     \033[1m
       [-- <any docker cmd+arg>]\033[0m                 Any argument passed after '--' will be passed to docker compose as docker
@@ -153,6 +156,10 @@ function dn::execute_compose() {
       DOCKER_MANAGEMENT_COMMAND=( buildx bake )
       shift # Remove argument (--buildx-bake)
       ;;
+    --force-push)
+      DOCKER_FORCE_PUSH=true
+      shift # Remove argument (--force-push)
+      ;;
     --fail-fast)
       set -e
       shift # Remove argument (--fail-fast)
@@ -212,20 +219,45 @@ function dn::execute_compose() {
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
   #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
 
+
+  # ...Docker cmd conditional logic................................................................
+
   # (CRITICAL) ToDo: assessment if still usefull >> next bloc ↓↓
 #  # Note:
 #  #   - BUILDKIT_CONTEXT_KEEP_GIT_DIR is for setting buildkit to keep the .git directory in the container
 #  #     Source https://docs.docker.com/build/building/context/#keep-git-directory
 #  export BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
 
-  # ...Docker cmd conditional logic..................................................................
-  if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]]; then
+  if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_MANAGEMENT_COMMAND[*]} != "buildx bake" ]]; then
     unset DOCKER_COMPOSE_CMD_ARGS[0]
     DOCKER_COMPOSE_CMD_ARGS=( build --build-arg "BUILDKIT_CONTEXT_KEEP_GIT_DIR=1" ${DOCKER_COMPOSE_CMD_ARGS[@]})
   fi
 
+  if [[ ${DOCKER_FORCE_PUSH} == true ]]; then
+    declare -a STR_BUILT_SERVICES
+    STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services) )
 
-  n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
+    for each_service in ${STR_BUILT_SERVICES[@]}; do
+      n2st::print_msg ""
+
+      # ...Execute docker command for each service.................................................
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
+      MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+
+      # ...Force pushing docker images to registry.................................................
+      # Note: this is the best workaround when building multi-architecture images across multi-stage
+      #       and multi-compose-file as multi-aarch image can't be loaded in the local registry and the
+      #       docker compose build --push command is not reliable in buildx builder docker-container driver
+      n2st::teamcity_service_msg_blockOpened "Force push to docker registry now"
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
+      n2st::teamcity_service_msg_blockClosed "Force push to docker registry now"
+
+    done
+  else
+    # ...Execute docker command....................................................................
+    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
+    MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+  fi
 
   # ....If defined › execute dn::callback_execute_compose_pre......................................
   if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
@@ -241,7 +273,7 @@ function dn::execute_compose() {
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
-  return "${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+  return "${MAIN_DOCKER_EXIT_CODE}"
 }
 
 
