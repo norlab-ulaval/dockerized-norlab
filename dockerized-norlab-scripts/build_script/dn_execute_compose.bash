@@ -157,6 +157,7 @@ function dn::execute_compose() {
       shift # Remove argument (--buildx-bake)
       ;;
     --force-push)
+      n2st::print_msg_warning "Be advise, the DN --force-push flag does not support specifiying service manualy via ie docker compose build <my-cool-service>. It will iterate over each service define in the comnpose file."
       DOCKER_FORCE_PUSH=true
       shift # Remove argument (--force-push)
       ;;
@@ -233,12 +234,12 @@ function dn::execute_compose() {
     DOCKER_COMPOSE_CMD_ARGS=( build --build-arg "BUILDKIT_CONTEXT_KEEP_GIT_DIR=1" ${DOCKER_COMPOSE_CMD_ARGS[@]})
   fi
 
-  if [[ ${DOCKER_FORCE_PUSH} == true ]]; then
+  if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
     declare -a STR_BUILT_SERVICES
     STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services) )
 
     for each_service in ${STR_BUILT_SERVICES[@]}; do
-      n2st::print_msg ""
+      n2st::print_msg "Execute docker build and push for service ${each_service}"
 
       # ...Execute docker command for each service.................................................
       n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
