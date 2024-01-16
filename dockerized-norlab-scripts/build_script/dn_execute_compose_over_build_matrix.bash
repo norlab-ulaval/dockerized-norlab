@@ -13,6 +13,7 @@
 #
 # Global:
 #   Write STR_BUILD_MATRIX_SERVICES_AND_TAGS to build_all.log
+#   Read _CI_TEST
 #
 # Note:
 #   Dont use "set -e" in this script as it will affect the build system policy, use the --fail-fast flag instead
@@ -216,6 +217,7 @@ while [ $# -gt 0 ]; do
     ;;
   --force-push)
     DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --force-push )
+    DOCKER_FORCE_PUSH=true
     shift # Remove argument (--force-push)
     ;;
   --fail-fast)
@@ -356,6 +358,17 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             n2st::print_msg_warning "Bats test run › skip \"Execute git checkout\""
           fi
 
+          # ....Validate the DN tag correspond to the checkout branch..............................
+#        elif [[ "${EACH_DN_VERSION}" == 'latest' ]] && [[ ${IS_TEAMCITY_RUN} != true ]]; then
+        elif [[ "${EACH_DN_VERSION}" == 'latest' ]]; then  # (Priority) ToDo: validate TC run checkout branch name
+          if [[ $(git symbolic-ref -q --short HEAD) != main ]]; then
+              n2st::print_msg_error_and_exit "The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
+          fi
+#        elif [[ "${EACH_DN_VERSION}" == 'bleeding' ]] && [[ ${IS_TEAMCITY_RUN} != true ]]; then
+        elif [[ "${EACH_DN_VERSION}" == 'bleeding' ]]; then  # (Priority) ToDo: validate TC run checkout branch name
+          if [[ $(git symbolic-ref -q --short HEAD) != dev ]]; then
+              n2st::print_msg_error_and_exit "The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
+          fi
         fi
 
         n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"

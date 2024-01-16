@@ -104,8 +104,8 @@
             "files": [
               ".env.build_matrix.main.release"
             ],
-            "from": "NBS_MATRIX_REPOSITORY_VERSIONS=( 'v.*..*.*' 'latest' )",
-            "to": "NBS_MATRIX_REPOSITORY_VERSIONS=( 'v${nextRelease.version}' 'latest' )",
+            "from": "NBS_MATRIX_REPOSITORY_VERSIONS=( 'v.*..*.*' )",
+            "to": "NBS_MATRIX_REPOSITORY_VERSIONS=( 'v${nextRelease.version}' )",
             "results": [
               {
                 "file": ".env.build_matrix.main.release",

@@ -241,21 +241,23 @@ function dn::execute_compose() {
   fi
 
   if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
-    declare -a STR_BUILT_SERVICES
-    STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services) )
+    local STR_BUILT_SERVICES
+    declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services) )
 
     for each_service in ${STR_BUILT_SERVICES[@]}; do
-      n2st::print_msg "Execute docker build and push for service ${each_service}"
+      n2st::print_msg "Execute docker build for service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} and push if image is defined"
 
       # ...Execute docker command for each service.................................................
+      n2st::teamcity_service_msg_blockOpened "Build ${each_service}"
       n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
       MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+      n2st::teamcity_service_msg_blockClosed "Build ${each_service}"
 
       # ...Force pushing docker images to registry.................................................
       # Note: this is the best workaround when building multi-architecture images across multi-stage
       #       and multi-compose-file as multi-aarch image can't be loaded in the local registry and the
       #       docker compose build --push command is not reliable in buildx builder docker-container driver
-      n2st::teamcity_service_msg_blockOpened "Force push to docker registry now"
+      n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
       n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
       n2st::teamcity_service_msg_blockClosed "Force push to docker registry now"
 

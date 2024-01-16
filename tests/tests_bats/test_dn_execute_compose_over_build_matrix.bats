@@ -150,10 +150,10 @@ setup() {
                                           -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"Pass".*"DN-latest-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-latest-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-latest-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-latest-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-ros-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
   assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
   assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
   assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
@@ -174,10 +174,10 @@ setup() {
                                                 -- "$DOCKER_CMD"
   set -e
   assert_failure
-  assert_output --regexp .*"Fail".*"DN-latest-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-latest-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-latest-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-latest-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-hot-humble-ros-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
   assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
   assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
   assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
@@ -201,6 +201,7 @@ setup() {
 #  bats_print_run_env_variable
 }
 
+
 @test "flags that set env variable" {
 #  skip "tmp dev"
 
@@ -218,6 +219,35 @@ setup() {
   refute_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
 }
 
+@test "--force-push 'latest' tag sanity check ok" {
+  if [[ $(git symbolic-ref -q --short HEAD) == main ]]; then
+    skip "Curent checkout branch is 'main' which invalidate this test logic"
+  fi
+
+#  set +e
+  mock_docker_command_exit_ok
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+                                      --dockerized-norlab-version-build-matrix-override 'latest' \
+                                      --os-name-build-matrix-override 'l4t' \
+                                      --l4t-version-build-matrix-override 'r33.3.3'
+#  set -e
+  assert_output --regexp .*"\[".*"NBS error".*"\]".*"The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
+}
+
+@test "--force-push 'bleeding' tag sanity check ok" {
+  if [[ $(git symbolic-ref -q --short HEAD) == dev ]]; then
+    skip "Curent checkout branch is 'dev' which invalidate this test logic"
+  fi
+
+#  set +e
+  mock_docker_command_exit_ok
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+                                      --dockerized-norlab-version-build-matrix-override 'bleeding' \
+                                      --os-name-build-matrix-override 'l4t' \
+                                      --l4t-version-build-matrix-override 'r33.3.3'
+#  set -e
+  assert_output --regexp .*"\[".*"NBS error".*"\]".*"The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
+}
 
 @test "flag --force-push is passed to dn_execute_compose.bash" {
 #  skip "tmp dev"
@@ -232,7 +262,7 @@ setup() {
 
   assert_success
 
-  assert_output --regexp .*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"NBS".*"\]".*"Force push to docker registry now".*"\[".*"NBS".*"\]".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-one".*"completed successfully and exited docker.".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"NBS".*"\]".*"Force push to docker registry now".*"\[".*"NBS".*"\]".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-two".*"completed successfully and exited docker.".*
+  assert_output --regexp .*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"NBS".*"\]".*"Force push mock-service-one image to docker registry".*"\[".*"NBS".*"\]".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-one".*"completed successfully and exited docker.".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"NBS".*"\]".*"Force push mock-service-two image to docker registry".*"\[".*"NBS".*"\]".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-two".*"completed successfully and exited docker.".*
 }
 
 @test "flag --help" {
