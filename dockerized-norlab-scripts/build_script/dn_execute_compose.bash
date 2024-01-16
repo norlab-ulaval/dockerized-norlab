@@ -159,7 +159,7 @@ function dn::execute_compose() {
       shift # Remove argument (--buildx-bake)
       ;;
     --force-push)
-      n2st::print_msg_warning "Be advise, the DN --force-push flag does not support specifiying service manualy via ie docker compose build <my-cool-service>. It will iterate over each service define in the comnpose file."
+      n2st::print_msg_warning "Be advise, the DN --force-push flag does not support specifiying service manualy via docker command ie docker compose build <my-cool-service>. It will iterate over each service define in the comnpose file."
       DOCKER_FORCE_PUSH=true
       shift # Remove argument (--force-push)
       ;;
@@ -262,7 +262,7 @@ function dn::execute_compose() {
       #       and multi-compose-file as multi-aarch image can't be loaded in the local registry and the
       #       docker compose build --push command is not reliable in buildx builder docker-container driver
       n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
-      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} --progress tty -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
       unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
       n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
 
