@@ -162,7 +162,13 @@ function dn::execute_compose() {
       shift # Remove argument (--force-push)
       ;;
     --fail-fast)
-      set -e
+      if [[ ${IS_TEAMCITY_RUN} == true ]] ; then
+        echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Dn --fail-fast flag was set in TC run configuration' status='ERROR']"
+        n2st::print_msg_error_and_exit "Be advise, the --fail-fast flag should only be used in local development."
+      else
+        n2st::print_msg "Be advise, --fail-fast flag in effect"
+        set -e
+      fi
       shift # Remove argument (--fail-fast)
       ;;
     --ci-test-force-runing-docker-cmd)

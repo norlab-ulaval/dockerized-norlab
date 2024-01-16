@@ -107,7 +107,7 @@ setup() {
 @test "docker command are passed to show and execute docker" {
   local DOCKER_CMD="build --no-cache --push"
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
-  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --fail-fast -- ${DOCKER_CMD}
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} -- ${DOCKER_CMD}
   assert_success
   assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
 #  bats_print_run_env_variable
@@ -146,8 +146,7 @@ setup() {
                         --os-name arbitratyName \
                         --tag-package 2.1 \
                         --tag-version r35.0.0 \
-                        --docker-debug-logs \
-                        --fail-fast
+                        --docker-debug-logs
 
 #                        --dockerized-norlab-version v0.3.0 \
 
@@ -173,7 +172,6 @@ setup() {
                       --tag-package 2.1 \
                       --tag-version r35.0.0 \
                       --docker-debug-logs \
-                      --fail-fast \
                       -- build base-image-tester
 
   assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 base-image-tester".*"since the script is executed inside a docker container".*
@@ -189,7 +187,6 @@ setup() {
                       --os-name arbitratyName \
                       --tag-package 2.1 \
                       --tag-version r35.0.0 \
-                      --fail-fast \
                       --force-push \
                       -- build
 
@@ -199,7 +196,6 @@ setup() {
 @test "flag --help" {
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
-                                    --fail-fast \
                                     --help
   assert_success
   assert_output --regexp .*"dn::execute_compose <docker-compose.yaml> \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
@@ -208,7 +204,7 @@ setup() {
 @test "flag --buildx-bake" {
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
-  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --buildx-bake --fail-fast -- ${DOCKER_CMD}
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --buildx-bake -- ${DOCKER_CMD}
 
   assert_success
   assert_output --regexp .*"docker buildx bake -f ".*"${DOCKER_CMD}"

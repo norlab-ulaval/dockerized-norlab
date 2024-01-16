@@ -16,9 +16,9 @@ WORKDIR /
 
 # ===install teamcity & CI/CD utilities==================================================================
 
-RUN pip3 install --no-cache-dir --verbose --upgrade pip
-RUN pip3 install --no-cache-dir --verbose --upgrade pytest
-RUN pip3 install --no-cache-dir --verbose teamcity-messages
+RUN pip3 install --no-cache-dir  --upgrade pip
+RUN pip3 install --no-cache-dir --upgrade pytest
+RUN pip3 install --no-cache-dir teamcity-messages
 
 RUN ( \
   echo "Configure Matplotlib to use a non-interactive backends for TeamCity run"; \

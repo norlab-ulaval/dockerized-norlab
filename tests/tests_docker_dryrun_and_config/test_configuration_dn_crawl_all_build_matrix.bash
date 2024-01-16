@@ -12,6 +12,6 @@ export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="config --quiet"
 #FLAGS=( '--fail-fast' '--' 'build' '--dry-run' )
 #bash dockerized-norlab-scripts/build_script/dn_build_all.bash ${FLAGS[@]}
 
-#bash dockerized-norlab-scripts/build_script/dn_build_all.bash --fail-fast -- build --dry-run dependencies dependencies-doc
+#bash dockerized-norlab-scripts/build_script/dn_build_all.bash -- build --dry-run dependencies dependencies-doc
 
-bash dockerized-norlab-scripts/build_script/dn_build_all.bash --fail-fast
+bash dockerized-norlab-scripts/build_script/dn_build_all.bash

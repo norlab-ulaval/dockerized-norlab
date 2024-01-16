@@ -12,7 +12,7 @@ WORKDIR /opt
 COPY requirements_deep_learning.txt /requirements_deep_learning.txt
 
 # Doc › pip install flag: https://pip.pypa.io/en/stable/cli/pip_install/#options
-RUN pip3 install --no-cache-dir --verbose -r /requirements_deep_learning.txt  \
+RUN pip3 install --no-cache-dir -r /requirements_deep_learning.txt  \
     && rm -rf /requirements_deep_learning.txt \
     && echo \
     && echo "Sanity check" \

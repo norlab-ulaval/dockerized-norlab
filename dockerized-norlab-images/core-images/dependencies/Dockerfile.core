@@ -56,8 +56,8 @@ RUN apt-get update \
         screen \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir --verbose --upgrade pip  \
-    && pip3 install --no-cache-dir --verbose  \
+    && pip3 install --no-cache-dir  --upgrade pip  \
+    && pip3 install --no-cache-dir   \
         setuptools \
         wheel \
         build \
@@ -91,7 +91,7 @@ RUN apt-get update \
 
 
 ## Packages for older python version
-#RUN pip3 install --no-cache-dir --verbose  \
+#RUN pip3 install --no-cache-dir   \
 #            dataclasses
 
 

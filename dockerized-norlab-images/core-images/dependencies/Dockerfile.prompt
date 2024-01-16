@@ -20,11 +20,11 @@ RUN apt-get update \
         fonts-powerline \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir --verbose \
+    && pip3 install --no-cache-dir  \
         psutil \
         powerline-status
 
-    # RUN pip3 install --no-cache-dir --verbose pygit2  # Not required by Powerline if Git is installed
+    # RUN pip3 install --no-cache-dir  pygit2  # Not required by Powerline if Git is installed
 
 # Require a Vim installation suporting python
 #       $ vim --version | grep +python
@@ -36,7 +36,7 @@ RUN apt-get update \
 # Note: If Powerline prompt fonts are missing in PyCharm terminal, check that the `Console Scheme` / `Consol Font` /  `Use console font instead of default` is set to `Font:` `MesloLGS NF` (!)
 
 ### Ref: https://github.com/powerline/fonts
-#RUN pip3 install --no-cache-dir --verbose \
+#RUN pip3 install --no-cache-dir  \
 #     powerline-status
 #
 #RUN apt-get update \

@@ -31,8 +31,8 @@ RUN apt-get update \
         x11-utils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir --verbose --upgrade pip  \
-    && pip3 install --no-cache-dir --verbose  \
+    && pip3 install --no-cache-dir --upgrade pip  \
+    && pip3 install --no-cache-dir  \
         # . . Vizualisation tools. . . . . . . . . . . . . . . . . . . . . .
         pyvirtualdisplay \
         imageio-ffmpeg  \

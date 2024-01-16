@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 # ===Install python scientific stack ================================================================
 # install aditional python package
-RUN pip3 install --no-cache-dir --verbose \
+RUN pip3 install --no-cache-dir  \
     scipy \
     pandas \
     Cython \

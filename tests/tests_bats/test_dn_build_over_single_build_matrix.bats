@@ -71,8 +71,7 @@ setup_file() {
 @test "running $TESTED_FILE from 'root' › expect pass" {
 
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE \
-              "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}" \
-              --fail-fast
+              "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}"
 
   assert_success
 

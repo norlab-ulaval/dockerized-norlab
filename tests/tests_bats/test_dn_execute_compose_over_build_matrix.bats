@@ -111,7 +111,7 @@ setup() {
 #  skip "tmp dev"
 
   local DOCKER_CMD="build --no-cache --push"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --fail-fast -- ${DOCKER_CMD}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} -- ${DOCKER_CMD}"
   assert_success
   assert_output --regexp .*"Skipping the execution of Docker command".*
   assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}".*
@@ -239,7 +239,6 @@ setup() {
 #  skip "tmp dev"
 
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
-                                                                 --fail-fast \
                                                                  --help
   assert_success
   assert_output --regexp .*"${TESTED_FILE} '<.env.build_matrix.*>' \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
@@ -249,7 +248,7 @@ setup() {
 #  skip "tmp dev"
 
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --buildx-bake --fail-fast -- ${DOCKER_CMD}"
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --buildx-bake -- ${DOCKER_CMD}"
 
   assert_success
   assert_output --regexp .*"docker buildx bake -f ".*"${DOCKER_CMD}"

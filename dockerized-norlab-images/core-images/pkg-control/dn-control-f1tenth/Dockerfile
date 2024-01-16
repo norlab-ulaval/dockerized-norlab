@@ -39,7 +39,7 @@ RUN apt-get update --fix-missing \
 #    && apt-get upgrade --assume-yes
 #
 ### (☕MINOR) ToDo: test >> next bloc ↓↓
-##RUN pip3 uninstall --verbose setuptools \
+##RUN pip3 uninstall setuptools \
 ##    && pip3 install --no-cache-dir --verbose --upgrade \
 ##           setuptools
 #RUN pip3 install --no-cache-dir --verbose --upgrade --force-reinstall \
@@ -63,7 +63,7 @@ RUN apt-get update --fix-missing \
 #RUN pip3 install --no-cache-dir 'gym[classic_control,box2d]<0.21.0'
 
 RUN pip3 install --no-cache-dir --upgrade pip \
-    && pip3 install --no-cache-dir --verbose \
+    && pip3 install --no-cache-dir  \
       'gym[classic_control,box2d]==0.19.0'
 
 WORKDIR /opt

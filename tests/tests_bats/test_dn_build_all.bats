@@ -74,7 +74,7 @@ teardown() {
 #  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/build_script"
-  run bash ./$TESTED_FILE  --fail-fast
+  run bash ./$TESTED_FILE
   assert_failure 1
   assert_output --partial "'$TESTED_FILE' script must be executed from the project root"
 }
@@ -101,8 +101,7 @@ teardown() {
   run source "./${TESTED_FILE_PATH}/$TESTED_FILE" \
                             --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                             --os-name-build-matrix-override 'l4t' \
-                            --l4t-version-build-matrix-override 'r33.3.3' \
-                            --fail-fast
+                            --l4t-version-build-matrix-override 'r33.3.3'
 
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*

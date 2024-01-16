@@ -32,8 +32,8 @@ RUN apt-get update \
 ## Note: libopenblas-base, libopenmpi-dev, python3-pip, Cython, numpy are all requirement for PyTorch
 ##       build for JetPack (L4T). https://elinux.org/Jetson_Zoo#PyTorch_.28Caffe2.29
 #
-RUN pip3 install --no-cache-dir --verbose --upgrade pip  \
-    && pip3 install --no-cache-dir --verbose  \
+RUN pip3 install --no-cache-dir  --upgrade pip  \
+    && pip3 install --no-cache-dir   \
         setuptools \
         wheel \
         Cython \
@@ -87,7 +87,7 @@ RUN apt-get update && \
 ## Note: wget -O save the file under a diferent name
 RUN /bin/bash -c "if [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-l4t' ]]; then \
         wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate ${PYTORCH_L4T_WHL_URL} -O ${PYTORCH_L4T_WHL} && \
-        pip3 install --no-cache-dir --verbose ${PYTORCH_L4T_WHL} --verbose && \
+        pip3 install --no-cache-dir  ${PYTORCH_L4T_WHL}  && \
         rm ${PYTORCH_L4T_WHL}; \
         git clone --branch v${TORCHVISION_VERSION} --recursive --depth=1 https://github.com/pytorch/vision torchvision && \
         cd torchvision && \
@@ -96,10 +96,10 @@ RUN /bin/bash -c "if [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-l4t' ]]; then \
         cd ../ && \
         rm -rf torchvision  \
     elif [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-Darwin' ]]; then \
-      pip3 install --no-cache-dir --verbose torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} \
+      pip3 install --no-cache-dir  torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} \
       rm ${PYTORCH_WHL_M1}; \
     elif [[ ${DN_IMAGE_ARCHITECTURE} == 'x86' ]]; then \
-      pip3 install --no-cache-dir --verbose torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} \
+      pip3 install --no-cache-dir  torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} \
     else \
       echo 'Architecture ${DN_IMAGE_ARCHITECTURE} is not curently suported'; \
       exit 1; \
@@ -111,12 +111,12 @@ RUN /bin/bash -c "if [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-l4t' ]]; then \
 
 #RUN /bin/bash -c "if [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-l4t' ]]; then \
 #        wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate ${PYTORCH_L4T_WHL_URL} -O ${PYTORCH_L4T_WHL} && \
-#        pip3 install --no-cache-dir --verbose ${PYTORCH_L4T_WHL} --verbose && \
+#        pip3 install --no-cache-dir  ${PYTORCH_L4T_WHL}  && \
 #        rm ${PYTORCH_L4T_WHL}; \
 #    elif [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-Darwin' ]]; then \
-#      pip3 install --no-cache-dir --verbose torch==1.9.0 -f ${PYTORCH_OFFICIAL_WHL_URL}; \
+#      pip3 install --no-cache-dir  torch==1.9.0 -f ${PYTORCH_OFFICIAL_WHL_URL}; \
 #    elif [[ ${DN_IMAGE_ARCHITECTURE} == 'x86' ]]; then \
-#      pip3 install --no-cache-dir --verbose torch==${PYTORCH_VERSION_X86} -f ${PYTORCH_OFFICIAL_WHL_URL}; \
+#      pip3 install --no-cache-dir  torch==${PYTORCH_VERSION_X86} -f ${PYTORCH_OFFICIAL_WHL_URL}; \
 #    else \
 #      echo 'Architecture ${DN_IMAGE_ARCHITECTURE} is not curently suported'; \
 #      exit 1; \
@@ -129,7 +129,7 @@ RUN /bin/bash -c "if [[ ${DN_IMAGE_ARCHITECTURE} == 'arm64-l4t' ]]; then \
 FROM pytorch-base-image AS ros-scientific-stack-base-image
 
 # install aditional python package
-RUN pip3 install --no-cache-dir --verbose \
+RUN pip3 install --no-cache-dir  \
     scipy \
     scikit-learn \
     pandas \

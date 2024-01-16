@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="run › dn_build_over_single_build_matrix.bash (dev)" type="ShConfigurationType" folderName="[DN] development ( .env.build_matrix.dev )">
-    <option name="SCRIPT_TEXT" value="bash dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash build_matrix_config/dev/.env.build_matrix.main.dev --fail-fast" />
+    <option name="SCRIPT_TEXT" value="bash dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash build_matrix_config/dev/.env.build_matrix.main.dev" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash" />
     <option name="SCRIPT_OPTIONS" value="" />
