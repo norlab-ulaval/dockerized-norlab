@@ -246,7 +246,9 @@ function dn::execute_compose() {
     local STR_BUILT_SERVICES
     declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services) )
 
+    echo
     for each_service in ${STR_BUILT_SERVICES[@]}; do
+      n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
       n2st::print_msg "Execute docker build for service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} and push if image is defined"
 
       # ...Execute docker command for each service.................................................
@@ -265,6 +267,8 @@ function dn::execute_compose() {
       n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
 
     done
+    n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
+    echo
   else
     # ...Execute docker command....................................................................
     n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
