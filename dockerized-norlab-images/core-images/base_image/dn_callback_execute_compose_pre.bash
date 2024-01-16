@@ -22,7 +22,7 @@ function dn::callback_execute_compose_pre() {
     # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
-    echo "DOCKER_IMG=${DOCKER_IMG}"
+    n2st::print_msg "Pulling DOCKER_IMG=${DOCKER_IMG}"
 
     # shellcheck disable=SC2046
     docker pull "${DOCKER_IMG}" \

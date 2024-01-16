@@ -345,9 +345,9 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             git fetch --all
           fi
 
-          n2st::print_msg "Git fetch tag list"
           # Note: keep it here as a testing tool
-          git tag --list
+          n2st::print_msg "Git fetch tag list\n$(git tag --list)"
+#          echo -e "$(git tag --list)"
 
           # Execute if not run in bats test framework
           if [[ -z ${BATS_VERSION} ]]; then
