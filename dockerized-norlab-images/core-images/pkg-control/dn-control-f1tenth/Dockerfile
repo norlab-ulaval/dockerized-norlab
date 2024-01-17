@@ -45,7 +45,7 @@ RUN apt-get update --fix-missing \
 #RUN pip3 install --no-cache-dir --verbose --upgrade --force-reinstall \
 #           setuptools
 
-# (CRITICAL) ToDo: assessment >> check official install procedure (for non dn-control-deep-rl-f1tenth images)
+# (CRITICAL) ToDo: assessment >> check official install procedure (for non dockerized-norlab-control-deep-rl-f1tenth images)
 #   Ref: https://f1tenth.readthedocs.io/en/foxy_test/autoware/intro.html#jetson-xavier-nx-and-f1tenth-recordreplay-demo
 #   > Install f1tenth_gym simulator dependencies
 #   > Install onnx and roll back setuptools to version 65.5.0

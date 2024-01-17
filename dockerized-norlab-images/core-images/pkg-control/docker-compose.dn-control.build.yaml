@@ -24,7 +24,7 @@ services:
 #    depends_on:
 #      - dn-control
 
-#  # (!) Install problem, skipping for now, will use the 'dn-control-deep-rl-f1tenth' image in the mean time
+#  # (!) Install problem, skipping for now, will use the 'dockerized-norlab-control-deep-rl-f1tenth' image in the mean time
 #  dn-control-f1tenth:
 #    extends: dn-control
 #    build:
