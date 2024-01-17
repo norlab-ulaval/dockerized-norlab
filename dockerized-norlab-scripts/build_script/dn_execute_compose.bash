@@ -249,8 +249,8 @@ function dn::execute_compose() {
 #      n2st::show_and_execute_docker $@ | sed 's/$/\r/'
 #    }
 
-    echo
     for each_service in ${STR_BUILT_SERVICES[@]}; do
+      echo
       n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
       n2st::print_msg "Execute docker build for service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} and push if image is defined"
 
