@@ -14,7 +14,7 @@
 #   - Read NBS_OVERRIDE_BUILD_MATRIX_MAIN          Use to quickly change the .env.build_matrix.main file
 #   - Read NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG            Use to quickly add docker flag at runtime
 #             e.g.: $ NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push --dry-run" && source dn_build_all.bash
-#   - Read NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY  Use to quickly overide the build matrix list
+#   - Read NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY  Use to quickly override the build matrix list
 #             e.g.: $ NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev' ) && source dn_build_all.bash
 #   - Read STR_BUILD_MATRIX_SERVICES_AND_TAGS from build_all.log
 #
@@ -29,20 +29,11 @@ if [[ ! -f  ".env.dockerized-norlab-build-system" ]]; then
   exit 1
 fi
 
-# ....Load environment variables from file.........................................................
 
-#
-# The main .env.build_matrix to load
-#
-#NBS_OVERRIDE_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
+# ....Load environment variables from file.........................................................
 
 set -o allexport
 source .env.dockerized-norlab-build-system || exit 1
-source .env.build_matrix.main
-if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
-  # Note: Override values from .env.build_matrix.main
-  source "$NBS_OVERRIDE_BUILD_MATRIX_MAIN"
-fi
 
 # Set PROJECT_GIT_REMOTE_URL
 source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
@@ -53,6 +44,17 @@ source import_norlab_build_system_lib.bash || exit 1
 cd "${DN_PATH:?'Variable not set'}" || exit 1
 set +o allexport
 
+# . . The main .env.build_matrix to load. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+#NBS_OVERRIDE_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
+set -o allexport
+n2st::print_msg "Loading ${MSG_DIMMED_FORMAT}.env.build_matrix.main${MSG_END_FORMAT}"
+source .env.build_matrix.main
+if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
+  # Note: Override values from .env.build_matrix.main
+  n2st::print_msg "Loading main build matrix override ${MSG_DIMMED_FORMAT}${NBS_OVERRIDE_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
+  source "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
+fi
+set +o allexport
 
 # . . Build_matrix logging functions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # (CRITICAL) ToDo: change .log directory

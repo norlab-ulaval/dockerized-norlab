@@ -88,11 +88,29 @@ teardown() {
   assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
 
-
-
   run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--fail-fast" -- "build --dry-run"
   assert_success
   refute_output --partial "'$TESTED_FILE' script must be executed from the project root"
+}
+
+@test "environment variable override › ok" {
+#  skip "tmp dev"
+
+  cd "${BATS_DOCKER_WORKDIR}"
+
+  assert_equal "$(basename $(pwd))" "dockerized-norlab"
+  assert_file_exist .env.dockerized-norlab-build-system
+  assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
+
+  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--fail-fast" -- "build --dry-run"
+  assert_success
+  assert_output --regexp "\[NBS\]".*"Loading".*".env.build_matrix.main"
+  assert_output --regexp "\[NBS\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
+  assert_output --regexp "\[NBS\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=".*"v0.3.0 hot".*"NBS_MATRIX_SUPPORTED_OS=".*"l4t".*"".*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS=".*"r11.1.1 r22.2.2".*"NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=".*"dustynv/ros:humble-ros-core-l4t dustynv/ros:humble-pytorch-l4t".*
+
+  assert_output --regexp "Starting".*"dn_execute_compose.bash".*"\[NBS\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=v0.3.0"
+
+  assert_output --regexp "Starting".*"dn_execute_compose.bash".*"\[NBS\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=hot"
 }
 
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
