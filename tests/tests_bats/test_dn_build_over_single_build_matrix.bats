@@ -76,7 +76,7 @@ setup_file() {
   assert_success
 
   refute_output  --partial "No such file or directory"
-  assert_output --regexp .*"\[".*"NBS".*"\]".*"Build images specified in".*"dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml".*"following".*"${TEST_DOTENV_BUILD_MATRIX}".*
+  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Build images specified in".*"dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml".*"following".*"${TEST_DOTENV_BUILD_MATRIX}".*
 }
 
 

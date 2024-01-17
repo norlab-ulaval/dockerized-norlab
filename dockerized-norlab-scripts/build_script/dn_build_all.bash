@@ -19,8 +19,6 @@
 #   - Read STR_BUILD_MATRIX_SERVICES_AND_TAGS from build_all.log
 #
 # =================================================================================================
-#clear
-#set -x # (CRITICAL) ToDo: on task end >> mute this line ←
 
 # ....Pre-condition................................................................................
 
@@ -44,17 +42,19 @@ source import_norlab_build_system_lib.bash || exit 1
 cd "${DN_PATH:?'Variable not set'}" || exit 1
 set +o allexport
 
-# . . The main .env.build_matrix to load. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#NBS_OVERRIDE_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
+#
+# The main .env.build_matrix to load
+#
+#NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
+
 set -o allexport
-n2st::print_msg "Loading ${MSG_DIMMED_FORMAT}.env.build_matrix.main${MSG_END_FORMAT}"
-source .env.build_matrix.main
+source ".env.build_matrix.main"
 if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
   # Note: Override values from .env.build_matrix.main
-  n2st::print_msg "Loading main build matrix override ${MSG_DIMMED_FORMAT}${NBS_OVERRIDE_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
   source "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
 fi
 set +o allexport
+
 
 # . . Build_matrix logging functions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # (CRITICAL) ToDo: change .log directory
@@ -72,24 +72,12 @@ function dn::agregate_build_logs() {
 
 # ====Begin========================================================================================
 
-# ....manual config................................................................................
-
-## ToDo: on task end >> delete next bloc ↓↓
-#NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="push --ignore-push-failures"
-#NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="up --build"
-#NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --dry-run"
-#NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=( build --dry-run )
-#NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=( build )
-#
-#export DOCKER_CONTEXT=desktop-linux
-#export DOCKER_CONTEXT=jetson-nx-redleader-daemon
-
 # ....setup........................................................................................
 # Note: 'NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG' is set via commandline for convenience
 DOCKER_COMMAND_W_FLAGS="${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG:-"build"}"
 
 # ....execute all build matrix.....................................................................
-_CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]}}" )
+_CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]:?err}}" )
 
 for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
 

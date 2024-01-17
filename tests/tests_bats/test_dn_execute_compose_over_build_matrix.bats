@@ -50,10 +50,8 @@ setup_file() {
 }
 
 setup() {
-
-  NBS_PATH=${BATS_DOCKER_WORKDIR}/utilities/norlab-build-system
-  cd "${NBS_PATH}"
-  source "import_norlab_build_system_lib.bash" || exit 1
+#  cd "${DN_PATH:?err}"
+  source "import_dockerized_norlab_tools.bash" || exit 1
 
   cd "$BATS_DOCKER_WORKDIR" || exit
 }
@@ -231,7 +229,7 @@ setup() {
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r33.3.3'
 #  set -e
-  assert_output --regexp .*"\[".*"NBS error".*"\]".*"The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
+  assert_output --regexp .*"\[".*"DN-build-system error".*"\]".*"The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
 }
 
 @test "--force-push 'bleeding' tag sanity check ok" {
@@ -246,7 +244,7 @@ setup() {
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r33.3.3'
 #  set -e
-  assert_output --regexp .*"\[".*"NBS error".*"\]".*"The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
+  assert_output --regexp .*"\[".*"DN-build-system error".*"\]".*"The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
 }
 
 @test "flag --force-push is passed to dn_execute_compose.bash" {
@@ -262,7 +260,7 @@ setup() {
 
   assert_success
 
-  assert_output --regexp .*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"NBS".*"\]".*"Force push mock-service-one image to docker registry".*"\[".*"NBS".*"\]".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-one".*"completed successfully and exited docker.".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"NBS".*"\]".*"Force push mock-service-two image to docker registry".*"\[".*"NBS".*"\]".*"\[".*"NBS done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-two".*"completed successfully and exited docker.".*
+  assert_output --regexp .*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-one image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-one".*"completed successfully and exited docker.".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-two image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-two".*"completed successfully and exited docker.".*
 }
 
 @test "flag --help" {
@@ -295,6 +293,6 @@ setup() {
                         --l4t-version-build-matrix-override 'r33.3.3' \
                         --fail-fast
 
-  assert_output --regexp .*"\[".*"NBS".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"NBS".*"\]".*"\[".*"NBS warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"NBS".*"\]".*"Repository checkout".*
+  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"DN-build-system".*"\]".*"Repository checkout".*
 
 }

@@ -32,10 +32,6 @@ declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
 STR_DOCKER_MANAGEMENT_COMMAND="compose"
 DOCKER_FORCE_PUSH=false
 
-#
-# The main .env.build_matrix to load
-#
-NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
 
 MSG_ERROR_FORMAT="\033[1;31m"
 MSG_END_FORMAT="\033[0m"
@@ -66,8 +62,11 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   # This script is being run, ie: __name__="__main__"
 
   # import shell functions from norlab-shell-script-tools utilities library
-  cd "${NBS_PATH:?err}"
-  source import_norlab_build_system_lib.bash || exit 1
+#  cd "${NBS_PATH:?err}"
+#  source import_norlab_build_system_lib.bash || exit 1
+  cd "${DN_PATH:?err}"
+  source import_dockerized_norlab_tools.bash || exit 1
+
 
   cd "${DN_PATH}"
 
@@ -79,7 +78,7 @@ else
     exit 1
   else
     if [[ "${NBS_IMPORTED}" != "true" ]]; then
-      echo -e "\n${MSG_ERROR_FORMAT}[ERROR]${MSG_END_FORMAT} You need to execute ${MSG_DIMMED_FORMAT}import_norlab_build_system_lib.bash${MSG_END_FORMAT} before sourcing ${MSG_DIMMED_FORMAT}dn_execute_compose_over_build_matrix.bash${MSG_END_FORMAT} otherwise run it with bash." 1>&2
+      echo -e "\n${MSG_ERROR_FORMAT}[ERROR]${MSG_END_FORMAT} You need to execute ${MSG_DIMMED_FORMAT}import_dockerized_norlab_tools.bash${MSG_END_FORMAT} before sourcing ${MSG_DIMMED_FORMAT}dn_execute_compose_over_build_matrix.bash${MSG_END_FORMAT} otherwise run it with bash." 1>&2
       exit 1
     else
       # NBS was imported prior to the script execution
@@ -91,6 +90,13 @@ fi
 
 
 # ....Load environment variables from file.........................................................
+#
+# The main .env.build_matrix to load
+#
+# (CRITICAL) ToDo: implement <-- we are here
+#NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
+NBS_BUILD_MATRIX_MAIN=".env.build_matrix.main"
+
 if [[ ! -f "${NBS_BUILD_MATRIX_MAIN}" ]]; then
   echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in NBS_BUILD_MATRIX_MAIN='${NBS_BUILD_MATRIX_MAIN:?err}'" 1>&2
   exit 1
@@ -101,8 +107,17 @@ cd "${DN_PATH}" || exit 1
 set -o allexport
 source .env.dockerized-norlab-project || exit 1
 source "$_DOTENV_BUILD_MATRIX" || exit 1
+n2st::print_msg "Loading ${MSG_DIMMED_FORMAT}${NBS_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
 source "${NBS_BUILD_MATRIX_MAIN:?'The name of the main .env.build_matrix file is missing'}" || exit 1
 set +o allexport
+
+if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
+  # Note: Override values from .env.build_matrix.main
+  n2st::print_msg "Loading main build matrix override ${MSG_DIMMED_FORMAT}${NBS_OVERRIDE_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
+  source "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
+fi
+set +o allexport
+
 
 
 set -o allexport
@@ -173,6 +188,7 @@ n2st::norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
 n2st::set_is_teamcity_run_environment_variable
 
 n2st::print_formated_script_header 'dn_execute_compose_over_build_matrix.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
+
 
 # ....Script command line flags....................................................................
 while [ $# -gt 0 ]; do
