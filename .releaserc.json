@@ -99,22 +99,6 @@
               }
             ],
             "countMatches": true
-          },
-          {
-            "files": [
-              "env.build_matrix.main.release.bash"
-            ],
-            "from": "NBS_MATRIX_REPOSITORY_VERSIONS=.*v.*..*..* .*",
-            "to": "NBS_MATRIX_REPOSITORY_VERSIONS=.*v${nextRelease.version} .*",
-            "results": [
-              {
-                "file": "env.build_matrix.main.release.bash",
-                "hasChanged": true,
-                "numMatches": 1,
-                "numReplacements": 1
-              }
-            ],
-            "countMatches": true
           }
         ]
       }
