@@ -102,13 +102,13 @@
           },
           {
             "files": [
-              ".env.build_matrix.main.release"
+              "env.build_matrix.main.release.bash"
             ],
-            "from": "NBS_MATRIX_REPOSITORY_VERSIONS=.*'v.*'",
-            "to": "NBS_MATRIX_REPOSITORY_VERSIONS=.*'v${nextRelease.version}'",
+            "from": "NBS_MATRIX_REPOSITORY_VERSIONS=( 'v.*' )",
+            "to": "NBS_MATRIX_REPOSITORY_VERSIONS=( 'v${nextRelease.version}' )",
             "results": [
               {
-                "file": ".env.build_matrix.main.release",
+                "file": "env.build_matrix.main.release.bash",
                 "hasChanged": true,
                 "numMatches": 1,
                 "numReplacements": 1
