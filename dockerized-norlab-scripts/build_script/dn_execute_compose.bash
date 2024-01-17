@@ -36,24 +36,21 @@ function dn::execute_compose() {
   unset DOCKER_EXIT_CODE
   local MAIN_DOCKER_EXIT_CODE=1
 
-  # (CRITICAL) ToDo: refactor env var setting related to docker compose cmd. Return an error if not set explicitly via flag or use new mechanism to register build arg (NMO-396)
-  REPOSITORY_VERSION='latest'
-  BASE_IMAGE='dustynv/ros'
-  OS_NAME='l4t'
-  TAG_PACKAGE='foxy-pytorch-l4t'
-  TAG_VERSION='r35.2.1'
+  local REPOSITORY_VERSION
+  local BASE_IMAGE
+  local OS_NAME
+  local TAG_PACKAGE
+  local TAG_VERSION
 
   # ....Pre-condition..............................................................................
 
   if [[ ! -f  ".env.dockerized-norlab-build-system" ]]; then
-    echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn::execute_compose' function must be executed from the project root!\n Curent working directory is '$(pwd)'" 1>&2
-    exit 1
+    n2st::print_msg_error_and_exit "'dn::execute_compose' function must be executed from the project root!\n Curent working directory is '$(pwd)'"
   fi
 
 
   if [[ ! -f  "${COMPOSE_FILE}" ]]; then
-    echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn::execute_compose' can't find the docker-compose.yaml file '${COMPOSE_FILE}' at $(pwd)"  1>&2
-    exit 1
+    n2st::print_msg_error_and_exit "'dn::execute_compose' can't find the docker-compose.yaml file '${COMPOSE_FILE}' at $(pwd)"
   fi
 
   # ....Load environment variables from file.......................................................
@@ -195,19 +192,20 @@ function dn::execute_compose() {
 
   # ...............................................................................................
   # Note: REPOSITORY_VERSION will be used to fetch the repo at release tag (ref task NMO-252)
-  export REPOSITORY_VERSION="${REPOSITORY_VERSION}"
-  export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE}"
-  export TAG_VERSION="${TAG_VERSION}"
-
-  export PROJECT_TAG="${OS_NAME}-${TAG_VERSION}"
-
-  export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
+  export REPOSITORY_VERSION="${REPOSITORY_VERSION:?'Variable not set, use --help to find the proper flag'}"
+  export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE:?'Variable not set, use --help to find the proper flag'}"
+  export TAG_VERSION="${TAG_VERSION:?'Variable not set, use --help to find the proper flag'}"
+  export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE:?'Variable not set, use --help to find the proper flag'}-${TAG_VERSION}"
   export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
+  export PROJECT_TAG="${OS_NAME:?'Variable not set, use --help to find the proper flag'}-${TAG_VERSION}"
 
   n2st::print_msg "Environment variables set for ${DOCKER_MANAGEMENT_COMMAND[*]}:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    TAG_VERSION=${TAG_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
   "
 
   if [[ ${IS_TEAMCITY_RUN} == true ]]; then
@@ -305,14 +303,14 @@ function dn::execute_compose() {
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   # This script is being run, ie: __name__="__main__"
 
-  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] This script must be sourced  i.e.: $ source dn_execute_compose.bash" 1>&2
+  echo -e "\n[${MSG_ERROR_FORMAT}ERROR${MSG_END_FORMAT}] This script must be sourced  i.e.: $ source dn_execute_compose.bash" 1>&2
   exit 1
 
 else
   # This script is being sourced, ie: __name__="__source__"
 
-  if [[ "${NBS_IMPORTED}" != "true" ]]; then
-    echo -e "\n${MSG_ERROR_FORMAT}[ERROR]${MSG_END_FORMAT} You need to execute ${MSG_DIMMED_FORMAT}import_norlab_build_system_lib.bash${MSG_END_FORMAT} before sourcing ${MSG_DIMMED_FORMAT}dn_execute_compose.bash${MSG_END_FORMAT}." 1>&2
+  if [[ "${DN_IMPORTED}" != "true" ]]; then
+    echo -e "\n${MSG_ERROR_FORMAT}[ERROR]${MSG_END_FORMAT} You need to execute ${MSG_DIMMED_FORMAT}import_dockerized_norlab_tools.bash${MSG_END_FORMAT} before sourcing ${MSG_DIMMED_FORMAT}dn_execute_compose.bash${MSG_END_FORMAT}." 1>&2
     exit 1
   else
     # NBS was imported prior to the script execution
