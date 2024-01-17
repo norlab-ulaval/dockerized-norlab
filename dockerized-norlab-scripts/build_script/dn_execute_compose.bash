@@ -246,6 +246,11 @@ function dn::execute_compose() {
     local STR_BUILT_SERVICES
     declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services) )
 
+
+#    function dn::show_and_execute_docker_with_output_refresh_quickhack() {
+#      n2st::show_and_execute_docker $@ | sed 's/$/\r/'
+#    }
+
     echo
     for each_service in ${STR_BUILT_SERVICES[@]}; do
       n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
@@ -262,8 +267,11 @@ function dn::execute_compose() {
       #       and multi-compose-file as multi-aarch image can't be loaded in the local registry and the
       #       docker compose build --push command is not reliable in buildx builder docker-container driver
       n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
-      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} --progress tty -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
+
+      export COMPOSE_ANSI=always
+      n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
       unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
+
       n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
 
     done

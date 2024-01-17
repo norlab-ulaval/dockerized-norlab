@@ -127,15 +127,26 @@ for each_services_and_tags in "${_ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS[@]}"; d
   fi
 done
 
-# ====Teardown=====================================================================================
 n2st::print_formated_script_footer 'dn_build_all.bash' "${MSG_LINE_CHAR_BUILDER_LVL1}"
 
+# ====Teardown=====================================================================================
 cd "${DN_PATH:?'Variable not set'}" || exit 1
 
-if [[ $RAISE_ERROR == true ]]; then
-  exit 1
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+  # This script is being run, ie: __name__="__main__"
+  if [[ $RAISE_ERROR == true ]]; then
+    exit 1
+  else
+    exit 0
+  fi
 else
-  exit 0
+  # This script is being sourced, ie: __name__="__source__"
+  if [[ $RAISE_ERROR == true ]]; then
+    return 1
+  else
+    return 0
+  fi
 fi
+
 
 
