@@ -22,8 +22,6 @@
 #clear
 #set -x # (CRITICAL) ToDo: on task end >> mute this line ←
 
-#SUB_SCRIPT_FLAGS=$@
-
 # ....Pre-condition................................................................................
 
 if [[ ! -f  ".env.dockerized-norlab-build-system" ]]; then
