@@ -437,12 +437,15 @@ done
 # ====Show feedback================================================================================
 dn::print_env_var_build_matrix "used by ${STR_DOCKER_MANAGEMENT_COMMAND}"
 
+# Fetch and format the compose file NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE services list
 STR_BUILT_SERVICES=$( docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services | sed 's/^/   - /' )
-export STR_BUILT_SERVICES
+
+# Format tag list
 for tag in "${IMAGE_TAG_CRAWLED[@]}"; do
   STR_IMAGE_TAG_CRAWLED="${STR_IMAGE_TAG_CRAWLED}\n   ${tag}${MSG_END_FORMAT}"
 done
 
+# shellcheck disable=SC2001
 STR_BUILD_MATRIX_SERVICES_AND_TAGS="Service crawled:
 ${MSG_DIMMED_FORMAT}
 ${STR_BUILT_SERVICES}
@@ -478,4 +481,4 @@ fi
 cd "${DN_PATH}"
 
 # shellcheck disable=SC2086
-exit $_BUILD_STATUS_PASS
+exit ${_BUILD_STATUS_PASS}

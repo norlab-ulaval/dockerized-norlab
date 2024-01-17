@@ -36,11 +36,11 @@ function dn::execute_compose() {
   unset DOCKER_EXIT_CODE
   local MAIN_DOCKER_EXIT_CODE=1
 
-  local REPOSITORY_VERSION
-  local BASE_IMAGE
-  local OS_NAME
-  local TAG_PACKAGE
-  local TAG_VERSION
+  decare -x REPOSITORY_VERSION
+  decare -x BASE_IMAGE
+  decare -x OS_NAME
+  decare -x TAG_PACKAGE
+  decare -x TAG_VERSION
 
   # ....Pre-condition..............................................................................
 
@@ -291,7 +291,11 @@ function dn::execute_compose() {
   n2st::print_msg "Environment variables used by compose:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
-  ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}"
+  ${MSG_DIMMED_FORMAT}    TAG_VERSION=${TAG_VERSION} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
+  "
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
