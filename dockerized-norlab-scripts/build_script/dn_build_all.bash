@@ -36,11 +36,15 @@ fi
 #
 # The main .env.build_matrix to load
 #
-NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
+#NBS_OVERRIDE_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
 
 set -o allexport
 source .env.dockerized-norlab-build-system || exit 1
-source "$NBS_BUILD_MATRIX_MAIN"
+source .env.build_matrix.main
+if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
+  # Note: Override values from .env.build_matrix.main
+  source "$NBS_OVERRIDE_BUILD_MATRIX_MAIN"
+fi
 
 # Set PROJECT_GIT_REMOTE_URL
 source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
