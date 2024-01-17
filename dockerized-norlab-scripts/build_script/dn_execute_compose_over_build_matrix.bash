@@ -108,7 +108,7 @@ if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
   source "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
 fi
 
-n2st::print_msg "Loading build matrix${MSG_DIMMED_FORMAT}${_DOTENV_BUILD_MATRIX}${MSG_END_FORMAT}"
+n2st::print_msg "Loading build matrix ${MSG_DIMMED_FORMAT}${_DOTENV_BUILD_MATRIX}${MSG_END_FORMAT}"
 source "${_DOTENV_BUILD_MATRIX}" || exit 1
 
 set +o allexport

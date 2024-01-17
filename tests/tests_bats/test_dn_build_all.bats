@@ -54,6 +54,7 @@ setup() {
 #  cd "$TESTED_FILE_PATH" || exit
 
   export NBS_OVERRIDE_BUILD_MATRIX_MAIN=build_matrix_config/test/.env.build_matrix.main.mock
+  export BUILD_MATRIX_CONFIG_FILE=build_matrix_config/test/.env.build_matrix.mock
 
 }
 
@@ -104,8 +105,10 @@ teardown() {
 
   run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--fail-fast" -- "build --dry-run"
   assert_success
-  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main"
-  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
+
+  # Build matrix source ordering
+  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main".*"\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}".*"\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
+
 
   assert_output --regexp "\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=".*"v0.3.0 hot".*"NBS_MATRIX_SUPPORTED_OS=".*"l4t".*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS=".*"r11.1.1 r22.2.2".*"NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=".*"dustynv/ros:humble-ros-core-l4t dustynv/ros:humble-pytorch-l4t".*
 

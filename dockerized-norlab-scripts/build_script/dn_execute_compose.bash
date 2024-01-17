@@ -22,6 +22,17 @@
 MSG_ERROR_FORMAT="\033[1;31m"
 MSG_END_FORMAT="\033[0m"
 
+# Variable set for export
+declare -x BUILDKIT_PROGRESS
+declare -x REPOSITORY_VERSION
+#declare -x BASE_IMAGE
+#declare -x OS_NAME
+#declare -x TAG_PACKAGE
+declare -x DEPENDENCIES_BASE_IMAGE
+declare -x TAG_VERSION
+declare -x DEPENDENCIES_BASE_IMAGE_TAG
+declare -x DN_IMAGE_TAG
+declare -x PROJECT_TAG
 
 function dn::execute_compose() {
   # ....Positional argument........................................................................
@@ -36,11 +47,6 @@ function dn::execute_compose() {
   unset DOCKER_EXIT_CODE
   local MAIN_DOCKER_EXIT_CODE=1
 
-  decare -x REPOSITORY_VERSION
-  decare -x BASE_IMAGE
-  decare -x OS_NAME
-  decare -x TAG_PACKAGE
-  decare -x TAG_VERSION
 
   # ....Pre-condition..............................................................................
 
