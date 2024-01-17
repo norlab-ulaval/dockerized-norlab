@@ -1,3 +1,4 @@
+
 <div align="center">
 
 [//]: # ( ==== Logo ================================================== )
@@ -82,12 +83,22 @@ Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
  
 
 ### Usage example
-Assuming a _docker buildx builder_ with multi-architecture _docker-container_ driver named `local-builder-multiarch-virtual`
+Assuming a _docker builder_ with multi-architecture _docker-container_ driver named `local-builder-multiarch-virtual`
 execute the following in repository root
 ```shell
 export BUILDX_BUILDER=local-builder-multiarch-virtual \
   && export NBS_OVERRIDE_BUILD_MATRIX_MAIN=".env.build_matrix.main" \
   && export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build" \
   && source dockerized-norlab-scripts/build_script/dn_build_all.bash --force-push
+```
 
+Note: To create a multi-architecture _docker builder_ with architecture virtualization
+```shell
+docker buildx create \
+    --name local-builder-multiarch-virtual \
+    --driver docker-container \
+    --node local \
+    --platform linux/amd64,linux/arm64 \
+    --bootstrap \
+    --use
 ```
