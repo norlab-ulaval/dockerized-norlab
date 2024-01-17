@@ -56,14 +56,17 @@ if [[ ! -f "${_DOTENV_BUILD_MATRIX}" ]]; then
   exit 1
 fi
 
+NBS_BUILD_MATRIX_MAIN=".env.build_matrix.main"
+if [[ ! -f "${NBS_BUILD_MATRIX_MAIN}" ]]; then
+  n2st::print_msg_error_and_exit "'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in NBS_BUILD_MATRIX_MAIN='${NBS_BUILD_MATRIX_MAIN:?err}'"
+fi
+
+
 
 # ....Helper function..............................................................................
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   # This script is being run, ie: __name__="__main__"
 
-  # import shell functions from norlab-shell-script-tools utilities library
-#  cd "${NBS_PATH:?err}"
-#  source import_norlab_build_system_lib.bash || exit 1
   cd "${DN_PATH:?err}"
   source import_dockerized_norlab_tools.bash || exit 1
 
@@ -90,24 +93,12 @@ fi
 
 
 # ....Load environment variables from file.........................................................
-#
-# The main .env.build_matrix to load
-#
-# (CRITICAL) ToDo: implement <-- we are here
-#NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
-NBS_BUILD_MATRIX_MAIN=".env.build_matrix.main"
-
-if [[ ! -f "${NBS_BUILD_MATRIX_MAIN}" ]]; then
-  echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] 'dn_execute_compose_over_build_matrix.bash' can't find dotenv build matrix file in NBS_BUILD_MATRIX_MAIN='${NBS_BUILD_MATRIX_MAIN:?err}'" 1>&2
-  exit 1
-fi
-
 cd "${DN_PATH}" || exit 1
 
 set -o allexport
 source .env.dockerized-norlab-project || exit 1
-source "$_DOTENV_BUILD_MATRIX" || exit 1
-n2st::print_msg "Loading ${MSG_DIMMED_FORMAT}${NBS_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
+
+n2st::print_msg "Loading main build matrix ${MSG_DIMMED_FORMAT}${NBS_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
 source "${NBS_BUILD_MATRIX_MAIN:?'The name of the main .env.build_matrix file is missing'}" || exit 1
 set +o allexport
 
@@ -116,6 +107,10 @@ if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
   n2st::print_msg "Loading main build matrix override ${MSG_DIMMED_FORMAT}${NBS_OVERRIDE_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
   source "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
 fi
+
+n2st::print_msg "Loading build matrix${MSG_DIMMED_FORMAT}${_DOTENV_BUILD_MATRIX}${MSG_END_FORMAT}"
+source "${_DOTENV_BUILD_MATRIX}" || exit 1
+
 set +o allexport
 
 

@@ -136,6 +136,31 @@ setup() {
 #  bats_print_run_env_variable
 }
 
+@test "dotenv build matrix source ordering › ok" {
+#  skip "tmp dev"
+
+  assert_equal "$(basename $(pwd))" "dockerized-norlab"
+  assert_file_exist .env.dockerized-norlab-build-system
+  assert_file_exist .env.build_matrix.main
+  assert_file_exist "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
+  assert_file_exist "${BUILD_MATRIX_CONFIG_FILE}"
+
+  local DOCKER_CMD="version"
+  local _CI_TEST=true
+  set +e
+  mock_docker_command_exit_ok
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+                                              --ci-test-force-runing-docker-cmd \
+                                              -- "$DOCKER_CMD"
+  set -e
+  assert_success
+  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main"
+  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
+  assert_output --regexp "\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
+
+#  bats_print_run_env_variable
+}
+
 @test "docker exit code propagation on pass › expect pass" {
 
   local DOCKER_CMD="version"

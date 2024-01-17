@@ -229,7 +229,7 @@ function dn::execute_compose() {
 
   # ...Docker cmd conditional logic................................................................
 
-  # (CRITICAL) ToDo: assessment if still usefull >> next bloc ↓↓
+  # (☕minor) ToDo: assessment if still usefull >> next bloc ↓↓
 #  # Note:
 #  #   - BUILDKIT_CONTEXT_KEEP_GIT_DIR is for setting buildkit to keep the .git directory in the container
 #  #     Source https://docs.docker.com/build/building/context/#keep-git-directory

@@ -40,14 +40,6 @@ cd "${NBS_PATH:?'Variable not set'}"  || exit 1
 source import_norlab_build_system_lib.bash || exit 1
 
 cd "${DN_PATH:?'Variable not set'}" || exit 1
-set +o allexport
-
-#
-# The main .env.build_matrix to load
-#
-#NBS_BUILD_MATRIX_MAIN=${NBS_OVERRIDE_BUILD_MATRIX_MAIN:-".env.build_matrix.main"}
-
-set -o allexport
 source ".env.build_matrix.main"
 if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
   # Note: Override values from .env.build_matrix.main
@@ -57,7 +49,7 @@ set +o allexport
 
 
 # . . Build_matrix logging functions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-# (CRITICAL) ToDo: change .log directory
+# (☕MINOR) ToDo: change .log directory
 BUILD_LOG_PATH=./dockerized-norlab-scripts/build_script/build_all.log
 touch "$BUILD_LOG_PATH"
 unset _ALL_STR_BUILD_MATRIX_SERVICES_AND_TAGS
@@ -97,7 +89,6 @@ done
 
 # ....show build matrix feedback...................................................................
 set -o allexport
-# (CRITICAL) ToDo: refactor '.env.dockerized-norlab-project' >> make it portable (eg .env or set the file name via env var)
 source .env.dockerized-norlab-project
 set +o allexport
 n2st::norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
