@@ -75,6 +75,8 @@ setup() {
 
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
+#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
 
   source ./build_script/$TESTED_FILE
@@ -90,6 +92,7 @@ setup() {
 }
 
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
+#  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
@@ -105,6 +108,7 @@ setup() {
 }
 
 @test "missing docker-compose.yaml file mandatory argument › expect fail" {
+#  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose
@@ -177,6 +181,59 @@ setup() {
 
   set -e
   assert_equal "$DOCKER_EXIT_CODE" 1
+}
+
+@test "Variable are exported to calling script › expect pass" {
+##  skip "tmp dev" # ToDo: on task end >> delete this line ←
+
+  assert_empty "$BUILDKIT_PROGRESS"
+  assert_empty "$REPOSITORY_VERSION"
+  assert_empty "$BASE_IMAGE"
+  assert_empty "$OS_NAME"
+  assert_empty "$TAG_PACKAGE"
+  assert_empty "$TAG_VERSION"
+  assert_empty "$DEPENDENCIES_BASE_IMAGE"
+  assert_empty "$DEPENDENCIES_BASE_IMAGE_TAG"
+  assert_empty "$DN_IMAGE_TAG"
+  assert_empty "$PROJECT_TAG"
+
+  local DOCKER_CMD="version"
+  mock_docker_command_exit_ok
+  set +e
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                    --dockerized-norlab-version hot \
+                    --base-image dustynv/pytorch \
+                    --os-name arbitratyName \
+                    --tag-package 2.1 \
+                    --tag-version r35.0.0 \
+                    --docker-debug-logs \
+                    --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+
+  DOCKER_EXIT_CODE=$?
+  set -e
+
+  assert_not_empty "$BUILDKIT_PROGRESS"
+  assert_not_empty "$REPOSITORY_VERSION"
+  assert_not_empty "$BASE_IMAGE"
+  assert_not_empty "$OS_NAME"
+  assert_not_empty "$TAG_PACKAGE"
+  assert_not_empty "$TAG_VERSION"
+  assert_not_empty "$DEPENDENCIES_BASE_IMAGE"
+  assert_not_empty "$DEPENDENCIES_BASE_IMAGE_TAG"
+  assert_not_empty "$DN_IMAGE_TAG"
+  assert_not_empty "$PROJECT_TAG"
+
+  assert_equal "$BUILDKIT_PROGRESS" "plain"
+  assert_equal "$REPOSITORY_VERSION" "hot"
+  assert_equal "$BASE_IMAGE" "dustynv/pytorch"
+  assert_equal "$OS_NAME" "arbitratyName"
+  assert_equal "$TAG_PACKAGE" "2.1"
+  assert_equal "$TAG_VERSION" "r35.0.0"
+  assert_equal "$DEPENDENCIES_BASE_IMAGE" "dustynv/pytorch"
+  assert_equal "$DEPENDENCIES_BASE_IMAGE_TAG" "2.1-r35.0.0"
+  assert_equal "$DN_IMAGE_TAG" "DN-hot-2.1-r35.0.0"
+  assert_equal "$PROJECT_TAG" "arbitratyName-r35.0.0"
 }
 
 @test "flags that set env variable" {

@@ -154,9 +154,7 @@ setup() {
                                               -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main"
-  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
-  assert_output --regexp "\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
+  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main".*"\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}".*"\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
 
 #  bats_print_run_env_variable
 }
