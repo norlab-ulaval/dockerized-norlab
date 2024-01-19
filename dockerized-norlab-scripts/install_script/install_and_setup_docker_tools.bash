@@ -20,7 +20,7 @@ elif [[ "$(basename $(pwd))" = dockerized-norlab-scripts ]]; then
 fi
 
 # ....Pre-condition.................................................................................
-if [[ ! -f  ".env.dockerized-norlab" ]]; then
+if [[ ! -f  ".env.dockerized-norlab-build-system" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'install_and_setup_docker_tools.bash' script should be sourced from its parent directory or the project root!\n Curent working directory is '$(pwd)'"
   echo '(press any key to exit)'
   read -r -n 1
