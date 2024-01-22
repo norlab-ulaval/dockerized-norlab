@@ -81,6 +81,10 @@ Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
 4. easy deployment to robots compute box;
 5. results reproducibility.
  
+### Clone repository
+```shell
+ git clone --recurse-submodule https://github.com/norlab-ulaval/dockerized-norlab.git
+```
 
 ### Usage example
 Assuming a _docker builder_ with multi-architecture _docker-container_ driver named `local-builder-multiarch-virtual`
