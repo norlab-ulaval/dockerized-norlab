@@ -20,21 +20,22 @@ if [[ -z $PARAMS ]]; then
   PARAMS="tests/tests_bats/"
 fi
 
-N2ST_PATH="utilities/norlab-shell-script-tools"
-
 function n2st::run_n2st_testsing_tools(){
   local TMP_CWD
   TMP_CWD=$(pwd)
 
-  # ....Project root logic.........................................................................
-  DN_PATH=$(git rev-parse --show-toplevel)
-  N2ST_PATH=${N2ST_PATH:-"./utilities/norlab-shell-script-tools"}
+# ....Project root logic.........................................................................
+  DN_ROOT=$(git rev-parse --show-toplevel)
+
+  # ....Load environment variables from file.......................................................
+  cd "${DN_ROOT}" || exit 1
+  set -o allexport
+  source .env.dockerized-norlab-project
+  set +o allexport
 
   # ....Execute N2ST run_bats_tests_in_docker.bash.................................................
-  cd "$DN_PATH"
-
   # shellcheck disable=SC2086
-  bash "${N2ST_PATH}/tests/bats_testing_tools/run_bats_tests_in_docker.bash" $PARAMS
+  bash "${N2ST_PATH:?err}/tests/bats_testing_tools/run_bats_tests_in_docker.bash" $PARAMS
 
   # ....Teardown...................................................................................
   cd "$TMP_CWD"
