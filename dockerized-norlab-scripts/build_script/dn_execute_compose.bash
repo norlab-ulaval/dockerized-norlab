@@ -44,7 +44,7 @@ function dn::execute_compose() {
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
   local _CI_TEST=false
   local DOCKER_FORCE_PUSH=false
-  unset DOCKER_EXIT_CODE
+  local DOCKER_EXIT_CODE=1
   local MAIN_DOCKER_EXIT_CODE=1
 
 

@@ -31,6 +31,7 @@ function n2st::run_n2st_testsing_tools(){
   cd "${DN_ROOT}" || exit 1
   set -o allexport
   source .env.dockerized-norlab-project
+  source .env.dockerized-norlab-build-system
   set +o allexport
 
   # ....Execute N2ST run_bats_tests_in_docker.bash.................................................
