@@ -9,10 +9,9 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
-# (CRITICAL) ToDo: validate using l4t-base instead of l4t-jetson <-- we are here
 FROM scratch AS squash-base-image
 #FROM nvcr.io/nvidia/l4t-jetpack:${TAG_VERSION:?err} AS squash-base-image
-#FROM nvcr.io/nvidia/l4t-base:${TAG_VERSION:?err} AS squash-base-image
+#FROM nvcr.io/nvidia/l4t-base:${TAG_VERSION:?err} AS squash-base-image # ToDo: validate using l4t-base instead of l4t-jetson
 #FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
 COPY --from=base-image / /
 # Note:

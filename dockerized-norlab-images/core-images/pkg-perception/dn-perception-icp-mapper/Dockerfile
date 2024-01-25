@@ -31,6 +31,6 @@ RUN echo "skip test"
 
 FROM icp-mapper-install AS final
 
-WORKDIR ${DN_DEV_WORKSPACE}
+WORKDIR ${PERCEP3D_LIB_PATH}
 CMD [ "bash" ]
 

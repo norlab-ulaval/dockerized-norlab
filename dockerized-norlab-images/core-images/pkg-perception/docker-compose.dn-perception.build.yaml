@@ -21,7 +21,6 @@ services:
       - dn-perception-main
 
   # ....libpointmatcher............................................................................
-# ToDo: fixme!! >> libpointmatcher install with norlab-icp-mapper ↓↓
   dn-perception-libpointmatcher-main:
     extends: dn-perception-main
     build:
@@ -45,7 +44,6 @@ services:
       - dn-perception-libpointmatcher-main
 
   # ....icp-mapper..................................................................................
-# ToDo: fixme!! >> libpointmatcher install with norlab-icp-mapper ↓↓
   dn-perception-icp-mapper-main:
     extends: dn-perception-libpointmatcher-main
     build:
@@ -69,6 +67,7 @@ services:
       - dn-perception-icp-mapper-main
 
   # ....norlab perception stack.....................................................................
+  # ToDo: fixme!! >> libpointmatcher_ros install ↓↓
   dn-perception-norlab-stack-main:
     extends: dn-perception-icp-mapper-main
     build:
