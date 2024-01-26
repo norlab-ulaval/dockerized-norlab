@@ -30,6 +30,7 @@ ${SP}DN target project repo:      https://github.com/${DN_PROJECT_GIT_DOMAIN}/${
 ${SP}DN project src path:         ${DN_PROJECT_PATH}
 ${SP}
 ${SP}ROS distro:                  ${ROS_DISTRO}
+${SP}ROS package:                 ${ROS_PKG}
 ${SP}ROS domain id:               ${ROS_DOMAIN_ID}
 ${SP}ROS container workspace:     ${DN_DEV_WORKSPACE}
 ${SP}RMW_IMPLEMENTATION:          ${RMW_IMPLEMENTATION}

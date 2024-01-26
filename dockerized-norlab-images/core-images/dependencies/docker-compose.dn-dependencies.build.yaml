@@ -26,7 +26,8 @@ services:
       context: .
       dockerfile: Dockerfile.core
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson
+#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-clean
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dockerized-norlab-dependencies-core:${DN_IMAGE_TAG:?err}
 
@@ -60,12 +61,16 @@ services:
 
   # ....dependencies-ros2-custom...................................................................
   dependencies-ros2-custom-main: # ›› no push build service
-    extends: dependencies-python-science-stack
+    extends: dependencies-core
     build:
       dockerfile: Dockerfile.ros2-dn-custom
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-python-science-stack
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+      target: final
+      tags:
+        - ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-python-science-stack
 
@@ -76,16 +81,16 @@ services:
     depends_on:
       - dependencies-ros2-custom-main
 
-  dependencies-ros2-custom:
-    extends: dependencies-ros2-custom-main
-    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
-    depends_on:
-      - dependencies-ros2-custom-main
+#  dependencies-ros2-custom:
+#    extends: dependencies-ros2-custom-main
+#    build:
+#    depends_on:
+#      - dependencies-ros2-custom-main
 
-  # ....dependencies (full)........................................................................
-  dependencies-full:
-    extends: dependencies-ros2-custom
-    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
-    depends_on:
-      - dependencies-ros2-custom
+#  # ....dependencies (full)........................................................................
+#  dependencies-full:
+#    extends: dependencies-ros2-custom
+#    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
+#    depends_on:
+#      - dependencies-ros2-custom
 

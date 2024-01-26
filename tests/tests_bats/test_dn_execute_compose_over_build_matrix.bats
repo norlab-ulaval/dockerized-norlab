@@ -160,6 +160,7 @@ setup() {
 }
 
 @test "docker exit code propagation on pass › expect pass" {
+#  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -171,18 +172,19 @@ setup() {
                                           -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"Pass".*"DN-hot-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-2.1-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-2.1-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r22.2.2".*
 #  bats_print_run_env_variable
 }
 
 @test "docker exit code propagation on faillure › expect pass" {
+#  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -195,17 +197,18 @@ setup() {
                                                 -- "$DOCKER_CMD"
   set -e
   assert_failure
-  assert_output --regexp .*"Fail".*"DN-hot-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-2.1-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-2.1-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-2.1-r22.2.2".*
 }
 
 @test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
+#  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -233,14 +236,16 @@ setup() {
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r33.3.3'
   set -e
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-2.1-r33.3.3".*
 
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
 }
 
 @test "--force-push 'latest' tag sanity check ok" {
+#  skip "tmp dev"
+
   if [[ $(git symbolic-ref -q --short HEAD) == main ]]; then
     skip "Curent checkout branch is 'main' which invalidate this test logic"
   fi
@@ -256,6 +261,8 @@ setup() {
 }
 
 @test "--force-push 'bleeding' tag sanity check ok" {
+#  skip "tmp dev"
+
   if [[ $(git symbolic-ref -q --short HEAD) == dev ]]; then
     skip "Curent checkout branch is 'dev' which invalidate this test logic"
   fi
@@ -308,6 +315,7 @@ setup() {
 
 
 @test "repository version checkout" {
+#  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
   run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}" \

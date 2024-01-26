@@ -85,11 +85,11 @@ setup_file() {
   assert_success
   assert_output --regexp .*"docker compose -f".*"push".*
 
-  assert_output --regexp .*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-foxy-core-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-foxy-core-2.1-r33.3.3".*
 
-  refute_output --regexp .*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
 
 #  bats_print_run_env_variable
 }

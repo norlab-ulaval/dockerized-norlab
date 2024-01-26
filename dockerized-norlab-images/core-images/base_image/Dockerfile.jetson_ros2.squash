@@ -1,0 +1,114 @@
+
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+#ARG TAG_VERSION
+
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+
+# ===Remove Jetson-container unused install========================================================
+RUN rm --recursive --force /ros_deep_learning \
+  && rm --recursive --force /jetson-inference
+
+FROM scratch AS squash-base-image
+#FROM nvcr.io/nvidia/l4t-jetpack:${TAG_VERSION:?err} AS squash-base-image
+#FROM nvcr.io/nvidia/l4t-base:${TAG_VERSION:?err} AS squash-base-image # ToDo: validate using l4t-base instead of l4t-jetson
+#FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
+COPY --from=base-image / /
+# Note:
+#   - The squash-base-image stage is a workaround to prevent the "max depth exceeded" error
+#        occuring when the maximum number of docker layer as been reached.
+#   - We use arm64v8/ubuntu:20.04 as base image since we are copying everything from l4t-jetpack anyway
+#   - About nvidia l4t  base images:
+#       - nvcr.io/nvidia/l4t-base install the core CUDA ressources
+#       - nvcr.io/nvidia/l4t-jetpack
+#           - install several dev package such as nvidia-cuda-dev, nvidia-cudnn-dev and nvidia-tensorrt-dev
+#           - mod their dockerfile to install runtime version of all those packages
+#   - copying ROS ressources is relatively easy, however copying ressources installed
+#       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+#       Work around for minimizing maintenance: copy everything
+# Ref:
+#   - https://gitlab.com/nvidia/container-images/l4t-base
+#   - https://gitlab.com/nvidia/container-images/l4t-jetpack
+#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
+#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
+
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
+SHELL ["/bin/bash", "-c"]
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV TZ=Etc/UTC
+ENV TERM=${TERM:-"xterm-256color"}
+
+# ....Transfer environment variable from base-images...............................................
+# En var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
+ARG CUDA_HOME
+ARG NVIDIA_VISIBLE_DEVICES
+ARG NVIDIA_DRIVER_CAPABILITIES
+ARG PATH
+ARG LD_LIBRARY_PATH
+
+ENV CUDA_HOME=${CUDA_HOME:?'Environment variable was not passed from base-image build stage'}
+ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage'}
+ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'}
+ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
+ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
+
+# En var added by jetson-container 'dustynv/ros' base images
+ARG ROS_DISTRO
+ARG ROS_ROOT
+ARG ROS_PYTHON_VERSION
+ARG RMW_IMPLEMENTATION
+
+ENV ROS_DISTRO=${ROS_DISTRO:?'Environment variable was not passed from base-image build stage'}
+ENV ROS_ROOT=${ROS_ROOT:?'Environment variable was not passed from base-image build stage'}
+ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passed from base-image build stage'}
+ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
+
+# ....The following env var does not appear in every jetson-container ros base images..............
+# En var added by jetson-container 'dustynv/ros' base images
+ARG LD_PRELOAD
+ENV LD_PRELOAD=${LD_PRELOAD}
+
+# En var added by jetson-container pytorch related base images
+ARG OPENBLAS_CORETYPE
+ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
+
+
+## ....copy artifact from base-image...............................................................
+## Note: copying ROS ressources is relatively easy, however copying ressources installed
+##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+##       Work around for minimizing maintenance: copy everything
+#COPY --from=base-image /lib /lib
+#COPY --from=base-image /etc /etc
+#COPY --from=base-image /usr /usr
+#COPY --from=base-image /bin /bin
+#COPY --from=base-image /var /var
+#COPY --from=base-image /opt /opt
+#COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
+
+# ....Make python 3 default........................................................................
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+
+
+FROM squash-base-image AS squashed-base-image-tester
+
+RUN dpkg --get-selections | grep nvidia
+
+RUN python -c "import numpy" \
+    && cat /usr/local/cuda/version*
+
+# Only test that the ros install from jetson-container was transfered ok between build-stages
+RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
+    && echo "Sanity check" \
+    && echo ROS_VERSION=${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
+    && echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
+    && python -c "import rclpy" \
+    && ros2 pkg list
+
+CMD [ "bash" ]

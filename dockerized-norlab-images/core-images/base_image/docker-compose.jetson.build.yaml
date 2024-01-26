@@ -15,17 +15,17 @@ services:
 #        BASE_IMAGE_TAG: r35.2.1
 #    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-test:r35.2.1
 
-  # ====Dockerized-NorLab dependencies=============================================================
+  # ====Dockerized-NorLab base images==============================================================
 
-  # ....dependencies-core..........................................................................
+  # ....Jetson dusty ml related base images........................................................
 
-  base-image-jetson: # ›› no push build service
+  base-image-jetson-ml-squash-main: # ›› no push build service
     extends:
       file: ../global-service-builder/docker-compose.global-service.build.yaml
       service: global-service-builder
     build:
       context: .
-      dockerfile: Dockerfile.jetson
+      dockerfile: Dockerfile.jetson_ml.squash
       target: squash-base-image
       args:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
@@ -37,20 +37,86 @@ services:
         NVIDIA_DRIVER_CAPABILITIES: ${BASE_IMG_ENV_NVIDIA_DRIVER_CAPABILITIES:?err}
         PATH: ${BASE_IMG_ENV_PATH:?err}
         LD_LIBRARY_PATH: ${BASE_IMG_ENV_LD_LIBRARY_PATH:?err}
-        # Base image env var transfer (jetson-container 'dustynv/ros' base specific)
-        ROS_DISTRO: ${BASE_IMG_ENV_ROS_DISTRO:?err}
-        ROS_ROOT: ${BASE_IMG_ENV_ROS_ROOT:?err}
-        ROS_PYTHON_VERSION: ${BASE_IMG_ENV_ROS_PYTHON_VERSION:?err}
-        RMW_IMPLEMENTATION: ${BASE_IMG_ENV_RMW_IMPLEMENTATION:?err}
-        # The following env var does not appear in every jetson-container 'dustynv/ros' base images
+        # The following env var does not appear in every jetson-container 'dustynv' base images
         OPENBLAS_CORETYPE: ${BASE_IMG_ENV_OPENBLAS_CORETYPE}
         # Base image env var transfer (jetson-container pytorch related)
         LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
-    image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson:${DN_IMAGE_TAG:?err}
+        TORCH_HOME: ${BASE_IMG_ENV_TORCH_HOME}
+        # Base image env var transfer (jetson-container tensorflow related)
+        PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: ${BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
+    image: ${DN_HUB:?err}/dockerized-norlab-base-image-ml-squashed:${DN_IMAGE_TAG:?err}
 
-  base-image-tester:
-    extends: base-image-jetson
+  base-image-jetson-ml-squash-tester:
+    extends: base-image-jetson-ml-squash-main
     build:
       target: squashed-base-image-tester
     depends_on:
-      - base-image-jetson
+      - base-image-jetson-ml-squash-main
+
+  # ....ROS2 base images...........................................................................
+  base-image-jetson-ros2-clean-main: # ›› no push build service
+    extends: base-image-jetson-ml-squash-main
+#    extends:
+#      file: ../global-service-builder/docker-compose.global-service.build.yaml
+#      service: global-service-builder
+    build:
+      context: .
+      dockerfile: Dockerfile.ros2
+      target: ros2-install
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-ml-squashed
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+#        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
+#        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+        ROS_DISTRO: ${ROS_DISTRO}
+        ROS_PKG: ${ROS_PKG}
+#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson-ros2-clean:${ROS_DISTRO}-${ROS_PKG}-${TAG_VERSION:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-clean:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - base-image-jetson-ml-squash-main
+
+  # ....Jetson dustynv ros2 base images............................................................
+  base-image-jetson-ros2-clean-tester:
+    extends: base-image-jetson-ros2-clean-main
+    build:
+      target: test
+    depends_on:
+      - base-image-jetson-ros2-clean-main
+
+#  base-image-jetson-ros2-squash-main: # ›› no push build service
+#    extends:
+#      file: ../global-service-builder/docker-compose.global-service.build.yaml
+#      service: global-service-builder
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.jetson_ros2.squash
+#      target: squash-base-image
+#      args:
+#        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
+#        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+#        TAG_VERSION: ${TAG_VERSION:?err}
+#        # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
+#        CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:?err}
+#        NVIDIA_VISIBLE_DEVICES: ${BASE_IMG_ENV_NVIDIA_VISIBLE_DEVICES:?err}
+#        NVIDIA_DRIVER_CAPABILITIES: ${BASE_IMG_ENV_NVIDIA_DRIVER_CAPABILITIES:?err}
+#        PATH: ${BASE_IMG_ENV_PATH:?err}
+#        LD_LIBRARY_PATH: ${BASE_IMG_ENV_LD_LIBRARY_PATH:?err}
+#        # Base image env var transfer (jetson-container 'dustynv/ros' base specific)
+#        ROS_DISTRO: ${BASE_IMG_ENV_ROS_DISTRO:?err}
+#        ROS_ROOT: ${BASE_IMG_ENV_ROS_ROOT:?err}
+#        ROS_PYTHON_VERSION: ${BASE_IMG_ENV_ROS_PYTHON_VERSION:?err}
+#        RMW_IMPLEMENTATION: ${BASE_IMG_ENV_RMW_IMPLEMENTATION:?err}
+#        # The following env var does not appear in every jetson-container 'dustynv/ros' base images
+#        OPENBLAS_CORETYPE: ${BASE_IMG_ENV_OPENBLAS_CORETYPE}
+#        # Base image env var transfer (jetson-container pytorch related)
+#        LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
+#        PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: ${BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
+#        TORCH_HOME: ${BASE_IMG_ENV_TORCH_HOME}
+#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson-ros2-squashed:${DN_IMAGE_TAG:?err}
+#
+#  base-image-jetson-ros2-squash-tester:
+#    extends: base-image-jetson-ros2-squash-main
+#    build:
+#      target: squashed-base-image-tester
+#    depends_on:
+#      - base-image-jetson-ros2-squash-main

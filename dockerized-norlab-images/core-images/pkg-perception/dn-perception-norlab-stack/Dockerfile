@@ -59,8 +59,8 @@ RUN git clone --branch ${ROS_DISTRO} https://github.com/norlab-ulaval/norlab_icp
 WORKDIR ${DN_DEV_WORKSPACE}
 
 
-#RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-#    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+#RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
 #    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 #    && source /opt/ros/${ROS_DISTRO}/setup.bash \
 #    && cd ${DN_DEV_WORKSPACE} \
@@ -70,8 +70,8 @@ WORKDIR ${DN_DEV_WORKSPACE}
 # ToDo: validate install steps in here -> https://github.com/norlab-ulaval/Norlab_wiki/wiki/Tutorials:-3D-Mapping-(ros2)
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && apt-get update --fix-missing \
     && rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
     && rosdep fix-permissions \
@@ -92,7 +92,7 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 #    --cmake-args " -D libpointmatcher_DIR=${libpointmatcher_DIR:?'Error: env variable empty'}"
 
 
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash
+#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
 
 FROM build-norlab-perception-ros-stack as test
 
@@ -102,8 +102,8 @@ WORKDIR ${DN_DEV_WORKSPACE}
 #    && unzip demo.zip \
 #    && rm demo.zip
 #
-#RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-#    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+#RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
 #    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 #    && source /opt/ros/${ROS_DISTRO}/setup.bash \
 #    && source ${DN_DEV_WORKSPACE}/install/setup.bash \

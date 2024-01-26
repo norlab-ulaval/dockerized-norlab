@@ -1,7 +1,7 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros-custom-install
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-custom-install
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -12,34 +12,22 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-# ====Begin install==================================================================================
+# ====Begin install================================================================================
 
-ENV DN_DEV_WORKSPACE=$HOME/ros2_ws
-
-# ....install ROS2 specific utilities...............................................................
-RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
-        ros-dev-tools \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && echo "=====================================================================================" \
-    && pip3 install --no-cache-dir  \
-            osrf-pycommon \
-            rosbags \
-            rosbags-dataframe \
-    && echo "=====================================================================================" \
+# ....install ROS2 specific utilities..............................................................
+RUN pip3 install --no-cache-dir \
+      osrf-pycommon \
+      rosbags \
+      rosbags-dataframe \
+    && echo \
     && apt-get update --fix-missing \
     && apt-get install --assume-yes \
-            ros-${ROS_DISTRO}-ackermann-msgs \
+            ros-${ROS_DISTRO:?err}-ackermann-msgs \
             ros-${ROS_DISTRO}-vesc-msgs \
             ros-${ROS_DISTRO}-rosbridge-msgs \
             ros-${ROS_DISTRO}-urg-node-msgs \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && echo "====================================================================================="
-
-# https://ternaris.gitlab.io/rosbags/index.html
-# https://ternaris.gitlab.io/rosbags-dataframe/
+    && rm -rf /var/lib/apt/lists/*
 
 # # https://pypi.org/project/ros2-numpy/
 # # https://github.com/Box-Robotics/ros2_numpy
@@ -47,60 +35,42 @@ RUN apt-get update \
 # ros2-numpy
 
 
-# Note: Next line is for creating the directories without using a RUN to keep number of layer small
-WORKDIR ${DN_DEV_WORKSPACE}/src
-#RUN mkdir -p "${DN_DEV_WORKSPACE}/src"
+# ====Build ROS2 workspace=========================================================================
+WORKDIR ${DN_DEV_WORKSPACE}
 
-# ....install sources...............................................................................
+#RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+#    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+#    && colcon build --symlink-install
 
-## . . ros2_control Demos. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-## https://github.com/ros-controls/ros2_control_demos
-#
-#WORKDIR ${DN_DEV_WORKSPACE}/src
-#RUN git clone https://github.com/ros-controls/ros2_control
-#RUN git clone https://github.com/ros-controls/ros2_controllers
-#RUN git clone https://github.com/ros-controls/ros2_control_demos
-#
-#WORKDIR ${DN_DEV_WORKSPACE}
-#RUN apt-get update \
-#    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-#    && rosdep install --from-paths src --ignore-src -r -y \
-#    && rm -rf /var/lib/apt/lists/*
+RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/setup.bash \
+    && apt-get update --fix-missing \
+    && rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
+    && rosdep fix-permissions \
+    && rosdep install  \
+            --ignore-packages-from-source \
+            --from-path ./src  \
+            --rosdistro ${ROS_DISTRO}  \
+            -y \
+    && colcon version-check \
+    && colcon build \
+            --symlink-install \
+            --event-handlers console_direct+
+
+#    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
 
 ## . . ros2_jetson_stats. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #WORKDIR ${DN_DEV_WORKSPACE}/src
-#RUN git clone --branch humble https://github.com/NVIDIA-AI-IOT/ros2_jetson_stats.git
+#RUN git clone --branch ${ROS_DISTRO} https://github.com/NVIDIA-AI-IOT/ros2_jetson_stats.git
 #
 #WORKDIR ${DN_DEV_WORKSPACE}
 #RUN apt-get update \
-#    && /bin/bash -c "sudo -H pip install --upgrade jetson-stats" \
-#    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/install/setup.bash" \
+#    && /bin/bash -c "pip install --upgrade jetson-stats" \
+#    && /bin/bash -c "source ${DN_DEV_WORKSPACE}/install/setup.bash" \
 #    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --default-yes --os=ubuntu:jammy \
 #    && rm -rf /var/lib/apt/lists/*
 
-## . . icp_odom_with_twist. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#WORKDIR ${DN_DEV_WORKSPACE}/src
-#RUN git clone https://github.com/norlab-ulaval/icp_odom_with_twist.git
-#
-#WORKDIR "${DN_DEV_WORKSPACE}"
-#RUN apt-get update \
-#    && rosdep install --from-paths ./src --ignore-packages-from-source --rosdistro ${ROS_DISTRO} -y
-
-
-# ====Nuild ROS2 workspace=========================================================================
-WORKDIR ${DN_DEV_WORKSPACE}
-
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && colcon build --symlink-install
-
-# ===Remove dustynv entrypoint from .bashrc. ======================================================
-# Note: Source ROS in the dn_ros2_entrypoint.bash instead"
-
-WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-RUN source import_dockerized_norlab_container_tools.bash \
-    && n2st::seek_and_modify_string_in_file 'source /ros_entrypoint.sh' '' "$HOME/.bashrc" \
-    && rm --force /ros_entrypoint.sh
 
 # ===Execute ros sourcing system wide instead of in .bashrc========================================
 # (since .bashrc is not executed in non-interactive shell)
@@ -111,20 +81,24 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
       echo ""; \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
       echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash from /etc/profile.d/\""; \
-      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
       echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from /etc/profile.d/\""; \
       echo "source /opt/ros/${ROS_DISTRO}/setup.bash"; \
+      echo "if [[ -f ${DN_DEV_WORKSPACE}/install/setup.bash ]]; then"; \
+      echo "  echo \"sourcing ${DN_DEV_WORKSPACE}/install/setup.bash from /etc/profile.d/\""; \
+      echo "  source ${DN_DEV_WORKSPACE}/install/setup.bash"; \
+      echo "fi"; \
       echo ""; \
     ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && echo "" \
     && ( \
       echo ""; \
       echo "# Dockerized-NorLab › Source ROS2 environment"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash from ~/.bashrc\""; \
-      echo "source /opt/ros/${ROS_DISTRO}/install/setup.bash"; \
       echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from ~/.bashrc\""; \
       echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
+      echo "if [[ -f ${DN_DEV_WORKSPACE}/install/setup.bash ]]; then"; \
+      echo "  echo \"sourcing ${DN_DEV_WORKSPACE}/install/setup.bash from ~/.bashrc\""; \
+      echo "  source ${DN_DEV_WORKSPACE}/install/setup.bash"; \
+      echo "fi"; \
       echo ""; \
     ) >> ~/.bashrc
 
@@ -137,34 +111,29 @@ ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
 #      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
 #      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
 
-#        && colcon build --symlink-install --merge-install"
+FROM ros2-custom-install as test
 
-FROM ros-custom-install as test
-
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && echo "Sanity check" \
-    && echo ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
-    && echo ${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} \
-    && echo ${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} \
-    && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
+# Note: ROS2 distro should be sourced automaticaly via our /etc/profile.d setup
+RUN echo "Sanity check" \
+    && echo ROS_VERSION=${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
+    && echo ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} \
+    && echo ROS_DISTRO=${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} \
+    && echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy" \
     && ros2 pkg list
 
 
-FROM ros-custom-install as final
+FROM ros2-custom-install as final
 WORKDIR ${DN_DEV_WORKSPACE}
 
 ## (Priority) ToDo: validate >> next bloc ↓↓
 ## (Priority) ToDo: should be in the entrypoint instead >> next bloc ↓↓
 ## Note: ROS2 setup.bash location is in `${ROS_DISTRO}/install/` instead of ROS1 in `${ROS_DISTRO}/`
-#RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-#    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+#RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
 #    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 #    && source /opt/ros/${ROS_DISTRO}/setup.bash \
 #    && source ${DN_DEV_WORKSPACE}/install/setup.bash \

@@ -36,6 +36,8 @@ function dn::callback_execute_compose_pre() {
           -e RMW_IMPLEMENTATION= \
           -e LD_PRELOAD= \
           -e OPENBLAS_CORETYPE= \
+          -e PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION= \
+          -e TORCH_HOME= \
         | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
         | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
         | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
@@ -44,6 +46,8 @@ function dn::callback_execute_compose_pre() {
         | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
         | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
         | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
+        | sed 's;^PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION;BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION;' \
+        | sed 's;^TORCH_HOME;BASE_IMG_ENV_TORCH_HOME;' \
        )
 
     n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:

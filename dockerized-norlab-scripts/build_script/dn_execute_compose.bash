@@ -33,6 +33,8 @@ declare -x TAG_VERSION
 declare -x DEPENDENCIES_BASE_IMAGE_TAG
 declare -x DN_IMAGE_TAG
 declare -x PROJECT_TAG
+declare -x ROS_DISTRO
+declare -x ROS_PKG
 
 function dn::execute_compose() {
   # ....Positional argument........................................................................
@@ -46,6 +48,8 @@ function dn::execute_compose() {
   local DOCKER_FORCE_PUSH=false
   local DOCKER_EXIT_CODE=1
   local MAIN_DOCKER_EXIT_CODE=1
+  local ROS_DISTRO_PKG=none
+  unset TAG_PACKAGE
 
 
   # ....Pre-condition..............................................................................
@@ -150,6 +154,13 @@ function dn::execute_compose() {
       shift # Remove argument (--tag-version)
       shift # Remove argument value
       ;;
+    --ros2)
+      ROS_DISTRO_PKG="${2}"
+      ROS_DISTRO=$(echo "${ROS_DISTRO_PKG}" | sed 's;\-.*;;')
+      ROS_PKG=${ROS_DISTRO_PKG/${ROS_DISTRO}-/}
+      shift # Remove argument (--ros2)
+      shift # Remove argument value
+      ;;
     --docker-debug-logs)
   #    set -v
   #    set -x
@@ -201,8 +212,21 @@ function dn::execute_compose() {
   export REPOSITORY_VERSION="${REPOSITORY_VERSION:?'Variable not set, use --help to find the proper flag'}"
   export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE:?'Variable not set, use --help to find the proper flag'}"
   export TAG_VERSION="${TAG_VERSION:?'Variable not set, use --help to find the proper flag'}"
-  export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE:?'Variable not set, use --help to find the proper flag'}-${TAG_VERSION}"
-  export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
+
+  if [[ -z ${TAG_PACKAGE} ]]; then
+    export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_VERSION}"
+  else
+    export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
+  fi
+
+  export ROS_DISTRO="${ROS_DISTRO:?'Variable not set, use --help to find the proper flag'}"
+  export ROS_PKG="${ROS_PKG:?'Variable not set, use --help to find the proper flag'}"
+
+  if [[ ${ROS_DISTRO_PKG} != none ]]; then
+    export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${ROS_DISTRO_PKG/-ros/}-${DEPENDENCIES_BASE_IMAGE_TAG}"
+  else
+    export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
+  fi
   export PROJECT_TAG="${OS_NAME:?'Variable not set, use --help to find the proper flag'}-${TAG_VERSION}"
 
   n2st::print_msg "Environment variables set for ${DOCKER_MANAGEMENT_COMMAND[*]}:\n
@@ -210,6 +234,8 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    TAG_VERSION=${TAG_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    ROS_DISTRO=${ROS_DISTRO} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
   "
@@ -299,6 +325,8 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    TAG_VERSION=${TAG_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    ROS_DISTRO=${ROS_DISTRO} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
   "

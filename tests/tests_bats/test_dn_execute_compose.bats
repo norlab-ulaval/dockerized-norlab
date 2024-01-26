@@ -75,7 +75,7 @@ setup() {
 
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+##  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
 
@@ -84,6 +84,7 @@ setup() {
                           --dockerized-norlab-version hot \
                           --base-image dustynv/pytorch \
                           --os-name arbitratyName \
+                          --ros2 foxy-ros-base \
                           --tag-package 2.1 \
                           --tag-version r35.0.0
 
@@ -99,6 +100,7 @@ setup() {
                           --dockerized-norlab-version hot \
                           --base-image dustynv/pytorch \
                           --os-name arbitratyName \
+                          --ros2 foxy-ros-base \
                           --tag-package 2.1 \
                           --tag-version r35.0.0
 
@@ -119,6 +121,7 @@ setup() {
                             --dockerized-norlab-version hot \
                             --base-image dustynv/pytorch \
                             --os-name arbitratyName \
+                            --ros2 foxy-ros-base \
                             --tag-package 2.1 \
                             --tag-version r35.0.0
   assert_failure
@@ -135,6 +138,7 @@ setup() {
                           --dockerized-norlab-version hot \
                           --base-image dustynv/pytorch \
                           --os-name arbitratyName \
+                          --ros2 foxy-ros-base \
                           --tag-package 2.1 \
                           --tag-version r35.0.0 \
                           -- ${DOCKER_CMD}
@@ -154,6 +158,7 @@ setup() {
                     --dockerized-norlab-version hot \
                     --base-image dustynv/pytorch \
                     --os-name arbitratyName \
+                    --ros2 foxy-ros-base \
                     --tag-package 2.1 \
                     --tag-version r35.0.0 \
                     --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
@@ -174,6 +179,7 @@ setup() {
                     --dockerized-norlab-version hot \
                     --base-image dustynv/pytorch \
                     --os-name arbitratyName \
+                    --ros2 foxy-ros-base \
                     --tag-package 2.1 \
                     --tag-version r35.0.0 \
                     --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
@@ -184,7 +190,7 @@ setup() {
 }
 
 @test "Variable are exported to calling script › expect pass" {
-##  skip "tmp dev" # ToDo: on task end >> delete this line ←
+#  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   assert_empty "$BUILDKIT_PROGRESS"
   assert_empty "$REPOSITORY_VERSION"
@@ -205,6 +211,7 @@ setup() {
                     --dockerized-norlab-version hot \
                     --base-image dustynv/pytorch \
                     --os-name arbitratyName \
+                    --ros2 foxy-ros-base \
                     --tag-package 2.1 \
                     --tag-version r35.0.0 \
                     --docker-debug-logs \
@@ -232,24 +239,25 @@ setup() {
   assert_equal "$TAG_VERSION" "r35.0.0"
   assert_equal "$DEPENDENCIES_BASE_IMAGE" "dustynv/pytorch"
   assert_equal "$DEPENDENCIES_BASE_IMAGE_TAG" "2.1-r35.0.0"
-  assert_equal "$DN_IMAGE_TAG" "DN-hot-2.1-r35.0.0"
+  assert_equal "$DN_IMAGE_TAG" "DN-hot-foxy-base-2.1-r35.0.0"
   assert_equal "$PROJECT_TAG" "arbitratyName-r35.0.0"
 }
 
 @test "flags that set env variable" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+##  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                         --dockerized-norlab-version v0.3.0 \
                         --base-image dustynv/pytorch \
                         --os-name arbitratyName \
+                        --ros2 foxy-ros-base \
                         --tag-package 2.1 \
                         --tag-version r35.0.0 \
                         --docker-debug-logs
 
   assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"IS_TEAMCITY_RUN=".*
-  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Environment variables set for".*"compose".*"REPOSITORY_VERSION=".*"v0.3.0".*"DEPENDENCIES_BASE_IMAGE=".*"dustynv/pytorch".*"TAG_VERSION=".*"r35.0.0".*"DEPENDENCIES_BASE_IMAGE_TAG=".*"2.1-r35.0.0".*"DN_IMAGE_TAG=".*"DN-v0.3.0-2.1-r35.0.0".*"PROJECT_TAG=".*"arbitratyName-r35.0.0"
+  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Environment variables set for".*"compose".*"REPOSITORY_VERSION=".*"v0.3.0".*"DEPENDENCIES_BASE_IMAGE=".*"dustynv/pytorch".*"TAG_VERSION=".*"r35.0.0".*"DEPENDENCIES_BASE_IMAGE_TAG=".*"2.1-r35.0.0".*"DN_IMAGE_TAG=".*"DN-v0.3.0-foxy-base-2.1-r35.0.0".*"PROJECT_TAG=".*"arbitratyName-r35.0.0"
 }
 
 @test "docker compose build conditional logic" {
@@ -260,6 +268,7 @@ setup() {
                       --dockerized-norlab-version hot \
                       --base-image dustynv/pytorch \
                       --os-name arbitratyName \
+                      --ros2 foxy-ros-base \
                       --tag-package 2.1 \
                       --tag-version r35.0.0 \
                       --docker-debug-logs \
@@ -271,14 +280,13 @@ setup() {
 @test "flag --force-push" {
 #  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
-#  skip "tmp dev"
-
   mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                       --dockerized-norlab-version hot \
                       --base-image dustynv/pytorch \
                       --os-name arbitratyName \
+                      --ros2 foxy-ros-base \
                       --tag-package 2.1 \
                       --tag-version r35.0.0 \
                       --force-push \
@@ -305,6 +313,7 @@ setup() {
                           --dockerized-norlab-version hot \
                           --base-image dustynv/pytorch \
                           --os-name arbitratyName \
+                          --ros2 foxy-ros-base \
                           --tag-package 2.1 \
                           --tag-version r35.0.0 \
                           --buildx-bake -- ${DOCKER_CMD}

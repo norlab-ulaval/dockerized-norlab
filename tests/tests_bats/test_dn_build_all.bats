@@ -110,7 +110,7 @@ teardown() {
   assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main".*"\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}".*"\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
 
 
-  assert_output --regexp "\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=".*"v0.3.0 hot".*"NBS_MATRIX_SUPPORTED_OS=".*"l4t".*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS=".*"r11.1.1 r22.2.2".*"NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=".*"dustynv/ros:humble-ros-core-l4t dustynv/ros:humble-pytorch-l4t".*
+  assert_output --regexp "\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=".*"v0.3.0 hot".*"NBS_MATRIX_SUPPORTED_OS=".*"l4t".*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS=".*"r11.1.1 r22.2.2".*"NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=".*"dustynv/l4t: dustynv/pytorch:2.1".*
 
   assert_output --regexp "Starting".*"dn_execute_compose.bash".*"\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=v0.3.0"
 #
@@ -128,11 +128,11 @@ teardown() {
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*
 
-  assert_output --regexp .*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-foxy-core-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-foxy-core-2.1-r33.3.3".*
 
-  refute_output --regexp .*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
 
 }
 

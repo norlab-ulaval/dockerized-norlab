@@ -1,7 +1,6 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-#ARG TAG_VERSION
 
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
@@ -55,25 +54,20 @@ ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:?'Environment variab
 ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
 ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
 
-# En var added by jetson-container 'dustynv/ros' base images
-ARG ROS_DISTRO
-ARG ROS_ROOT
-ARG ROS_PYTHON_VERSION
-ARG RMW_IMPLEMENTATION
-
-ENV ROS_DISTRO=${ROS_DISTRO:?'Environment variable was not passed from base-image build stage'}
-ENV ROS_ROOT=${ROS_ROOT:?'Environment variable was not passed from base-image build stage'}
-ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passed from base-image build stage'}
-ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
-
 # ....The following env var does not appear in every jetson-container ros base images..............
-# En var added by jetson-container 'dustynv/ros' base images
-ARG LD_PRELOAD
-ENV LD_PRELOAD=${LD_PRELOAD}
-
 # En var added by jetson-container pytorch related base images
 ARG OPENBLAS_CORETYPE
 ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
+ARG TORCH_HOME
+ENV TORCH_HOME=${TORCH_HOME}
+
+# En var added by jetson-container tensorflow related base images
+ARG PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
+
+# En var added by jetson-container 'dustynv/ros' base images
+ARG LD_PRELOAD
+ENV LD_PRELOAD=${LD_PRELOAD}
 
 
 ## ....copy artifact from base-image...............................................................
@@ -88,25 +82,15 @@ ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 #COPY --from=base-image /opt /opt
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
+# ....Make python 3 default........................................................................
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+
 
 FROM squash-base-image AS squashed-base-image-tester
 
 RUN dpkg --get-selections | grep nvidia
 
-# Only test that the ros install from jetson-container was transfered ok between build-stages
 RUN python -c "import numpy" \
-    && python -c "import pytest"
-
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-    && echo "Sanity check" \
-    && echo ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
-    && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
-    && python -c "import rclpy" \
-    && ros2 pkg list
-
+    && cat /usr/local/cuda/version*
 
 CMD [ "bash" ]
