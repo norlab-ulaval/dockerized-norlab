@@ -34,16 +34,24 @@ RUN pip3 install --no-cache-dir \
 # # Require python >= 3.10
 # ros2-numpy
 
+## . . ros2_jetson_stats. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+#WORKDIR ${DN_DEV_WORKSPACE}/src
+#RUN git clone --branch ${ROS_DISTRO} https://github.com/NVIDIA-AI-IOT/ros2_jetson_stats.git
+#
+#WORKDIR ${DN_DEV_WORKSPACE}
+#RUN apt-get update \
+#    && /bin/bash -c "pip install --upgrade jetson-stats" \
+#    && /bin/bash -c "source ${DN_DEV_WORKSPACE}/install/setup.bash" \
+#    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --default-yes --os=ubuntu:jammy \
+#    && rm -rf /var/lib/apt/lists/*
 
 # ====Build ROS2 workspace=========================================================================
 WORKDIR ${DN_DEV_WORKSPACE}
 
-#RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-#    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
-#    && colcon build --symlink-install
-
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
+    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && apt-get update --fix-missing \
     && rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
     && rosdep fix-permissions \
@@ -57,21 +65,6 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
             --symlink-install \
             --event-handlers console_direct+
 
-#    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-
-## . . ros2_jetson_stats. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#WORKDIR ${DN_DEV_WORKSPACE}/src
-#RUN git clone --branch ${ROS_DISTRO} https://github.com/NVIDIA-AI-IOT/ros2_jetson_stats.git
-#
-#WORKDIR ${DN_DEV_WORKSPACE}
-#RUN apt-get update \
-#    && /bin/bash -c "pip install --upgrade jetson-stats" \
-#    && /bin/bash -c "source ${DN_DEV_WORKSPACE}/install/setup.bash" \
-#    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --default-yes --os=ubuntu:jammy \
-#    && rm -rf /var/lib/apt/lists/*
-
-
 # ===Execute ros sourcing system wide instead of in .bashrc========================================
 # (since .bashrc is not executed in non-interactive shell)
 
@@ -81,11 +74,11 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
       echo ""; \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
       echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from /etc/profile.d/\""; \
-      echo "source /opt/ros/${ROS_DISTRO}/setup.bash"; \
-      echo "if [[ -f ${DN_DEV_WORKSPACE}/install/setup.bash ]]; then"; \
-      echo "  echo \"sourcing ${DN_DEV_WORKSPACE}/install/setup.bash from /etc/profile.d/\""; \
-      echo "  source ${DN_DEV_WORKSPACE}/install/setup.bash"; \
+      echo "echo \"sourcing /opt/ros/\$``{ROS_DISTRO}``/setup.bash from /etc/profile.d/\""; \
+      echo "source /opt/ros/\$``{ROS_DISTRO}``/setup.bash"; \
+      echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"; \
+      echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from /etc/profile.d/\""; \
+      echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"; \
       echo "fi"; \
       echo ""; \
     ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
@@ -93,11 +86,11 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \
       echo ""; \
       echo "# Dockerized-NorLab › Source ROS2 environment"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from ~/.bashrc\""; \
-      echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
-      echo "if [[ -f ${DN_DEV_WORKSPACE}/install/setup.bash ]]; then"; \
-      echo "  echo \"sourcing ${DN_DEV_WORKSPACE}/install/setup.bash from ~/.bashrc\""; \
-      echo "  source ${DN_DEV_WORKSPACE}/install/setup.bash"; \
+      echo "echo \"sourcing /opt/ros/\$``{ROS_DISTRO}``/setup.bash from ~/.bashrc\""; \
+      echo "source /opt/ros/\$``{ROS_DISTRO}``/setup.bash";  \
+      echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"; \
+      echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from ~/.bashrc\""; \
+      echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"; \
       echo "fi"; \
       echo ""; \
     ) >> ~/.bashrc

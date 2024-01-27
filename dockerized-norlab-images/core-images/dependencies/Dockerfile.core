@@ -8,6 +8,12 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS dependencies
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
+ARG PROJECT_PROMPT_NAME
+ENV PROJECT_PROMPT_NAME=${PROJECT_PROMPT_NAME:-Dockerized-NorLab}
+
+ARG DN_PROMPT_NAME
+ENV DN_PROMPT_NAME=${DN_PROMPT_NAME:?err}
+
 SHELL ["/bin/bash", "-c"]
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -93,11 +99,6 @@ RUN apt-get update \
 # How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
 
 
-## Packages for older python version
-#RUN pip3 install --no-cache-dir   \
-#            dataclasses
-
-
 # ===Setup submodule===============================================================================
 WORKDIR /dockerized-norlab
 COPY --from=context-dn-root ./.git ./.git
@@ -106,31 +107,12 @@ COPY --from=context-dn-root ./.git ./.git
 WORKDIR /dockerized-norlab/utilities/norlab-shell-script-tools
 COPY --from=context-dn-submodules ./norlab-shell-script-tools/ .
 
+# ....Add dn-container tools.......................................................................
 WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 COPY --from=context-dn-container-tools . .
 
-RUN source import_dockerized_norlab_container_tools.bash \
-    && echo "Sanity check" \
-    && n2st::set_which_python3_version \
-    && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}"
-
-
-# ....Add dn-container tools.......................................................................
-# ToDo: assessement › move this step at a later stage
-
-#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-#COPY --from=context-dn-container-tools ./dn_info.bash ./
-#COPY --from=context-dn-container-tools ./dn_bash_alias.bash ./
-
-#RUN ( \
-#      echo ""; \
-#      echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
-#      echo "alias tree='pwd && tree -L 1'"; \
-#      echo "alias tree2='tree -L 2'"; \
-#      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"; \
-#    ) >> ~/.bashrc \
-#    && echo "" \
-#    && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
+RUN echo "Create soft link in the root dir" \
+    && ln -s $(pwd)/import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash
 
 WORKDIR /dockerized-norlab
 
@@ -139,9 +121,14 @@ RUN ( \
       echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
       echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash"; \
       echo ""; \
-    ) >> ~/.bashrc \
+    ) >> ~/.bashrc
+
+RUN echo "Sanity check (dn-container tools)" \
+    && source /import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_python3_version || exit 1 \
+    && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}" \
     && echo  \
-    && echo "Sanity check" \
+    && echo "Sanity check (container-tools directory copy)" \
     && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
 
 CMD [ "bash" ]

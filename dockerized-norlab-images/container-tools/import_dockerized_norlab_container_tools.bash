@@ -4,15 +4,15 @@
 #
 # Usage in a interactive terminal session:
 #
-#   $ cd <path/to/dockerized-norlab/>
+#   $ cd <path/to>/dockerized-norlab/dockerized-norlab-images/container-tools/
 #   $ PROJECT_PROMPT_NAME=MySuperProject
-#   $ source import_dockerized_norlab_tools.bash
+#   $ source import_dockerized_norlab_container_tools.bash
 #
 # Usage from within a shell script:
 #
 #   #!/bin/bash
-#   cd <my/superproject/root>/utilities/dockerized-norlab
-#   source import_dockerized_norlab_tools.bash
+#   cd <my/superproject/root>/dockerized-norlab/dockerized-norlab-images/container-tools/
+#   source import_dockerized_norlab_container_tools.bash
 #
 # =================================================================================================
 

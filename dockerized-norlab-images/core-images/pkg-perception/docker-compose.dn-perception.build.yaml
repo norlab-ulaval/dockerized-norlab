@@ -11,7 +11,8 @@ services:
     build:
       context: dn-perception
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-full
+#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-full
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-ros2-custom
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
 
   dn-perception:
@@ -86,6 +87,8 @@ services:
 
   dn-perception-norlab-stack:
     extends: dn-perception-norlab-stack-main
+    build:
+      target: final
     image: ${DN_HUB:?err}/dockerized-norlab-perception-stack:${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception-norlab-stack-main

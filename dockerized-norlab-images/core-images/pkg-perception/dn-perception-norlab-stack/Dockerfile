@@ -46,10 +46,16 @@ WORKDIR ${DN_DEV_WORKSPACE}/src/
 RUN git clone --branch ${ROS_DISTRO} https://github.com/norlab-ulaval/norlab_icp_mapper_ros.git
 #RUN git clone https://github.com/norlab-ulaval/norlab_icp_mapper_ros.git
 
-## ....fetch mapper_config_template.................................................................
-#WORKDIR ${DN_DEV_WORKSPACE}/src/
-#RUN git clone https://github.com/norlab-ulaval/mapper_config_template.git
+# ....fetch mapper_config_template.................................................................
+WORKDIR ${DN_DEV_WORKSPACE}/src/
+RUN git clone https://github.com/norlab-ulaval/mapper_config_template.git
 
+# ....Fetch demo data..............................................................................
+#WORKDIR ${HOME}
+WORKDIR ${DN_DEV_WORKSPACE}
+RUN wget -O demo.zip "http://norlab.s3.valeria.science/demo.zip?AWSAccessKeyId=XMBLP3A0338XN5LASKV2&Expires=2290342833&Signature=NXn1f%2BeJ7NptrzUkNzHtEvdicjc%3D" \
+    && unzip demo.zip \
+    && rm demo.zip
 
 # ....Build perception 3D ROS packages.............................................................
 
@@ -58,14 +64,13 @@ RUN git clone --branch ${ROS_DISTRO} https://github.com/norlab-ulaval/norlab_icp
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
-
-#RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-#    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-#    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-#    && cd ${DN_DEV_WORKSPACE} \
-#    && colcon build --symlink-install
-
+# (Priority) ToDo: assess moving rosbag install earlier
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
+    && apt-get update --fix-missing \
+    && apt-get install --assume-yes \
+        ros-${ROS_DISTRO}-rosbag2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # ToDo: validate install steps in here -> https://github.com/norlab-ulaval/Norlab_wiki/wiki/Tutorials:-3D-Mapping-(ros2)
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
@@ -85,34 +90,31 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
             --symlink-install \
             --event-handlers console_direct+
 
+#RUN echo "Check workspace directory installation" \
+#    && [[ -f ${HOME}/demo/config.rviz ]] \
+#    || exit 1
 
-#        --cmake-args " -D CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${DN_CMAKE_INSTALL_PREFIX}/include/norlab_icp_mapper/build:${DN_CMAKE_INSTALL_PREFIX}/share/libnabo/cmake:${DN_CMAKE_INSTALL_PREFIX}/share/libpointmatcher/cmake"
-
-#        --cmake-args " -D CMAKE_INSTALL_PREFIX=${DN_CMAKE_INSTALL_PREFIX}"
-#    --cmake-args " -D libpointmatcher_DIR=${libpointmatcher_DIR:?'Error: env variable empty'}"
-
-
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
+COPY ./entrypoint.norlab-stack.bash ./
+RUN chmod +x entrypoint.norlab-stack.bash
 
 FROM build-norlab-perception-ros-stack as test
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
-#RUN wget -O demo.zip "http://norlab.s3.valeria.science/demo.zip?AWSAccessKeyId=XMBLP3A0338XN5LASKV2&Expires=2290342833&Signature=NXn1f%2BeJ7NptrzUkNzHtEvdicjc%3D" \
-#    && unzip demo.zip \
-#    && rm demo.zip
-#
-#RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-#    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-#    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-#    && ros2 launch mapper_config_template mapper.launch \
-#    && ros2 bag play ~/demo/demo --clock
+RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+    && source /opt/ros/${ROS_DISTRO}/setup.bash \
+    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
+    && ros2 bag play ${DN_DEV_WORKSPACE}/demo/demo
 
+#    && ros2 launch mapper_config_template mapper.launch \
 
 FROM build-norlab-perception-ros-stack as final
 
+# (NICE TO HAVE) ToDo: implement entrypoint with demo example runing
+
 WORKDIR ${DN_DEV_WORKSPACE}
+
+ENTRYPOINT [ "./entrypoint.norlab-stack.bash" ]
 CMD [ "bash" ]
 
