@@ -58,7 +58,7 @@ setup() {
 
 }
 
-# ====Teardown======================================================================================
+# ====Teardown=====================================================================================
 
 teardown() {
   bats_print_run_env_variable_on_error
@@ -68,7 +68,7 @@ teardown() {
 #    echo "executed once after finishing the last test"
 #}
 
-# ====Test casses===================================================================================
+# ====Test casses==================================================================================
 
 
 @test "running $TESTED_FILE from non 'root' › expect error" {
@@ -89,7 +89,7 @@ teardown() {
   assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
 
-  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--fail-fast" -- "build --dry-run"
+  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--os-name-build-matrix-override l4t" -- "build --dry-run"
   assert_success
   refute_output --partial "'$TESTED_FILE' script must be executed from the project root"
 }
@@ -103,8 +103,10 @@ teardown() {
   assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
 
-  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--fail-fast" -- "build --dry-run"
+  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--os-name-build-matrix-override l4t" -- "build --dry-run"
   assert_success
+
+  assert_output --partial "Skipping the execution of Docker command"
 
   # Build matrix source ordering
   assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main".*"\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}".*"\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
