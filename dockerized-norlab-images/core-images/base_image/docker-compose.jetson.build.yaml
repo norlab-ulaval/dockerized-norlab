@@ -30,7 +30,7 @@ services:
       args:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-        TAG_VERSION: ${TAG_VERSION:?err}
+        TAG_OS_VERSION: ${TAG_OS_VERSION:?err}
         # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
         CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:?err}
         NVIDIA_VISIBLE_DEVICES: ${BASE_IMG_ENV_NVIDIA_VISIBLE_DEVICES:?err}
@@ -70,7 +70,7 @@ services:
 #        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         ROS_DISTRO: ${ROS_DISTRO}
         ROS_PKG: ${ROS_PKG}
-#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson-ros2-clean:${ROS_DISTRO}-${ROS_PKG}-${TAG_VERSION:?err}
+#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson-ros2-clean:${ROS_DISTRO}-${ROS_PKG}-${TAG_OS_VERSION:?err}
     image: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-clean:${DN_IMAGE_TAG:?err}
     depends_on:
       - base-image-jetson-ml-squash-main
@@ -94,7 +94,7 @@ services:
 #      args:
 #        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
 #        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-#        TAG_VERSION: ${TAG_VERSION:?err}
+#        TAG_OS_VERSION: ${TAG_OS_VERSION:?err}
 #        # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
 #        CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:?err}
 #        NVIDIA_VISIBLE_DEVICES: ${BASE_IMG_ENV_NVIDIA_VISIBLE_DEVICES:?err}

@@ -11,16 +11,17 @@
 #   Read DEPENDENCIES_BASE_IMAGE
 #   Read DEPENDENCIES_BASE_IMAGE_TAG
 #
-# ===============================================================================================
+# =================================================================================================
 function dn::callback_execute_compose_pre() {
 
+  # ....Fetch base image environment variables.....................................................
   if [[ ! -d ${NBS_COMPOSE_DIR:?err} ]]; then
     n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
   fi
 
   if [[ "${NBS_COMPOSE_DIR}" == "dockerized-norlab-images/core-images/base_image" ]]; then
-    # ex: dustynv/ros:foxy-pytorch-l4t-r35.2.1
 
+    # ex: dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
     n2st::print_msg "Pulling DOCKER_IMG=${DOCKER_IMG}"
 
@@ -54,5 +55,19 @@ function dn::callback_execute_compose_pre() {
       ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
       ${MSG_END_FORMAT}"
   fi
+
+  # ....Reformat nvcr.io base image tag............................................................
+  if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
+    if [[ ${TAG_OS_VERSION} == jammy ]]; then
+      CONVERTED_TAG_OS_VERSION=23
+    elif [[ ${TAG_OS_VERSION} == focal ]]; then
+      CONVERTED_TAG_OS_VERSION=22
+    else
+      n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
+    fi
+    export DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${BASE_IMG_TAG_PREFIX}"
+  fi
+
+  return 0
 }
 

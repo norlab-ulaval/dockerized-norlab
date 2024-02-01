@@ -27,9 +27,9 @@ declare -x BUILDKIT_PROGRESS
 declare -x REPOSITORY_VERSION
 #declare -x BASE_IMAGE
 #declare -x OS_NAME
-#declare -x TAG_PACKAGE
+#declare -x BASE_IMG_TAG_PREFIX
 declare -x DEPENDENCIES_BASE_IMAGE
-declare -x TAG_VERSION
+declare -x TAG_OS_VERSION
 declare -x DEPENDENCIES_BASE_IMAGE_TAG
 declare -x DN_IMAGE_TAG
 declare -x PROJECT_TAG
@@ -49,7 +49,7 @@ function dn::execute_compose() {
   local DOCKER_EXIT_CODE=1
   local MAIN_DOCKER_EXIT_CODE=1
   local ROS_DISTRO_PKG=none
-  unset TAG_PACKAGE
+  unset BASE_IMG_TAG_PREFIX
 
 
   # ....Pre-condition..............................................................................
@@ -81,12 +81,11 @@ function dn::execute_compose() {
     \033[1m
       <optional argument>:\033[0m
         -h, --help                              Get help
-        --dockerized-norlab-version v1.3.1      The dockerized-norlab release tag (default to main branch latest)
-        --base-image                            The base image name (default to 'dustynv/ros')
-        --os-name                               The name os the OS (default to 'l4t')
-        --tag-package                           The package name portion of the tag (default to 'foxy-pytorch-l4t')
-        --tag-version r35.2.1                   Operating system version, see .env.build_matrix for supported version
-                                                  (default to 'r35.2.1')
+        --dockerized-norlab-version <v1.3.1>    The dockerized-norlab release tag
+        --base-image <dustynv/pytorch>          The base image name
+        --os-name <ubuntu>                      The name os the OS
+        --base-img-tag-prefix <2.1>             The base image prefix of the tag
+        --tag-os-version <r35.2.1>              Operating system version, see .env.build_matrix for supported version
                                                 Note: L4T container tags (e.g. r35.2.1) should match the L4T version
                                                 on the Jetson otherwize cuda driver won't be accessible
                                                 (source https://github.com/dusty-nv/jetson-containers#pre-built-container-images )
@@ -144,21 +143,21 @@ function dn::execute_compose() {
       shift # Remove argument (--os-name)
       shift # Remove argument value
       ;;
-    --tag-package)
-      TAG_PACKAGE="${2}"
-      shift # Remove argument (--tag-package)
+    --base-img-tag-prefix)
+      BASE_IMG_TAG_PREFIX="${2}"
+      shift # Remove argument (--base-img-tag-prefix)
       shift # Remove argument value
       ;;
-    --tag-version)
-      TAG_VERSION="${2}"
-      shift # Remove argument (--tag-version)
+    --tag-os-version)
+      TAG_OS_VERSION="${2}"
+      shift # Remove argument (--tag-os-version)
       shift # Remove argument value
       ;;
     --ros2)
       ROS_DISTRO_PKG="${2}"
       ROS_DISTRO=$(echo "${ROS_DISTRO_PKG}" | sed 's;\-.*;;')
       ROS_PKG=${ROS_DISTRO_PKG/${ROS_DISTRO}-/}
-      shift # Remove argument (--ros2)
+      shift # Remove argument (--ros2)f
       shift # Remove argument value
       ;;
     --docker-debug-logs)
@@ -211,28 +210,36 @@ function dn::execute_compose() {
   # Note: REPOSITORY_VERSION will be used to fetch the repo at release tag (ref task NMO-252)
   export REPOSITORY_VERSION="${REPOSITORY_VERSION:?'Variable not set, use --help to find the proper flag'}"
   export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE:?'Variable not set, use --help to find the proper flag'}"
-  export TAG_VERSION="${TAG_VERSION:?'Variable not set, use --help to find the proper flag'}"
+  export TAG_OS_VERSION="${TAG_OS_VERSION:?'Variable not set, use --help to find the proper flag'}"
 
-  if [[ -z ${TAG_PACKAGE} ]]; then
-    export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_VERSION}"
+  if [[ -z ${BASE_IMG_TAG_PREFIX} ]]; then
+    export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_OS_VERSION}"
   else
-    export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_PACKAGE}-${TAG_VERSION}"
+    export DEPENDENCIES_BASE_IMAGE_TAG="${BASE_IMG_TAG_PREFIX}-${TAG_OS_VERSION}"
   fi
 
   export ROS_DISTRO="${ROS_DISTRO:?'Variable not set, use --help to find the proper flag'}"
   export ROS_PKG="${ROS_PKG:?'Variable not set, use --help to find the proper flag'}"
 
   if [[ ${ROS_DISTRO_PKG} != none ]]; then
-    export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${ROS_DISTRO_PKG/-ros/}-${DEPENDENCIES_BASE_IMAGE_TAG}"
+    export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${ROS_DISTRO_PKG/-ros/}-${TAG_OS_VERSION}"
   else
-    export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${DEPENDENCIES_BASE_IMAGE_TAG}"
+    export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${TAG_OS_VERSION}"
   fi
-  export PROJECT_TAG="${OS_NAME:?'Variable not set, use --help to find the proper flag'}-${TAG_VERSION}"
+  export PROJECT_TAG="${OS_NAME:?'Variable not set, use --help to find the proper flag'}-${TAG_OS_VERSION}"
 
+  # ....If defined › execute dn::callback_execute_compose_pre......................................
+  NBS_COMPOSE_DIR=$( dirname "$COMPOSE_FILE" )
+  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
+    source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
+    dn::callback_execute_compose_pre
+  fi
+
+  # ...............................................................................................
   n2st::print_msg "Environment variables set for ${DOCKER_MANAGEMENT_COMMAND[*]}:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
-  ${MSG_DIMMED_FORMAT}    TAG_VERSION=${TAG_VERSION} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    TAG_OS_VERSION=${TAG_OS_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    ROS_DISTRO=${ROS_DISTRO} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}
@@ -245,13 +252,7 @@ function dn::execute_compose() {
     DISPLAY=${DISPLAY:-':0'} && export DISPLAY
   fi
 
-  # ....If defined › execute dn::callback_execute_compose_pre......................................
-  NBS_COMPOSE_DIR=$( dirname "$COMPOSE_FILE" )
 
-  if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
-    source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
-    dn::callback_execute_compose_pre
-  fi
 
   # ....Execute docker command.....................................................................
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
@@ -323,7 +324,7 @@ function dn::execute_compose() {
   n2st::print_msg "Environment variables used by compose:\n
   ${MSG_DIMMED_FORMAT}    REPOSITORY_VERSION=${REPOSITORY_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE} ${MSG_END_FORMAT}
-  ${MSG_DIMMED_FORMAT}    TAG_VERSION=${TAG_VERSION} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    TAG_OS_VERSION=${TAG_OS_VERSION} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    ROS_DISTRO=${ROS_DISTRO} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}

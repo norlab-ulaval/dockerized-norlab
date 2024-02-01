@@ -29,7 +29,7 @@ _BUILD_STATUS_PASS=0
 
 declare -a DOCKER_COMPOSE_CMD_ARGS=( build )
 declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
-declare -a  TAG_PACKAGE_FLAG=()
+declare -a  BASE_IMAGE_TAG_PREFIX_FLAG=()
 STR_DOCKER_MANAGEMENT_COMMAND="compose"
 DOCKER_FORCE_PUSH=false
 DOCKER_EXIT_CODE=1
@@ -275,9 +275,9 @@ declare -r NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${NBS_EXECUTE_BUILD_MATRIX
 declare -ra NBS_MATRIX_REPOSITORY_VERSIONS=( "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}" )
 declare -ra NBS_MATRIX_SUPPORTED_OS=( "${NBS_MATRIX_SUPPORTED_OS[@]}" )
 declare -ra NBS_MATRIX_L4T_SUPPORTED_VERSIONS=( "${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}" )
-declare -ra NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=( "${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}" )
+declare -ra NBS_MATRIX_L4T_BASE_IMAGES=( "${NBS_MATRIX_L4T_BASE_IMAGES[@]}" )
 declare -ra NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=( "${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}" )
-declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=( "${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}" )
+declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES=( "${NBS_MATRIX_UBUNTU_BASE_IMAGES[@]}" )
 
 declare -ra NBS_MATRIX_ROS_DISTRO=( "${NBS_MATRIX_ROS_DISTRO[@]}" )
 declare -ra NBS_MATRIX_ROS_PKG=( "${NBS_MATRIX_ROS_PKG[@]}" )
@@ -289,9 +289,9 @@ ${MSG_DIMMED_FORMAT}    NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${NBS_EXECUTE
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_REPOSITORY_VERSIONS=(${NBS_MATRIX_REPOSITORY_VERSIONS[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_SUPPORTED_OS=(${NBS_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_SUPPORTED_VERSIONS=(${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_BASE_IMAGES=(${NBS_MATRIX_L4T_BASE_IMAGES[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_BASE_IMAGES=(${NBS_MATRIX_UBUNTU_BASE_IMAGES[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_ROS_DISTRO=(${NBS_MATRIX_ROS_DISTRO[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_ROS_PKG=(${NBS_MATRIX_ROS_PKG[*]}) ${MSG_END_FORMAT}
 "
@@ -313,14 +313,14 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
     dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_NAME}"
 
     unset CRAWL_OS_VERSIONS
-    unset CRAWL_BASE_IMAGES_AND_PKG
+    unset CRAWL_BASE_IMAGES
 
     if [[ ${EACH_OS_NAME} == 'ubuntu' ]]; then
       CRAWL_OS_VERSIONS=("${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
-      CRAWL_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
+      CRAWL_BASE_IMAGES=("${NBS_MATRIX_UBUNTU_BASE_IMAGES[@]}")
     elif [[ ${EACH_OS_NAME} == 'l4t' ]]; then
       CRAWL_OS_VERSIONS=("${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
-      CRAWL_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
+      CRAWL_BASE_IMAGES=("${NBS_MATRIX_L4T_BASE_IMAGES[@]}")
     else
       n2st::print_msg_error_and_exit "${EACH_OS_NAME} not supported!"
     fi
@@ -329,8 +329,8 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
       n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} supported version array because it's empty!"
     fi
 
-    if [[ -z ${CRAWL_BASE_IMAGES_AND_PKG[*]} ]]; then
-      n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images and pkg array because it's empty!"
+    if [[ -z ${CRAWL_BASE_IMAGES[*]} ]]; then
+      n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images array because it's empty!"
     fi
 
     for EACH_OS_VERSION in "${CRAWL_OS_VERSIONS[@]}"; do
@@ -353,23 +353,23 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             n2st::print_msg_error_and_exit "Not implemented yet (!)"
           fi
 
-          for EACH_BASE_IMAGES_AND_PKG in "${CRAWL_BASE_IMAGES_AND_PKG[@]}"; do
+          for EACH_BASE_IMAGES in "${CRAWL_BASE_IMAGES[@]}"; do
 
             # shellcheck disable=SC2034
             SHOW_SPLASH_EC='false'
 
             # shellcheck disable=SC2001
-            EACH_BASE_IMAGE=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/:.*//')
+            EACH_BASE_IMAGE=$(echo "${EACH_BASE_IMAGES}" | sed 's/:.*//')
             # shellcheck disable=SC2001
-            EACH_TAG_PKG=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://')
-            unset TAG_PACKAGE_FLAG
-            if [[ -n "${EACH_TAG_PKG}" ]]; then
-                TAG_PACKAGE_FLAG+=(--tag-package "${EACH_TAG_PKG}")
+            EACH_BASE_IMAGE_TAG_PREFIX=$(echo "${EACH_BASE_IMAGES}" | sed 's/.*://')
+            unset BASE_IMAGE_TAG_PREFIX_FLAG
+            if [[ -n "${EACH_BASE_IMAGE_TAG_PREFIX}" ]]; then
+                BASE_IMAGE_TAG_PREFIX_FLAG+=(--base-img-tag-prefix "${EACH_BASE_IMAGE_TAG_PREFIX}")
             fi
 
 
             if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-              echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --os-name ${EACH_OS_NAME} --tag-version ${EACH_OS_VERSION} ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[*]} -- ${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT_TEAMCITY}|n']"
+              echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --os-name ${EACH_OS_NAME} --tag-os-version ${EACH_OS_VERSION} ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[*]} -- ${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT_TEAMCITY}|n']"
               echo
             fi
 
@@ -418,8 +418,8 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
               --dockerized-norlab-version "${EACH_DN_VERSION}" \
               --base-image "${EACH_BASE_IMAGE}" \
               --os-name "${EACH_OS_NAME}" \
-              --tag-version "${EACH_OS_VERSION}" \
-              ${TAG_PACKAGE_FLAG[@]} \
+              ${BASE_IMAGE_TAG_PREFIX_FLAG[@]} \
+              --tag-os-version "${EACH_OS_VERSION}" \
               ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]} \
               -- ${DOCKER_COMPOSE_CMD_ARGS[@]}
 

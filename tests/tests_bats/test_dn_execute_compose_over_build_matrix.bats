@@ -174,12 +174,12 @@ setup() {
   assert_success
   assert_output --regexp .*"Pass".*"DN-hot-foxy-core-r11.1.1".*
   assert_output --regexp .*"Pass".*"DN-hot-foxy-core-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-2.1-r22.2.2".*
+#  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-2.1-r11.1.1".*
+#  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-2.1-r22.2.2".*
   assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-r11.1.1".*
   assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r22.2.2".*
+#  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
+#  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r22.2.2".*
 #  bats_print_run_env_variable
 }
 
@@ -199,12 +199,12 @@ setup() {
   assert_failure
   assert_output --regexp .*"Fail".*"DN-hot-foxy-core-r11.1.1".*
   assert_output --regexp .*"Fail".*"DN-hot-foxy-core-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-2.1-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-2.1-r22.2.2".*
+#  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-2.1-r11.1.1".*
+#  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-2.1-r22.2.2".*
   assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-r11.1.1".*
   assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-2.1-r22.2.2".*
+#  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
+#  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-2.1-r22.2.2".*
 }
 
 @test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
@@ -237,10 +237,10 @@ setup() {
                                       --l4t-version-build-matrix-override 'r33.3.3'
   set -e
   assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-r33.3.3".*
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-2.1-r33.3.3".*
+#  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-2.1-r33.3.3".*
 
   refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-r11.1.1".*
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
+#  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
 }
 
 @test "--force-push 'latest' tag sanity check ok" {
