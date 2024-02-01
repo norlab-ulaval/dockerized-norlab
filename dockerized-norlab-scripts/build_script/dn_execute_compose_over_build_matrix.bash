@@ -381,12 +381,12 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
                 # Solution for "error: object directory ... .git/objects does not exist"
                 n2st::print_msg "Git fetch all remote"
 #                git fetch --all
-                git fetch --all --recurse-submodules
+                git fetch --all --recurse-submodules --unshallow
 
-                # (CRITICAL) ToDo: validate >> reference "error: object directory /opt/TeamCity_Agent_1/system/git/git-849B5A8F.git/objects does not exist; check .git/objects/info/alternates fatal: bad object .."
-                n2st::print_msg "Cleanup unnecessary files and optimize the local repository"
-#                git gc
-                git gc --aggressive
+#                # (CRITICAL) ToDo: validate >> reference "error: object directory /opt/TeamCity_Agent_1/system/git/git-849B5A8F.git/objects does not exist; check .git/objects/info/alternates fatal: bad object .."
+#                n2st::print_msg "Cleanup unnecessary files and optimize the local repository"
+##                git gc
+#                git gc --aggressive
               fi
 
               # Note: keep it here as a testing tool
@@ -413,8 +413,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
               fi
             fi
 
-            # (CRITICAL) ToDo: validate >> reference "error: object directory /opt/TeamCity_Agent_1/system/git/git-849B5A8F.git/objects does not exist; check .git/objects/info/alternates"
-            n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD 2>/dev/null || git describe --all --exact-match)"
+            n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
 
 
             # ....Execute docker command...............................................................

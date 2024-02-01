@@ -292,7 +292,14 @@ setup() {
 
   assert_output --partial "mock-service-one mock-service-two"
 
-  assert_output --regexp .*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-one image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-one".*"completed successfully and exited docker.".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-two image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-two".*"completed successfully and exited docker.".*
+  if [[ ${TEAMCITY_VERSION} ]] ; then
+    SHOW_AND_EXECUTE_DOCKER_DONE_MSG="DN-build-system"
+  else
+    SHOW_AND_EXECUTE_DOCKER_DONE_MSG="DN-build-system done"
+  fi
+
+  assert_output --regexp .*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-one image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-one".*"completed successfully and exited docker.".*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-two image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-two".*"completed successfully and exited docker.".*
+
 }
 
 @test "flag --help" {
