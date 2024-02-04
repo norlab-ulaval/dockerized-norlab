@@ -35,6 +35,8 @@ declare -x DN_IMAGE_TAG
 declare -x PROJECT_TAG
 declare -x ROS_DISTRO
 declare -x ROS_PKG
+declare -x PLATFORM_1
+declare -x PLATFORM_2
 
 function dn::execute_compose() {
   # ....Positional argument........................................................................
@@ -46,7 +48,8 @@ function dn::execute_compose() {
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
   local _CI_TEST=false
   local DOCKER_FORCE_PUSH=false
-  local DOCKER_EXIT_CODE=1
+#  local DOCKER_EXIT_CODE=1
+  unset DOCKER_EXIT_CODE
   local MAIN_DOCKER_EXIT_CODE=1
   local ROS_DISTRO_PKG=none
   unset BASE_IMG_TAG_PREFIX
@@ -65,13 +68,12 @@ function dn::execute_compose() {
 
   # ....Load environment variables from file.......................................................
   set -o allexport
-  source .env.dockerized-norlab-build-system
-  source "${N2ST_PATH:?'Variable not set'}"/.env.project
+  source .env.dockerized-norlab-build-system || exit 1
+  source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
+  source .env.dockerized-norlab-project  || exit 1
   set +o allexport
 
-  set -o allexport
-  source .env.dockerized-norlab-project
-  set +o allexport
+  n2st::print_msg_warning "We are here" # (CRITICAL) ToDo: on task end >> delete this line ←
 
   # ....DN functions...............................................................................
 
@@ -154,9 +156,12 @@ function dn::execute_compose() {
       shift # Remove argument value
       ;;
     --ros2)
-      ROS_DISTRO_PKG="${2}"
-      ROS_DISTRO=$(echo "${ROS_DISTRO_PKG}" | sed 's;\-.*;;')
-      ROS_PKG=${ROS_DISTRO_PKG/${ROS_DISTRO}-/}
+      ROS_FLAG="${2}"
+      if [[ ${ROS_FLAG} != none ]]; then
+        ROS_DISTRO_PKG="${ROS_FLAG}"
+        ROS_DISTRO=$(echo "${ROS_DISTRO_PKG}" | sed 's;\-.*;;')
+        ROS_PKG=${ROS_DISTRO_PKG/${ROS_DISTRO}-/}
+      fi
       shift # Remove argument (--ros2)f
       shift # Remove argument value
       ;;
@@ -210,27 +215,51 @@ function dn::execute_compose() {
   # Note: REPOSITORY_VERSION will be used to fetch the repo at release tag (ref task NMO-252)
   export REPOSITORY_VERSION="${REPOSITORY_VERSION:?'Variable not set, use --help to find the proper flag'}"
   export DEPENDENCIES_BASE_IMAGE="${BASE_IMAGE:?'Variable not set, use --help to find the proper flag'}"
+  export DEPENDENCIES_BASE_IMAGE_NAME=$(echo "${BASE_IMAGE}" | sed 's;.*/;;')
   export TAG_OS_VERSION="${TAG_OS_VERSION:?'Variable not set, use --help to find the proper flag'}"
 
   if [[ -z ${BASE_IMG_TAG_PREFIX} ]]; then
     export DEPENDENCIES_BASE_IMAGE_TAG="${TAG_OS_VERSION}"
+    DN_IMAGE_TAG_END="${DEPENDENCIES_BASE_IMAGE_NAME}-${TAG_OS_VERSION}"
   else
     export DEPENDENCIES_BASE_IMAGE_TAG="${BASE_IMG_TAG_PREFIX}-${TAG_OS_VERSION}"
+    DN_IMAGE_TAG_END="${DEPENDENCIES_BASE_IMAGE_NAME}-${BASE_IMG_TAG_PREFIX}-${TAG_OS_VERSION}"
   fi
 
-  export ROS_DISTRO="${ROS_DISTRO:?'Variable not set, use --help to find the proper flag'}"
-  export ROS_PKG="${ROS_PKG:?'Variable not set, use --help to find the proper flag'}"
+  if [[ ${ROS_FLAG} != none ]]; then
+    export ROS_DISTRO="${ROS_DISTRO:?'Variable not set, use --help to find the proper flag'}"
+    export ROS_PKG="${ROS_PKG:?'Variable not set, use --help to find the proper flag'}"
 
-  if [[ ${ROS_DISTRO_PKG} != none ]]; then
-    export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${ROS_DISTRO_PKG/-ros/}-${TAG_OS_VERSION}"
+    if [[ ${ROS_DISTRO_PKG} != none ]]; then
+      DN_IMAGE_TAG_BEGIN="DN-${REPOSITORY_VERSION}-${ROS_DISTRO_PKG/-ros/}"
+    else
+      DN_IMAGE_TAG_BEGIN="DN-${REPOSITORY_VERSION}"
+    fi
   else
-    export DN_IMAGE_TAG="DN-${REPOSITORY_VERSION}-${TAG_OS_VERSION}"
+    DN_IMAGE_TAG_BEGIN="DN-${REPOSITORY_VERSION}"
   fi
+  export DN_IMAGE_TAG="${DN_IMAGE_TAG_BEGIN}-${DN_IMAGE_TAG_END}"
+
   export PROJECT_TAG="${OS_NAME:?'Variable not set, use --help to find the proper flag'}-${TAG_OS_VERSION}"
+
+  # (CRITICAL) ToDo: unit-test >> (ref task NMO-514 feat: implement platform selection logic)
+  if [[ ${OS_NAME} == ubuntu ]]; then
+    # multiarch
+    export PLATFORM_1=linux/arm64
+#    export PLATFORM_2=linux/amd64
+  elif [[ ${OS_NAME} == l4t ]]; then
+    # jetson
+    export PLATFORM_1=linux/arm64
+#    export PLATFORM_2=linux/arm64/v7
+  else
+    n2st::print_msg_error_and_exit "OS ${OS_NAME} not matched with any architecture configuration"
+  fi
 
   # ....If defined › execute dn::callback_execute_compose_pre......................................
   NBS_COMPOSE_DIR=$( dirname "$COMPOSE_FILE" )
+  echo "›››› cwd=$(pwd)" # (CRITICAL) ToDo: on task end >> delete this line ←
   if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
+    n2st::print_msg "Source and execute ${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
     source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
     dn::callback_execute_compose_pre
   fi
@@ -245,6 +274,8 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    PLATFORM_1=${PLATFORM_1} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    PLATFORM_2=${PLATFORM_2} ${MSG_END_FORMAT}
   "
 
   if [[ ${IS_TEAMCITY_RUN} == true ]]; then
@@ -271,6 +302,14 @@ function dn::execute_compose() {
   if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_MANAGEMENT_COMMAND[*]} != "buildx bake" ]]; then
     unset DOCKER_COMPOSE_CMD_ARGS[0]
     DOCKER_COMPOSE_CMD_ARGS=( build --build-arg "BUILDKIT_CONTEXT_KEEP_GIT_DIR=1" ${DOCKER_COMPOSE_CMD_ARGS[@]})
+  fi
+
+  cd "${DN_PATH:?err}" || exit 1
+  DN_COMPOSE_GLOBAL_CONFIG="dockerized-norlab-images/core-images/global-service-builder/docker-compose.global-service.build.yaml"
+  if [[ ! -f ${DN_COMPOSE_GLOBAL_CONFIG}  ]]; then
+    n2st::print_msg_error_and_exit "The compose file ${DN_COMPOSE_GLOBAL_CONFIG} is unreachable"
+  else
+    n2st::print_msg "CHeck › Compose file ${DN_COMPOSE_GLOBAL_CONFIG} is reachable"
   fi
 
   if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
@@ -316,6 +355,7 @@ function dn::execute_compose() {
 
   # ....If defined › execute dn::callback_execute_compose_pre......................................
   if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
+    n2st::print_msg "Source and execute ${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash"
     source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash"
     dn::callback_execute_compose_post
   fi
@@ -330,6 +370,8 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    PLATFORM_1=${PLATFORM_1} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    PLATFORM_2=${PLATFORM_2} ${MSG_END_FORMAT}
   "
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"

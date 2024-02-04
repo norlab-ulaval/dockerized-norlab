@@ -1,12 +1,13 @@
 name: ${DN_PROJECT_COMPOSE_NAME}
 
+
 services:
 
   # ====Dockerized-NorLab Project==================================================================
   project-core-main: # ›› no push build service
     extends:
       file: ../global-service-builder/docker-compose.global-service.build.yaml
-      service: global-service-builder
+      service: global-service-builder-config
     build:
       context: project-core
       dockerfile: Dockerfile.template

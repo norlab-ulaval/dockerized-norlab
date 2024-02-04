@@ -1,4 +1,4 @@
-name: ${DN_COMPOSE_NAME}
+name: ${DN_COMPOSE_NAME:?err}
 
 services:
 
@@ -6,7 +6,7 @@ services:
 #  dependencies-test:
 #    extends:
 #      file: ../global-service-builder/docker-compose.global-service.build.yaml
-#      service: global-service-builder
+#      service: global-service-builder-config
 #    build:
 #      context: .
 #      dockerfile: Dockerfile.test
@@ -18,14 +18,13 @@ services:
   # ====Dockerized-NorLab base images==============================================================
 
   # ....Jetson dusty ml related base images........................................................
-
-  base-image-jetson-ml-squash-main: # ›› no push build service
+  base-image-squash-main: # ›› no push build service
     extends:
       file: ../global-service-builder/docker-compose.global-service.build.yaml
-      service: global-service-builder
+      service: global-service-builder-config
     build:
       context: .
-      dockerfile: Dockerfile.jetson_ml.squash
+      dockerfile: Dockerfile.ml.squash
       target: squash-base-image
       args:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
@@ -39,57 +38,53 @@ services:
         LD_LIBRARY_PATH: ${BASE_IMG_ENV_LD_LIBRARY_PATH:?err}
         # The following env var does not appear in every jetson-container 'dustynv' base images
         OPENBLAS_CORETYPE: ${BASE_IMG_ENV_OPENBLAS_CORETYPE}
-        # Base image env var transfer (jetson-container pytorch related)
         LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
+        # Base image env var transfer (jetson-container pytorch related)
         TORCH_HOME: ${BASE_IMG_ENV_TORCH_HOME}
         # Base image env var transfer (jetson-container tensorflow related)
         PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: ${BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
-    image: ${DN_HUB:?err}/dockerized-norlab-base-image-ml-squashed:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-base-image-squashed:${DN_IMAGE_TAG:?err}
 
-  base-image-jetson-ml-squash-tester:
-    extends: base-image-jetson-ml-squash-main
+  base-image-ml-squash-tester:
+    extends: base-image-squash-main
     build:
       target: squashed-base-image-tester
     depends_on:
-      - base-image-jetson-ml-squash-main
+      - base-image-squash-main
 
-  # ....ROS2 base images...........................................................................
-  base-image-jetson-ros2-clean-main: # ›› no push build service
-    extends: base-image-jetson-ml-squash-main
+#  # ....ROS2 base images...........................................................................
+#  base-image-ros2-clean-main: # ›› no push build service
 #    extends:
 #      file: ../global-service-builder/docker-compose.global-service.build.yaml
-#      service: global-service-builder
-    build:
-      context: .
-      dockerfile: Dockerfile.ros2
-      target: ros2-install
-      args:
-        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-ml-squashed
-        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-#        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
-#        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-        ROS_DISTRO: ${ROS_DISTRO}
-        ROS_PKG: ${ROS_PKG}
-#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson-ros2-clean:${ROS_DISTRO}-${ROS_PKG}-${TAG_OS_VERSION:?err}
-    image: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-clean:${DN_IMAGE_TAG:?err}
-    depends_on:
-      - base-image-jetson-ml-squash-main
-
-  # ....Jetson dustynv ros2 base images............................................................
-  base-image-jetson-ros2-clean-tester:
-    extends: base-image-jetson-ros2-clean-main
-    build:
-      target: test
-    depends_on:
-      - base-image-jetson-ros2-clean-main
-
-#  base-image-jetson-ros2-squash-main: # ›› no push build service
-#    extends:
-#      file: ../global-service-builder/docker-compose.global-service.build.yaml
-#      service: global-service-builder
+#      service: global-service-builder-config
 #    build:
 #      context: .
-#      dockerfile: Dockerfile.jetson_ros2.squash
+#      dockerfile: Dockerfile.ros2
+#      target: ros2-install
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-squashed
+#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+#        ROS_DISTRO: ${ROS_DISTRO}
+#        ROS_PKG: ${ROS_PKG}
+#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-clean:${DN_IMAGE_TAG:?err}
+##    depends_on:
+##      - base-image-squash-main
+#
+#  base-image-ros2-clean-tester:
+#    extends: base-image-ros2-clean-main
+#    build:
+#      target: test
+#    depends_on:
+#      - base-image-ros2-clean-main
+
+#  # ....Jetson dustynv ros2 base images............................................................
+#  base-image-ros2-squash-main: # ›› no push build service
+#    extends:
+#      file: ../global-service-builder/docker-compose.global-service.build.yaml
+#      service: global-service-builder-config
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.ros2-dustynv.squash
 #      target: squash-base-image
 #      args:
 #        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
@@ -112,11 +107,11 @@ services:
 #        LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
 #        PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: ${BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
 #        TORCH_HOME: ${BASE_IMG_ENV_TORCH_HOME}
-#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson-ros2-squashed:${DN_IMAGE_TAG:?err}
+#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-squashed:${DN_IMAGE_TAG:?err}
 #
-#  base-image-jetson-ros2-squash-tester:
-#    extends: base-image-jetson-ros2-squash-main
+#  base-image-ros2-squash-tester:
+#    extends: base-image-ros2-squash-main
 #    build:
 #      target: squashed-base-image-tester
 #    depends_on:
-#      - base-image-jetson-ros2-squash-main
+#      - base-image-ros2-squash-main

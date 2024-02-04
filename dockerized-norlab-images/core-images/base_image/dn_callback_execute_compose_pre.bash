@@ -14,12 +14,30 @@
 # =================================================================================================
 function dn::callback_execute_compose_pre() {
 
+  # ....Reformat nvcr.io base image tag............................................................
+  if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
+    if [[ ${TAG_OS_VERSION} == jammy ]]; then
+      CONVERTED_TAG_OS_VERSION=23
+    elif [[ ${TAG_OS_VERSION} == focal ]]; then
+      CONVERTED_TAG_OS_VERSION=22
+    else
+      n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
+    fi
+    export DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${BASE_IMG_TAG_PREFIX}"
+  fi
+
+  # ....Export image tag for squashed base image use...............................................
+  export DN_IMAGE_TAG_NO_ROS="DN-${REPOSITORY_VERSION}-${DN_IMAGE_TAG_END}"
+
+
   # ....Fetch base image environment variables.....................................................
   if [[ ! -d ${NBS_COMPOSE_DIR:?err} ]]; then
     n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
   fi
 
-  if [[ "${NBS_COMPOSE_DIR}" == "dockerized-norlab-images/core-images/base_image" ]]; then
+  # (CRITICAL) ToDo: validate if clause
+#  if [[ "${NBS_COMPOSE_DIR}" == "dockerized-norlab-images/core-images/base_image" ]]; then
+  if [[ "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "${NBS_COMPOSE_DIR}/docker-compose.squash.build.yaml" ]]; then
 
     # ex: dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
@@ -56,18 +74,5 @@ function dn::callback_execute_compose_pre() {
       ${MSG_END_FORMAT}"
   fi
 
-  # ....Reformat nvcr.io base image tag............................................................
-  if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
-    if [[ ${TAG_OS_VERSION} == jammy ]]; then
-      CONVERTED_TAG_OS_VERSION=23
-    elif [[ ${TAG_OS_VERSION} == focal ]]; then
-      CONVERTED_TAG_OS_VERSION=22
-    else
-      n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
-    fi
-    export DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${BASE_IMG_TAG_PREFIX}"
-  fi
-
-  return 0
 }
 

@@ -38,7 +38,7 @@ TESTED_FILE="dn_execute_compose.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 TEST_DOCKER_COMPOSE_FILE_PATH=dockerized-norlab-images/core-images/base_image
-TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.jetson.build.yaml"
+TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.squash.build.yaml"
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
@@ -83,7 +83,7 @@ setup() {
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                           --dockerized-norlab-version hot \
                           --base-image dustynv/pytorch \
-                          --os-name arbitratyName \
+                          --os-name l4t \
                           --ros2 foxy-ros-base \
                           --base-img-tag-prefix 2.1 \
                           --tag-os-version r35.0.0
@@ -99,7 +99,7 @@ setup() {
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                           --dockerized-norlab-version hot \
                           --base-image dustynv/pytorch \
-                          --os-name arbitratyName \
+                          --os-name l4t \
                           --ros2 foxy-ros-base \
                           --base-img-tag-prefix 2.1 \
                           --tag-os-version r35.0.0
@@ -120,7 +120,7 @@ setup() {
   run dn::execute_compose "docker-compose.unreachable.yaml" \
                             --dockerized-norlab-version hot \
                             --base-image dustynv/pytorch \
-                            --os-name arbitratyName \
+                            --os-name l4t \
                             --ros2 foxy-ros-base \
                             --base-img-tag-prefix 2.1 \
                             --tag-os-version r35.0.0
@@ -137,13 +137,13 @@ setup() {
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE}  \
                           --dockerized-norlab-version hot \
                           --base-image dustynv/pytorch \
-                          --os-name arbitratyName \
+                          --os-name l4t \
                           --ros2 foxy-ros-base \
                           --base-img-tag-prefix 2.1 \
                           --tag-os-version r35.0.0 \
                           -- ${DOCKER_CMD}
   assert_success
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.squash.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
 #  bats_print_run_env_variable
 }
 
@@ -157,7 +157,7 @@ setup() {
   dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                     --dockerized-norlab-version hot \
                     --base-image dustynv/pytorch \
-                    --os-name arbitratyName \
+                    --os-name l4t \
                     --ros2 foxy-ros-base \
                     --base-img-tag-prefix 2.1 \
                     --tag-os-version r35.0.0 \
@@ -178,7 +178,7 @@ setup() {
   dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                     --dockerized-norlab-version hot \
                     --base-image dustynv/pytorch \
-                    --os-name arbitratyName \
+                    --os-name l4t \
                     --ros2 foxy-ros-base \
                     --base-img-tag-prefix 2.1 \
                     --tag-os-version r35.0.0 \
@@ -210,7 +210,7 @@ setup() {
   dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                     --dockerized-norlab-version hot \
                     --base-image dustynv/pytorch \
-                    --os-name arbitratyName \
+                    --os-name l4t \
                     --ros2 foxy-ros-base \
                     --base-img-tag-prefix 2.1 \
                     --tag-os-version r35.0.0 \
@@ -234,13 +234,13 @@ setup() {
   assert_equal "$BUILDKIT_PROGRESS" "plain"
   assert_equal "$REPOSITORY_VERSION" "hot"
   assert_equal "$BASE_IMAGE" "dustynv/pytorch"
-  assert_equal "$OS_NAME" "arbitratyName"
+  assert_equal "$OS_NAME" "l4t"
   assert_equal "$BASE_IMG_TAG_PREFIX" "2.1"
   assert_equal "$TAG_OS_VERSION" "r35.0.0"
   assert_equal "$DEPENDENCIES_BASE_IMAGE" "dustynv/pytorch"
   assert_equal "$DEPENDENCIES_BASE_IMAGE_TAG" "2.1-r35.0.0"
-  assert_equal "$DN_IMAGE_TAG" "DN-hot-foxy-base-r35.0.0"
-  assert_equal "$PROJECT_TAG" "arbitratyName-r35.0.0"
+  assert_equal "$DN_IMAGE_TAG" "DN-hot-foxy-base-pytorch-2.1-r35.0.0"
+  assert_equal "$PROJECT_TAG" "l4t-r35.0.0"
 }
 
 @test "flags that set env variable" {
@@ -250,14 +250,14 @@ setup() {
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                         --dockerized-norlab-version v0.3.0 \
                         --base-image dustynv/pytorch \
-                        --os-name arbitratyName \
+                        --os-name l4t \
                         --ros2 foxy-ros-base \
                         --base-img-tag-prefix 2.1 \
                         --tag-os-version r35.0.0 \
                         --docker-debug-logs
 
   assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"IS_TEAMCITY_RUN=".*
-  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Environment variables set for".*"compose".*"REPOSITORY_VERSION=".*"v0.3.0".*"DEPENDENCIES_BASE_IMAGE=".*"dustynv/pytorch".*"TAG_OS_VERSION=".*"r35.0.0".*"DEPENDENCIES_BASE_IMAGE_TAG=".*"2.1-r35.0.0".*"DN_IMAGE_TAG=".*"DN-v0.3.0-foxy-base-r35.0.0".*"PROJECT_TAG=".*"arbitratyName-r35.0.0"
+  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Environment variables set for".*"compose".*"REPOSITORY_VERSION=".*"v0.3.0".*"DEPENDENCIES_BASE_IMAGE=".*"dustynv/pytorch".*"TAG_OS_VERSION=".*"r35.0.0".*"DEPENDENCIES_BASE_IMAGE_TAG=".*"2.1-r35.0.0".*"DN_IMAGE_TAG=".*"DN-v0.3.0-foxy-base-pytorch-2.1-r35.0.0".*"PROJECT_TAG=".*"l4t-r35.0.0"
 }
 
 @test "docker compose build conditional logic" {
@@ -267,14 +267,14 @@ setup() {
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                       --dockerized-norlab-version hot \
                       --base-image dustynv/pytorch \
-                      --os-name arbitratyName \
+                      --os-name l4t \
                       --ros2 foxy-ros-base \
                       --base-img-tag-prefix 2.1 \
                       --tag-os-version r35.0.0 \
                       --docker-debug-logs \
                       -- build base-image-tester
 
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 base-image-tester".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.squash.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 base-image-tester".*"since the script is executed inside a docker container".*
 }
 
 @test "flag --force-push" {
@@ -285,14 +285,14 @@ setup() {
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                       --dockerized-norlab-version hot \
                       --base-image dustynv/pytorch \
-                      --os-name arbitratyName \
+                      --os-name l4t \
                       --ros2 foxy-ros-base \
                       --base-img-tag-prefix 2.1 \
                       --tag-os-version r35.0.0 \
                       --force-push \
                       -- build
 
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"since the script is executed inside a docker container".*"Force push mock-service-one image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml push mock-service-one".*"since the script is executed inside a docker container".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"since the script is executed inside a docker container".*"Force push mock-service-two image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.jetson.build.yaml push mock-service-two".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.squash.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"since the script is executed inside a docker container".*"Force push mock-service-one image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.squash.build.yaml push mock-service-one".*"since the script is executed inside a docker container".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.squash.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"since the script is executed inside a docker container".*"Force push mock-service-two image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base_image/docker-compose.squash.build.yaml push mock-service-two".*"since the script is executed inside a docker container".*
 }
 
 @test "flag --help" {
@@ -312,7 +312,7 @@ setup() {
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                           --dockerized-norlab-version hot \
                           --base-image dustynv/pytorch \
-                          --os-name arbitratyName \
+                          --os-name l4t \
                           --ros2 foxy-ros-base \
                           --base-img-tag-prefix 2.1 \
                           --tag-os-version r35.0.0 \

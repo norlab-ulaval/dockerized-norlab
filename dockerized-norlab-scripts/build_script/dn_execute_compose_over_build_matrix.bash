@@ -28,8 +28,8 @@
 _BUILD_STATUS_PASS=0
 
 declare -a DOCKER_COMPOSE_CMD_ARGS=( build )
-declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
-declare -a  BASE_IMAGE_TAG_PREFIX_FLAG=()
+declare -a DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
+declare -a BASE_IMAGE_TAG_PREFIX_FLAG=()
 STR_DOCKER_MANAGEMENT_COMMAND="compose"
 DOCKER_FORCE_PUSH=false
 DOCKER_EXIT_CODE=1
@@ -45,7 +45,8 @@ if [[ ! -f ".env.dockerized-norlab-build-system" ]]; then
 fi
 
 set -o allexport
-source .env.dockerized-norlab-build-system
+source .env.dockerized-norlab-build-system || exit 1
+echo -e "Loaded ${MSG_DIMMED_FORMAT}.env.dockerized-norlab-build-system${MSG_END_FORMAT}"
 set +o allexport
 
 
@@ -96,13 +97,14 @@ fi
 
 # ....Load environment variables from file.........................................................
 cd "${DN_PATH}" || exit 1
-
 set -o allexport
+
+n2st::print_msg "Loading ${MSG_DIMMED_FORMAT}.env.dockerized-norlab-project${MSG_END_FORMAT}"
 source .env.dockerized-norlab-project || exit 1
 
 n2st::print_msg "Loading main build matrix ${MSG_DIMMED_FORMAT}${NBS_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
 source "${NBS_BUILD_MATRIX_MAIN:?'The name of the main .env.build_matrix file is missing'}" || exit 1
-set +o allexport
+
 
 if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
   # Note: Override values from .env.build_matrix.main
@@ -113,17 +115,15 @@ fi
 n2st::print_msg "Loading build matrix ${MSG_DIMMED_FORMAT}${_DOTENV_BUILD_MATRIX}${MSG_END_FORMAT}"
 source "${_DOTENV_BUILD_MATRIX}" || exit 1
 
-set +o allexport
-
-
-
-set -o allexport
+# (Priority) ToDo: validate that its still usefull now that we have '.env.dockerized-norlab-project'
 source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
+
 set +o allexport
 
 # ....DN functions.................................................................................
 cd "${DN_PATH}" || exit 1
 
+# Note: The "set -o/+o allexport" are required to fetch the "declare -x <env var>"
 set -o allexport
 source dockerized-norlab-scripts/build_script/dn_execute_compose.bash || exit 1
 set +o allexport
@@ -343,14 +343,13 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
 
           if [[ -z ${EACH_ROS_DISTRO[*]} ]]; then
-            n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_DISTRO array because it's empty!"
+            n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_DISTRO array because it's empty! Write 'none' if you want to skip ros."
+          elif [[ ${EACH_ROS_DISTRO} == none ]]; then
+            DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ros2 "none")
           elif [[ -z ${EACH_ROS_PKG[*]} ]]; then
             n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_PKG array because it's empty!"
           elif [[ ${EACH_ROS_DISTRO} != none ]]; then
             DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ros2 "${EACH_ROS_DISTRO}-${EACH_ROS_PKG}")
-          elif [[ ${EACH_ROS_DISTRO} == none ]]; then
-            DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ros2 "none") # (NICE TO HAVE) ToDo: implement
-            n2st::print_msg_error_and_exit "Not implemented yet (!)"
           fi
 
           for EACH_BASE_IMAGES in "${CRAWL_BASE_IMAGES[@]}"; do
@@ -380,13 +379,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
               if [[ ${IS_TEAMCITY_RUN} == true ]]; then
                 # Solution for "error: object directory ... .git/objects does not exist"
                 n2st::print_msg "Git fetch all remote"
-#                git fetch --all
                 git fetch --all --recurse-submodules --unshallow
-
-#                # (CRITICAL) ToDo: validate >> reference "error: object directory /opt/TeamCity_Agent_1/system/git/git-849B5A8F.git/objects does not exist; check .git/objects/info/alternates fatal: bad object .."
-#                n2st::print_msg "Cleanup unnecessary files and optimize the local repository"
-##                git gc
-#                git gc --aggressive
               fi
 
               # Note: keep it here as a testing tool

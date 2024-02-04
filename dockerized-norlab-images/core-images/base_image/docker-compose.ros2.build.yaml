@@ -1,0 +1,29 @@
+name: ${DN_COMPOSE_NAME:?err}
+
+services:
+
+  # ....ROS2 base images...........................................................................
+  base-image-ros2-clean-main:
+    extends:
+      file: ../global-service-builder/docker-compose.global-service.build.yaml
+      service: global-service-builder-config
+    build:
+      context: .
+      dockerfile: Dockerfile.ros2
+      target: ros2-install
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-squashed
+#        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+        # (CRITICAL) ToDo: validate 'DN_IMAGE_TAG_NO_ROS'
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG_NO_ROS:?err}
+        ROS_DISTRO: ${ROS_DISTRO}
+        ROS_PKG: ${ROS_PKG}
+    image: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-clean:${DN_IMAGE_TAG:?err}
+
+  # ....Jetson dustynv ros2 base images............................................................
+  base-image-ros2-clean-tester:
+    extends: base-image-ros2-clean-main
+    build:
+      target: test
+    depends_on:
+      - base-image-ros2-clean-main

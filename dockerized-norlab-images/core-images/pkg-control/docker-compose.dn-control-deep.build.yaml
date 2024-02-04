@@ -1,4 +1,5 @@
-name: ${DN_COMPOSE_NAME}
+name: ${DN_COMPOSE_NAME:?err}
+
 
 services:
 
@@ -9,7 +10,7 @@ services:
 #      service: dn-control
     extends:
       file: ../global-service-builder/docker-compose.global-service.build.yaml
-      service: global-service-builder
+      service: global-service-builder-config
     build:
       context: dn-control-deep-learning
       args:

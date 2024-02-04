@@ -1,8 +1,8 @@
-name: ${DN_COMPOSE_NAME}
+name: ${DN_COMPOSE_NAME:?err}
 
 services:
 
-  global-service-dev:
+  global-service-dev-config:
     build:
       context: .
 #      no_cache: true  # Enforce full rebuild                               <-- mute on task end
@@ -25,10 +25,6 @@ services:
     network_mode: host    # allow the container to have full access to the host’s networking system
     pid: host
     ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
-#    environment:
-#      DN_CONTAINER_NAME: IamNooorLab
-#      DN_ACTIVATE_POWERLINE_PROMT: true
-#    container_name: IamNooorLab
     environment:
       ROS_DOMAIN_ID: 1
       NVIDIA_VISIBLE_DEVICES: all   # substitute for `--gpus all` flag
@@ -39,12 +35,13 @@ services:
       #      DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
       #      DISPLAY: '169.254.205.89:0.0'
       QT_X11_NO_MITSHM: 1
+#    environment:
+#      DN_CONTAINER_NAME: IamNooorLab
+#      DN_ACTIVATE_POWERLINE_PROMT: true
+#    container_name: IamNooorLab
 
-  global-service-builder:
-    extends: global-service-dev # ToDo: on dev task end >> mute this line ←
-    pull_policy: missing # Note: enforce pulling image only if not available in cache
-    labels:
-      org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+  global-service-builder-config:
+    extends: global-service-dev-config # ToDo: on dev task end >> mute this line ←
     build:
       context: .
       dockerfile: Dockerfile
@@ -55,5 +52,8 @@ services:
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
       platforms:
-        - "linux/arm64/v8"
-
+        - ${PLATFORM_1}
+#        - ${PLATFORM_2}
+      labels:
+        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+    pull_policy: missing # Note: enforce pulling image only if not available in cache
