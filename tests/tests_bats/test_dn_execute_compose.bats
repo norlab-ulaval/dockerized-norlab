@@ -143,7 +143,7 @@ setup() {
                           --tag-os-version r35.0.0 \
                           -- ${DOCKER_CMD}
   assert_success
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
 #  bats_print_run_env_variable
 }
 
@@ -274,7 +274,7 @@ setup() {
                       --docker-debug-logs \
                       -- build base-image-tester
 
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 base-image-tester".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 base-image-tester".*"since the script is executed inside a docker container".*
 }
 
 @test "flag --force-push" {
@@ -292,7 +292,7 @@ setup() {
                       --force-push \
                       -- build
 
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"since the script is executed inside a docker container".*"Force push mock-service-one image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml push mock-service-one".*"since the script is executed inside a docker container".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"since the script is executed inside a docker container".*"Force push mock-service-two image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml push mock-service-two".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"since the script is executed inside a docker container".*"Force push mock-service-one image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml".*" push mock-service-one".*"since the script is executed inside a docker container".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"since the script is executed inside a docker container".*"Force push mock-service-two image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.squash.build.yaml".*" push mock-service-two".*"since the script is executed inside a docker container".*
 }
 
 @test "flag --help" {
