@@ -218,7 +218,7 @@ while [ $# -gt 0 ]; do
   --buildx-bake)
     # (NICE TO HAVE) ToDo: finish implement
     n2st::print_msg "dn_execute_compose_over_build_matrix.bash › set --buildx-bake flag"
-    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --buildx-bake )
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--buildx-bake)
     STR_DOCKER_MANAGEMENT_COMMAND="buildx bake"
     shift # Remove argument (--buildx-bake)
     ;;
@@ -229,22 +229,34 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--docker-debug-logs)
     ;;
   --force-push)
-    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --force-push )
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--force-push)
     DOCKER_FORCE_PUSH=true
     shift # Remove argument (--force-push)
     ;;
   --fail-fast)
-    if [[ ${IS_TEAMCITY_RUN} == true ]] ; then
-      echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Dn --fail-fast flag was set in TC run configuration' status='ERROR']"
-      n2st::print_msg_error_and_exit "Be advise, the --fail-fast flag should only be used in local development."
-    else
-      n2st::print_msg "Be advise, --fail-fast flag in effect"
-      set -e
-    fi
+    {
+      if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+        echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Dn --fail-fast flag was set in TC run configuration' status='ERROR']"
+        n2st::print_msg_error_and_exit "Be advise, the --fail-fast flag should only be used in local development."
+      else
+        n2st::print_msg "Be advise, --fail-fast flag in effect"
+        set -e
+      fi
+    }
     shift # Remove argument (--fail-fast)
     ;;
   --ci-test-force-runing-docker-cmd)
-    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --ci-test-force-runing-docker-cmd )
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ci-test-force-runing-docker-cmd)
+    {
+      if [[ -z $(docker) ]]; then
+        function docker() {
+          local tmp=$@
+          echo "mock-service-one mock-service-two"
+          export DOCKER_EXIT_CODE=0
+          return 0
+        }
+      fi
+    }
     shift # Remove argument (--ci-test-force-runing-docker-cmd)
     ;;
   -h | --help)
@@ -253,7 +265,7 @@ while [ $# -gt 0 ]; do
     ;;
   --) # no more option
     shift
-    DOCKER_COMPOSE_CMD_ARGS=( $@ )
+    DOCKER_COMPOSE_CMD_ARGS=($@)
     break
     ;;
   *) # Default case

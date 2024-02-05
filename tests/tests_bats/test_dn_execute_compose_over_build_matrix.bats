@@ -71,7 +71,7 @@ setup() {
 
 
 @test "executing $TESTED_FILE from bad cwd › expect fail" {
-##  skip "tmp dev"
+#  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
   run bash ./build_script/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}
@@ -82,7 +82,7 @@ setup() {
 
 
 @test "executing $TESTED_FILE from ok cwd › expect pass" {
-##  skip "tmp dev"
+#  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
   local _CI_TEST=true
@@ -96,7 +96,7 @@ setup() {
 }
 
 @test "missing dotenv build matrix file mandatory argument› expect pass" {
-##  skip "tmp dev"
+#  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
   local _CI_TEST=true
@@ -112,7 +112,7 @@ setup() {
 }
 
 @test "docker command are passed to show_and_execute_docker" {
-##  skip "tmp dev"
+#  skip "tmp dev"
 
   local DOCKER_CMD="config --dry-run"
   local _CI_TEST=true
@@ -126,7 +126,7 @@ setup() {
 }
 
 @test "dotenv build matrix file argument › ok" {
-##  skip "tmp dev"
+#  skip "tmp dev"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.dockerized-norlab-build-system
@@ -146,7 +146,7 @@ setup() {
 }
 
 @test "dotenv build matrix source ordering › ok" {
-##  skip "tmp dev"
+#  skip "tmp dev"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.dockerized-norlab-build-system
@@ -169,7 +169,7 @@ setup() {
 }
 
 @test "multi OS build › expect pass" {
-##  skip "tmp dev"
+#  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -224,14 +224,14 @@ setup() {
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
-  fake_IS_TEAMCITY_RUN
-  set +e
+#  fake_IS_TEAMCITY_RUN
+#  set +e
 
   mock_docker_command_config_services_base_image_squash_exit_error
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                               --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
-  set -e
+#  set -e
   assert_failure
   assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r11.1.1".*
   assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r22.2.2".*
@@ -349,7 +349,7 @@ setup() {
 }
 
 @test "flag --buildx-bake" {
-##  skip "tmp dev"
+#  skip "tmp dev"
 
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
   local _CI_TEST=true
