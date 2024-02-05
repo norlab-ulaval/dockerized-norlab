@@ -1,29 +1,12 @@
 services:
 
-  global-service-builder-config:
-#    extends: # ToDo: on dev task end >> mute next bloc ↓↓
-#      file: ../docker-compose.global.yaml
-#      service: global-service-dev-config
-    build:
-      context: ../global
-      dockerfile: ../global/Dockerfile.global
-      additional_contexts:
-        context-dn-container-tools: ../../container-tools/
-        context-dn-submodules: ../../../utilities/
-        context-dn-root: ../../../
-      args:
-        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-        TARGET_DEVICE: jetson
-      platforms:
-        - linux/arm64
-      labels:
-        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-#    pull_policy: missing # Note: enforce pulling image only if not available in cache
-    pull_policy: build
 
   # ====Dockerized-NorLab control =================================================================
   dn-control:
-    extends: global-service-builder-config
+    extends:
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
     build:
       context: dn-control
       args:
@@ -32,7 +15,8 @@ services:
     image: ${DN_HUB:?err}/dockerized-norlab-control:${DN_IMAGE_TAG:?err}
 
 #  dn-control-gym:
-#    extends: dn-control
+#    extends:
+#      service: dn-control
 #    build:
 #      context: dn-control-gym
 #      args:
@@ -43,7 +27,8 @@ services:
 
 #  # (!) Install problem, skipping for now, will use the 'dockerized-norlab-control-deep-rl-f1tenth' image in the mean time
 #  dn-control-f1tenth:
-#    extends: dn-control
+#    extends:
+#      service: dn-control
 #    build:
 #      context: dn-control-f1tenth
 #      args:

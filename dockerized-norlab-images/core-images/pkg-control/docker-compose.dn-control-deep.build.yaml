@@ -1,32 +1,15 @@
 services:
 
-  global-service-builder-config:
-#    extends: # ToDo: on dev task end >> mute next bloc ↓↓
-#      file: ../docker-compose.global.yaml
-#      service: global-service-dev-config
-    build:
-      context: ../global
-      dockerfile: ../global/Dockerfile.global
-      additional_contexts:
-        context-dn-container-tools: ../../container-tools/
-        context-dn-submodules: ../../../utilities/
-        context-dn-root: ../../../
-      args:
-        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-        TARGET_DEVICE: jetson
-      platforms:
-        - linux/arm64
-      labels:
-        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-#    pull_policy: missing # Note: enforce pulling image only if not available in cache
-    pull_policy: build
 
   # ====Dockerized-NorLab control =================================================================
   dn-control-deep-learning:
 #    extends:
 #      file: docker-compose.dn-control.build.yaml
 #      service: dn-control
-    extends: global-service-builder-config
+    extends:
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
     build:
       context: dn-control-deep-learning
       args:
@@ -35,7 +18,8 @@ services:
     image: ${DN_HUB:?err}/dockerized-norlab-control-deep-learning:${DN_IMAGE_TAG:?err}
 
   dn-control-deep-rl:
-    extends: dn-control-deep-learning
+    extends:
+      service: dn-control-deep-learning
     build:
       context: dn-control-deep-rl
       args:
@@ -46,7 +30,8 @@ services:
 
 
   dn-control-deep-rl-gym:
-    extends: dn-control-deep-learning
+    extends:
+      service: dn-control-deep-learning
     build:
       context: dn-control-gym
       args:
@@ -56,7 +41,8 @@ services:
       - dn-control-deep-rl
 
   dn-control-deep-rl-f1tenth:
-    extends: dn-control-deep-learning
+    extends:
+      service: dn-control-deep-learning
     build:
       context: dn-control-f1tenth
       args:
@@ -67,7 +53,8 @@ services:
 
 
 #  dn-control-torchrl:
-#    extends: dn-control-deep-learning
+#    extends:
+#      service: dn-control-deep-learning
 #    build:
 #      context: dn-control-torchrl
 #      args:

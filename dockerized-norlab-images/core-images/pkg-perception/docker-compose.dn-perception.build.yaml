@@ -1,30 +1,12 @@
 services:
 
-  global-service-builder-config:
-#    extends: # ToDo: on dev task end >> mute next bloc ↓↓
-#      file: ../docker-compose.global.yaml
-#      service: global-service-dev-config
-    build:
-      context: ../global
-      dockerfile: ../global/Dockerfile.global
-      additional_contexts:
-        context-dn-container-tools: ../../container-tools/
-        context-dn-submodules: ../../../utilities/
-        context-dn-root: ../../../
-      args:
-        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-        TARGET_DEVICE: jetson
-      platforms:
-        - linux/arm64
-      labels:
-        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-#    pull_policy: missing # Note: enforce pulling image only if not available in cache
-    pull_policy: build
-
   # ====Dockerized-NorLab perception ==============================================================
   # ....dn-perception..............................................................................
   dn-perception-main:
-    extends: global-service-builder-config
+    extends:
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
     build:
       context: dn-perception
       args:
@@ -33,14 +15,16 @@ services:
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
 
   dn-perception:
-    extends: dn-perception-main
+    extends:
+      service: dn-perception-main
     image: ${DN_HUB:?err}/dockerized-norlab-perception:${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception-main
 
   # ....libpointmatcher............................................................................
   dn-perception-libpointmatcher-main:
-    extends: dn-perception-main
+    extends:
+      service: dn-perception-main
     build:
       context: dn-perception-libpointmatcher
       args:
@@ -49,21 +33,24 @@ services:
       - dn-perception
 
   dn-perception-libpointmatcher-tester:
-    extends: dn-perception-libpointmatcher-main
+    extends:
+      service: dn-perception-libpointmatcher-main
     build:
       target: test
     depends_on:
       - dn-perception-libpointmatcher-main
 
   dn-perception-libpointmatcher:
-    extends: dn-perception-libpointmatcher-main
+    extends:
+      service: dn-perception-libpointmatcher-main
     image: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher:${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception-libpointmatcher-main
 
   # ....icp-mapper..................................................................................
   dn-perception-icp-mapper-main:
-    extends: dn-perception-libpointmatcher-main
+    extends:
+      service: dn-perception-libpointmatcher-main
     build:
       context: dn-perception-icp-mapper
       args:
@@ -72,14 +59,16 @@ services:
       - dn-perception-libpointmatcher
 
   dn-perception-icp-mapper-tester:
-    extends: dn-perception-icp-mapper-main
+    extends:
+      service: dn-perception-icp-mapper-main
     build:
       target: test
     depends_on:
       - dn-perception-icp-mapper-main
 
   dn-perception-icp-mapper:
-    extends: dn-perception-icp-mapper-main
+    extends:
+      service: dn-perception-icp-mapper-main
     image: ${DN_HUB:?err}/dockerized-norlab-perception-icp-mapper:${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception-icp-mapper-main
@@ -87,7 +76,8 @@ services:
   # ....norlab perception stack.....................................................................
   # ToDo: fixme!! >> libpointmatcher_ros install ↓↓
   dn-perception-norlab-stack-main:
-    extends: dn-perception-icp-mapper-main
+    extends:
+      service: dn-perception-icp-mapper-main
     build:
       context: dn-perception-norlab-stack
       args:
@@ -96,14 +86,16 @@ services:
       - dn-perception-icp-mapper
 
   dn-perception-norlab-stack-tester:
-    extends: dn-perception-norlab-stack-main
+    extends:
+      service: dn-perception-norlab-stack-main
     build:
       target: test
     depends_on:
       - dn-perception-norlab-stack-main
 
   dn-perception-norlab-stack:
-    extends: dn-perception-norlab-stack-main
+    extends:
+      service: dn-perception-norlab-stack-main
     build:
       target: final
     image: ${DN_HUB:?err}/dockerized-norlab-perception-stack:${DN_IMAGE_TAG:?err}

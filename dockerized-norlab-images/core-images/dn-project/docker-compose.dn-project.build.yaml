@@ -1,29 +1,12 @@
 services:
 
-  global-service-builder-config:
-#    extends: # ToDo: on dev task end >> mute next bloc ↓↓
-#      file: ../docker-compose.global.yaml
-#      service: global-service-dev-config
-    build:
-      context: ../global
-      dockerfile: ../global/Dockerfile.global
-      additional_contexts:
-        context-dn-container-tools: ../../container-tools/
-        context-dn-submodules: ../../../utilities/
-        context-dn-root: ../../../
-      args:
-        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-        TARGET_DEVICE: jetson
-      platforms:
-        - linux/arm64
-      labels:
-        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-#    pull_policy: missing # Note: enforce pulling image only if not available in cache
-    pull_policy: build
 
   # ====Dockerized-NorLab Project==================================================================
   project-core-main: # ›› no push build service
-    extends: global-service-builder-config
+    extends:
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
     build:
       context: project-core
       dockerfile: Dockerfile.template
@@ -34,7 +17,8 @@ services:
         DN_PROJECT_GIT_NAME: ${DN_PROJECT_GIT_NAME:?err}   # dockerized-norlab-project-mock
 
   project-core:
-    extends: project-core-main
+    extends:
+      service: project-core-main
     image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core:${PROJECT_TAG:?err}
     environment:
       DN_CONTAINER_NAME: ${DN_CONTAINER_NAME:?err}
@@ -48,7 +32,8 @@ services:
 
   # ....project-develop............................................................................
   project-develop-main: # ›› no push build service
-    extends: project-core-main
+    extends:
+      service: project-core-main
     build:
       context: project-develop
       dockerfile: Dockerfile
@@ -59,21 +44,24 @@ services:
       - project-core
 
   project-develop-tester:
-    extends: project-develop-main
+    extends:
+      service: project-develop-main
     build:
       target: test
     depends_on:
       - project-develop-main
 
   project-develop:
-    extends: project-develop-main
+    extends:
+      service: project-develop-main
     image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:${PROJECT_TAG:?err}
     depends_on:
       - project-develop-main
 
   # ....project-deploy.............................................................................
   project-deploy-main: # ›› no push build service
-    extends: project-core-main
+    extends:
+      service: project-core-main
     build:
       context: project-deploy
       dockerfile: Dockerfile
@@ -85,14 +73,16 @@ services:
       - project-core
 
   project-deploy-tester:
-    extends: project-deploy-main
+    extends:
+      service: project-deploy-main
     build:
       target: test
     depends_on:
       - project-deploy-main
 
   project-deploy:
-    extends: project-deploy-main
+    extends:
+      service: project-deploy-main
     image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${PROJECT_TAG:?err}
     depends_on:
       - project-deploy-main
@@ -101,7 +91,8 @@ services:
   # ....project-cicd................................................................................
 #  # ToDo: implement
 #  project-cicd:
-#    extends: project-core
+#    extends:
+#     service: project-core
 #    build:
 #      context: project-cicd
 #      dockerfile: Dockerfile
@@ -117,7 +108,8 @@ services:
   # ....project-release............................................................................
 #  # ToDo: implement
 #  project-release:
-#    extends: project-core
+#    extends:
+#     service: project-core
 #    build:
 #      context: project-release
 #      dockerfile: Dockerfile

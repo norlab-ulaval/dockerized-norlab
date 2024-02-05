@@ -39,7 +39,10 @@ declare -x ROS_PKG
 function dn::execute_compose() {
   # ....Positional argument........................................................................
   local COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
-  local COMPOSE_FILE_GLOBAL_OVERRIDE="dockerized-norlab-images/core-images/global/docker-compose.global.yaml"
+  local COMPOSE_FILE_GLOBAL="dockerized-norlab-images/core-images/global/docker-compose.global.yaml"
+#  declare -a COMPOSE_FILE_GLOBAL_FLAG=(--project-directory "dockerized-norlab-images/core-images" -f "${COMPOSE_FILE_GLOBAL}")
+  declare -a COMPOSE_FILE_GLOBAL_FLAG=(-f "${COMPOSE_FILE_GLOBAL}")
+  local COMPOSE_FILE_GLOBAL_OVERRIDE="dockerized-norlab-images/core-images/global/docker-compose.global-override.yaml"
   shift # Remove argument value
 
   # ....Default....................................................................................
@@ -66,9 +69,11 @@ function dn::execute_compose() {
     n2st::print_msg_error_and_exit "'dn::execute_compose' can't find the docker-compose.yaml file '${COMPOSE_FILE}' at $(pwd)"
   fi
 
-  if [[ ! -f ${COMPOSE_FILE_GLOBAL_OVERRIDE}  ]]; then
-    n2st::print_msg_error_and_exit "The global compose file ${COMPOSE_FILE_GLOBAL_OVERRIDE} is unreachable"
-  fi
+#  if [[ ! -f ${COMPOSE_FILE_GLOBAL_OVERRIDE}  ]]; then
+#    n2st::print_msg_error_and_exit "The global compose file ${COMPOSE_FILE_GLOBAL_OVERRIDE} is unreachable"
+#  elif [[ ! -f ${COMPOSE_FILE_GLOBAL} ]]; then
+#    n2st::print_msg_error_and_exit "The global compose file ${COMPOSE_FILE_GLOBAL} is unreachable"
+#  fi
 
   # ....Load environment variables from file.......................................................
   set -o allexport
@@ -247,7 +252,7 @@ function dn::execute_compose() {
   # (CRITICAL) ToDo: unit-test >> (ref task NMO-514 feat: implement platform selection logic)
   if [[ ${OS_NAME} == ubuntu ]]; then
     # multiarch
-    COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG+=(-f ${COMPOSE_FILE_GLOBAL_OVERRIDE})
+    COMPOSE_FILE_GLOBAL_FLAG+=(-f ${COMPOSE_FILE_GLOBAL_OVERRIDE})
   elif [[ ${OS_NAME} == l4t ]]; then
     # jetson
     :
@@ -300,49 +305,8 @@ function dn::execute_compose() {
 
   cd "${DN_PATH:?err}" || exit 1
 
-#  tree -L 2 -a $(pwd) # (CRITICAL) ToDo: on task end >> delete this line ←
-#  set -x # (CRITICAL) ToDo: on task end >> delete this line ←
-
-#    # /// original ///......................................................................
-#  if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
-#    local STR_BUILT_SERVICES
-#    declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[@]} config --services --no-interpolate --dry-run) )
-#
-#    for each_service in ${STR_BUILT_SERVICES[@]}; do
-#      echo
-#      n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
-#      n2st::print_msg "Execute docker build for service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} and push if image is defined"
-#
-#      # ...Execute docker command for each service.................................................
-#      n2st::teamcity_service_msg_blockOpened "Build ${each_service}"
-#      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
-#      MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
-#      n2st::teamcity_service_msg_blockClosed "Build ${each_service}"
-#
-#      # ...Force pushing docker images to registry.................................................
-#      # Note: this is the best workaround when building multi-architecture images across multi-stage
-#      #       and multi-compose-file as multi-aarch image can't be loaded in the local registry and the
-#      #       docker compose build --push command is not reliable in buildx builder docker-container driver
-#      n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
-#
-#      export COMPOSE_ANSI=always
-#      n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST"
-#      unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
-#
-#      n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
-#    done
-#  else
-#    # ...Execute docker command....................................................................
-#    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
-#    MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
-#  fi
-#    # ....................................................................\\\ original \\\
-#
-
-  # /// dev experiment ///......................................................................
   local STR_BUILT_SERVICES
-
-  declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[@]} config --services --no-interpolate --dry-run) )
+  declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_GLOBAL_FLAG[@]}" config --services --no-interpolate --dry-run) )
 
   for each_service in ${STR_BUILT_SERVICES[@]}; do
     echo
@@ -355,7 +319,7 @@ function dn::execute_compose() {
 
       # ...Execute docker command for each service.................................................
       n2st::teamcity_service_msg_blockOpened "Build ${each_service}"
-      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
       MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
       n2st::teamcity_service_msg_blockClosed "Build ${each_service}"
 
@@ -369,7 +333,7 @@ function dn::execute_compose() {
           #       docker compose build --push command is not reliable in buildx builder docker-container driver
           n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
           export COMPOSE_ANSI=always
-          n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST"
+          n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_FLAG[*]} push ${each_service}" "$_CI_TEST"
           unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
           n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
         fi
@@ -379,7 +343,6 @@ function dn::execute_compose() {
 
   n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
   echo
-  # ....................................................................\\\ dev experiment \\\
 
   # ....If defined › execute dn::callback_execute_compose_pre......................................
   if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then

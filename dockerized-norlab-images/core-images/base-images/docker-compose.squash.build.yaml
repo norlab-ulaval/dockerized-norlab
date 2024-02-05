@@ -1,44 +1,25 @@
-
 services:
 
-  global-service-builder-config:
-#    extends: # ToDo: on dev task end >> mute next bloc ↓↓
-#      file: ../docker-compose.global.yaml
-#      service: global-service-dev-config
-    build:
-      context: ../global
-      dockerfile: ../global/Dockerfile.global
-      additional_contexts:
-        context-dn-container-tools: ../../container-tools/
-        context-dn-submodules: ../../../utilities/
-        context-dn-root: ../../../
-      args:
-        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-        TARGET_DEVICE: jetson
-      platforms:
-        - linux/arm64
-      labels:
-        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-    pull_policy: missing # Note: enforce pulling image only if not available in cache
-
   # ====Fast test service==========================================================================
-#  dependencies-test:
-#    extends:
-#      file: ../docker-compose.global.yaml
-#      service: global-service-builder-config
-#    build:
-#      context: .
-#      dockerfile: Dockerfile.test
-#      args:
-#        BASE_IMAGE: nvcr.io/nvidia/l4t-jetpack
-#        BASE_IMAGE_TAG: r35.2.1
-#    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-test:r35.2.1
+  #  dependencies-test:
+  #    extends:
+  #      file: ../docker-compose.global.yaml
+  #      service: global-service-builder-config
+  #    build:
+  #      context: .
+  #      dockerfile: Dockerfile.test
+  #      args:
+  #        BASE_IMAGE: nvcr.io/nvidia/l4t-jetpack
+  #        BASE_IMAGE_TAG: r35.2.1
+  #    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-test:r35.2.1
 
   # ====Dockerized-NorLab base images==============================================================
 
   # ....Jetson dusty ml related base images........................................................
   base-image-squash-main: # ›› no push build service
-    extends: global-service-builder-config
+    extends:
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
     build:
       context: .
       dockerfile: Dockerfile.ml.squash
@@ -62,14 +43,16 @@ services:
         PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: ${BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
 
   base-image-squash-tester:
-    extends: base-image-squash-main
+    extends:
+      service: base-image-squash-main
     build:
       target: squashed-base-image-tester
     depends_on:
       - base-image-squash-main
 
   base-image-squash:
-    extends: base-image-squash-main
+    extends:
+      service: base-image-squash-main
     image: ${DN_HUB:?err}/dockerized-norlab-base-image-squashed:${DN_IMAGE_TAG:?err}
     build:
       target: final
