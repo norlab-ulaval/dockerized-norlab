@@ -37,6 +37,7 @@ declare -x ROS_DISTRO
 declare -x ROS_PKG
 declare -x PLATFORM_1
 declare -x PLATFORM_2
+declare -x STR_BUILT_SERVICES
 
 function dn::execute_compose() {
   # ....Positional argument........................................................................
@@ -72,8 +73,6 @@ function dn::execute_compose() {
   source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
   source .env.dockerized-norlab-project  || exit 1
   set +o allexport
-
-  n2st::print_msg_warning "We are here" # (CRITICAL) ToDo: on task end >> delete this line ←
 
   # ....DN functions...............................................................................
 
@@ -257,7 +256,6 @@ function dn::execute_compose() {
 
   # ....If defined › execute dn::callback_execute_compose_pre......................................
   NBS_COMPOSE_DIR=$( dirname "$COMPOSE_FILE" )
-  echo "›››› cwd=$(pwd)" # (CRITICAL) ToDo: on task end >> delete this line ←
   if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
     n2st::print_msg "Source and execute ${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
     source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
@@ -309,17 +307,16 @@ function dn::execute_compose() {
   if [[ ! -f ${DN_COMPOSE_GLOBAL_CONFIG}  ]]; then
     n2st::print_msg_error_and_exit "The compose file ${DN_COMPOSE_GLOBAL_CONFIG} is unreachable"
   else
-    n2st::print_msg "CHeck › Compose file ${DN_COMPOSE_GLOBAL_CONFIG} is reachable"
+    n2st::print_msg "Check › Compose file ${DN_COMPOSE_GLOBAL_CONFIG} is reachable"
   fi
 
+#  tree -L 2 -a $(pwd) # (CRITICAL) ToDo: on task end >> delete this line ←
+#  set -x # (CRITICAL) ToDo: on task end >> delete this line ←
+
+  docker compose -f "${COMPOSE_FILE}" down
   if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
     local STR_BUILT_SERVICES
-    declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services) )
-
-
-#    function dn::show_and_execute_docker_with_output_refresh_quickhack() {
-#      n2st::show_and_execute_docker $@ | sed 's/$/\r/'
-#    }
+    declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services --no-interpolate --dry-run) )
 
     for each_service in ${STR_BUILT_SERVICES[@]}; do
       echo

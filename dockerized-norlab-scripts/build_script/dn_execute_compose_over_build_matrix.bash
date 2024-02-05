@@ -309,6 +309,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
     n2st::print_msg_error_and_exit "Can't crawl Dockerized-NorLab supported version array because it's empty!"
   fi
 
+
   for EACH_OS_NAME in "${NBS_MATRIX_SUPPORTED_OS[@]}"; do
     dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_NAME}"
 
@@ -333,18 +334,24 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
       n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images array because it's empty!"
     fi
 
+
     for EACH_OS_VERSION in "${CRAWL_OS_VERSIONS[@]}"; do
       dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_VERSION}"
+
+      if [[ -z ${NBS_MATRIX_ROS_DISTRO[*]} ]]; then
+        n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_DISTRO array because it's empty! Write 'none' if you want to skip ros."
+      elif [[ -z ${NBS_MATRIX_ROS_PKG[*]} ]]; then
+        n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_PKG array because it's empty! Write 'none' if you want to skip ros."
+      fi
 
       for EACH_ROS_DISTRO in "${NBS_MATRIX_ROS_DISTRO[@]}" ; do
         dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_DISTRO}"
         for EACH_ROS_PKG in "${NBS_MATRIX_ROS_PKG[@]}" ; do
           dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_PKG}"
 
+#          n2st::print_msg_warning "We are here" # (CRITICAL) ToDo: on task end >> delete this line ←
 
-          if [[ -z ${EACH_ROS_DISTRO[*]} ]]; then
-            n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_DISTRO array because it's empty! Write 'none' if you want to skip ros."
-          elif [[ ${EACH_ROS_DISTRO} == none ]]; then
+          if [[ ${EACH_ROS_DISTRO} == none ]]; then
             DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ros2 "none")
           elif [[ -z ${EACH_ROS_PKG[*]} ]]; then
             n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_PKG array because it's empty!"
@@ -406,7 +413,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
               fi
             fi
 
-            n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
+            n2st::print_msg "Repository curently checkout at › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
 
 
             # ....Execute docker command...............................................................
@@ -466,7 +473,11 @@ done
 dn::print_env_var_build_matrix "used by ${STR_DOCKER_MANAGEMENT_COMMAND}"
 
 # Fetch and format the compose file NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE services list
-STR_BUILT_SERVICES=$( docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services | sed 's/^/   - /' )
+docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" down
+STR_BUILT_SERVICES=$( docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services --no-interpolate --dry-run | sed 's/^/   - /' )
+
+
+#STR_BUILT_SERVICES=$( echo "${STR_BUILT_SERVICES:?'Env var was not exported by dn_execute_compose.bash'}" | sed 's/^/   - /' )
 
 # Format tag list
 for tag in "${IMAGE_TAG_CRAWLED[@]}"; do

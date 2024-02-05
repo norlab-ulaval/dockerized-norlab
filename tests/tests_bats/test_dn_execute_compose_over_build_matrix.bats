@@ -358,6 +358,6 @@ setup() {
                         --os-name-build-matrix-override 'l4t' \
                         --l4t-version-build-matrix-override 'r33.3.3'
 
-  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"DN-build-system".*"\]".*"Repository checkout".*
+  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"DN-build-system".*"\]".*"Repository curently checkout at".*
 
 }

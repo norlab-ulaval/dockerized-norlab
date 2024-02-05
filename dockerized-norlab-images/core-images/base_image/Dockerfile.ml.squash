@@ -93,4 +93,5 @@ RUN dpkg --get-selections | grep nvidia
 RUN python -c "import numpy" \
     && cat /usr/local/cuda/version*
 
+FROM squash-base-image AS final
 CMD [ "bash" ]

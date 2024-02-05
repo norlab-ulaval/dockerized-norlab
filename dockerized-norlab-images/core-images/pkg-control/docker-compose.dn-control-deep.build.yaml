@@ -1,4 +1,4 @@
-name: ${DN_COMPOSE_NAME:?err}
+
 
 
 services:

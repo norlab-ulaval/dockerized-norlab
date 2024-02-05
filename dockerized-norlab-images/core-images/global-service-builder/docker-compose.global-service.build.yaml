@@ -1,5 +1,3 @@
-name: ${DN_COMPOSE_NAME:?err}
-
 services:
 
   global-service-dev-config:
@@ -35,13 +33,9 @@ services:
       #      DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
       #      DISPLAY: '169.254.205.89:0.0'
       QT_X11_NO_MITSHM: 1
-#    environment:
-#      DN_CONTAINER_NAME: IamNooorLab
-#      DN_ACTIVATE_POWERLINE_PROMT: true
-#    container_name: IamNooorLab
 
   global-service-builder-config:
-    extends: global-service-dev-config # ToDo: on dev task end >> mute this line ←
+#    extends: global-service-dev-config # ToDo: on dev task end >> mute this line ←
     build:
       context: .
       dockerfile: Dockerfile

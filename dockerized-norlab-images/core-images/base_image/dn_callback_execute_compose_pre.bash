@@ -35,9 +35,7 @@ function dn::callback_execute_compose_pre() {
     n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
   fi
 
-  # (CRITICAL) ToDo: validate if clause
-#  if [[ "${NBS_COMPOSE_DIR}" == "dockerized-norlab-images/core-images/base_image" ]]; then
-  if [[ "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" == "${NBS_COMPOSE_DIR}/docker-compose.squash.build.yaml" ]]; then
+  if [[ $(basename "${COMPOSE_FILE}") == "docker-compose.squash.build.yaml" ]]; then
 
     # ex: dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
@@ -72,6 +70,8 @@ function dn::callback_execute_compose_pre() {
     n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dn-dependencies-core:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:
       ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
       ${MSG_END_FORMAT}"
+  else
+    n2st::print_msg "Skiping base image environment variable fetching"
   fi
 
 }

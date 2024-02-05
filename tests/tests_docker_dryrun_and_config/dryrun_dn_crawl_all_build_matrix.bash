@@ -7,7 +7,6 @@ cd "${DN_ROOT_DIR}"
 
 # ====begin========================================================================================
 
-#export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --dry-run --with-dependencies"
 export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --dry-run"
 
 bash dockerized-norlab-scripts/build_script/dn_build_all.bash
