@@ -2,7 +2,7 @@ services:
 
   global-service-dev-config:
     build:
-      context: .
+      context: ..
 #      no_cache: true  # Enforce full rebuild                               <-- mute on task end
 #    command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     volumes:
@@ -37,8 +37,8 @@ services:
   global-service-builder-config:
 #    extends: global-service-dev-config # ToDo: on dev task end >> mute this line ←
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: Dockerfile.global
       additional_contexts:
         context-dn-container-tools: ../../container-tools/
         context-dn-submodules: ../../../utilities/

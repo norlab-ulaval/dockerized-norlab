@@ -11,8 +11,9 @@ ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 ARG PROJECT_PROMPT_NAME
 ENV PROJECT_PROMPT_NAME=${PROJECT_PROMPT_NAME:-Dockerized-NorLab}
 
-ARG DN_PROMPT_NAME
-ENV DN_PROMPT_NAME=${DN_PROMPT_NAME:?err}
+# (NICE TO HAVE) ToDo: assessment >> is it still usefull inside containers (note: DN_PROMPT_NAME is used by the DN build system scripts)
+#ARG DN_PROMPT_NAME
+#ENV DN_PROMPT_NAME=${DN_PROMPT_NAME:?err}
 
 SHELL ["/bin/bash", "-c"]
 ARG DEBIAN_FRONTEND=noninteractive

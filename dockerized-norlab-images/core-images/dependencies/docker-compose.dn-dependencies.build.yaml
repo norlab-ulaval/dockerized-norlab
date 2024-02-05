@@ -1,6 +1,25 @@
-
-
 services:
+
+  global-service-builder-config:
+#    extends: # ToDo: on dev task end >> mute next bloc ↓↓
+#      file: ../docker-compose.global.yaml
+#      service: global-service-dev-config
+    build:
+      context: ../global
+      dockerfile: ../global/Dockerfile.global
+      additional_contexts:
+        context-dn-container-tools: ../../container-tools/
+        context-dn-submodules: ../../../utilities/
+        context-dn-root: ../../../
+      args:
+        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
+        TARGET_DEVICE: jetson
+      platforms:
+        - linux/arm64
+      labels:
+        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+#    pull_policy: missing # Note: enforce pulling image only if not available in cache
+    pull_policy: build
 
   # ====Fast test service==========================================================================
 #  dependencies-test:
@@ -19,9 +38,7 @@ services:
 
   # ....dependencies-core..........................................................................
   dependencies-core:
-    extends:
-      file: ../docker-compose.global.yaml
-      service: global-service-builder-config
+    extends: global-service-builder-config
     build:
       context: .
       dockerfile: Dockerfile.core
@@ -66,8 +83,6 @@ services:
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-python-science-stack
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-      tags:
-        - ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-python-science-stack
 
@@ -82,6 +97,8 @@ services:
     extends: dependencies-ros2-custom-main
     build:
       target: final
+      tags:
+        - ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dockerized-norlab-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-ros2-custom-main

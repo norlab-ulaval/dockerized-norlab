@@ -1,13 +1,29 @@
-name: ${DN_PROJECT_COMPOSE_NAME}
-
-
 services:
+
+  global-service-builder-config:
+#    extends: # ToDo: on dev task end >> mute next bloc ↓↓
+#      file: ../docker-compose.global.yaml
+#      service: global-service-dev-config
+    build:
+      context: ../global
+      dockerfile: ../global/Dockerfile.global
+      additional_contexts:
+        context-dn-container-tools: ../../container-tools/
+        context-dn-submodules: ../../../utilities/
+        context-dn-root: ../../../
+      args:
+        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
+        TARGET_DEVICE: jetson
+      platforms:
+        - linux/arm64
+      labels:
+        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+#    pull_policy: missing # Note: enforce pulling image only if not available in cache
+    pull_policy: build
 
   # ====Dockerized-NorLab Project==================================================================
   project-core-main: # ›› no push build service
-    extends:
-      file: ../docker-compose.global.yaml
-      service: global-service-builder-config
+    extends: global-service-builder-config
     build:
       context: project-core
       dockerfile: Dockerfile.template

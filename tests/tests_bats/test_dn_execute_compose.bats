@@ -39,6 +39,7 @@ TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 TEST_DOCKER_COMPOSE_FILE_PATH=dockerized-norlab-images/core-images/base-images
 TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.squash.build.yaml"
+#TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.ros2.build.yaml"
 
 setup_file() {
   BATS_DOCKER_WORKDIR=$(pwd) && export BATS_DOCKER_WORKDIR
@@ -75,7 +76,7 @@ setup() {
 
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
-##  skip "tmp dev" # ToDo: on task end >> delete this line ←
+#  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
 
@@ -95,6 +96,7 @@ setup() {
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
 #  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
+  mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                           --dockerized-norlab-version hot \
@@ -133,6 +135,7 @@ setup() {
 #  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   local DOCKER_CMD="build --no-cache --push"
+  mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE}  \
                           --dockerized-norlab-version hot \
@@ -151,17 +154,17 @@ setup() {
 #  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   local DOCKER_CMD="version"
-  mock_docker_command_exit_ok
   set +e
+  mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                     --dockerized-norlab-version hot \
-                    --base-image dustynv/pytorch \
+                    --base-image dustynv/l4t-pytorch \
                     --os-name l4t \
                     --ros2 foxy-ros-base \
                     --base-img-tag-prefix 2.1 \
                     --tag-os-version r35.0.0 \
-                    --ci-test-force-runing-docker-cmd -- "$DOCKER_CMD"
+                    --ci-test-force-runing-docker-cmd -- ${DOCKER_CMD}
   DOCKER_EXIT_CODE=$?
 
   set -e
@@ -244,7 +247,7 @@ setup() {
 }
 
 @test "flags that set env variable" {
-##  skip "tmp dev" # ToDo: on task end >> delete this line ←
+#  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
@@ -263,6 +266,7 @@ setup() {
 @test "docker compose build conditional logic" {
 #  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
+  mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                       --dockerized-norlab-version hot \
@@ -308,6 +312,7 @@ setup() {
 #  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
+  mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                           --dockerized-norlab-version hot \
