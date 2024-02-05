@@ -5,7 +5,7 @@ services:
   # ====Fast test service==========================================================================
 #  dependencies-test:
 #    extends:
-#      file: ../global-service-builder/docker-compose.global-service.build.yaml
+#      file: ../docker-compose.global.yaml
 #      service: global-service-builder-config
 #    build:
 #      context: .
@@ -20,7 +20,7 @@ services:
   # ....dependencies-core..........................................................................
   dependencies-core:
     extends:
-      file: ../global-service-builder/docker-compose.global-service.build.yaml
+      file: ../docker-compose.global.yaml
       service: global-service-builder-config
     build:
       context: .

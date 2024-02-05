@@ -473,11 +473,7 @@ done
 dn::print_env_var_build_matrix "used by ${STR_DOCKER_MANAGEMENT_COMMAND}"
 
 # Fetch and format the compose file NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE services list
-docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" down
 STR_BUILT_SERVICES=$( docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services --no-interpolate --dry-run | sed 's/^/   - /' )
-
-
-#STR_BUILT_SERVICES=$( echo "${STR_BUILT_SERVICES:?'Env var was not exported by dn_execute_compose.bash'}" | sed 's/^/   - /' )
 
 # Format tag list
 for tag in "${IMAGE_TAG_CRAWLED[@]}"; do

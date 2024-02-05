@@ -35,13 +35,11 @@ declare -x DN_IMAGE_TAG
 declare -x PROJECT_TAG
 declare -x ROS_DISTRO
 declare -x ROS_PKG
-declare -x PLATFORM_1
-declare -x PLATFORM_2
-declare -x STR_BUILT_SERVICES
 
 function dn::execute_compose() {
   # ....Positional argument........................................................................
   local COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
+  local COMPOSE_FILE_GLOBAL_OVERRIDE="dockerized-norlab-images/core-images/docker-compose.global.yaml"
   shift # Remove argument value
 
   # ....Default....................................................................................
@@ -58,6 +56,7 @@ function dn::execute_compose() {
 
   # ....Pre-condition..............................................................................
 
+
   if [[ ! -f  ".env.dockerized-norlab-build-system" ]]; then
     n2st::print_msg_error_and_exit "'dn::execute_compose' function must be executed from the project root!\n Curent working directory is '$(pwd)'"
   fi
@@ -65,6 +64,10 @@ function dn::execute_compose() {
 
   if [[ ! -f  "${COMPOSE_FILE}" ]]; then
     n2st::print_msg_error_and_exit "'dn::execute_compose' can't find the docker-compose.yaml file '${COMPOSE_FILE}' at $(pwd)"
+  fi
+
+  if [[ ! -f ${COMPOSE_FILE_GLOBAL_OVERRIDE}  ]]; then
+    n2st::print_msg_error_and_exit "The global compose file ${COMPOSE_FILE_GLOBAL_OVERRIDE} is unreachable"
   fi
 
   # ....Load environment variables from file.......................................................
@@ -244,12 +247,10 @@ function dn::execute_compose() {
   # (CRITICAL) ToDo: unit-test >> (ref task NMO-514 feat: implement platform selection logic)
   if [[ ${OS_NAME} == ubuntu ]]; then
     # multiarch
-    export PLATFORM_1=linux/arm64
-#    export PLATFORM_2=linux/amd64
+    COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG+=(-f ${COMPOSE_FILE_GLOBAL_OVERRIDE})
   elif [[ ${OS_NAME} == l4t ]]; then
     # jetson
-    export PLATFORM_1=linux/arm64
-#    export PLATFORM_2=linux/arm64/v7
+    :
   else
     n2st::print_msg_error_and_exit "OS ${OS_NAME} not matched with any architecture configuration"
   fi
@@ -272,8 +273,6 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
-  ${MSG_DIMMED_FORMAT}    PLATFORM_1=${PLATFORM_1} ${MSG_END_FORMAT}
-  ${MSG_DIMMED_FORMAT}    PLATFORM_2=${PLATFORM_2} ${MSG_END_FORMAT}
   "
 
   if [[ ${IS_TEAMCITY_RUN} == true ]]; then
@@ -303,20 +302,14 @@ function dn::execute_compose() {
   fi
 
   cd "${DN_PATH:?err}" || exit 1
-  DN_COMPOSE_GLOBAL_CONFIG="dockerized-norlab-images/core-images/global-service-builder/docker-compose.global-service.build.yaml"
-  if [[ ! -f ${DN_COMPOSE_GLOBAL_CONFIG}  ]]; then
-    n2st::print_msg_error_and_exit "The compose file ${DN_COMPOSE_GLOBAL_CONFIG} is unreachable"
-  else
-    n2st::print_msg "Check › Compose file ${DN_COMPOSE_GLOBAL_CONFIG} is reachable"
-  fi
 
 #  tree -L 2 -a $(pwd) # (CRITICAL) ToDo: on task end >> delete this line ←
 #  set -x # (CRITICAL) ToDo: on task end >> delete this line ←
 
-  docker compose -f "${COMPOSE_FILE}" down
+
   if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
     local STR_BUILT_SERVICES
-    declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" config --services --no-interpolate --dry-run) )
+    declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[@]} config --services --no-interpolate --dry-run) )
 
     for each_service in ${STR_BUILT_SERVICES[@]}; do
       echo
@@ -325,7 +318,7 @@ function dn::execute_compose() {
 
       # ...Execute docker command for each service.................................................
       n2st::teamcity_service_msg_blockOpened "Build ${each_service}"
-      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
       MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
       n2st::teamcity_service_msg_blockClosed "Build ${each_service}"
 
@@ -336,7 +329,7 @@ function dn::execute_compose() {
       n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
 
       export COMPOSE_ANSI=always
-      n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} push ${each_service}" "$_CI_TEST"
+      n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST"
       unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
 
       n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
@@ -346,7 +339,7 @@ function dn::execute_compose() {
     echo
   else
     # ...Execute docker command....................................................................
-    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
+    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
     MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
   fi
 
@@ -367,8 +360,6 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
-  ${MSG_DIMMED_FORMAT}    PLATFORM_1=${PLATFORM_1} ${MSG_END_FORMAT}
-  ${MSG_DIMMED_FORMAT}    PLATFORM_2=${PLATFORM_2} ${MSG_END_FORMAT}
   "
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"

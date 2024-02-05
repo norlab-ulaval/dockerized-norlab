@@ -4,7 +4,7 @@ services:
   # ....ROS2 base images...........................................................................
   base-image-ros2-clean-main:
     extends:
-      file: ../global-service-builder/docker-compose.global-service.build.yaml
+      file: ../docker-compose.global.yaml
       service: global-service-builder-config
     build:
       context: .

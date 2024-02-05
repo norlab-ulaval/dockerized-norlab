@@ -4,7 +4,7 @@ services:
   # ====Fast test service==========================================================================
 #  dependencies-test:
 #    extends:
-#      file: ../global-service-builder/docker-compose.global-service.build.yaml
+#      file: ../docker-compose.global.yaml
 #      service: global-service-builder-config
 #    build:
 #      context: .
@@ -19,7 +19,7 @@ services:
   # ....Jetson dusty ml related base images........................................................
   base-image-squash-main: # ›› no push build service
     extends:
-      file: ../global-service-builder/docker-compose.global-service.build.yaml
+      file: ../docker-compose.global.yaml
       service: global-service-builder-config
     build:
       context: .
@@ -42,14 +42,14 @@ services:
         # Base image env var transfer (jetson-container tensorflow related)
         PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: ${BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
 
-  base-image-ml-squash-tester:
+  base-image-squash-tester:
     extends: base-image-squash-main
     build:
       target: squashed-base-image-tester
     depends_on:
       - base-image-squash-main
 
-  base-image-ml-squash:
+  base-image-squash:
     extends: base-image-squash-main
     image: ${DN_HUB:?err}/dockerized-norlab-base-image-squashed:${DN_IMAGE_TAG:?err}
     build:

@@ -45,9 +45,9 @@ services:
         context-dn-root: ../../../
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
+        TARGET_DEVICE: jetson
       platforms:
-        - ${PLATFORM_1}
-#        - ${PLATFORM_2}
+        - linux/arm64
       labels:
         org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
     pull_policy: missing # Note: enforce pulling image only if not available in cache

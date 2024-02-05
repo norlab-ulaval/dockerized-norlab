@@ -9,7 +9,7 @@ services:
 #      file: docker-compose.dn-control.build.yaml
 #      service: dn-control
     extends:
-      file: ../global-service-builder/docker-compose.global-service.build.yaml
+      file: ../docker-compose.global.yaml
       service: global-service-builder-config
     build:
       context: dn-control-deep-learning
