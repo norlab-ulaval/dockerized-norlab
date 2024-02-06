@@ -4,7 +4,7 @@ services:
   # ====Dockerized-NorLab Project==================================================================
   project-core-main: # ›› no push build service
     extends:
-      file: "../../global/docker-compose.global.yaml"
+      file: "../global/docker-compose.global.yaml"
       service: global-service-builder-config
     pull_policy: build
     build:
@@ -18,7 +18,7 @@ services:
 
   project-core:
     extends:
-      service: project-core-main
+      service: project-core
     image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core:${PROJECT_TAG:?err}
     environment:
       DN_CONTAINER_NAME: ${DN_CONTAINER_NAME:?err}
@@ -33,7 +33,8 @@ services:
   # ....project-develop............................................................................
   project-develop-main: # ›› no push build service
     extends:
-      service: project-core-main
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
     build:
       context: project-develop
       dockerfile: Dockerfile
@@ -61,7 +62,8 @@ services:
   # ....project-deploy.............................................................................
   project-deploy-main: # ›› no push build service
     extends:
-      service: project-core-main
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
     build:
       context: project-deploy
       dockerfile: Dockerfile
