@@ -32,28 +32,8 @@ RUN apt-get update --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
 
-## ....F1TENTH docker file install....................................................................
+## ....F1TENTH install.............................................................................
 
-### (☕MINOR) ToDo: test >> next bloc ↓↓
-#RUN apt-get update --fix-missing \
-#    && apt-get upgrade --assume-yes
-#
-### (☕MINOR) ToDo: test >> next bloc ↓↓
-##RUN pip3 uninstall setuptools \
-##    && pip3 install --no-cache-dir --verbose --upgrade \
-##           setuptools
-#RUN pip3 install --no-cache-dir --verbose --upgrade --force-reinstall \
-#           setuptools
-
-# (CRITICAL) ToDo: assessment >> check official install procedure (for non dockerized-norlab-control-deep-rl-f1tenth images)
-#   Ref: https://f1tenth.readthedocs.io/en/foxy_test/autoware/intro.html#jetson-xavier-nx-and-f1tenth-recordreplay-demo
-#   > Install f1tenth_gym simulator dependencies
-#   > Install onnx and roll back setuptools to version 65.5.0
-#   >
-#   >   $ pip3 install onnx setuptools==65.5.0
-#   >
-
-## ...................................................................................................
 
 # Fix for gym <-> F1TENTH TypeError:
 # >>> obs, step_reward, done, info = env.reset(np.array([[conf.sx, conf.sy, conf.stheta]]))
@@ -62,16 +42,22 @@ RUN apt-get update --fix-missing \
 # Gym version: 0.21.0 -> oct 6 2021; 0.20.0 -> Sep 14, 2021;
 #RUN pip3 install --no-cache-dir 'gym[classic_control,box2d]<0.21.0'
 
-RUN pip3 install --no-cache-dir --upgrade pip \
-    && pip3 install --no-cache-dir  \
-      'gym[classic_control,box2d]==0.19.0'
+## Legacy install step
+#RUN pip3 install --no-cache-dir --upgrade pip \
+#    && pip3 install --no-cache-dir  \
+#      'gym[classic_control,box2d]==0.19.0'
+
+# Note: fix openai gym + f110 gym install error
+#   See "ERROR: Failed building wheel for gym" https://github.com/freqtrade/freqtrade/issues/8376#issuecomment-1520844382
+RUN pip3 install --upgrade \
+        'wheel==0.38.4' \
+        'setuptools==65.5.1'
 
 WORKDIR /opt
 RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
     && cd ./f1tenth_gym  \
     && pip3 install -e .
 #    && pip3 install -e ".[dev]"
-
 
 # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
 # See known issues comment https://github.com/f1tenth/f1tenth_gym

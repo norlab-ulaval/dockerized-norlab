@@ -361,8 +361,6 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
         for EACH_ROS_PKG in "${NBS_MATRIX_ROS_PKG[@]}" ; do
           dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_PKG}"
 
-#          n2st::print_msg_warning "We are here" # (CRITICAL) ToDo: on task end >> delete this line ←
-
           if [[ ${EACH_ROS_DISTRO} == none ]]; then
             DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ros2 "none")
           elif [[ -z ${EACH_ROS_PKG[*]} ]]; then

@@ -4,6 +4,7 @@ ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 WORKDIR /dockerized-norlab
+
 COPY --from=context-dn-container-tools ./dn_test/try_gym.py ./dockerized-norlab-images/container-tools/dn_test/
 
 # ...Install simulator..............................................................................
@@ -17,13 +18,14 @@ WORKDIR /opt
 #           ↳ |  require xvfb and python-opengl
 #   gym VideoRecorder dependency: ffmpeg and imageio-ffmpeg
 
-RUN apt-get update \
 #    && apt-get install --assume-yes --no-install-recommends \
+RUN apt-get update \
     && apt-get install --assume-yes \
         swig \
         mesa-utils \
         ffmpeg \
-        # . .pyvirtualdisplay dependencies and backends on Ubuntu 20.04 . . .
+    && echo ". .pyvirtualdisplay dependencies and backends on Ubuntu 20.04 . . ." \
+    && apt-get install --assume-yes \
         xvfb \
         python-opengl \
         xserver-xephyr \
@@ -32,27 +34,28 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && pip3 install --no-cache-dir --upgrade pip  \
+    && echo ". . Vizualisation tools. . . . . . . . . . . . . . . . . . . . . . .." \
     && pip3 install --no-cache-dir  \
-        # . . Vizualisation tools. . . . . . . . . . . . . . . . . . . . . .
         pyvirtualdisplay \
         imageio-ffmpeg  \
         PyOpenGL \
         PyOpenGL_accelerate \
-        # . . Gym depencies . . . . . . . . . . . . . . . . . . . . . . . . . .
+    && echo ". . Gym depencies . . . . . . . . . . . . . . . . . . . . . . . . . ." \
+    && pip3 install --no-cache-dir  \
         gym[classic_control,box2d]  \
         pyglet \
         box2d-py \
-        # . . Jupyter + gym related . . . . . . . . . . . . . . . . . . . . . .
+    && echo ". . Jupyter + gym related . . . . . . . . . . . . . . . . . . . . . ." \
+    && pip3 install --no-cache-dir  \
         jupyterlab \
         notebook \
         gym-notebook-wrapper \
     && echo \
-    && echo "Sanity check" \
+    && echo ". . Sanity check . . . . . . . . . . . . . . . . . . . . . . . . . .." \
     && python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py \
     && echo \
     && ( \
         echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
         ) >> ~/.bashrc
-
 
 CMD [ "bash" ]

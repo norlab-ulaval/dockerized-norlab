@@ -4,7 +4,7 @@ services:
   # ====Dockerized-NorLab Project==================================================================
   project-core-main: # ›› no push build service
     extends:
-      file: "../global/docker-compose.global.yaml"
+      file: "../../global/docker-compose.global.yaml"
       service: global-service-builder-config
     pull_policy: build
     build:

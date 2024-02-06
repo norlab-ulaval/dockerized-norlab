@@ -310,11 +310,12 @@ function dn::execute_compose() {
 
   for each_service in ${STR_BUILT_SERVICES[@]}; do
     echo
-    n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
-    n2st::print_msg_warning "››› Service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}" # (CRITICAL) ToDo: on task end >> delete this line ←
+
     if [[ "${each_service}" == "global-service-builder-config" ]]; then
-      n2st::print_msg_warning "Skip building ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
+      # n2st::print_msg_warning "Skip building ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
+      :
     else
+      n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
       n2st::print_msg "Execute docker build for service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} and push if image is defined"
 
       # ...Execute docker command for each service.................................................
