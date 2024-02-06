@@ -17,9 +17,9 @@ function dn::callback_execute_compose_pre() {
   # ....Reformat nvcr.io base image tag............................................................
   if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
     if [[ ${TAG_OS_VERSION} == jammy ]]; then
-      CONVERTED_TAG_OS_VERSION=23
-    elif [[ ${TAG_OS_VERSION} == focal ]]; then
       CONVERTED_TAG_OS_VERSION=22
+    elif [[ ${TAG_OS_VERSION} == focal ]]; then
+      CONVERTED_TAG_OS_VERSION=20
     else
       n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
     fi
