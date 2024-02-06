@@ -37,7 +37,6 @@ services:
 #    extends:
 #      service: global-service-dev-config #ToDo: on dev task end >> mute this line ←
     build:
-#      context: "../global"
       context: "."
       dockerfile: Dockerfile
       additional_contexts:

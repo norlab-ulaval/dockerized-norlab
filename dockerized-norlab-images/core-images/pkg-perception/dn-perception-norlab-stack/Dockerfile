@@ -40,11 +40,8 @@ WORKDIR ${DN_DEV_WORKSPACE:?'Variable not set'}/src/
 RUN git clone --branch ${ROS_DISTRO:?err} https://github.com/norlab-ulaval/libpointmatcher_ros.git
 
 # ....fetch norlab_icp_mapper_ros..................................................................
-# (CRITICAL) inprogress: check with Simon-Piere
-# (CRITICAL) ToDo: fixme!!
 WORKDIR ${DN_DEV_WORKSPACE}/src/
 RUN git clone --branch ${ROS_DISTRO} https://github.com/norlab-ulaval/norlab_icp_mapper_ros.git
-#RUN git clone https://github.com/norlab-ulaval/norlab_icp_mapper_ros.git
 
 # ....fetch mapper_config_template.................................................................
 WORKDIR ${DN_DEV_WORKSPACE}/src/

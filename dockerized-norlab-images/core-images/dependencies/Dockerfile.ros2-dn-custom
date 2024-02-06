@@ -122,16 +122,6 @@ RUN echo "Sanity check" \
 FROM ros2-custom-install as final
 WORKDIR ${DN_DEV_WORKSPACE}
 
-## (Priority) ToDo: validate >> next bloc ↓↓
-## (Priority) ToDo: should be in the entrypoint instead >> next bloc ↓↓
-## Note: ROS2 setup.bash location is in `${ROS_DISTRO}/install/` instead of ROS1 in `${ROS_DISTRO}/`
-#RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-#    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-#    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-#    && printenv | grep -e AR_ -e ROS -e MASTER -e HOSTNAME -e DS_ -e DN_ # WE ARE HERE <-- (!)
-
 CMD [ "bash" ]
 
 

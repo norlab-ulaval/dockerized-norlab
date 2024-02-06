@@ -411,13 +411,11 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
               fi
 
               # ....Validate the DN tag correspond to the checkout branch..............................
-    #        elif [[ "${EACH_DN_VERSION}" == 'latest' ]] && [[ ${IS_TEAMCITY_RUN} != true ]]; then
-            elif [[ "${EACH_DN_VERSION}" == 'latest' ]]; then  # (Priority) ToDo: validate TC run checkout branch name
+            elif [[ "${EACH_DN_VERSION}" == 'latest' ]]; then
               if [[ $(git symbolic-ref -q --short HEAD) != main ]]; then
                   n2st::print_msg_error_and_exit "The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
               fi
-    #        elif [[ "${EACH_DN_VERSION}" == 'bleeding' ]] && [[ ${IS_TEAMCITY_RUN} != true ]]; then
-            elif [[ "${EACH_DN_VERSION}" == 'bleeding' ]]; then  # (Priority) ToDo: validate TC run checkout branch name
+            elif [[ "${EACH_DN_VERSION}" == 'bleeding' ]]; then
               if [[ $(git symbolic-ref -q --short HEAD) != dev ]]; then
                   n2st::print_msg_error_and_exit "The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
               fi
