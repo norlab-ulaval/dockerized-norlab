@@ -10,8 +10,7 @@ services:
     build:
       context: dn-perception
       args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-full
-        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-ros2-custom
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-full
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
 
   dn-perception:
@@ -29,6 +28,7 @@ services:
       context: dn-perception-libpointmatcher
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception
 
@@ -50,11 +50,12 @@ services:
   # ....icp-mapper..................................................................................
   dn-perception-icp-mapper-main:
     extends:
-      service: dn-perception-libpointmatcher-main
+      service: dn-perception-main
     build:
       context: dn-perception-icp-mapper
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception-libpointmatcher
 
@@ -77,11 +78,12 @@ services:
   # ToDo: fixme!! >> libpointmatcher_ros install ↓↓
   dn-perception-norlab-stack-main:
     extends:
-      service: dn-perception-icp-mapper-main
+      service: dn-perception-main
     build:
       context: dn-perception-norlab-stack
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception-icp-mapper
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception-icp-mapper
 
