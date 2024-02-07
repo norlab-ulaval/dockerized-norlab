@@ -62,8 +62,7 @@ RUN wget -O demo.zip "http://norlab.s3.valeria.science/demo.zip?AWSAccessKeyId=X
 WORKDIR ${DN_DEV_WORKSPACE}
 
 # (Priority) ToDo: assess moving rosbag install earlier
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-    && apt-get update --fix-missing \
+RUN apt-get update --fix-missing \
     && apt-get install --assume-yes \
         ros-${ROS_DISTRO}-rosbag2 \
     && apt-get clean \

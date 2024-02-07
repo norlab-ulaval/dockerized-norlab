@@ -36,7 +36,6 @@ RUN apt-get update && \
 ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
 
-
 # ....Install ROS2.................................................................................
 
 RUN apt-get update \
@@ -49,29 +48,36 @@ RUN apt-get update \
     && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
+# RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
+#     || update-alternatives --install /opt/conda/bin/python python /opt/conda/bin/python3 1
 
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-    && apt-get update --fix-missing \
+RUN apt-get update --fix-missing \
     && apt-get install --assume-yes \
         ros-${ROS_DISTRO}-${ROS_PKG} \
-        ros-${ROS_DISTRO}-rqt-graph \
-        ros-${ROS_DISTRO}-rviz2 \
         ros-${ROS_DISTRO}-rosbridge-server \
-        ros-${ROS_DISTRO}-demo-nodes-py \
-        ros-${ROS_DISTRO}-demo-nodes-cpp \
         ros-dev-tools \
         python3-rosdep \
-        python3-flake8 \
         python3-colcon-common-extensions \
         python3-vcstool \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update --fix-missing \
+    && apt-get install --assume-yes \
+        ros-${ROS_DISTRO}-rqt-graph \
+        ros-${ROS_DISTRO}-rviz2 \
+        ros-${ROS_DISTRO}-demo-nodes-py \
+        ros-${ROS_DISTRO}-demo-nodes-cpp \
+        python3-flake8 \
         libasio-dev \
         libtinyxml2-dev \
         libcunit1-dev \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && python3 -m pip install --upgrade pip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --upgrade pip \
     && pip3 install --no-cache-dir scikit-build \
-    && pip3 install --upgrade --no-cache-dir --verbose cmake
+    && pip3 install --upgrade --no-cache-dir cmake
 
 # Note ref cmake upgrade via pip:
 #   - upgrade cmake - https://stackoverflow.com/a/56690743

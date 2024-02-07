@@ -314,7 +314,7 @@ function dn::execute_compose() {
   function dn::fetch_target_device() {
       echo -e "${MSG_EMPH_FORMAT}$( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --dry-run | grep -i -e DN_TARGET_DEVICE | sed 's;.*DN_TARGET_DEVICE:;;' | uniq )${MSG_END_FORMAT}"
   }
-  n2st::print_msg "Targeted device ›$(dn::fetch_target_device)"
+  n2st::print_msg "Target device ›$(dn::fetch_target_device)"
 
   for each_service in ${STR_BUILT_SERVICES[@]}; do
     echo
@@ -334,7 +334,7 @@ function dn::execute_compose() {
 
       if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
         if [[ "${each_service}" =~ .*'-main' ]] || [[ "${each_service}" =~ .*'-tester' ]]; then
-          n2st::print_msg_warning "Skip pushing ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
+          n2st::print_msg "Skip pushing ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
         else
           # ...Force pushing docker images to registry.................................................
           # Note: this is the best workaround when building multi-architecture images across multi-stage
