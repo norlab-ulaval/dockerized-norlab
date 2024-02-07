@@ -41,16 +41,19 @@ ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
 # ....Transfer environment variable from base-images...............................................
-# En var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
+# Env var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
 ARG CUDA_HOME
 ARG NVIDIA_VISIBLE_DEVICES
 ARG NVIDIA_DRIVER_CAPABILITIES
 ARG PATH
 ARG LD_LIBRARY_PATH
 
-ENV CUDA_HOME=${CUDA_HOME:?'Environment variable was not passed from base-image build stage'}
+ENV CUDA_HOME=${CUDA_HOME}
 ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage'}
 ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'}
+
+# Note: Those are mandatory for CUDA to work
+#   See https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions
 ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
 ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
 
@@ -69,6 +72,12 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTAT
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
 
+# En var added by 'nvcr.io/nvidia/pytorch' base images
+ARG TENSORBOARD_PORT
+ENV TENSORBOARD_PORT=${TENSORBOARD_PORT}
+ARG JUPYTER_PORT
+ENV JUPYTER_PORT=${JUPYTER_PORT}
+
 
 ## ....copy artifact from base-image...............................................................
 ## Note: copying ROS ressources is relatively easy, however copying ressources installed
@@ -83,15 +92,20 @@ ENV LD_PRELOAD=${LD_PRELOAD}
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
 # ....Make python 3 default........................................................................
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
+    || update-alternatives --install /opt/conda/bin/python python /opt/conda/bin/python3 1
 
 FROM squash-base-image AS squashed-base-image-tester
 
-RUN dpkg --get-selections | grep nvidia
+RUN echo "Check CUDA installed version"  \
+    && nvcc --version | grep "release" | awk '{print $6}' | cut -c2-
 
-RUN python -c "import numpy" \
-    && cat /usr/local/cuda/version*
+RUN python -c "import numpy"
 
 FROM squash-base-image AS final
+
+ARG DN_TARGET_DEVICE
+ENV DN_TARGET_DEVICE=${DN_TARGET_DEVICE:?err}
+RUN echo "Dockerized-NorLab build system › image for target device: ${DN_TARGET_DEVICE:?err}"
+
 CMD [ "bash" ]

@@ -35,7 +35,7 @@ function dn::callback_execute_compose_pre() {
     n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
   fi
 
-  if [[ $(basename "${COMPOSE_FILE}") == "docker-compose.squash.build.yaml" ]]; then
+  if [[ $(basename "${COMPOSE_FILE}") == "docker-compose.cuda-squash.build.yaml" ]]; then
 
     # ex: dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
@@ -55,6 +55,8 @@ function dn::callback_execute_compose_pre() {
           -e OPENBLAS_CORETYPE= \
           -e PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION= \
           -e TORCH_HOME= \
+          -e TENSORBOARD_PORT= \
+          -e JUPYTER_PORT= \
         | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
         | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
         | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
@@ -65,6 +67,8 @@ function dn::callback_execute_compose_pre() {
         | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
         | sed 's;^PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION;BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION;' \
         | sed 's;^TORCH_HOME;BASE_IMG_ENV_TORCH_HOME;' \
+        | sed 's;^TENSORBOARD_PORT;BASE_IMG_ENV_TENSORBOARD_PORT;' \
+        | sed 's;^JUPYTER_PORT;BASE_IMG_ENV_JUPYTER_PORT;' \
        )
 
     n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dockerized-norlab-base-image-squashed:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:

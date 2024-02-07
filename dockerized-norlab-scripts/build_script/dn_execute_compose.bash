@@ -35,22 +35,23 @@ declare -x DN_IMAGE_TAG
 declare -x PROJECT_TAG
 declare -x ROS_DISTRO
 declare -x ROS_PKG
+declare -x DN_GLOBAL_CONFIG
+declare -a COMPOSE_FILE_OVERRIDE_FLAG
+declare -x DN_TARGET_DEVICE
+declare -x DN_COMPOSE_PLATFORMS
 
 function dn::execute_compose() {
   # ....Positional argument........................................................................
   local COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
-  local COMPOSE_FILE_GLOBAL="dockerized-norlab-images/core-images/global/docker-compose.global.yaml"
-#  declare -a COMPOSE_FILE_GLOBAL_FLAG=(--project-directory "dockerized-norlab-images/core-images" -f "${COMPOSE_FILE_GLOBAL}")
-  declare -a COMPOSE_FILE_GLOBAL_FLAG=(-f "${COMPOSE_FILE_GLOBAL}")
-  local COMPOSE_FILE_GLOBAL_OVERRIDE="dockerized-norlab-images/core-images/global/docker-compose.global-override.yaml"
   shift # Remove argument value
+
+  local COMPOSE_FILE_GLOBAL="dockerized-norlab-images/core-images/global/docker-compose.global.yaml"
 
   # ....Default....................................................................................
   local DOCKER_MANAGEMENT_COMMAND=( compose )
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
   local _CI_TEST=false
   local DOCKER_FORCE_PUSH=false
-#  local DOCKER_EXIT_CODE=1
   unset DOCKER_EXIT_CODE
   local MAIN_DOCKER_EXIT_CODE=1
   local ROS_DISTRO_PKG=none
@@ -58,22 +59,17 @@ function dn::execute_compose() {
 
 
   # ....Pre-condition..............................................................................
-
-
   if [[ ! -f  ".env.dockerized-norlab-build-system" ]]; then
     n2st::print_msg_error_and_exit "'dn::execute_compose' function must be executed from the project root!\n Curent working directory is '$(pwd)'"
   fi
-
 
   if [[ ! -f  "${COMPOSE_FILE}" ]]; then
     n2st::print_msg_error_and_exit "'dn::execute_compose' can't find the docker-compose.yaml file '${COMPOSE_FILE}' at $(pwd)"
   fi
 
-#  if [[ ! -f ${COMPOSE_FILE_GLOBAL_OVERRIDE}  ]]; then
-#    n2st::print_msg_error_and_exit "The global compose file ${COMPOSE_FILE_GLOBAL_OVERRIDE} is unreachable"
-#  elif [[ ! -f ${COMPOSE_FILE_GLOBAL} ]]; then
-#    n2st::print_msg_error_and_exit "The global compose file ${COMPOSE_FILE_GLOBAL} is unreachable"
-#  fi
+  if [[ ! -f ${COMPOSE_FILE_GLOBAL} ]]; then
+    n2st::print_msg_error_and_exit "The global compose file ${COMPOSE_FILE_GLOBAL} is unreachable"
+  fi
 
   # ....Load environment variables from file.......................................................
   set -o allexport
@@ -249,13 +245,23 @@ function dn::execute_compose() {
 
   export PROJECT_TAG="${OS_NAME:?'Variable not set, use --help to find the proper flag'}-${TAG_OS_VERSION}"
 
-  # (CRITICAL) ToDo: unit-test >> (ref task NMO-514 feat: implement platform selection logic)
+  # Note: This is required
+  COMPOSE_FILE_OVERRIDE_FLAG=(-f "${COMPOSE_FILE_GLOBAL}")
   if [[ ${OS_NAME} == ubuntu ]]; then
-    # multiarch
-    COMPOSE_FILE_GLOBAL_FLAG+=(-f ${COMPOSE_FILE_GLOBAL_OVERRIDE})
+    export DN_TARGET_DEVICE="x86-compute-box"
+    export DN_COMPOSE_PLATFORMS="linux/amd64"
+    ## /// override main compose file logic ///....................................................
+    ## (NICE TO HAVE) ToDo: ref task NMO-514 feat: implement platform selection logic
+    ## Note: the proper way is to create an override compose file for each and overload each service
+    ##       that get built. Dont override 'docker-compose.global.yaml' as the 'extends' operation
+    ##       is executed prior to the 'merging/override' operation.
+    # COMPOSE_FILE_OVERRIDE="${COMPOSE_FILE/%build.yaml/override.yaml}"
+    # COMPOSE_FILE_OVERRIDE_FLAG+=(-f ${COMPOSE_FILE_OVERRIDE})
+    ## export DN_TARGET_DEVICE=multi-arch
+    ## ....................................................\\\ override main compose file logic \\\
   elif [[ ${OS_NAME} == l4t ]]; then
-    # jetson
-    :
+    export DN_TARGET_DEVICE="jetson"
+    export DN_COMPOSE_PLATFORMS="linux/arm64"
   else
     n2st::print_msg_error_and_exit "OS ${OS_NAME} not matched with any architecture configuration"
   fi
@@ -285,15 +291,11 @@ function dn::execute_compose() {
     DISPLAY=${DISPLAY:-':0'} && export DISPLAY
   fi
 
-  # ....Execute docker command.....................................................................
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
-  #${MSG_DIMMED_FORMAT}$(printenv | grep -i -e LPM_ -e DEPENDENCIES_BASE_IMAGE -e BUILDKIT)${MSG_END_FORMAT}
-
 
   # ...Docker cmd conditional logic................................................................
-
-##   (☕minor) ToDo: assessment if still usefull >> next bloc ↓↓
+  ## (☕minor) ToDo: assessment if still usefull >> next bloc ↓↓
   # Note:
   #   - BUILDKIT_CONTEXT_KEEP_GIT_DIR is for setting buildkit to keep the .git directory in the container
   #     Source https://docs.docker.com/build/building/context/#keep-git-directory
@@ -305,13 +307,19 @@ function dn::execute_compose() {
 
   cd "${DN_PATH:?err}" || exit 1
 
+  # ....Execute docker command.....................................................................
   local STR_BUILT_SERVICES
-  declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_GLOBAL_FLAG[@]}" config --services --no-interpolate --dry-run) )
+  declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --services --no-interpolate --dry-run) )
+
+  function dn::fetch_target_device() {
+      echo -e "${MSG_EMPH_FORMAT}$( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --dry-run | grep -i -e DN_TARGET_DEVICE | sed 's;.*DN_TARGET_DEVICE:;;' | uniq )${MSG_END_FORMAT}"
+  }
+  n2st::print_msg "Targeted device ›$(dn::fetch_target_device)"
 
   for each_service in ${STR_BUILT_SERVICES[@]}; do
     echo
 
-    if [[ "${each_service}" == "global-service-builder-config" ]]; then
+    if [[ "${each_service}" =~ "global-service".* ]]; then
       # n2st::print_msg_warning "Skip building ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
       :
     else
@@ -320,7 +328,7 @@ function dn::execute_compose() {
 
       # ...Execute docker command for each service.................................................
       n2st::teamcity_service_msg_blockOpened "Build ${each_service}"
-      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
       MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
       n2st::teamcity_service_msg_blockClosed "Build ${each_service}"
 
@@ -334,7 +342,7 @@ function dn::execute_compose() {
           #       docker compose build --push command is not reliable in buildx builder docker-container driver
           n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
           export COMPOSE_ANSI=always
-          n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_GLOBAL_FLAG[*]} push ${each_service}" "$_CI_TEST"
+          n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST"
           unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
           n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
         fi
@@ -363,6 +371,8 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
   "
+
+  n2st::print_msg "Targeted device ›$(dn::fetch_target_device)"
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 

@@ -1,9 +1,0 @@
-services:
-
-  global-service-builder-config:
-    build:
-      args:
-        TARGET_DEVICE: multi-arch
-      platforms:
-        - linux/arm64
-        - linux/amd64

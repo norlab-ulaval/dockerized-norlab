@@ -1,0 +1,17 @@
+# =================================================================================================
+# This is an override compose file
+#
+# Note: merging compose file with sequence such as the platform field result in sequence append
+#       not override, so linux/amd64 will be appended to linux/arm64
+#
+# =================================================================================================
+
+services:
+
+  # (NICE TO HAVE) ToDo: implement >> (ref task NMO-514 feat: implement platform selection logic)
+  base-image-squash-main:
+    build:
+      args:
+        DN_TARGET_DEVICE: x86-compute-box
+      platforms:
+        - linux/amd64
