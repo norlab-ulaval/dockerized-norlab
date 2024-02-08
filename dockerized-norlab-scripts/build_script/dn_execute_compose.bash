@@ -53,7 +53,7 @@ function dn::execute_compose() {
   local _CI_TEST=false
   local DOCKER_FORCE_PUSH=false
   unset DOCKER_EXIT_CODE
-  local MAIN_DOCKER_EXIT_CODE=1
+  local MAIN_DOCKER_EXIT_CODE=0
   local ROS_DISTRO_PKG=none
   unset BASE_IMG_TAG_PREFIX
 
@@ -329,7 +329,11 @@ function dn::execute_compose() {
       # ...Execute docker command for each service.................................................
       n2st::teamcity_service_msg_blockOpened "Build ${each_service}"
       n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
-      MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+      if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
+        # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
+        MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+        unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
+      fi
       n2st::teamcity_service_msg_blockClosed "Build ${each_service}"
 
       if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
@@ -343,7 +347,11 @@ function dn::execute_compose() {
           n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
           export COMPOSE_ANSI=always
           n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST"
-          unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
+          if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
+            # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
+            MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+            unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
+          fi
           n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
         fi
       fi
