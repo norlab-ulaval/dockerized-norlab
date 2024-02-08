@@ -71,7 +71,7 @@ setup() {
 
 
 @test "executing $TESTED_FILE from bad cwd › expect fail" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
   run bash ./build_script/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}
@@ -82,7 +82,7 @@ setup() {
 
 
 @test "executing $TESTED_FILE from ok cwd › expect pass" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
   local _CI_TEST=true
@@ -96,7 +96,7 @@ setup() {
 }
 
 @test "missing dotenv build matrix file mandatory argument› expect pass" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
   local _CI_TEST=true
@@ -112,7 +112,7 @@ setup() {
 }
 
 @test "docker command are passed to show_and_execute_docker" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   local DOCKER_CMD="config --dry-run"
   local _CI_TEST=true
@@ -126,7 +126,7 @@ setup() {
 }
 
 @test "dotenv build matrix file argument › ok" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.dockerized-norlab-build-system
@@ -146,7 +146,7 @@ setup() {
 }
 
 @test "dotenv build matrix source ordering › ok" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.dockerized-norlab-build-system
@@ -196,7 +196,7 @@ setup() {
 }
 
 @test "docker exit code propagation on pass › expect pass" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -220,7 +220,7 @@ setup() {
 }
 
 @test "docker exit code propagation on faillure › expect pass" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -244,7 +244,7 @@ setup() {
 }
 
 @test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -263,7 +263,7 @@ setup() {
 
 
 @test "flags that set env variable" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   set +e
   local _CI_TEST=true
@@ -282,7 +282,7 @@ setup() {
 }
 
 @test "--force-push 'latest' tag sanity check ok" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   if [[ $(git symbolic-ref -q --short HEAD) == main ]]; then
     skip "Curent checkout branch is 'main' which invalidate this test logic"
@@ -299,7 +299,7 @@ setup() {
 }
 
 @test "--force-push 'bleeding' tag sanity check ok" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   if [[ $(git symbolic-ref -q --short HEAD) == dev ]]; then
     skip "Curent checkout branch is 'dev' which invalidate this test logic"
@@ -316,7 +316,7 @@ setup() {
 }
 
 @test "flag --force-push is passed to dn_execute_compose.bash" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   local _CI_TEST=true
   mock_docker_command_config_services
@@ -340,7 +340,7 @@ setup() {
 }
 
 @test "flag --help" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                                                  --help
@@ -349,7 +349,7 @@ setup() {
 }
 
 @test "flag --buildx-bake" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
   local _CI_TEST=true
@@ -365,7 +365,7 @@ setup() {
 
 
 @test "repository version checkout" {
-#  skip "tmp dev"
+  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
   run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}" \

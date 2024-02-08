@@ -30,7 +30,7 @@ services:
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         TAG_OS_VERSION: ${TAG_OS_VERSION:?err}
         # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
-        CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME}
+        CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:-${CUDA_HOME}}
         NVIDIA_VISIBLE_DEVICES: ${BASE_IMG_ENV_NVIDIA_VISIBLE_DEVICES:?err}
         NVIDIA_DRIVER_CAPABILITIES: ${BASE_IMG_ENV_NVIDIA_DRIVER_CAPABILITIES:?err}
         PATH: ${BASE_IMG_ENV_PATH:?err}
@@ -44,14 +44,25 @@ services:
         PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: ${BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
         TENSORBOARD_PORT: ${BASE_IMG_ENV_TENSORBOARD_PORT}
         JUPYTER_PORT: ${BASE_IMG_ENV_JUPYTER_PORT}
+        CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}
+
+  base-image-ros2-python-compatible:
+    extends:
+      service: base-image-squash-main
+    build:
+      target: ros2-python-compatible
+      args:
+        PATH: ${BASE_IMG_ENV_PATH:?err}
+    depends_on:
+      - base-image-squash-main
 
   base-image-squash-tester:
     extends:
       service: base-image-squash-main
     build:
-      target: squashed-base-image-tester
+      target: test
     depends_on:
-      - base-image-squash-main
+      - base-image-ros2-python-compatible
 
   base-image-squash:
     extends:
@@ -60,4 +71,4 @@ services:
     build:
       target: final
     depends_on:
-      - base-image-squash-main
+      - base-image-ros2-python-compatible

@@ -2,7 +2,7 @@ services:
   global-service-dev-config:
     build:
       context: "."
-    #  no_cache: true  # Enforce full rebuild                               <-- mute on task end
+    #   no_cache: true  # Enforce full rebuild                               <-- mute on task end
     #command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -34,8 +34,8 @@ services:
       QT_X11_NO_MITSHM: 1
 
   global-service-builder-config:
-    #    extends:
-    #      service: global-service-dev-config #ToDo: on dev task end >> mute this line ←
+    extends:
+      service: global-service-dev-config #ToDo: on dev task end >> mute this line ←
     build:
       context: "."
       dockerfile: Dockerfile

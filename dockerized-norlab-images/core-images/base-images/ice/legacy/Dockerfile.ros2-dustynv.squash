@@ -89,8 +89,8 @@ ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
 # ....Make python 3 default........................................................................
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
+    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
 FROM squash-base-image AS squashed-base-image-tester
 

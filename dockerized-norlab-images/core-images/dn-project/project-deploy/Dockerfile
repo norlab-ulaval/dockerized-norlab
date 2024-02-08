@@ -74,6 +74,7 @@ RUN echo "===Check that ROS source is available via the ssh daemon user=========
     && [[ -n "$(ros2 pkg list | grep -e ackermann_msgs)" ]] ||  exit 1  \
     && [[ -n "$(ros2 pkg list | grep -e vesc_msgs)" ]] ||  exit 1
 
+# unset entrypoint for running test stage
 ENTRYPOINT [ "" ]
 
 FROM package-project-src-code AS final

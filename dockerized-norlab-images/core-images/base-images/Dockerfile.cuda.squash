@@ -8,28 +8,37 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
-FROM scratch AS squash-base-image
-#FROM nvcr.io/nvidia/l4t-jetpack:${TAG_OS_VERSION:?err} AS squash-base-image
-#FROM nvcr.io/nvidia/l4t-base:${TAG_OS_VERSION:?err} AS squash-base-image # ToDo: validate using l4t-base instead of l4t-jetson
-#FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
-COPY --from=base-image / /
-# Note:
-#   - The squash-base-image stage is a workaround to prevent the "max depth exceeded" error
-#        occuring when the maximum number of docker layer as been reached.
-#   - We use arm64v8/ubuntu:20.04 as base image since we are copying everything from l4t-jetpack anyway
-#   - About nvidia l4t  base images:
-#       - nvcr.io/nvidia/l4t-base install the core CUDA ressources
-#       - nvcr.io/nvidia/l4t-jetpack
-#           - install several dev package such as nvidia-cuda-dev, nvidia-cudnn-dev and nvidia-tensorrt-dev
-#           - mod their dockerfile to install runtime version of all those packages
-#   - copying ROS ressources is relatively easy, however copying ressources installed
-#       via pip vs apt-get or via source installed or pytorch related is a nightmare.
-#       Work around for minimizing maintenance: copy everything
-# Ref:
-#   - https://gitlab.com/nvidia/container-images/l4t-base
-#   - https://gitlab.com/nvidia/container-images/l4t-jetpack
-#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
-#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
+### (CRITICAL) ToDo: on task end >> delete next line ↓↓
+FROM base-image AS squash-base-image
+
+### (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
+#FROM scratch AS squash-base-image
+##FROM nvcr.io/nvidia/l4t-jetpack:${TAG_OS_VERSION:?err} AS squash-base-image
+##FROM nvcr.io/nvidia/l4t-base:${TAG_OS_VERSION:?err} AS squash-base-image # ToDo: validate using l4t-base instead of l4t-jetson
+##FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
+
+ARG DN_TARGET_DEVICE
+ENV DN_TARGET_DEVICE=${DN_TARGET_DEVICE:?'Global config env var where not passed to container'}
+
+## (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
+#COPY --from=base-image / /
+## Note:
+##   - The squash-base-image stage is a workaround to prevent the "max depth exceeded" error
+##        occuring when the maximum number of docker layer as been reached.
+##   - We use arm64v8/ubuntu:20.04 as base image since we are copying everything from l4t-jetpack anyway
+##   - About nvidia l4t  base images:
+##       - nvcr.io/nvidia/l4t-base install the core CUDA ressources
+##       - nvcr.io/nvidia/l4t-jetpack
+##           - install several dev package such as nvidia-cuda-dev, nvidia-cudnn-dev and nvidia-tensorrt-dev
+##           - mod their dockerfile to install runtime version of all those packages
+##   - copying ROS ressources is relatively easy, however copying ressources installed
+##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+##       Work around for minimizing maintenance: copy everything
+## Ref:
+##   - https://gitlab.com/nvidia/container-images/l4t-base
+##   - https://gitlab.com/nvidia/container-images/l4t-jetpack
+##   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
+##   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -48,7 +57,7 @@ ARG NVIDIA_DRIVER_CAPABILITIES
 ARG PATH
 ARG LD_LIBRARY_PATH
 
-ENV CUDA_HOME=${CUDA_HOME}
+ENV CUDA_HOME=${CUDA_HOME:?'Environment variable was not passed from base-image build stage'}
 ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage'}
 ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'}
 
@@ -91,21 +100,62 @@ ENV JUPYTER_PORT=${JUPYTER_PORT}
 #COPY --from=base-image /opt /opt
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
+FROM squash-base-image AS ros2-python-compatible
+
 # ....Make python 3 default........................................................................
+RUN if [[ $(which python) =~ "/opt/conda".* ]]; then \
+          apt-get update \
+          &&  apt-get install -y --no-install-recommends \
+              python3-dev \
+              python3-pip \
+          && rm -rf /var/lib/apt/lists/* \
+          && apt-get clean ; \
+    fi
+
+# Note: strip 'conda' from "PATH=/opt/conda/condabin:/usr/local/nvm/versions/node/v15.2.1/bin:/opt/conda/bin:/opt/cmake-3.14.6-Linux-x86_64/bin/..."
+#       using $ echo PATH=$(echo ${OLD_PATH} | sed -E 's+/opt/conda/[^:]*:++g' )
+#       or keep conda in path and simply prepend the system python path to the front
+ARG PATH="/usr/bin:${PATH:?err}"
+ENV PATH=${PATH}
+
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-    || update-alternatives --install /opt/conda/bin/python python /opt/conda/bin/python3 1
+    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
-FROM squash-base-image AS squashed-base-image-tester
+RUN python3 -m pip install --upgrade pip \
+    && pip3 install --upgrade --no-cache-dir \
+        wheel \
+        setuptools \
+        packaging \
+        'Cython<3' \
+    && pip3 install --no-cache-dir  \
+          wget  \
+          psutil
 
-RUN echo "Check CUDA installed version"  \
+FROM ros2-python-compatible AS test
+
+RUN PYTHON_VERSION=$(python --version) \
+    && echo -e "Current python version: ${PYTHON_VERSION}" \
+    && echo -e "          which python: $(which python)" \
+    && echo -e "        whereis python: $(whereis python)" \
+    && if [[ ! ${PYTHON_VERSION} =~ "Python 3.".* ]]; then \
+      echo "Need python 3" && exit 1 ; \
+    fi &&  \
+    if [[ $(which python) != "/usr/bin/python" ]] || [[ $(which python) == "/opt/conda/bin/python" ]]; then \
+      echo "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" && exit 1 ; \
+    fi
+
+RUN echo "Check CUDA installed version" \
     && nvcc --version | grep "release" | awk '{print $6}' | cut -c2-
 
-RUN python -c "import numpy"
 
-FROM squash-base-image AS final
+FROM ros2-python-compatible AS final
 
 ARG DN_TARGET_DEVICE
-ENV DN_TARGET_DEVICE=${DN_TARGET_DEVICE:?err}
-RUN echo "Dockerized-NorLab build system › image for target device: ${DN_TARGET_DEVICE:?err}"
+ENV DN_TARGET_DEVICE=${DN_TARGET_DEVICE:?'Global config env var where not fetched in the compose service declaration'}
+
+# Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+#       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
+RUN echo "$(printenv | grep -i -e TARGET -e BUILD)" \
+    && echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}" || exit 1
 
 CMD [ "bash" ]

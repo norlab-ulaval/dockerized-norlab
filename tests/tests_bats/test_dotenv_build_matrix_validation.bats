@@ -34,8 +34,8 @@ fi
 
 # ====Setup========================================================================================
 
-TESTED_FILE_1=".env.build_matrix.base-images-cuda-squash"
-TESTED_FILE_2=".env.build_matrix.base-images-ros2"
+TESTED_FILE_1=".env.build_matrix.base-images.cuda-squash"
+TESTED_FILE_2=".env.build_matrix.base-images.ros2"
 TESTED_FILE_5=".env.build_matrix.dn-dependencies"
 TESTED_FILE_3=".env.build_matrix.dn-control"
 TESTED_FILE_4=".env.build_matrix.dn-control-deep"

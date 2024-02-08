@@ -1,40 +1,7 @@
 #!/bin/bash
 
-# ===============================================================================================
-# Pre docker command execution callback
-#
-# Usage:
-#   $ callback_execute_compose_pre()
-#
-# Globals:
-#   Read COMPOSE_FILE
-#   Read DEPENDENCIES_BASE_IMAGE
-#   Read DEPENDENCIES_BASE_IMAGE_TAG
-#
-# =================================================================================================
-function dn::callback_execute_compose_pre() {
 
-  # ....Reformat nvcr.io base image tag............................................................
-  if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
-    if [[ ${TAG_OS_VERSION} == jammy ]]; then
-      CONVERTED_TAG_OS_VERSION=22
-    elif [[ ${TAG_OS_VERSION} == focal ]]; then
-      CONVERTED_TAG_OS_VERSION=20
-    else
-      n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
-    fi
-    export DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${BASE_IMG_TAG_PREFIX}"
-  fi
-
-  # ....Export image tag for squashed base image use...............................................
-  export DN_IMAGE_TAG_NO_ROS="DN-${REPOSITORY_VERSION}-${DN_IMAGE_TAG_END}"
-
-
-  # ....Fetch base image environment variables.....................................................
-  if [[ ! -d ${NBS_COMPOSE_DIR:?err} ]]; then
-    n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
-  fi
-
+function dn::cuda_squash_image_logic() {
   if [[ $(basename "${COMPOSE_FILE}") == "docker-compose.cuda-squash.build.yaml" ]]; then
 
     # ex: dustynv/pytorch:2.1-r35.2.1
@@ -71,12 +38,58 @@ function dn::callback_execute_compose_pre() {
         | sed 's;^JUPYTER_PORT;BASE_IMG_ENV_JUPYTER_PORT;' \
        )
 
+    # ....Special step for handling nvidia/pytorch container conda install.........................
+    if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
+      export CUDA_HOME="/usr/local/cuda"
+      # (CRITICAL) ToDo: assessment >> next line ↓↓
+      export CMAKE_PREFIX_PATH="/opt/conda/"
+    fi
+
     n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dockerized-norlab-base-image-squashed:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:
       ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
       ${MSG_END_FORMAT}"
   else
     n2st::print_msg "Skiping base image environment variable fetching"
   fi
+}
+
+
+# ===============================================================================================
+# Pre docker command execution callback
+#
+# Usage:
+#   $ callback_execute_compose_pre()
+#
+# Globals:
+#   Read COMPOSE_FILE
+#   Read DEPENDENCIES_BASE_IMAGE
+#   Read DEPENDENCIES_BASE_IMAGE_TAG
+#
+# =================================================================================================
+function dn::callback_execute_compose_pre() {
+
+  # ....Reformat nvcr.io base image tag............................................................
+  if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
+    if [[ ${TAG_OS_VERSION} == jammy ]]; then
+      CONVERTED_TAG_OS_VERSION=22
+    elif [[ ${TAG_OS_VERSION} == focal ]]; then
+      CONVERTED_TAG_OS_VERSION=20
+    else
+      n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
+    fi
+    export DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${BASE_IMG_TAG_PREFIX}"
+  fi
+
+  # ....Export image tag for squashed base image use...............................................
+  export DN_IMAGE_TAG_NO_ROS="DN-${REPOSITORY_VERSION}-${DN_IMAGE_TAG_END}"
+
+  # ....Fetch base image environment variables.....................................................
+  if [[ ! -d ${NBS_COMPOSE_DIR:?err} ]]; then
+    n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
+  fi
+
+  # ....Execute cuda squash base image logic.......................................................
+  dn::cuda_squash_image_logic
 
 }
 
