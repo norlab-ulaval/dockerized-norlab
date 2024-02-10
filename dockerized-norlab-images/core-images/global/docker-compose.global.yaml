@@ -45,9 +45,13 @@ services:
         context-dn-root: "${DN_PATH:?err}"
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-        DN_TARGET_DEVICE: ${DN_TARGET_DEVICE:?err}
+        # (Priority) ToDo: assessment >> next line ↓↓
+#        DN_TARGET_DEVICE: ${DN_TARGET_DEVICE:?err}
       platforms:
-        ["${DN_COMPOSE_PLATFORMS:?err}"]
+        # (Priority) ToDo: assessment >> next line ↓↓
+#        ["${DN_COMPOSE_PLATFORMS:?err}"]
+        - linux/arm64
+        - linux/amd64
       labels:
         org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
     pull_policy: missing  #Note: enforce pulling image only if not available in cache

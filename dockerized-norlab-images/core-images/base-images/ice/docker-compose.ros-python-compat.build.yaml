@@ -22,7 +22,7 @@ services:
       file: "../global/docker-compose.global.yaml"
       service: global-service-builder-config
     build:
-      context: ..
+      context: "."
       dockerfile: ../Dockerfile.ros-python-compat
       target: base-image
       args:

@@ -3,14 +3,14 @@ services:
   # ....ROS2 base images...........................................................................
   base-image-ros2-clean-main:
     extends:
-      file: "../global/docker-compose.global.yaml"
+      file: "../../global/docker-compose.global.yaml"
       service: global-service-builder-config
     build:
-      context: .
+      context: "."
       dockerfile: Dockerfile.ros2
       target: ros2-install
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-squashed
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image
         #        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
         # (CRITICAL) ToDo: validate 'DN_IMAGE_TAG_NO_ROS'
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG_NO_ROS:?err}

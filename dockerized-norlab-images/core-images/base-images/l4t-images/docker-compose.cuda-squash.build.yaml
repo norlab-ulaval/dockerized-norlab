@@ -2,7 +2,7 @@
 
 #  dependencies-test:
 #    extends:
-#      file: ../docker-compose.global.yaml
+#      file: ../../docker-compose.global.yaml
 #      service: global-service-builder-config
 #    build:
 #      context: .
@@ -17,17 +17,19 @@ services:
   # ====Dockerized-NorLab base images================================================================
 
   # ....Jetson dusty ml related base images..........................................................
-  base-image-squash-main:
+  l4t-base-image-main:
     extends:
-      file: "../global/docker-compose.global.yaml"
+      file: "../../global/docker-compose.global.yaml"
       service: global-service-builder-config
     build:
-      context: .
-      dockerfile: Dockerfile.cuda.squash
-      target: squash-base-image
+      context: "."
+      dockerfile: Dockerfile.l4t.squash
+      target: l4t-multiarch-base-image
       args:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
+        MIMIC_DEPENDENCIES_BASE_IMAGE: ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}
+        MIMIC_DEPENDENCIES_BASE_IMAGE_TAG: ${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err}
         TAG_OS_VERSION: ${TAG_OS_VERSION:?err}
         # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
         CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:?err}
@@ -45,85 +47,45 @@ services:
         TENSORBOARD_PORT: ${BASE_IMG_ENV_TENSORBOARD_PORT}
         JUPYTER_PORT: ${BASE_IMG_ENV_JUPYTER_PORT}
         CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}
+      platforms: []
 
 #   # ....intermediate...............................................................................
-#
-#  base-image-ros2-python-compatible-l4t:
-#    extends:
-#      service: base-image-squash-main
-#    build:
-#      target: ros2-python-compatible
-#      args:
-#        PATH: ${BASE_IMG_ENV_PATH:?err}
-##      platforms:
-##        - linux/arm64
-#    depends_on:
-#      - base-image-squash-main
-#
-#  base-image-linux-amd64-mimic-l4t-images:
-#    extends:
-#      service: base-image-squash-main
-#    build:
-##      target: linux-amd64-mimic-l4t-images
-#      target: final-amd64
-#      args:
-#        PATH: ${BASE_IMG_ENV_PATH:?err}
-#      platforms:
-#        - linux/amd64
-#    depends_on:
-#      - base-image-squash-main
+
+  l4t-base-image-final-arm64:
+    extends:
+      service: l4t-base-image-main
+    build:
+      target: final-arm64
+    depends_on:
+      - l4t-base-image-main
+
+  l4t-base-image-final-amd64:
+    extends:
+      service: l4t-base-image-main
+    build:
+      target: final-amd64
+    depends_on:
+      - l4t-base-image-main
+
 
   # ....tests......................................................................................
 
-#  base-image-squash-tester-l4t:
-#    extends:
-#      service: base-image-squash-main
-#    build:
-#      target: test
-##      platforms:
-##        - linux/arm64
-#    depends_on:
-#      - base-image-ros2-python-compatible-l4t
-#
-#  base-image-squash-tester-linux:
-#    extends:
-#      service: base-image-squash-main
-#    build:
-#      target: test
-##      platforms:
-##        - linux/amd64
-#    depends_on:
-#      - base-image-linux-amd64-mimic-l4t-images
-
-  base-image-squash-tester:
+  l4t-base-image-multiarch-tester:
     extends:
-      service: base-image-squash-main
+      service: l4t-base-image-main
     build:
       target: test
-#      platforms:
-#        - linux/amd64
-#    depends_on:
-#      - base-image-squash-main
+    depends_on:
+      - l4t-base-image-main
 
-#  # ....final......................................................................................
-#  base-image-squash-l4t:
-#    extends:
-#      service: base-image-squash-main
-#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-squashed:${DN_IMAGE_TAG:?err}
-#    build:
-#      target: final
-##      platforms:
-##        - linux/arm64
-#    depends_on:
-#      - base-image-ros2-python-compatible-l4t
-#
-#  base-image-squash-linux:
-#    extends:
-#      service: base-image-squash-main
-#    image: ${DN_HUB:?err}/dockerized-norlab-base-image-squashed:${DN_IMAGE_TAG:?err}
-#    build:
-#      target: final
-##      platforms:
-##        - linux/amd64
-#    depends_on:
-#      - base-image-linux-amd64-mimic-l4t-images
+  # ....final......................................................................................
+
+  l4t-base-image-multiarch:
+    extends:
+      service: l4t-base-image-main
+    image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}
+    build:
+      target: final
+    depends_on:
+      - l4t-base-image-main
+

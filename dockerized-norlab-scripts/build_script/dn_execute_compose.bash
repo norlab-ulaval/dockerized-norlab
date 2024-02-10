@@ -311,10 +311,11 @@ function dn::execute_compose() {
   local STR_BUILT_SERVICES
   declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --services --no-interpolate --dry-run) )
 
-  function dn::fetch_target_device() {
-      echo -e "${MSG_EMPH_FORMAT}$( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --dry-run | grep -i -e DN_TARGET_DEVICE | sed 's;.*DN_TARGET_DEVICE:;;' | uniq )${MSG_END_FORMAT}"
-  }
-  n2st::print_msg "Target device ›$(dn::fetch_target_device)"
+  # (Priority) ToDo: assessment >> next bloc ↓↓
+#  function dn::fetch_target_device() {
+#      echo -e "${MSG_EMPH_FORMAT}$( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --dry-run | grep -i -e DN_TARGET_DEVICE | sed 's;.*DN_TARGET_DEVICE:;;' | uniq )${MSG_END_FORMAT}"
+#  }
+#  n2st::print_msg "Target device ›$(dn::fetch_target_device)"
 
   for each_service in ${STR_BUILT_SERVICES[@]}; do
     echo
@@ -380,7 +381,8 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
   "
 
-  n2st::print_msg "Targeted device ›$(dn::fetch_target_device)"
+  # (Priority) ToDo: assessment >> next bloc ↓↓
+#  n2st::print_msg "Targeted device ›$(dn::fetch_target_device)"
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 
