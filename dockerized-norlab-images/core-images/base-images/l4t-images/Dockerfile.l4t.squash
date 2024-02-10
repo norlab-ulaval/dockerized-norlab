@@ -13,7 +13,7 @@ RUN touch /requirements.l4t-base-image.txt \
               --exclude tensorrt \
         > /requirements.l4t-base-image.txt
 
-# ===Remove Jetson-container unused install========================================================
+# Note: Remove Jetson-container unused component to save time and space during squashing
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
@@ -58,11 +58,6 @@ ARG TARGETARCH
 ##COPY --from=base-image /opt /opt
 ##COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
-FROM --platform="linux/amd64" ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
-ARG TARGETPLATFORM
-ARG TARGETARCH
-
-FROM --platform=${TARGETPLATFORM} base-image-${TARGETARCH} AS l4t-multiarch-base-image
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
@@ -96,22 +91,38 @@ ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 ARG TORCH_HOME
 ENV TORCH_HOME=${TORCH_HOME}
 
-# En var added by jetson-container tensorflow related base images
-ARG PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
-ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
+## En var added by jetson-container tensorflow related base images
+#ARG PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+#ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
 
 # En var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
 
-# En var added by 'nvcr.io/nvidia/pytorch' base images
-ARG TENSORBOARD_PORT
-ENV TENSORBOARD_PORT=${TENSORBOARD_PORT}
-ARG JUPYTER_PORT
-ENV JUPYTER_PORT=${JUPYTER_PORT}
+
+FROM --platform="linux/amd64" ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
+ARG TARGETPLATFORM
+ARG TARGETARCH
+
+FROM --platform=${TARGETPLATFORM} base-image-${TARGETARCH} AS l4t-multiarch-base-image
+ARG TARGETPLATFORM
+ARG TARGETARCH
+ARG DEBIAN_FRONTEND=noninteractive
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+ENV TZ=Etc/UTC
+ENV TERM=${TERM:-"xterm-256color"}
+SHELL ["/bin/bash", "-c"]
+
 
 
 FROM --platform=${TARGETPLATFORM} l4t-multiarch-base-image AS ros2-python-compatible
+ARG TARGETPLATFORM
+ARG TARGETARCH
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+ARG DEBIAN_FRONTEND=noninteractive
+
 
 # ....Make python 3 default........................................................................
 RUN if [[ ! $(which python) =~ .*"python3".* ]]; then \
@@ -141,8 +152,6 @@ RUN python3 -m pip install --upgrade pip \
 
 
 # (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-ARG TARGETPLATFORM
-ARG TARGETARCH
 RUN echo "DEV test bloc" \
     && echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
     && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
@@ -163,6 +172,13 @@ RUN echo "DEV test bloc" \
 
 
 FROM --platform="linux/amd64" ros2-python-compatible AS mimic-l4t-image
+ARG TARGETPLATFORM
+ARG TARGETARCH
+ARG DEBIAN_FRONTEND=noninteractive
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
+#ARG CUDA_ROOT=${CUDA_HOME:-"/usr/local/cuda"}
 
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
@@ -200,106 +216,39 @@ RUN apt-get update  \
 # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
 RUN pip3 install --no-cache-dir nvidia-pyindex
 
+# Install pycuda related
+#   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
+#
 # Requirement for 'pycairo' which is required by 'pycuda'
 RUN apt-get update  \
     && apt-get install -y --no-install-recommends \
       libcairo2-dev \
       pkg-config \
-      python3-dev \
+#      python3-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
-
-# Use the following command in a l4t container to fetch the current list of python pkg
-#       $ pip3 list --format freeze --not-required --exclude onnx --exclude torch2trt --exclude torchaudio --exclude tensorrt
-# which in l4t-pytorch result in the following list
-#RUN pip3 install --no-cache-dir  $(echo " \
-#    certifi \
-#    chardet \
-#    cmake \
-#    Cython \
-#    dbus-python \
-#    idna \
-#    ninja \
-#    pip \
-#    psutil \
-#    PyGObject \
-#    python-apt \
-#    requests-unixsocket \
-#    scikit-build \
-#    six \
-#    torch \
-#    torchvision \
-#    uff \
-#    urllib3 \
-#    wget \
-#    ")
-##    " | sed 's/==.*//')
-
-#    pycuda==2023.1 \
-#    PySoundFile==0.9.0.post1 \
 
 RUN echo "Strip versions from requirement"  \
     && sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt  \
     && rm /requirements.l4t-base-image.txt.bak
 
-# (Priority) ToDo: investigate?? >> pycuda install is failling
-RUN echo "Strip pycuda from requirement"  \
-    && sed -i.bak 's/pycuda.*//g' /requirements.l4t-base-image.txt  \
-    && rm /requirements.l4t-base-image.txt.bak
+## (Priority) ToDo: investigate?? >> pycuda install is failling
+#RUN echo "Strip pycuda from requirement"  \
+#    && sed -i.bak 's/pycuda.*//g' /requirements.l4t-base-image.txt  \
+#    && rm /requirements.l4t-base-image.txt.bak
 
-RUN pip3 install --no-cache-dir -r /requirements.l4t-base-image.txt
+RUN #pip3 install --no-cache-dir -r /requirements.l4t-base-image.txt
+RUN echo -e "---pre install pip list------------------------------------------"  \
+    && pip3 list \
+    && echo -e "\n----------------------------------------------------------\n" \
+    && printenv \
+    && echo -e "\n----------------------------------------------------------\n" \
+    && more /requirements.l4t-base-image.txt  \
+    && echo -e "\n----------------------------------------------------------\n" \
+    && pip3 install -r /requirements.l4t-base-image.txt
 
-## Use $ pip3 list --format freeze --exclude onnx --exclude torch2trt --exclude torchaudio --exclude tensorrt
-#RUN pip3 install --no-cache-dir  $(echo " \
-#appdirs \
-#certifi \
-#cffi \
-#chardet \
-#cmake \
-#Cython \
-#dbus-python \
-#distro \
-#filelock \
-#graphsurgeon \
-#idna \
-#Jinja2 \
-#Mako \
-#MarkupSafe \
-#mpmath \
-#networkx \
-#ninja \
-#numpy \
-#packaging \
-#Pillow \
-#pip \
-#platformdirs \
-#protobuf \
-#psutil \
-#pycparser \
-#pycuda \
-#PyGObject \
-#PySoundFile \
-#python-apt \
-#pytools \
-#requests \
-#requests-unixsocket \
-#scikit-build \
-#setuptools \
-#six \
-#sympy \
-#tomli \
-#torch \
-#torchvision \
-#typing_extensions \
-#uff \
-#urllib3 \
-#wget \
-#wheel \
-#")
-
-
-RUN echo "Quickhack for the 'DeprecationWarning: pkg_resources is deprecated as an API' warning" \
-    && pip3 install --no-cache-dir  setuptools==58.2.0
+#RUN echo "Quickhack for the 'DeprecationWarning: pkg_resources is deprecated as an API' warning" \
+#    && pip3 install --no-cache-dir  setuptools==58.2.0
 
 
 # (NICE TO HAVE) ToDo: add the explicit install step for torch2trt and tensorrt (ref task TASK)
@@ -310,8 +259,6 @@ RUN echo "Quickhack for the 'DeprecationWarning: pkg_resources is deprecated as 
 
 
 # (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-ARG TARGETPLATFORM
-ARG TARGETARCH
 RUN echo "DEV test bloc" \
     && echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
     && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
@@ -323,8 +270,8 @@ RUN echo "DEV test bloc" \
     && echo -e "        whereis python: $(whereis python)" \
     && echo -e "           which pip's: $(which pip pip3)" \
     && echo -e "           whereis pip: $(whereis pip)" \
-#    && pip3 show pycuda \
-#    && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
+    && pip3 show pycuda \
+    && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
     && pip3 show torch \
     && python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
 
@@ -366,8 +313,8 @@ RUN echo -e "    TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in co
     && echo -e "        whereis python: $(whereis python)" \
     && echo -e "             which pip's: $(which pip pip3)" \
     && echo -e "           whereis pip: $(whereis pip)" \
-#    && pip3 show pycuda \
-#    && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
+    && pip3 show pycuda \
+    && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
     && pip3 show torch \
     && python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
 
