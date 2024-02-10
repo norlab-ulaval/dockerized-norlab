@@ -5,8 +5,10 @@ ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 #FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
 
-ARG DN_TARGET_DEVICE
-ENV DN_TARGET_DEVICE=${DN_TARGET_DEVICE:?'Global config env var where not passed to container'}
+ARG TARGETPLATFORM
+# Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+#       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
+RUN echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}"
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -85,13 +87,12 @@ RUN echo "Check CUDA installed version" \
 
 FROM base-image AS final
 
-ARG DN_TARGET_DEVICE
-ENV DN_TARGET_DEVICE=${DN_TARGET_DEVICE:?'Global config env var where not persisted between build stages'}
+ARG TARGETPLATFORM
 
 # Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 #       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
 RUN echo "$(printenv | grep -i -e TARGET -e BUILD)" \
-    && echo "Dockerized-NorLab build system › image for target device: ${DN_TARGET_DEVICE}" || exit 1
+    && echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM}" || exit 1
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "exec", "$@" ]

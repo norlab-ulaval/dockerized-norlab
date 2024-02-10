@@ -2,7 +2,7 @@ services:
   global-service-dev-config:
     build:
       context: "."
-    #   no_cache: true  # Enforce full rebuild                               <-- mute on task end
+#      no_cache: true  # Enforce full rebuild                               <-- mute on task end
     #command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     volumes:
       - /etc/localtime:/etc/localtime:ro

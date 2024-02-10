@@ -1,8 +1,9 @@
 #!/bin/bash
 
+declare -x CONVERTED_TAG_OS_VERSION
 
 function dn::cuda_squash_image_logic() {
-  if [[ $(basename "${COMPOSE_FILE}") == "docker-compose.cuda-squash.build.yaml" ]]; then
+  if [[ $(basename "${COMPOSE_FILE:?err}") == "docker-compose.cuda-squash.build.yaml" ]]; then
 
     # ex: dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
@@ -39,10 +40,10 @@ function dn::cuda_squash_image_logic() {
        )
 
     # ....Special step for handling nvidia/pytorch container conda install.........................
-    if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
-      export CUDA_HOME="/usr/local/cuda"
+    if [[ ${DEPENDENCIES_BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]] || [[ ${DEPENDENCIES_BASE_IMAGE} == "nvidia/cuda" ]]; then
+      export BASE_IMG_ENV_CUDA_HOME="/usr/local/cuda"
       # (CRITICAL) ToDo: assessment >> next line ↓↓
-      export CMAKE_PREFIX_PATH="/opt/conda/"
+      export BASE_IMG_ENV_PATH="/usr/bin:${BASE_IMG_ENV_PATH:?err}"
     fi
 
     n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dockerized-norlab-base-image-squashed:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:
@@ -68,16 +69,53 @@ function dn::cuda_squash_image_logic() {
 # =================================================================================================
 function dn::callback_execute_compose_pre() {
 
-  # ....Reformat nvcr.io base image tag............................................................
-  if [[ ${BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
+  # ....OS version convertion......................................................................
+  if [[ ${OS_NAME:?err} == ubuntu ]]; then
     if [[ ${TAG_OS_VERSION} == jammy ]]; then
-      CONVERTED_TAG_OS_VERSION=22
+      export CONVERTED_TAG_OS_VERSION=22
     elif [[ ${TAG_OS_VERSION} == focal ]]; then
-      CONVERTED_TAG_OS_VERSION=20
+      export CONVERTED_TAG_OS_VERSION=20
+    elif [[ ${TAG_OS_VERSION} =~ "r35".* ]]; then
+      export CONVERTED_TAG_OS_VERSION=20
     else
       n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
     fi
+  elif [[ ${OS_NAME} == l4t ]]; then
+    if [[ ${TAG_OS_VERSION} =~ "r35".* ]]; then
+      export CONVERTED_TAG_OS_VERSION=20
+      export L4T_CUDA_VERSION=11.4.3
+    elif [[ ${TAG_OS_VERSION} =~ "r36".* ]]; then
+      export CONVERTED_TAG_OS_VERSION=22
+      export L4T_CUDA_VERSION=12.2.2
+    else
+      n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
+    fi
+
+    # ex: dustynv/pytorch:2.1-r35.2.1
+    DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
+    FETCH_CUDA_VERSION_MAJOR_MINOR=$( docker pull "${DOCKER_IMG}" && docker run --privileged -it --rm "${DOCKER_IMG}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
+    if [[ ${FETCH_CUDA_VERSION_MAJOR_MINOR} =~ ${L4T_CUDA_VERSION} ]]; then
+        n2st::print_msg_error_and_exit "Cuda version for multiaarch l4t mimic image do not match!"
+    fi
+
+  fi
+
+  # ....Reformat mimic of dustynv base image name and tag..........................................
+  if [[ ${DEPENDENCIES_BASE_IMAGE} =~ "dustynv/".* ]]; then
+    # Note: L4T mimic base image 'nvidia/cuda:12.3.1-runtime-ubuntu20.04' (ref https://hub.docker.com/r/nvidia/cuda),
+    export MIMIC_DEPENDENCIES_BASE_IMAGE="nvidia/cuda"
+    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${L4T_CUDA_VERSION}-runtime-ubuntu${CONVERTED_TAG_OS_VERSION}.04"
+
+  fi
+
+  # ....Reformat nvidia/pytorch base image tag.....................................................
+  if [[ ${DEPENDENCIES_BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
     export DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${BASE_IMG_TAG_PREFIX}"
+  fi
+
+  # ....Reformat nvidia/cuda base image tag........................................................
+  if [[ ${DEPENDENCIES_BASE_IMAGE} == "nvidia/cuda" ]]; then
+    export DEPENDENCIES_BASE_IMAGE_TAG="${BASE_IMG_TAG_PREFIX}${CONVERTED_TAG_OS_VERSION}.04"
   fi
 
   # ....Export image tag for squashed base image use...............................................
@@ -91,5 +129,8 @@ function dn::callback_execute_compose_pre() {
   # ....Execute cuda squash base image logic.......................................................
   dn::cuda_squash_image_logic
 
+  n2st::print_msg_warning "DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE}"
+  n2st::print_msg_warning "DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG}"
+  n2st::print_msg_warning "DN_IMAGE_TAG_NO_ROS=${DN_IMAGE_TAG_NO_ROS}"
 }
 
