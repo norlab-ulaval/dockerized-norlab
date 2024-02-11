@@ -20,29 +20,17 @@ services:
   l4t-base-image-main:
     extends:
       file: "../../global/docker-compose.global.yaml"
-      service: global-service-builder-config
+      service: global-service-builder-base-images-config
     build:
       context: "."
       dockerfile: Dockerfile.l4t.squash
-      target: l4t-multiarch-base-image
+      target: base-image
       args:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         MIMIC_DEPENDENCIES_BASE_IMAGE: ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}
         MIMIC_DEPENDENCIES_BASE_IMAGE_TAG: ${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err}
-      #        TAG_OS_VERSION: ${TAG_OS_VERSION:?err}
-      #        # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
-      #        CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:?err}
-      #        NVIDIA_VISIBLE_DEVICES: ${BASE_IMG_ENV_NVIDIA_VISIBLE_DEVICES:?err}
-      #        NVIDIA_DRIVER_CAPABILITIES: ${BASE_IMG_ENV_NVIDIA_DRIVER_CAPABILITIES:?err}
-      #        PATH: ${BASE_IMG_ENV_PATH:?err}
-      #        LD_LIBRARY_PATH: ${BASE_IMG_ENV_LD_LIBRARY_PATH:?err}
-      #        # The following env var does not appear in every jetson-container 'dustynv' base images
-      #        OPENBLAS_CORETYPE: ${BASE_IMG_ENV_OPENBLAS_CORETYPE}
-      #        LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
-      #        # Base image env var transfer (jetson-container pytorch related)
-      #        TORCH_HOME: ${BASE_IMG_ENV_TORCH_HOME}
-      platforms: []
+      platforms: !reset []
 
   # ....intermediate...............................................................................
 
@@ -52,10 +40,6 @@ services:
     build:
       target: base-image-arm64
       args:
-        #        BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
-        #        BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
-        #        MIMIC_DEPENDENCIES_BASE_IMAGE: ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}
-        #        MIMIC_DEPENDENCIES_BASE_IMAGE_TAG: ${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err}
         TAG_OS_VERSION: ${TAG_OS_VERSION:?err}
         # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
         CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:?err}
@@ -68,49 +52,58 @@ services:
         LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
         # Base image env var transfer (jetson-container pytorch related)
         TORCH_HOME: ${BASE_IMG_ENV_TORCH_HOME}
+      platforms:
+        - linux/arm64
+    depends_on:
+      - l4t-base-image-main
 
   l4t-base-image-amd64:
     extends:
       service: l4t-base-image-main
     build:
       target: base-image-amd64
-
-  l4t-base-image-l4t-multiarch-base-image:
-    extends:
-      service: l4t-base-image-main
-    build:
-      target: l4t-multiarch-base-image
+      platforms:
+        - linux/amd64
+    depends_on:
+      - l4t-base-image-main
 
 
   # ....specialization.............................................................................
-
-  l4t-base-image-ros2-python-compatible:
-    extends:
-      service: l4t-base-image-main
-    build:
-      target: ros2-python-compatible
 
   l4t-base-image-mimic-l4t-image:
     extends:
       service: l4t-base-image-main
     build:
       target: mimic-l4t-image
+      platforms:
+        - linux/amd64
+    depends_on:
+      - l4t-base-image-amd64
 
-  # ....merging multi-arch.........................................................................
+
+  # ....final......................................................................................
 
   l4t-base-image-final-arm64:
     extends:
       service: l4t-base-image-main
+    image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}-arm64
     build:
       target: final-arm64
+      platforms:
+        - linux/arm64
     depends_on:
-      - l4t-base-image-main
+      - l4t-base-image-arm64
 
   l4t-base-image-final-amd64:
     extends:
       service: l4t-base-image-main
+    image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}-amd64
     build:
       target: final-amd64
+      platforms:
+        - linux/amd64
+    depends_on:
+      - l4t-base-image-mimic-l4t-image
 
   # ....tests......................................................................................
 
@@ -119,17 +112,12 @@ services:
       service: l4t-base-image-main
     build:
       target: test
+      platforms:
+        - linux/arm64
+        - linux/amd64
     depends_on:
-      - l4t-base-image-main
+      - l4t-base-image-final-amd64
+      - l4t-base-image-final-arm64
 
-  # ....final......................................................................................
 
-  l4t-base-image-multiarch:
-    extends:
-      service: l4t-base-image-main
-    image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}
-    build:
-      target: final
-    depends_on:
-      - l4t-base-image-main
 

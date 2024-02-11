@@ -37,8 +37,8 @@ fi
 TESTED_FILE="dn_execute_compose.bash"
 TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
-TEST_DOCKER_COMPOSE_FILE_PATH=dockerized-norlab-images/core-images/base-images
-TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.cuda-squash.build.yaml"
+TEST_DOCKER_COMPOSE_FILE_PATH=dockerized-norlab-images/core-images/base-images/l4t-images
+TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.l4t-squash.build.yaml"
 #TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.ros2.build.yaml"
 
 setup_file() {
@@ -146,7 +146,7 @@ setup() {
                           --tag-os-version r35.0.0 \
                           -- ${DOCKER_CMD}
   assert_success
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.cuda-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
 #  bats_print_run_env_variable
 }
 
@@ -168,7 +168,7 @@ setup() {
                           -- build
 
   assert_success
-  assert_output --regexp .*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.cuda-squash.build.yaml -f ${COMPOSE_FILE_GLOBAL} build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker."
+  assert_output --regexp .*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml -f ${COMPOSE_FILE_GLOBAL} build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1".*"completed successfully and exited docker."
 
 }
 
@@ -300,7 +300,7 @@ setup() {
                       --docker-debug-logs \
                       -- build base-image-tester
 
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.cuda-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 base-image-tester".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 base-image-tester".*"since the script is executed inside a docker container".*
 }
 
 @test "flag --force-push" {
@@ -318,7 +318,7 @@ setup() {
                       --force-push \
                       -- build
 
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.cuda-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"since the script is executed inside a docker container".*"Force push mock-service-one image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.cuda-squash.build.yaml".*" push mock-service-one".*"since the script is executed inside a docker container".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.cuda-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"since the script is executed inside a docker container".*"Force push mock-service-two image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/docker-compose.cuda-squash.build.yaml".*" push mock-service-two".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"since the script is executed inside a docker container".*"Force push mock-service-one image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" push mock-service-one".*"since the script is executed inside a docker container".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"since the script is executed inside a docker container".*"Force push mock-service-two image to docker registry".*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" push mock-service-two".*"since the script is executed inside a docker container".*
 }
 
 @test "flag --help" {

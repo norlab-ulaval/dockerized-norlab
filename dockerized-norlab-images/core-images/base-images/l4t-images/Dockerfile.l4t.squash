@@ -6,57 +6,59 @@ ARG MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 RUN touch /requirements.l4t-base-image.txt \
-    && pip3 list --format freeze --not-required  \
+    && pip3 list --format freeze \
               --exclude onnx  \
-              --exclude torch2trt  \
               --exclude torchaudio  \
               --exclude tensorrt \
+              --exclude torch2trt  \
+              --exclude pycuda  \
         > /requirements.l4t-base-image.txt
+
 
 # Note: Remove Jetson-container unused component to save time and space during squashing
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
-## (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-FROM --platform="linux/arm64" base-image AS base-image-arm64
-ARG TARGETPLATFORM
-ARG TARGETARCH
-
-## (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
-#FROM --platform="linux/arm64" scratch AS base-image-arm64
+### (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
+#FROM --platform=linux/arm64 base-image AS base-image-arm64
 #ARG TARGETPLATFORM
 #ARG TARGETARCH
-#COPY --from=base-image / /
-## Note:
-##   - This stage is a workaround to prevent the "max depth exceeded" error
-##        occuring when the maximum number of docker layer as been reached.
-##   - We use 'scratch' as base image since for simplicity we are copying everything from l4t base image anyway.
-##     We could use 'arm64v8/ubuntu:20.04' but it would require extra work yo discriminate
-##   - About nvidia l4t base images:
-##       - nvcr.io/nvidia/l4t-base install the core CUDA ressources
-##       - nvcr.io/nvidia/l4t-jetpack
-##           - install several dev package such as nvidia-cuda-dev, nvidia-cudnn-dev and nvidia-tensorrt-dev
-##           - mod their dockerfile to install runtime version of all those packages
-##   - copying ROS ressources is relatively easy, however copying ressources installed
+
+# (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
+FROM --platform=linux/arm64 scratch AS base-image-arm64
+ARG TARGETPLATFORM
+ARG TARGETARCH
+COPY --from=base-image / /
+# Note:
+#   - This stage is a workaround to prevent the "max depth exceeded" error
+#        occuring when the maximum number of docker layer as been reached.
+#   - We use 'scratch' as base image since for simplicity we are copying everything from l4t base image anyway.
+#     We could use 'arm64v8/ubuntu:20.04' but it would require extra work yo discriminate
+#   - About nvidia l4t base images:
+#       - nvcr.io/nvidia/l4t-base install the core CUDA ressources
+#       - nvcr.io/nvidia/l4t-jetpack
+#           - install several dev package such as nvidia-cuda-dev, nvidia-cudnn-dev and nvidia-tensorrt-dev
+#           - mod their dockerfile to install runtime version of all those packages
+#   - copying ROS ressources is relatively easy, however copying ressources installed
+#       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+#       Work around for minimizing maintenance: copy everything
+# Ref:
+#   - https://gitlab.com/nvidia/container-images/l4t-base
+#   - https://gitlab.com/nvidia/container-images/l4t-jetpack
+#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
+#   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
+
+## ....copy artifact from base-image...............................................................
+## Note: copying ROS ressources is relatively easy, however copying ressources installed
 ##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
 ##       Work around for minimizing maintenance: copy everything
-## Ref:
-##   - https://gitlab.com/nvidia/container-images/l4t-base
-##   - https://gitlab.com/nvidia/container-images/l4t-jetpack
-##   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
-##   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
-#
-### ....copy artifact from base-image...............................................................
-### Note: copying ROS ressources is relatively easy, however copying ressources installed
-###       via pip vs apt-get or via source installed or pytorch related is a nightmare.
-###       Work around for minimizing maintenance: copy everything
-##COPY --from=base-image /lib /lib
-##COPY --from=base-image /etc /etc
-##COPY --from=base-image /usr /usr
-##COPY --from=base-image /bin /bin
-##COPY --from=base-image /var /var
-##COPY --from=base-image /opt /opt
-##COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
+#COPY --from=base-image /lib /lib
+#COPY --from=base-image /etc /etc
+#COPY --from=base-image /usr /usr
+#COPY --from=base-image /bin /bin
+#COPY --from=base-image /var /var
+#COPY --from=base-image /opt /opt
+#COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -99,12 +101,12 @@ ENV TORCH_HOME=${TORCH_HOME}
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
 
+# Update symlink to point to system python3 instead of system python2 or conda python
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
+    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
-FROM --platform="linux/amd64" ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
-ARG TARGETPLATFORM
-ARG TARGETARCH
 
-FROM --platform=${TARGETPLATFORM} base-image-${TARGETARCH} AS l4t-multiarch-base-image
+FROM --platform=linux/amd64 ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
 ARG TARGETPLATFORM
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND=noninteractive
@@ -115,26 +117,14 @@ ENV TERM=${TERM:-"xterm-256color"}
 SHELL ["/bin/bash", "-c"]
 
 
-
-FROM --platform=${TARGETPLATFORM} l4t-multiarch-base-image AS ros2-python-compatible
-ARG TARGETPLATFORM
-ARG TARGETARCH
-ARG IS_TEAMCITY_RUN
-ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
-ARG DEBIAN_FRONTEND=noninteractive
-
-
 # ....Make python 3 default........................................................................
-RUN if [[ ! $(which python) =~ .*"python3".* ]]; then \
-          apt-get update \
-          &&  apt-get install -y --no-install-recommends \
-              gcc \
-              python3-dev \
-              python3-pip \
-          && rm -rf /var/lib/apt/lists/* \
-          && apt-get clean ; \
-    fi
-
+RUN apt-get update \
+    &&  apt-get install -y --no-install-recommends \
+      gcc \
+      python3-dev \
+      python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Update symlink to point to system python3 instead of system python2 or conda python
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
@@ -151,142 +141,109 @@ RUN python3 -m pip install --upgrade pip \
           psutil
 
 
-# (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-RUN echo "DEV test bloc" \
-    && echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
-    && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
-    && echo -e "                  PATH: $(echo $PATH)" \
-    && echo -e "              pip list: $(pip list)" \
-    && echo -e "Current python version: $(python --version)" \
-    && echo -e "   Current pip version: $(pip --version)" \
-    && echo -e "        which python's: $(which python python3)" \
-    && echo -e "        whereis python: $(whereis python)" \
-    && echo -e "           which pip's: $(which pip pip3)" \
-    && echo -e "           whereis pip: $(whereis pip)" \
-    && if [[ ! $(python --version) =~ "Python 3.".* ]]; then \
-      echo "Need python 3" && exit 1 ; \
-    fi &&  \
-    if [[ $(which python) != "/usr/bin/python" ]]; then \
-      echo "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" && exit 1 ; \
-    fi
-
-
-FROM --platform="linux/amd64" ros2-python-compatible AS mimic-l4t-image
+FROM --platform=linux/amd64 base-image-amd64 AS mimic-l4t-image
 ARG TARGETPLATFORM
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
+## ToDo: validate that its not required anymore >> pycuda install related
 #ARG CUDA_ROOT=${CUDA_HOME:-"/usr/local/cuda"}
 
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
 # ....Reinstall l4t image package in amd64 image...................................................
-RUN apt-get update  \
-    && echo "..general install related........."  \
-    && apt-get install -y --no-install-recommends \
-        build-essential \
-        software-properties-common \
-        apt-transport-https \
-        ca-certificates \
-        lsb-release \
-        pkg-config \
-        gnupg \
-        git \
-        wget \
-        curl \
-        nano \
-        zip \
-        unzip \
-    && echo "..pytorch install related........."  \
-    && apt-get install -y --no-install-recommends \
-        libopenblas-dev \
-        libopenmpi-dev \
-        openmpi-bin \
-        openmpi-common \
-        gfortran \
-        libomp-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean \
-    && pip3 install --no-cache-dir \
-        scikit-build  \
-        ninja
+RUN if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
+        apt-get update  \
+        && echo "..general install related........."  \
+        && apt-get install -y --no-install-recommends \
+            build-essential \
+            software-properties-common \
+            apt-transport-https \
+            ca-certificates \
+            lsb-release \
+            pkg-config \
+            gnupg \
+            git \
+            wget \
+            curl \
+            nano \
+            zip \
+            unzip \
+        && echo "..pytorch install related........."  \
+        && apt-get install -y --no-install-recommends \
+            libopenblas-dev \
+            libopenmpi-dev \
+            openmpi-bin \
+            openmpi-common \
+            gfortran \
+            libomp-dev \
+        && rm -rf /var/lib/apt/lists/* \
+        && apt-get clean \
+        && pip3 install --no-cache-dir \
+            scikit-build  \
+            ninja ; \
+    fi
 
-# Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
-RUN pip3 install --no-cache-dir nvidia-pyindex
-
+# ....Install l4t image ubuntu apt requirement.....................................................
 # Install pycuda related
 #   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
 #
 # Requirement for 'pycairo' which is required by 'pycuda'
 RUN apt-get update  \
-    && apt-get install -y --no-install-recommends \
+    && apt-get install -y \
       libcairo2-dev \
-      pkg-config \
-#      python3-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-RUN echo "Strip versions from requirement"  \
-    && sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt  \
-    && rm /requirements.l4t-base-image.txt.bak
 
-## (Priority) ToDo: investigate?? >> pycuda install is failling
-#RUN echo "Strip pycuda from requirement"  \
-#    && sed -i.bak 's/pycuda.*//g' /requirements.l4t-base-image.txt  \
-#    && rm /requirements.l4t-base-image.txt.bak
+# ....Install l4t image python requirement from file...............................................
+# Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
+RUN pip3 install --no-cache-dir nvidia-pyindex
 
-RUN #pip3 install --no-cache-dir -r /requirements.l4t-base-image.txt
-RUN echo -e "---pre install pip list------------------------------------------"  \
-    && pip3 list \
-    && echo -e "\n----------------------------------------------------------\n" \
-    && printenv \
-    && echo -e "\n----------------------------------------------------------\n" \
-    && more /requirements.l4t-base-image.txt  \
-    && echo -e "\n----------------------------------------------------------\n" \
-    && pip3 install -r /requirements.l4t-base-image.txt
+RUN if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
+        echo "Strip versions from requirement"  \
+        && sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt  \
+        && rm /requirements.l4t-base-image.txt.bak \
+        && pip3 install -r /requirements.l4t-base-image.txt ; \
+    fi
 
-#RUN echo "Quickhack for the 'DeprecationWarning: pkg_resources is deprecated as an API' warning" \
-#    && pip3 install --no-cache-dir  setuptools==58.2.0
-
-
-# (NICE TO HAVE) ToDo: add the explicit install step for torch2trt and tensorrt (ref task TASK)
+# Explicit install step for torch2trt and tensorrt (ref task TASK)
+# Note: python import of either torch2trt and tensorrt whithout host cuda support will return an error
 # Ref
 #   - https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing
 #   - https://github.com/NVIDIA-AI-IOT/torch2trt
 #   - https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/torch2trt/Dockerfile
+#
+
+#RUN pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
+RUN if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
+        cd /opt \
+        && git clone https://github.com/NVIDIA-AI-IOT/torch2trt \
+        && cd torch2trt \
+        && python3 setup.py install ; \
+    fi
 
 
-# (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-RUN echo "DEV test bloc" \
-    && echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
-    && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
-    && echo -e "                  PATH: $(echo $PATH)" \
-    && echo -e "              pip list: $(pip list)" \
-    && echo -e "Current python version: $(python --version)" \
-    && echo -e "   Current pip version: $(pip --version)" \
-    && echo -e "        which python's: $(which python python3)" \
-    && echo -e "        whereis python: $(whereis python)" \
-    && echo -e "           which pip's: $(which pip pip3)" \
-    && echo -e "           whereis pip: $(whereis pip)" \
-    && pip3 show pycuda \
-    && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
-    && pip3 show torch \
-    && python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
-
-
-FROM --platform="linux/arm64" ros2-python-compatible AS final-arm64
+FROM --platform=linux/arm64 base-image-arm64 AS final-arm64
 ARG TARGETPLATFORM
 ARG TARGETARCH
+ARG BUILDPLATFORM
 
-FROM --platform="linux/amd64" mimic-l4t-image AS final-amd64
+CMD [ "bash" ]
+
+FROM --platform=linux/amd64 mimic-l4t-image AS final-amd64
 ARG TARGETPLATFORM
 ARG TARGETARCH
+ARG BUILDPLATFORM
+
+CMD [ "bash" ]
 
 FROM --platform=${TARGETPLATFORM} final-${TARGETARCH} AS test
 ARG TARGETPLATFORM
 ARG TARGETARCH
+ARG BUILDPLATFORM
 
 RUN echo -e "Current python version: $(python --version)" \
     && echo -e "          which python: $(which python)" \
@@ -303,24 +260,19 @@ RUN echo -e "Current python version: $(python --version)" \
 RUN echo "Check CUDA installed version" \
     && nvcc --version | grep "release" | awk '{print $6}' | cut -c2-
 
-RUN echo -e "    TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
-    && echo -e "        TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
-    && echo -e "              PATH: $(echo $PATH)" \
+RUN echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
+    && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
+    && echo -e "                  PATH: $(echo $PATH)" \
+    && echo -e "\n----------------------------------------------------------\n" \
+    && echo -e "           which pip's: $(which pip pip3)" \
     && echo -e "              pip list: $(pip list)" \
-    && echo -e "Current python version: $(python --version)" \
-    && echo -e "   Current pip version: $(pip --version)" \
-    && echo -e "          which python's: $(which python python3)" \
-    && echo -e "        whereis python: $(whereis python)" \
-    && echo -e "             which pip's: $(which pip pip3)" \
-    && echo -e "           whereis pip: $(whereis pip)" \
+    && echo -e "\n----------------------------------------------------------\n" \
     && pip3 show pycuda \
     && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
+    && echo -e "\n----------------------------------------------------------\n" \
     && pip3 show torch \
-    && python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
-
-FROM final-${TARGETARCH} AS final
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
+    && python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )" \
+    && echo -e "\n----------------------------------------------------------\n"
 
 # Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 #       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
@@ -330,4 +282,3 @@ RUN echo "Dockerized-NorLab build system › image for target device: ${TARGETPL
       echo "base-image-squash at stage final aarch missmatch" || exit 1 ; \
     fi
 
-CMD [ "bash" ]

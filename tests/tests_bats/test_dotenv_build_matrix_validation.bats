@@ -34,7 +34,7 @@ fi
 
 # ====Setup========================================================================================
 
-TESTED_FILE_1=".env.build_matrix.base-images.cuda-squash"
+TESTED_FILE_1=".env.build_matrix.base-images.l4t-squash"
 TESTED_FILE_2=".env.build_matrix.base-images.ros2"
 TESTED_FILE_5=".env.build_matrix.dn-dependencies"
 TESTED_FILE_3=".env.build_matrix.dn-control"
@@ -81,8 +81,8 @@ teardown() {
   source "$TESTED_FILE_1"
 
   # ....Tests......................................................................................
-  assert_equal "${NBS_COMPOSE_DIR}" "dockerized-norlab-images/core-images/base-images"
-  assert_equal "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" "${NBS_COMPOSE_DIR}/docker-compose.cuda-squash.build.yaml"
+  assert_equal "${NBS_COMPOSE_DIR}" "dockerized-norlab-images/core-images/base-images/l4t-images"
+  assert_equal "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" "${NBS_COMPOSE_DIR}/docker-compose.l4t-squash.build.yaml"
   assert_equal "(${NBS_MATRIX_ROS_DISTRO[*]})" "(none)"
   assert_equal "(${NBS_MATRIX_ROS_PKG[*]})" "(none)"
 }
@@ -98,7 +98,7 @@ teardown() {
   source "$TESTED_FILE_2"
 
   # ....Tests......................................................................................
-  assert_equal "${NBS_COMPOSE_DIR}" "dockerized-norlab-images/core-images/base-images"
+  assert_equal "${NBS_COMPOSE_DIR}" "dockerized-norlab-images/core-images/base-images/ros2-install"
   assert_equal "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" "${NBS_COMPOSE_DIR}/docker-compose.ros2.build.yaml"
   assert_empty ${NBS_MATRIX_ROS_DISTRO}
   assert_empty ${NBS_MATRIX_ROS_PKG}
