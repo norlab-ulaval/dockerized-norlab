@@ -111,6 +111,9 @@ FROM squash-base-image AS ros2-python-compatible
 #FROM squash-base-image AS final-arm64
 
 ## Note on anaconda cases:
+##  - ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment
+##    Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict
+##
 ##   Strip 'conda' from "PATH=/opt/conda/condabin:/usr/local/nvm/versions/node/v15.2.1/bin:/opt/conda/bin:/opt/cmake-3.14.6-Linux-x86_64/bin/..."
 ##   using $ export PATH=$(echo ${PATH} | sed -E 's+/opt/conda/[^:]*:++g' )
 ##   or keep conda in path and simply prepend the system python path to the front
@@ -147,7 +150,7 @@ RUN if [[ $(which python) =~ "/opt/conda".* ]] || [[ ! $(which python) =~ .*"pyt
     fi
 
 
-# Update symlink to point to system python3 instead of system python2 or conda python
+# Update symlink to point to system python3 instead of system python2
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
     && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
@@ -181,7 +184,9 @@ RUN echo "DEV test bloc" \
       echo "Need python 3" && exit 1 ; \
     fi &&  \
     if [[ $(which python) != "/usr/bin/python" ]] || [[ $(which python) == "/opt/conda/bin/python" ]]; then \
-      echo "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" && exit 1 ; \
+        echo -e "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" \
+        && echo -e "Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict" \
+        && exit 1 ; \
     fi
 
 
@@ -390,7 +395,9 @@ RUN echo -e "Current python version: $(python --version)" \
       echo "Need python 3" && exit 1 ; \
     fi &&  \
     if [[ $(which python) != "/usr/bin/python" ]] || [[ $(which python) == "/opt/conda/bin/python" ]]; then \
-      echo "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" && exit 1 ; \
+        echo -e "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" \
+        && echo -e "Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict" \
+        && exit 1 ; \
     fi
 
 RUN echo "Check CUDA installed version" \

@@ -49,8 +49,7 @@ RUN apt-get update \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
 # RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-#       && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 \
-#       || update-alternatives --install /opt/conda/bin/python python /opt/conda/bin/python3 1
+#       && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
 RUN apt-get update --fix-missing \
     && apt-get install --assume-yes \

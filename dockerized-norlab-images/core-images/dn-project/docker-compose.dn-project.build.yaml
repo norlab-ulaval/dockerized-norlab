@@ -18,7 +18,7 @@ services:
 
   project-core:
     extends:
-      service: project-core
+      service: project-core-main
     image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core:${PROJECT_TAG:?err}
     environment:
       DN_CONTAINER_NAME: ${DN_CONTAINER_NAME:?err}

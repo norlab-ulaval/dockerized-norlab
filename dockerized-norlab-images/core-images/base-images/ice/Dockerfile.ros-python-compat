@@ -78,7 +78,9 @@ RUN PYTHON_VERSION=$(python --version) \
       echo "Need python 3" && exit 1 ; \
     fi &&  \
     if [[ $(which python) != "/usr/bin/python" ]] || [[ $(which python) == "/opt/conda/bin/python" ]]; then \
-      echo "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" && exit 1 ; \
+        echo -e "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" \
+        && echo -e "Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict" \
+        && exit 1 ; \
     fi
 
 RUN echo "Check CUDA installed version" \
