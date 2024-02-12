@@ -104,10 +104,13 @@ function dn::callback_execute_compose_pre() {
   fi
 
   # ====End========================================================================================
-  n2st::print_msg_warning "DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE}"
-  n2st::print_msg_warning "DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG}"
-  n2st::print_msg_warning "DN_IMAGE_TAG_NO_ROS=${DN_IMAGE_TAG_NO_ROS}"
-  n2st::print_msg_warning "MIMIC_DEPENDENCIES_BASE_IMAGE=${MIMIC_DEPENDENCIES_BASE_IMAGE}"
-  n2st::print_msg_warning "MIMIC_DEPENDENCIES_BASE_IMAGE_TAG=${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG}"
+  n2st::print_msg "Execute compose callback pre output
+    ${MSG_DIMMED_FORMAT}
+    DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE}
+    DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG}
+    DN_IMAGE_TAG_NO_ROS=${DN_IMAGE_TAG_NO_ROS}
+    MIMIC_DEPENDENCIES_BASE_IMAGE=${MIMIC_DEPENDENCIES_BASE_IMAGE}
+    MIMIC_DEPENDENCIES_BASE_IMAGE_TAG=${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG}
+    ${MSG_END_FORMAT}"
 }
 

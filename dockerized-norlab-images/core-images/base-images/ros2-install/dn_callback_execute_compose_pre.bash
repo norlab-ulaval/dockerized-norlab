@@ -23,8 +23,10 @@ function dn::callback_execute_compose_pre() {
     n2st::print_msg_error_and_exit "The directory ${NBS_COMPOSE_DIR} is unreachable"
   fi
 
-  # ....Execute cuda squash base image logic.......................................................
-
-  n2st::print_msg_warning "DN_IMAGE_TAG_NO_ROS=${DN_IMAGE_TAG_NO_ROS}"
+# ====End========================================================================================
+  n2st::print_msg "Execute compose callback pre output
+    ${MSG_DIMMED_FORMAT}
+    DN_IMAGE_TAG_NO_ROS=${DN_IMAGE_TAG_NO_ROS}
+    ${MSG_END_FORMAT}"
 }
 

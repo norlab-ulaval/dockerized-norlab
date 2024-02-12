@@ -78,27 +78,6 @@ services:
     depends_on:
       - l4t-base-image-amd64
 
-  # ....tests......................................................................................
-  l4t-base-image-arm64-tester:
-    extends:
-      service: l4t-base-image-arm64
-    build:
-      target: test
-      platforms:
-        - linux/arm64
-    depends_on:
-      - l4t-base-image-final-arm64
-
-  l4t-base-image-amd64-tester:
-    extends:
-      service: l4t-base-image-main
-    build:
-      target: test
-      platforms:
-        - linux/amd64
-    depends_on:
-      - l4t-base-image-final-amd64
-
   # ....final......................................................................................
   l4t-base-image-arm64-final:
     extends:
@@ -109,7 +88,7 @@ services:
       platforms:
         - linux/arm64
     depends_on:
-      - l4t-base-image-arm64-tester
+      - l4t-base-image-arm64
 
   l4t-base-image-amd64-final:
     extends:
@@ -120,6 +99,27 @@ services:
       platforms:
         - linux/amd64
     depends_on:
-      - l4t-base-image-amd64-tester
+      - l4t-base-image-mimic-l4t-image
+
+  # ....tests......................................................................................
+  l4t-base-image-arm64-tester:
+    extends:
+      service: l4t-base-image-arm64
+    build:
+      target: test
+      platforms:
+        - linux/arm64
+    depends_on:
+      - l4t-base-image-arm64-final
+
+  l4t-base-image-amd64-tester:
+    extends:
+      service: l4t-base-image-main
+    build:
+      target: test
+      platforms:
+        - linux/amd64
+    depends_on:
+      - l4t-base-image-amd64-final
 
 

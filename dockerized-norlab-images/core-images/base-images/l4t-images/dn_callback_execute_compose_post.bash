@@ -9,5 +9,4 @@ function dn::callback_execute_compose_post() {
          "${DN_HUB}/dockerized-norlab-base-image:${DN_IMAGE_TAG}-amd64"
 
     n2st::print_msg_done "Multiarch image pushed to docker registry"
-
 }
