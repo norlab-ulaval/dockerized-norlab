@@ -36,7 +36,7 @@ services:
     container_name: IamInteractive
     image: ${DN_HUB:?err}/dockerized-norlab-dependencies-prompt:${DN_IMAGE_TAG:?err}
     depends_on:
-      - dependencies-core-main
+      - dependencies-core
 
   # ....dependencies-python-science-stack..........................................................
   dependencies-python-science-stack:
@@ -78,7 +78,7 @@ services:
         - ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dockerized-norlab-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
     depends_on:
-      - dependencies-ros2-custom-main
+      - dependencies-ros2-custom-tester
 
 #  # ....dependencies (full)........................................................................
 #  dependencies-full:
