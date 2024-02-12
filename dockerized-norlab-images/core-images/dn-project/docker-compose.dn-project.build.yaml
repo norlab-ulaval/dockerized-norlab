@@ -57,7 +57,7 @@ services:
       service: project-develop-main
     image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:${PROJECT_TAG:?err}
     depends_on:
-      - project-develop-main
+      - project-develop-tester
 
   # ....project-deploy.............................................................................
   project-deploy-main: # ›› no push build service
@@ -87,7 +87,7 @@ services:
       service: project-deploy-main
     image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${PROJECT_TAG:?err}
     depends_on:
-      - project-deploy-main
+      - project-deploy-tester
 
 
   # ....project-cicd................................................................................

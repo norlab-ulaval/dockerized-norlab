@@ -45,7 +45,7 @@ services:
       service: dn-perception-libpointmatcher-main
     image: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher:${DN_IMAGE_TAG:?err}
     depends_on:
-      - dn-perception-libpointmatcher-main
+      - dn-perception-libpointmatcher-tester
 
   # ....icp-mapper..................................................................................
   dn-perception-icp-mapper-main:
@@ -72,7 +72,7 @@ services:
       service: dn-perception-icp-mapper-main
     image: ${DN_HUB:?err}/dockerized-norlab-perception-icp-mapper:${DN_IMAGE_TAG:?err}
     depends_on:
-      - dn-perception-icp-mapper-main
+      - dn-perception-icp-mapper-tester
 
   # ....norlab perception stack.....................................................................
   # ToDo: fixme!! >> libpointmatcher_ros install ↓↓
@@ -102,4 +102,4 @@ services:
       target: final
     image: ${DN_HUB:?err}/dockerized-norlab-perception-stack:${DN_IMAGE_TAG:?err}
     depends_on:
-      - dn-perception-norlab-stack-main
+      - dn-perception-norlab-stack-tester
