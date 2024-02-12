@@ -32,8 +32,7 @@ services:
         MIMIC_DEPENDENCIES_BASE_IMAGE_TAG: ${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err}
       platforms: !reset []
 
-  # ....intermediate...............................................................................
-
+  # ....squash stages..............................................................................
   l4t-base-image-arm64:
     extends:
       service: l4t-base-image-main
@@ -69,10 +68,9 @@ services:
 
 
   # ....specialization.............................................................................
-
   l4t-base-image-mimic-l4t-image:
     extends:
-      service: l4t-base-image-main
+      service: l4t-base-image-amd64
     build:
       target: mimic-l4t-image
       platforms:
@@ -80,21 +78,40 @@ services:
     depends_on:
       - l4t-base-image-amd64
 
+  # ....tests......................................................................................
+  l4t-base-image-arm64-tester:
+    extends:
+      service: l4t-base-image-arm64
+    build:
+      target: test
+      platforms:
+        - linux/arm64
+    depends_on:
+      - l4t-base-image-final-arm64
 
-  # ....final......................................................................................
-
-  l4t-base-image-final-arm64:
+  l4t-base-image-amd64-tester:
     extends:
       service: l4t-base-image-main
+    build:
+      target: test
+      platforms:
+        - linux/amd64
+    depends_on:
+      - l4t-base-image-final-amd64
+
+  # ....final......................................................................................
+  l4t-base-image-arm64-final:
+    extends:
+      service: l4t-base-image-arm64
     image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}-arm64
     build:
       target: final-arm64
       platforms:
         - linux/arm64
     depends_on:
-      - l4t-base-image-arm64
+      - l4t-base-image-arm64-tester
 
-  l4t-base-image-final-amd64:
+  l4t-base-image-amd64-final:
     extends:
       service: l4t-base-image-main
     image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}-amd64
@@ -103,21 +120,6 @@ services:
       platforms:
         - linux/amd64
     depends_on:
-      - l4t-base-image-mimic-l4t-image
-
-  # ....tests......................................................................................
-
-  l4t-base-image-multiarch-tester:
-    extends:
-      service: l4t-base-image-main
-    build:
-      target: test
-      platforms:
-        - linux/arm64
-        - linux/amd64
-    depends_on:
-      - l4t-base-image-final-amd64
-      - l4t-base-image-final-arm64
-
+      - l4t-base-image-amd64-tester
 
 

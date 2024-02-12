@@ -5,6 +5,7 @@ ARG MIMIC_DEPENDENCIES_BASE_IMAGE
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
+# ....Fetch pip installed packages list............................................................
 RUN touch /requirements.l4t-base-image.txt \
     && pip3 list --format freeze \
               --exclude onnx  \
@@ -14,21 +15,15 @@ RUN touch /requirements.l4t-base-image.txt \
               --exclude pycuda  \
         > /requirements.l4t-base-image.txt
 
-
-# Note: Remove Jetson-container unused component to save time and space during squashing
+# ....Remove Jetson-container unused component to save time and space during squashing.............
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
-### (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
+## (CRITICAL) ToDo: on DEV task end >> delete next line ↓↓
 #FROM --platform=linux/arm64 base-image AS base-image-arm64
-#ARG TARGETPLATFORM
-#ARG TARGETARCH
 
-# (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
 FROM --platform=linux/arm64 scratch AS base-image-arm64
-ARG TARGETPLATFORM
-ARG TARGETARCH
-COPY --from=base-image / /
+# .................................................................................................
 # Note:
 #   - This stage is a workaround to prevent the "max depth exceeded" error
 #        occuring when the maximum number of docker layer as been reached.
@@ -47,18 +42,9 @@ COPY --from=base-image / /
 #   - https://gitlab.com/nvidia/container-images/l4t-jetpack
 #   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
 #   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
-
-## ....copy artifact from base-image...............................................................
-## Note: copying ROS ressources is relatively easy, however copying ressources installed
-##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
-##       Work around for minimizing maintenance: copy everything
-#COPY --from=base-image /lib /lib
-#COPY --from=base-image /etc /etc
-#COPY --from=base-image /usr /usr
-#COPY --from=base-image /bin /bin
-#COPY --from=base-image /var /var
-#COPY --from=base-image /opt /opt
-#COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
+# .................................................................................................
+ARG TARGETPLATFORM
+ARG TARGETARCH
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -93,13 +79,28 @@ ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 ARG TORCH_HOME
 ENV TORCH_HOME=${TORCH_HOME}
 
-## En var added by jetson-container tensorflow related base images
+## Env var added by jetson-container tensorflow related base images
 #ARG PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
 #ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
 
-# En var added by jetson-container 'dustynv/ros' base images
+# Env var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
+
+# ....copy ALL artifact from base-image............................................................
+COPY --from=base-image / /
+
+## ....copy artifact from base-image...............................................................
+## Note: copying ROS ressources is relatively easy, however copying ressources installed
+##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+##       Work around for minimizing maintenance: copy everything
+#COPY --from=base-image /lib /lib
+#COPY --from=base-image /etc /etc
+#COPY --from=base-image /usr /usr
+#COPY --from=base-image /bin /bin
+#COPY --from=base-image /var /var
+#COPY --from=base-image /opt /opt
+#COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
 # Update symlink to point to system python3 instead of system python2
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \

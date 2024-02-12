@@ -71,21 +71,21 @@ ENV PATH=${PATH:?'Environment variable was not passed from base-image build stag
 ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
 
 # ....The following env var does not appear in every jetson-container ros base images..............
-# En var added by jetson-container pytorch related base images
+# Env var added by jetson-container pytorch related base images
 ARG OPENBLAS_CORETYPE
 ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 ARG TORCH_HOME
 ENV TORCH_HOME=${TORCH_HOME}
 
-# En var added by jetson-container tensorflow related base images
+# Env var added by jetson-container tensorflow related base images
 ARG PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
 
-# En var added by jetson-container 'dustynv/ros' base images
+# Env var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
 
-# En var added by 'nvcr.io/nvidia/pytorch' base images
+# Env var added by 'nvcr.io/nvidia/pytorch' base images
 ARG TENSORBOARD_PORT
 ENV TENSORBOARD_PORT=${TENSORBOARD_PORT}
 ARG JUPYTER_PORT

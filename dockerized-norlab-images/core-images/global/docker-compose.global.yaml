@@ -64,4 +64,4 @@ services:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
       dockerfile: Dockerfile
       platforms: !reset []
-    pull_policy: build
+#    pull_policy: build

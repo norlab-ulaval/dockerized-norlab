@@ -42,7 +42,7 @@ ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
 # ....Transfer environment variable from base-images...............................................
-# En var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
+# Env var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
 ARG CUDA_HOME
 ARG NVIDIA_VISIBLE_DEVICES
 ARG NVIDIA_DRIVER_CAPABILITIES
@@ -55,7 +55,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:?'Environment variab
 ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
 ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
 
-# En var added by jetson-container 'dustynv/ros' base images
+# Env var added by jetson-container 'dustynv/ros' base images
 ARG ROS_DISTRO
 ARG ROS_ROOT
 ARG ROS_PYTHON_VERSION
@@ -67,11 +67,11 @@ ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passe
 ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
 
 # ....The following env var does not appear in every jetson-container ros base images..............
-# En var added by jetson-container 'dustynv/ros' base images
+# Env var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
 
-# En var added by jetson-container pytorch related base images
+# Env var added by jetson-container pytorch related base images
 ARG OPENBLAS_CORETYPE
 ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 
