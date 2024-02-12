@@ -3,8 +3,7 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS build-norlab-perception-ros-stack
 
-#ARG ROS_DISTRO
-#ENV ROS_DISTRO=${ROS_DISTRO:?'Environment variable was not passed from base-image build stage'}
+ARG DEBIAN_FRONTEND=noninteractive
 
 # ====Requirement==================================================================================
 WORKDIR ${DN_DEV_WORKSPACE}
@@ -18,9 +17,8 @@ RUN apt-get update --fix-missing \
           ros-${ROS_DISTRO}-tf2-eigen \
           ros-${ROS_DISTRO}-nav-msgs \
           ros-${ROS_DISTRO}-sensor-msgs \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-
 
 # ====Begin========================================================================================
 # Reference: https://github.com/norlab-ulaval/Norlab_wiki/wiki/Tutorials:-3D-Mapping-(ros2)
@@ -31,8 +29,6 @@ RUN apt-get update --fix-missing \
 ##ENV libpointmatcher_INCLUDE_DIRS=${PERCEP3D_LIB_PATH}/libpointmatcher
 #ENV libpointmatcher_DIR="${PERCEP3D_LIB_PATH}/share/libpointmatcher/cmake"
 ## ★★★ Note: Consider something around the line of libpointmatcher_DIR=${PERCEP3D_LIB_PATH}/libpointmatcher/build/install/share/libpointmatcher/cmake
-
-
 
 # ....fetch libpointmatcher_ros....................................................................
 # (NICE TO HAVE) ToDo: move libpointmatcher_ros install step to dn-perception-libpointmatcher image
@@ -48,7 +44,6 @@ WORKDIR ${DN_DEV_WORKSPACE}/src/
 RUN git clone https://github.com/norlab-ulaval/mapper_config_template.git
 
 # ....Fetch demo data..............................................................................
-#WORKDIR ${HOME}
 WORKDIR ${DN_DEV_WORKSPACE}
 RUN wget -O demo.zip "http://norlab.s3.valeria.science/demo.zip?AWSAccessKeyId=XMBLP3A0338XN5LASKV2&Expires=2290342833&Signature=NXn1f%2BeJ7NptrzUkNzHtEvdicjc%3D" \
     && unzip demo.zip \
