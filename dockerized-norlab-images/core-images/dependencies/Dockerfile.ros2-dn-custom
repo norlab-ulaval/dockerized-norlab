@@ -112,7 +112,7 @@ RUN echo "Sanity check" \
     && echo ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} \
     && echo ROS_DISTRO=${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} \
     && echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+#    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
     && echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
     && echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy" \

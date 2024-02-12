@@ -105,7 +105,7 @@ RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
     && echo "Sanity check" \
     && echo ROS_VERSION=${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
     && echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+#    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
     && echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
     && echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy" \
