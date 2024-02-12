@@ -16,7 +16,7 @@
 function dn::callback_execute_compose_pre() {
 
   # ....Export image tag for squashed base image use...............................................
-  export DN_IMAGE_TAG_NO_ROS="DN-${REPOSITORY_VERSION}-${DN_IMAGE_TAG_END}"
+  export DN_IMAGE_TAG_NO_ROS="DN-${REPOSITORY_VERSION:?err}-${DN_IMAGE_TAG_END:?err}"
 
   # ....Fetch base image environment variables.....................................................
   if [[ ! -d ${NBS_COMPOSE_DIR:?err} ]]; then

@@ -51,13 +51,26 @@ RUN apt-get update \
 # RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
 #       && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
+# Note: Reference ros-desktop vs cuda enabled opencv
+#   - Ref https://github.com/dusty-nv/jetson-containers/issues/158
+#   - Ref https://github.com/dusty-nv/jetson-containers/issues/89
+RUN if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(dpkg --get-selections | grep opencv) ]]; then \
+      CV_WARN=("Removing previously installed version of opencv as it conflict with ros-${ROS_DISTRO}-${ROS_PKG} install process which install its own version.") \
+      && apt-get purge -y *opencv* \
+      && CV_WARN+=("Be advised that the ros-${ROS_DISTRO}-${ROS_PKG} opencv version is not CUDA enable and may interfere with the one installed by Pytorch or TensorFlow.") \
+      && echo "${CV_WARN[*]}" >> /dn_warning.log \
+      && echo -e "[WARNING] ${CV_WARN[*]}" ; \
+    fi
+
+
 RUN apt-get update --fix-missing \
-    && apt-get install --assume-yes \
+    && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-${ROS_PKG} \
         ros-${ROS_DISTRO}-rosbridge-server \
         ros-dev-tools \
         python3-rosdep \
         python3-colcon-common-extensions \
+        python3-colcon-mixin \
         python3-vcstool \
         ros-${ROS_DISTRO}-rqt-graph \
         ros-${ROS_DISTRO}-rviz2 \
@@ -83,7 +96,7 @@ RUN python3 -m pip install --upgrade pip \
 #   - upgrade cmake - https://stackoverflow.com/a/56690743
 #   - this is needed to build some of the ROS2 packages
 #   - use pip to upgrade cmake instead because of kitware's rotating GPG keys:
-#   - https://github.com/dusty-nv/jetson-containers/issues/216
+#  Source https://github.com/dusty-nv/jetson-containers/issues/216
 
 RUN echo "Quick hack for building ros2 example under ROS foxy focal linux/amd64"  \
     && pip3 install setuptools==58.2.0 \
@@ -98,12 +111,9 @@ RUN echo "Quick hack for building ros2 example under ROS foxy focal linux/amd64"
 # Note: Next line is for creating the directories without using a RUN to keep number of layer small
 WORKDIR ${DN_DEV_WORKSPACE}/src
 
-WORKDIR ${DN_DEV_WORKSPACE}
-
 # ....Quick start workspace with a minimal ROS package.............................................
-#RUN git clone https://github.com/ros2/examples src/examples -b foxy \
-#RUN git clone https://github.com/ros2/examples src/examples -b humble \
-RUN #git clone https://github.com/ros2/examples src/examples -b master \
+WORKDIR ${DN_DEV_WORKSPACE}
+#RUN git clone https://github.com/ros2/examples src/examples -b master \
 RUN git clone https://github.com/ros2/examples src/examples -b ${ROS_DISTRO} \
     && cd src/examples/rclcpp || exit 1
 
@@ -114,9 +124,15 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && rosdep update
 
     #    && rosdep fix-permissions
+
 # Note: For some reason, building ros2 example under ROS foxy focal linux/amd64 fail when \
 #       "rosdep update" use those flags:
 #        $ rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
+
+RUN colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml  \
+    && colcon mixin update  \
+    && colcon metadata add default https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml  \
+    && colcon metadata update
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
@@ -129,18 +145,27 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
             -y \
     && colcon version-check
 
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN COLCON_FLAGS=() \
+    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
+         echo -e "Builder is running in architecture virtualisation" \
+         && COLCON_FLAGS+=(--executor sequential) ; \
+       fi \
+    && COLCON_FLAGS+=( \
+          --symlink-install \
+          --cmake-clean-cache \
+          --event-handlers console_direct+ \
+       ) \
+    && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
+    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && colcon build \
-            --symlink-install \
-            --cmake-clean-cache \
-            --event-handlers console_direct+
+    && colcon build ${COLCON_FLAGS[@]}
 
 # Note: The colcon flag "--cmake-clean-cache" reset the python3 env
 
 # ===Remove dustynv entrypoint from .bashrc. ======================================================
 # Note: Source ROS in the dn_ros2_entrypoint.bash instead"
-
 RUN sed --in-place "s;source /ros_entrypoint.sh;;" "$HOME/.bashrc" \
     && rm --force /ros_entrypoint.sh
 
@@ -165,6 +190,14 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && colcon test \
     && python -c "import rclpy" \
     && ros2 pkg list
+
+RUN if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(pip list | grep cv2) ]]; then \
+      python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )" ; \
+    fi
+
+RUN if [[ -n $(pip list | grep pytorch) ]] && [[ -n $(pip list | grep cv2) ]]; then \
+      python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )" ; \
+    fi
 
 RUN echo "Check workspace directory installation"  \
     && [[ -d ${DN_DEV_WORKSPACE}/build ]] \

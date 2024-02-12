@@ -11,8 +11,6 @@ services:
       target: ros2-install
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image
-        #        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
-        # (CRITICAL) ToDo: validate 'DN_IMAGE_TAG_NO_ROS'
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG_NO_ROS:?err}
         ROS_DISTRO: ${ROS_DISTRO}
         ROS_PKG: ${ROS_PKG}
@@ -32,4 +30,4 @@ services:
     build:
       target: final
     depends_on:
-      - base-image-ros2-clean-main
+      - base-image-ros2-clean-tester
