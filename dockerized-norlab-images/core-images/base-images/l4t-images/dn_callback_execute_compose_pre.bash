@@ -30,7 +30,8 @@ function dn::callback_execute_compose_pre() {
 
     # ex: dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
-    FETCH_CUDA_VERSION_MAJOR_MINOR=$( docker pull "${DOCKER_IMG}" && docker run --privileged -it --rm "${DOCKER_IMG}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
+    docker pull "${DOCKER_IMG}"
+    FETCH_CUDA_VERSION_MAJOR_MINOR=$( docker run --privileged -it --rm "${DOCKER_IMG}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
     if [[ ${FETCH_CUDA_VERSION_MAJOR_MINOR} =~ ${L4T_CUDA_VERSION} ]]; then
         n2st::print_msg_error_and_exit "Cuda version for multiaarch l4t mimic image do not match!"
     fi
