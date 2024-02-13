@@ -427,7 +427,6 @@ ARG BUILDPLATFORM
 # Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 #       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
 RUN echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}" \
-    && echo "(CRITICAL) ToDo: on task end >> delete next if clause ↓↓" \
     && if [[ "${TARGETPLATFORM}" =~ "linux/arm64".* ]] && [[ "$(uname --machine)" == "x86_64" ]]; then \
       echo "base-image-squash at stage final aarch missmatch" || exit 1 ; \
     fi

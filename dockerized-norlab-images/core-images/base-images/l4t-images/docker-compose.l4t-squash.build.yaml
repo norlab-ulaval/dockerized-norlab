@@ -20,6 +20,7 @@ services:
   l4t-base-image-main:
     extends:
       file: "../../global/docker-compose.global.yaml"
+#      service: global-service-builder-base-images-config-arm64
       service: global-service-builder-base-images-config
     build:
       context: "."
@@ -30,7 +31,8 @@ services:
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         MIMIC_DEPENDENCIES_BASE_IMAGE: ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}
         MIMIC_DEPENDENCIES_BASE_IMAGE_TAG: ${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err}
-      platforms: !reset []
+      platforms:
+        - linux/arm64
 
   # ....squash stages..............................................................................
   l4t-base-image-arm64:
@@ -51,8 +53,6 @@ services:
         LD_PRELOAD: ${BASE_IMG_ENV_LD_PRELOAD}
         # Base image env var transfer (jetson-container pytorch related)
         TORCH_HOME: ${BASE_IMG_ENV_TORCH_HOME}
-      platforms:
-        - linux/arm64
     depends_on:
       - l4t-base-image-main
 
@@ -61,7 +61,7 @@ services:
       service: l4t-base-image-main
     build:
       target: base-image-amd64
-      platforms:
+      platforms: !override
         - linux/amd64
     depends_on:
       - l4t-base-image-main
@@ -73,8 +73,6 @@ services:
       service: l4t-base-image-amd64
     build:
       target: mimic-l4t-image
-      platforms:
-        - linux/amd64
     depends_on:
       - l4t-base-image-amd64
 
@@ -85,19 +83,15 @@ services:
     image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}-arm64
     build:
       target: final-arm64
-      platforms:
-        - linux/arm64
     depends_on:
       - l4t-base-image-arm64
 
   l4t-base-image-amd64-final:
     extends:
-      service: l4t-base-image-main
+      service: l4t-base-image-amd64
     image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}-amd64
     build:
       target: final-amd64
-      platforms:
-        - linux/amd64
     depends_on:
       - l4t-base-image-mimic-l4t-image
 
@@ -107,18 +101,14 @@ services:
       service: l4t-base-image-arm64
     build:
       target: test
-      platforms:
-        - linux/arm64
     depends_on:
       - l4t-base-image-arm64-final
 
   l4t-base-image-amd64-tester:
     extends:
-      service: l4t-base-image-main
+      service: l4t-base-image-amd64
     build:
       target: test
-      platforms:
-        - linux/amd64
     depends_on:
       - l4t-base-image-amd64-final
 

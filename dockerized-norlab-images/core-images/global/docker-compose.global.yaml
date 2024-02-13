@@ -2,7 +2,7 @@ services:
   global-service-dev-config:
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-#      no_cache: true  # Enforce full rebuild                               <-- mute on task end
+    #  no_cache: true  # Enforce full rebuild                               <-- mute on task end
     #command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -33,7 +33,7 @@ services:
       # DISPLAY: '169.254.205.89:0.0'
       QT_X11_NO_MITSHM: 1
 
-  global-service-builder-config:
+  global-service-builder-base-images-config:
     extends:
       service: global-service-dev-config #ToDo: on dev task end >> mute this line ←
     build:
@@ -45,6 +45,17 @@ services:
         context-dn-root: "${DN_PATH:?err}"
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
+      platforms: !reset []
+      labels:
+        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+    pull_policy: build
+
+  global-service-builder-config:
+    extends:
+      service: global-service-builder-base-images-config
+    build:
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+      dockerfile: Dockerfile
         ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
         #   DN_TARGET_DEVICE: ${DN_TARGET_DEVICE:?err}
         ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
@@ -53,16 +64,4 @@ services:
       platforms:
         - linux/arm64
         - linux/amd64
-      labels:
-        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-#    pull_policy: missing  #Note: enforce pulling image only if not available in cache
-    pull_policy: build
-
-  global-service-builder-base-images-config:
-    extends:
-      service: global-service-builder-config
-    build:
-      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-      dockerfile: Dockerfile
-      platforms: !reset []
-#    pull_policy: build
+    pull_policy: missing  #Note: enforce pulling image only if not available in cache

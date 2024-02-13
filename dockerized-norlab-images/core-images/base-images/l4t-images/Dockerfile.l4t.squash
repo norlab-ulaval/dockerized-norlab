@@ -3,23 +3,37 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
-FROM --platform=${TARGETPLATFORM} ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+FROM --platform=linux/arm64 ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 # ....Fetch pip installed packages list............................................................
 RUN touch /requirements.l4t-base-image.txt \
-    && pip3 list --format freeze \
+    && ( \
+          pip3 list --format freeze \
               --exclude onnx  \
               --exclude torchaudio  \
               --exclude tensorrt \
               --exclude torch2trt  \
-              --exclude pycuda  \
-        > /requirements.l4t-base-image.txt
+              --exclude pycuda ; \
+      ) > /requirements.l4t-base-image.txt
+
+# ....Builder sanity check........................................................................
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+RUN echo -e "DEV introspection\n\n \
+    Buildx env\n \
+      BUILDPLATFORM: ${BUILDPLATFORM}\n \
+      TARGETPLATFORM: ${TARGETPLATFORM}\n \
+    Real build target architecture: $(uname -m)\n" \
+    && more /requirements.l4t-base-image.txt \
+    && if [[ ${TARGETPLATFORM} != $(uname -m) ]]; then \
+         echo "[DN-build-system ERROR] L4T base images should be pulled as platform linux/arm64. Something is wrong!" && exit 1 ; \
+       fi
 
 # ....Remove Jetson-container unused component to save time and space during squashing.............
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
-## (CRITICAL) ToDo: on DEV task end >> delete next line ↓↓
+## (CRITICAL) ToDo: on DEV task end >> mute next line ↓↓
 #FROM --platform=linux/arm64 base-image AS base-image-arm64
 
 FROM --platform=linux/arm64 scratch AS base-image-arm64
@@ -280,8 +294,12 @@ RUN echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set i
 # Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 #       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
 RUN echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}" \
-    && echo "(CRITICAL) ToDo: on task end >> delete next if clause ↓↓" \
+    && echo -e "DEV introspection\n\n \
+        Buildx env\n \
+          BUILDPLATFORM: ${BUILDPLATFORM}\n \
+          TARGETPLATFORM: ${TARGETPLATFORM}\n \
+        Real build target architecture: $(uname -m)\n" \
     && if [[ "${TARGETPLATFORM}" =~ "linux/arm64".* ]] && [[ "$(uname --machine)" == "x86_64" ]]; then \
-      echo "base-image-squash at stage final aarch missmatch" || exit 1 ; \
-    fi
+          echo "[DN-build-system ERROR] Test stage architecture missmatch!" && exit 1 ; \
+       fi
 

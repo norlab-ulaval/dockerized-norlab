@@ -30,7 +30,7 @@ function dn::callback_execute_compose_pre() {
 
     # ex: dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
-    docker pull "${DOCKER_IMG}"
+    docker pull --platform="linux/arm64" "${DOCKER_IMG}"
     FETCH_CUDA_VERSION_MAJOR_MINOR=$( docker run --privileged -it --rm "${DOCKER_IMG}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
     if [[ ${FETCH_CUDA_VERSION_MAJOR_MINOR} =~ ${L4T_CUDA_VERSION} ]]; then
         n2st::print_msg_error_and_exit "Cuda version for multiaarch l4t mimic image do not match!"
@@ -42,16 +42,16 @@ function dn::callback_execute_compose_pre() {
 
   # ....Reformat mimic of dustynv base image name and tag..........................................
   if [[ ${DEPENDENCIES_BASE_IMAGE} =~ "dustynv/".* ]]; then
-#    # Mimic base image: cuda runtime
-#    # Note: L4T mimic base image 'nvidia/cuda:12.3.1-runtime-ubuntu20.04'
-#    #    ref https://hub.docker.com/r/nvidia/cuda
+#    # "cuda runtime" as base for L4T image mimic
+#    #  - base image 'nvidia/cuda:12.3.1-runtime-ubuntu20.04'
+#    #  - ref https://hub.docker.com/r/nvidia/cuda
 #    export MIMIC_DEPENDENCIES_BASE_IMAGE="nvidia/cuda"
 #    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${L4T_CUDA_VERSION}-runtime-ubuntu${CONVERTED_TAG_OS_VERSION}.04"
 
-    # Mimic base image: tensorrt
-    # Comme with pycuda and tensorrt install
-    # Note: L4T mimic base image 'nvcr.io/nvidia/tensorrt:20.12-py3'
-    #   ref https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorrt/tags
+    # "tensorrt" as base for L4T image mimic
+    #   - Comme with pycuda and tensorrt installed
+    #   - base image 'nvcr.io/nvidia/tensorrt:20.12-py3'
+    #   - ref https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorrt/tags
     export MIMIC_DEPENDENCIES_BASE_IMAGE="nvcr.io/nvidia/tensorrt"
     export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.12-py3"
 
@@ -73,7 +73,7 @@ function dn::callback_execute_compose_pre() {
     n2st::print_msg "Pulling DOCKER_IMG=${DOCKER_IMG}"
 
     # shellcheck disable=SC2046
-    docker pull "${DOCKER_IMG}" \
+    docker pull --platform="linux/arm64" "${DOCKER_IMG}" \
       && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DOCKER_IMG}" \
         | grep \
           -e CUDA_HOME= \
@@ -95,7 +95,6 @@ function dn::callback_execute_compose_pre() {
         | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
         | sed 's;^TORCH_HOME;BASE_IMG_ENV_TORCH_HOME;' \
        )
-
 
     n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:
       ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
