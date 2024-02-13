@@ -3,11 +3,10 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
-FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+FROM --platform=${TARGETPLATFORM} ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 # ....Fetch pip installed packages list............................................................
 RUN touch /requirements.l4t-base-image.txt \
-    && chmod a+x /requirements.l4t-base-image.txt \
     && pip3 list --format freeze \
               --exclude onnx  \
               --exclude torchaudio  \
