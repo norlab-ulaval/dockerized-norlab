@@ -76,7 +76,7 @@ setup() {
 
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
 
@@ -94,7 +94,7 @@ setup() {
 }
 
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
@@ -112,7 +112,7 @@ setup() {
 }
 
 @test "missing docker-compose.yaml file mandatory argument › expect fail" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose
@@ -132,7 +132,7 @@ setup() {
 }
 
 @test "docker command are passed to show and execute docker" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   local DOCKER_CMD="build --no-cache --push"
   mock_docker_command_config_services
@@ -168,12 +168,12 @@ setup() {
                           -- build
 
   assert_success
-  assert_output --regexp .*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml -f ${COMPOSE_FILE_GLOBAL} build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1".*"completed successfully and exited docker."
+  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml -f ${COMPOSE_FILE_GLOBAL} build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1".*"completed successfully and exited docker."
 
 }
 
 @test "docker exit code propagation on pass › expect pass" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   local DOCKER_CMD="version"
   set +e
@@ -194,7 +194,7 @@ setup() {
 }
 
 @test "docker exit code propagation on faillure › expect pass" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   local DOCKER_CMD="version"
   mock_docker_command_exit_error
@@ -215,7 +215,7 @@ setup() {
 }
 
 @test "Variable are exported to calling script › expect pass" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   assert_empty "$BUILDKIT_PROGRESS"
   assert_empty "$REPOSITORY_VERSION"
@@ -269,7 +269,7 @@ setup() {
 }
 
 @test "flags that set env variable" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
@@ -286,7 +286,7 @@ setup() {
 }
 
 @test "docker compose build conditional logic" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
@@ -304,7 +304,7 @@ setup() {
 }
 
 @test "flag --force-push" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
@@ -322,7 +322,7 @@ setup() {
 }
 
 @test "flag --help" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --help
@@ -331,7 +331,7 @@ setup() {
 }
 
 @test "flag --buildx-bake" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
   mock_docker_command_config_services
