@@ -66,13 +66,22 @@ Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
 [//]: # ( ==== Body ================================================== )
 
 ### Features
-- Multi ros distros: `foxy`, `humble` ...
-- Multi ros packages: `core`, `base`, `desktop`
-- Multi packages: `libpoitmatcher`, `pytorch`, `torchvision`, `numba`, `stable-baseline`, `f1tenth-gym` ...
+- CUDA support via _nvidia-docker_
+- Multi architectures: `l4t/arm64`, `linux/amd64`
 - Multi OS versions:
-  - Jetpack: `r35.2.1`, `r32.7.1` ...
-  - Ubuntu: `focal` (in progress: `bionic` and `jammy`)
-- Multi architectures: `l4t/arm64` (in progress: `linux/arm64`, `linux/x86`)
+  - Jetpack: `r35.2.1`, `r35.4.1`, `r36.2.8` ...
+  - Ubuntu: `focal`, `jammy`
+- Multi ros2 distros: `foxy`, `humble` ...
+- Multi ros2 packages: `core`, `base`, `desktop`
+- Multi packages (non-exhaustive list): 
+  - Numerical computing: `numpy`, `numba`, `pycuda`, `tensorrt`
+  - Deep-learning: `pytorch`, `torch2trt`, `tensordict`
+  - Vision: `opencv`, `torchvision`
+  - NorLab perception stack: `libpoitmatcher[-ros]`, `norlab-icp-mapper[-ros]` 
+  - NorLab control stack: (in progress) 
+  - MLOps: `ray`, `omegaconf`, `hydra-core`, `wandb`
+  - Deep-rl: `stable-baseline3`
+  - Simulation: `gym`, `f1tenth-gym`
  
 ### Why
 1. custom dependency management; 
@@ -92,8 +101,8 @@ execute the following in repository root
 ```shell
 export BUILDX_BUILDER=local-builder-multiarch-virtual \
   && export NBS_OVERRIDE_BUILD_MATRIX_MAIN=".env.build_matrix.main" \
-  && export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build" \
-  && source dockerized-norlab-scripts/build_script/dn_build_all.bash --force-push
+  && export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push" \
+  && source dockerized-norlab-scripts/build_script/dn_build_all.bash
 ```
 
 Note: To create a multi-architecture _docker builder_ with architecture virtualization
@@ -106,3 +115,6 @@ docker buildx create \
     --bootstrap \
     --use
 ```
+
+![](visual/crawl_1.png)
+![](visual/crawl_2.png)
