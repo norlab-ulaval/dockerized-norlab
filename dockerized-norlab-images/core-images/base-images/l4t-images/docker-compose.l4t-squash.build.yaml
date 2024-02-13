@@ -30,7 +30,9 @@ services:
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         MIMIC_DEPENDENCIES_BASE_IMAGE: ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}
         MIMIC_DEPENDENCIES_BASE_IMAGE_TAG: ${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err}
-      platforms: !reset []
+      platforms: !override []
+        - linux/arm64
+        - linux/amd64
 
   # ....squash stages..............................................................................
   l4t-base-image-arm64:

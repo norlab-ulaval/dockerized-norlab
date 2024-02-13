@@ -7,6 +7,7 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 # ....Fetch pip installed packages list............................................................
 RUN touch /requirements.l4t-base-image.txt \
+    && chmod a+x /requirements.l4t-base-image.txt \
     && pip3 list --format freeze \
               --exclude onnx  \
               --exclude torchaudio  \
