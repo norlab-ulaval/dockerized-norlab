@@ -77,7 +77,7 @@ Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
   - Numerical computing: `numpy`, `numba`, `pycuda`, `tensorrt`
   - Deep-learning: `pytorch`, `torch2trt`, `tensordict`
   - Vision: `opencv`, `torchvision`
-  - NorLab perception stack: `libpoitmatcher[-ros]`, `norlab-icp-mapper[-ros]` 
+  - NorLab perception stack: `libpointmatcher[-ros]`, `norlab-icp-mapper[-ros]` 
   - NorLab control stack: (in progress) 
   - MLOps: `ray`, `omegaconf`, `hydra-core`, `wandb`
   - Deep-rl: `stable-baseline3`

@@ -292,6 +292,10 @@ function dn::execute_compose() {
     DISPLAY=${DISPLAY:-':0'} && export DISPLAY
   fi
 
+  if [[ -z ${DOCKER_COMPOSE_CMD_ARGS[*]}  ]]; then
+    DOCKER_COMPOSE_CMD_ARGS=(build)
+  fi
+
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 
@@ -307,24 +311,6 @@ function dn::execute_compose() {
   fi
 
   cd "${DN_PATH:?err}" || exit 1
-
-#  # ...TMP DEV compose config EDA..................................................................
-#  # (StandBy) ToDo: on task end >> delete next bloc ↓↓
-#  TMP_CONFIG_FLAGS=()
-##  TMP_CONFIG_FLAGS+=(--services)
-##  TMP_CONFIG_FLAGS+=(--hash base-image-ros2-clean)
-##  TMP_CONFIG_FLAGS+=(--dry-run)
-#  TMP_CONFIG_FLAGS+=(--images)
-#  TMP_CONFIG_FLAGS+=(--resolve-image-digests)
-#  declare -a TMP_DEV_STR_BUILT_SERVICES=( $(docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config ${TMP_CONFIG_FLAGS[@]}) )
-#  clear
-#  echo
-#  n2st::print_msg "TMP_DEV_STR_BUILT_SERVICES array content:\n"
-#  for each in ${TMP_DEV_STR_BUILT_SERVICES[@]} ; do
-#    echo -e "   ${each}"
-#  done
-#  exit 0
-#  # .................................................................TMP DEV compose config EDA...
 
   # (NICE TO HAVE) ToDo: assessment >> next bloc ↓↓
 #  function dn::fetch_target_device() {
