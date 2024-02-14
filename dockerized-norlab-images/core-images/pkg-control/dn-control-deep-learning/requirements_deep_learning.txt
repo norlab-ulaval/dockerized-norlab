@@ -13,8 +13,7 @@
 ##  - tensordict › https://github.com/pytorch-labs/tensordict
 
 ray
--e git+https://github.com/pytorch-labs/tensordict.git#egg=tensordict
-
+tensordict
 
 # ====Visualization and MLops======================================================================================
 ## Doc:

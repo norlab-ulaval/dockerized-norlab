@@ -54,10 +54,6 @@ RUN apt-get update \
 #  - https://docs.docker.com/engine/reference/builder/#using-arg-variables
 
 WORKDIR /dockerized-norlab
-#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-
-# ToDo: on dev task end >> mute this line
-RUN tree -L 1
 
 RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
     && source import_dockerized_norlab_container_tools.bash \

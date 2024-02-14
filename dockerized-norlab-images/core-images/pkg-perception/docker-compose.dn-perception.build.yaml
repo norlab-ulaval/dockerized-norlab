@@ -1,13 +1,12 @@
-name: ${DN_COMPOSE_NAME}
-
 services:
 
   # ====Dockerized-NorLab perception ==============================================================
   # ....dn-perception..............................................................................
   dn-perception-main:
     extends:
-      file: ../global-service-builder/docker-compose.global-service.build.yaml
-      service: global-service-builder
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
     build:
       context: dn-perception
       args:
@@ -15,55 +14,92 @@ services:
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
 
   dn-perception:
-    extends: dn-perception-main
+    extends:
+      service: dn-perception-main
     image: ${DN_HUB:?err}/dockerized-norlab-perception:${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-perception-main
 
-#  # ....libpointmatcher............................................................................
-## ToDo: fixme!! >> libpointmatcher install with norlab-icp-mapper ↓↓
-#  dn-perception-libpointmatcher-main:
-#    extends: dn-perception-main
-#    build:
-#      context: dn-perception-libpointmatcher
-#      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception
-#    depends_on:
-#      - dn-perception
-#
-#  dn-perception-libpointmatcher-tester:
-#    extends: dn-perception-libpointmatcher-main
-#    build:
-#      target: test
-#    depends_on:
-#      - dn-perception-libpointmatcher-main
-#
-#  dn-perception-libpointmatcher:
-#    extends: dn-perception-libpointmatcher-main
-#    image: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dn-perception-libpointmatcher-main
+  # ....libpointmatcher............................................................................
+  dn-perception-libpointmatcher-main:
+    extends:
+      service: dn-perception-main
+    build:
+      context: dn-perception-libpointmatcher
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-perception
 
-#  # ....icp-mapper..................................................................................
-## ToDo: fixme!! >> libpointmatcher install with norlab-icp-mapper ↓↓
-#  dn-perception-icp-mapper-main:
-#    extends: dn-perception-libpointmatcher-main
-#    build:
-#      context: dn-perception-icp-mapper
-#      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher
-#    depends_on:
-#      - dn-perception-libpointmatcher
-#
-#  dn-perception-icp-mapper-tester:
-#    extends: dn-perception-icp-mapper-main
-#    build:
-#      target: test
-#    depends_on:
-#      - dn-perception-icp-mapper-main
-#
-#  dn-perception-icp-mapper:
-#    extends: dn-perception-icp-mapper-main
-#    image: ${DN_HUB:?err}/dockerized-norlab-perception-icp-mapper:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dn-perception-icp-mapper-main
+  dn-perception-libpointmatcher-tester:
+    extends:
+      service: dn-perception-libpointmatcher-main
+    build:
+      target: test
+    depends_on:
+      - dn-perception-libpointmatcher-main
+
+  dn-perception-libpointmatcher:
+    extends:
+      service: dn-perception-libpointmatcher-main
+    image: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-perception-libpointmatcher-tester
+
+  # ....icp-mapper..................................................................................
+  dn-perception-icp-mapper-main:
+    extends:
+      service: dn-perception-main
+    build:
+      context: dn-perception-icp-mapper
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception-libpointmatcher
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-perception-libpointmatcher
+
+  dn-perception-icp-mapper-tester:
+    extends:
+      service: dn-perception-icp-mapper-main
+    build:
+      target: test
+    depends_on:
+      - dn-perception-icp-mapper-main
+
+  dn-perception-icp-mapper:
+    extends:
+      service: dn-perception-icp-mapper-main
+    image: ${DN_HUB:?err}/dockerized-norlab-perception-icp-mapper:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-perception-icp-mapper-tester
+
+  # ....norlab perception stack.....................................................................
+  # ToDo: fixme!! >> libpointmatcher_ros install ↓↓
+  dn-perception-norlab-stack-main:
+    extends:
+      service: dn-perception-main
+    build:
+      context: dn-perception-norlab-stack
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-perception-icp-mapper
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-perception-icp-mapper
+
+  dn-perception-norlab-stack-tester:
+    extends:
+      service: dn-perception-norlab-stack-main
+    build:
+      target: test
+    depends_on:
+      - dn-perception-norlab-stack-main
+
+  dn-perception-norlab-stack:
+    extends:
+      service: dn-perception-norlab-stack-main
+    build:
+      target: final
+    image: ${DN_HUB:?err}/dockerized-norlab-perception-stack:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-perception-norlab-stack-tester

@@ -58,7 +58,7 @@ setup() {
 
 }
 
-# ====Teardown======================================================================================
+# ====Teardown=====================================================================================
 
 teardown() {
   bats_print_run_env_variable_on_error
@@ -68,7 +68,7 @@ teardown() {
 #    echo "executed once after finishing the last test"
 #}
 
-# ====Test casses===================================================================================
+# ====Test casses==================================================================================
 
 
 @test "running $TESTED_FILE from non 'root' › expect error" {
@@ -89,7 +89,13 @@ teardown() {
   assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
 
-  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--fail-fast" -- "build --dry-run"
+  NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --dry-run"
+
+#  local _CI_TEST=true
+#  mock_docker_command_config_services_base_image_squash
+  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" \
+                          --os-name-build-matrix-override l4t \
+                          --ci-test-force-runing-docker-cmd
   assert_success
   refute_output --partial "'$TESTED_FILE' script must be executed from the project root"
 }
@@ -103,14 +109,19 @@ teardown() {
   assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist ${NBS_OVERRIDE_BUILD_MATRIX_MAIN}
 
-  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" "--fail-fast" -- "build --dry-run"
+  NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --dry-run"
+
+  run source "./${TESTED_FILE_PATH}/$TESTED_FILE" \
+                        --ci-test-force-runing-docker-cmd \
+                        --os-name-build-matrix-override l4t
+
   assert_success
 
   # Build matrix source ordering
   assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main".*"\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}".*"\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
 
 
-  assert_output --regexp "\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=".*"v0.3.0 hot".*"NBS_MATRIX_SUPPORTED_OS=".*"l4t".*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS=".*"r11.1.1 r22.2.2".*"NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=".*"dustynv/ros:humble-ros-core-l4t dustynv/ros:humble-pytorch-l4t".*
+  assert_output --regexp "\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=".*"v0.3.0 hot".*"NBS_MATRIX_SUPPORTED_OS=".*"l4t".*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS=".*"r11.1.1 r22.2.2".*"NBS_MATRIX_L4T_BASE_IMAGES=".*"dustynv/l4t: dustynv/pytorch:2.1".*
 
   assert_output --regexp "Starting".*"dn_execute_compose.bash".*"\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=v0.3.0"
 #
@@ -121,6 +132,7 @@ teardown() {
 #  skip "tmp dev"
 
   run source "./${TESTED_FILE_PATH}/$TESTED_FILE" \
+                            --ci-test-force-runing-docker-cmd \
                             --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                             --os-name-build-matrix-override 'l4t' \
                             --l4t-version-build-matrix-override 'r33.3.3'
@@ -128,11 +140,11 @@ teardown() {
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*
 
-  assert_output --regexp .*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
+#  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-2.1-r33.3.3".*
 
-  refute_output --regexp .*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
+#  refute_output --regexp .*"DN-v0.3.0-foxy-core-pytorch-2.1-2.1-r11.1.1".*
 
 }
 

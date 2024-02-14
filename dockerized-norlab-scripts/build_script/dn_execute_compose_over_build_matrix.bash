@@ -28,9 +28,11 @@
 _BUILD_STATUS_PASS=0
 
 declare -a DOCKER_COMPOSE_CMD_ARGS=( build )
-declare -a  DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
+declare -a DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
+declare -a BASE_IMAGE_TAG_PREFIX_FLAG=()
 STR_DOCKER_MANAGEMENT_COMMAND="compose"
 DOCKER_FORCE_PUSH=false
+DOCKER_EXIT_CODE=1
 
 
 MSG_ERROR_FORMAT="\033[1;31m"
@@ -43,7 +45,8 @@ if [[ ! -f ".env.dockerized-norlab-build-system" ]]; then
 fi
 
 set -o allexport
-source .env.dockerized-norlab-build-system
+source .env.dockerized-norlab-build-system || exit 1
+echo -e "Loaded ${MSG_DIMMED_FORMAT}.env.dockerized-norlab-build-system${MSG_END_FORMAT}"
 set +o allexport
 
 
@@ -94,13 +97,14 @@ fi
 
 # ....Load environment variables from file.........................................................
 cd "${DN_PATH}" || exit 1
-
 set -o allexport
+
+n2st::print_msg "Loading ${MSG_DIMMED_FORMAT}.env.dockerized-norlab-project${MSG_END_FORMAT}"
 source .env.dockerized-norlab-project || exit 1
 
 n2st::print_msg "Loading main build matrix ${MSG_DIMMED_FORMAT}${NBS_BUILD_MATRIX_MAIN}${MSG_END_FORMAT}"
 source "${NBS_BUILD_MATRIX_MAIN:?'The name of the main .env.build_matrix file is missing'}" || exit 1
-set +o allexport
+
 
 if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
   # Note: Override values from .env.build_matrix.main
@@ -111,17 +115,15 @@ fi
 n2st::print_msg "Loading build matrix ${MSG_DIMMED_FORMAT}${_DOTENV_BUILD_MATRIX}${MSG_END_FORMAT}"
 source "${_DOTENV_BUILD_MATRIX}" || exit 1
 
-set +o allexport
-
-
-
-set -o allexport
+# (Priority) ToDo: validate that its still usefull now that we have '.env.dockerized-norlab-project'
 source "${N2ST_PATH:?'Variable not set'}"/.env.project || exit 1
+
 set +o allexport
 
 # ....DN functions.................................................................................
 cd "${DN_PATH}" || exit 1
 
+# Note: The "set -o/+o allexport" are required to fetch the "declare -x <env var>"
 set -o allexport
 source dockerized-norlab-scripts/build_script/dn_execute_compose.bash || exit 1
 set +o allexport
@@ -216,7 +218,7 @@ while [ $# -gt 0 ]; do
   --buildx-bake)
     # (NICE TO HAVE) ToDo: finish implement
     n2st::print_msg "dn_execute_compose_over_build_matrix.bash › set --buildx-bake flag"
-    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --buildx-bake )
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--buildx-bake)
     STR_DOCKER_MANAGEMENT_COMMAND="buildx bake"
     shift # Remove argument (--buildx-bake)
     ;;
@@ -227,22 +229,34 @@ while [ $# -gt 0 ]; do
     shift # Remove argument (--docker-debug-logs)
     ;;
   --force-push)
-    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --force-push )
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--force-push)
     DOCKER_FORCE_PUSH=true
     shift # Remove argument (--force-push)
     ;;
   --fail-fast)
-    if [[ ${IS_TEAMCITY_RUN} == true ]] ; then
-      echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Dn --fail-fast flag was set in TC run configuration' status='ERROR']"
-      n2st::print_msg_error_and_exit "Be advise, the --fail-fast flag should only be used in local development."
-    else
-      n2st::print_msg "Be advise, --fail-fast flag in effect"
-      set -e
-    fi
+    {
+      if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+        echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Dn --fail-fast flag was set in TC run configuration' status='ERROR']"
+        n2st::print_msg_error_and_exit "Be advise, the --fail-fast flag should only be used in local development."
+      else
+        n2st::print_msg "Be advise, --fail-fast flag in effect"
+        set -e
+      fi
+    }
     shift # Remove argument (--fail-fast)
     ;;
   --ci-test-force-runing-docker-cmd)
-    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=( --ci-test-force-runing-docker-cmd )
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ci-test-force-runing-docker-cmd)
+    {
+      if [[ -z $(docker) ]]; then
+        function docker() {
+          local tmp=$@
+          echo "mock-service-one mock-service-two"
+          export DOCKER_EXIT_CODE=0
+          return 0
+        }
+      fi
+    }
     shift # Remove argument (--ci-test-force-runing-docker-cmd)
     ;;
   -h | --help)
@@ -251,7 +265,7 @@ while [ $# -gt 0 ]; do
     ;;
   --) # no more option
     shift
-    DOCKER_COMPOSE_CMD_ARGS=( $@ )
+    DOCKER_COMPOSE_CMD_ARGS=($@)
     break
     ;;
   *) # Default case
@@ -273,9 +287,12 @@ declare -r NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${NBS_EXECUTE_BUILD_MATRIX
 declare -ra NBS_MATRIX_REPOSITORY_VERSIONS=( "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}" )
 declare -ra NBS_MATRIX_SUPPORTED_OS=( "${NBS_MATRIX_SUPPORTED_OS[@]}" )
 declare -ra NBS_MATRIX_L4T_SUPPORTED_VERSIONS=( "${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}" )
-declare -ra NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=( "${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}" )
+declare -ra NBS_MATRIX_L4T_BASE_IMAGES=( "${NBS_MATRIX_L4T_BASE_IMAGES[@]}" )
 declare -ra NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=( "${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}" )
-declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=( "${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}" )
+declare -ra NBS_MATRIX_UBUNTU_BASE_IMAGES=( "${NBS_MATRIX_UBUNTU_BASE_IMAGES[@]}" )
+
+declare -ra NBS_MATRIX_ROS_DISTRO=( "${NBS_MATRIX_ROS_DISTRO[@]}" )
+declare -ra NBS_MATRIX_ROS_PKG=( "${NBS_MATRIX_ROS_PKG[@]}" )
 
 function dn::print_env_var_build_matrix() {
   local SUP_TEXT=$1
@@ -284,9 +301,11 @@ ${MSG_DIMMED_FORMAT}    NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=${NBS_EXECUTE
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_REPOSITORY_VERSIONS=(${NBS_MATRIX_REPOSITORY_VERSIONS[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_SUPPORTED_OS=(${NBS_MATRIX_SUPPORTED_OS[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_SUPPORTED_VERSIONS=(${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_L4T_BASE_IMAGES=(${NBS_MATRIX_L4T_BASE_IMAGES[*]}) ${MSG_END_FORMAT}
 ${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS=(${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[*]}) ${MSG_END_FORMAT}
-${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG=(${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_UBUNTU_BASE_IMAGES=(${NBS_MATRIX_UBUNTU_BASE_IMAGES[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_ROS_DISTRO=(${NBS_MATRIX_ROS_DISTRO[*]}) ${MSG_END_FORMAT}
+${MSG_DIMMED_FORMAT}    NBS_MATRIX_ROS_PKG=(${NBS_MATRIX_ROS_PKG[*]}) ${MSG_END_FORMAT}
 "
 }
 
@@ -302,18 +321,19 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
     n2st::print_msg_error_and_exit "Can't crawl Dockerized-NorLab supported version array because it's empty!"
   fi
 
+
   for EACH_OS_NAME in "${NBS_MATRIX_SUPPORTED_OS[@]}"; do
     dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_NAME}"
 
     unset CRAWL_OS_VERSIONS
-    unset CRAWL_BASE_IMAGES_AND_PKG
+    unset CRAWL_BASE_IMAGES
 
     if [[ ${EACH_OS_NAME} == 'ubuntu' ]]; then
       CRAWL_OS_VERSIONS=("${NBS_MATRIX_UBUNTU_SUPPORTED_VERSIONS[@]}")
-      CRAWL_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_UBUNTU_BASE_IMAGES_AND_PKG[@]}")
+      CRAWL_BASE_IMAGES=("${NBS_MATRIX_UBUNTU_BASE_IMAGES[@]}")
     elif [[ ${EACH_OS_NAME} == 'l4t' ]]; then
       CRAWL_OS_VERSIONS=("${NBS_MATRIX_L4T_SUPPORTED_VERSIONS[@]}")
-      CRAWL_BASE_IMAGES_AND_PKG=("${NBS_MATRIX_L4T_BASE_IMAGES_AND_PKG[@]}")
+      CRAWL_BASE_IMAGES=("${NBS_MATRIX_L4T_BASE_IMAGES[@]}")
     else
       n2st::print_msg_error_and_exit "${EACH_OS_NAME} not supported!"
     fi
@@ -322,110 +342,133 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
       n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} supported version array because it's empty!"
     fi
 
-    if [[ -z ${CRAWL_BASE_IMAGES_AND_PKG[*]} ]]; then
-      n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images and pkg array because it's empty!"
+    if [[ -z ${CRAWL_BASE_IMAGES[*]} ]]; then
+      n2st::print_msg_error_and_exit "Can't crawl ${EACH_OS_NAME} base images array because it's empty!"
     fi
+
 
     for EACH_OS_VERSION in "${CRAWL_OS_VERSIONS[@]}"; do
       dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_VERSION}"
 
-      for EACH_BASE_IMAGES_AND_PKG in "${CRAWL_BASE_IMAGES_AND_PKG[@]}"; do
+      if [[ -z ${NBS_MATRIX_ROS_DISTRO[*]} ]]; then
+        n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_DISTRO array because it's empty! Write 'none' if you want to skip ros."
+      elif [[ -z ${NBS_MATRIX_ROS_PKG[*]} ]]; then
+        n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_PKG array because it's empty! Write 'none' if you want to skip ros."
+      fi
 
-        # shellcheck disable=SC2034
-        SHOW_SPLASH_EC='false'
+      for EACH_ROS_DISTRO in "${NBS_MATRIX_ROS_DISTRO[@]}" ; do
+        dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_DISTRO}"
+        for EACH_ROS_PKG in "${NBS_MATRIX_ROS_PKG[@]}" ; do
+          dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_PKG}"
 
-        # shellcheck disable=SC2001
-        EACH_BASE_IMAGE=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/:.*//')
-        # shellcheck disable=SC2001
-        EACH_TAG_PKG=$(echo "${EACH_BASE_IMAGES_AND_PKG}" | sed 's/.*://')
-
-
-        if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-          echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --os-name ${EACH_OS_NAME} --tag-package ${EACH_TAG_PKG} --tag-version ${EACH_OS_VERSION} ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[*]} -- ${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT_TEAMCITY}|n']"
-          echo
-        fi
-
-
-        # ....Repository version checkout logic..........................................................
-        if [[ "${EACH_DN_VERSION}" != 'latest' ]] && [[ "${EACH_DN_VERSION}" != 'bleeding' ]] && [[ "${EACH_DN_VERSION}" != 'hot' ]]; then
-          cd "${DN_PATH:?err}" || exit 1
-
-          if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-            # Solution for "error: object directory ... .git/objects does not exist"
-            n2st::print_msg "Git fetch all remote"
-            git fetch --all
+          if [[ ${EACH_ROS_DISTRO} == none ]]; then
+            DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ros2 "none")
+          elif [[ -z ${EACH_ROS_PKG[*]} ]]; then
+            n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_PKG array because it's empty!"
+          elif [[ ${EACH_ROS_DISTRO} != none ]]; then
+            DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ros2 "${EACH_ROS_DISTRO}-${EACH_ROS_PKG}")
           fi
 
-          # Note: keep it here as a testing tool
-          n2st::print_msg "Git fetch tag list\n$(git tag --list)"
-#          echo -e "$(git tag --list)"
+          for EACH_BASE_IMAGES in "${CRAWL_BASE_IMAGES[@]}"; do
 
-          # Execute if not run in bats test framework
-          if [[ -z ${BATS_VERSION} ]]; then
-            n2st::print_msg "Execute git checkout"
-            git checkout tags/"${EACH_DN_VERSION}"
-#            n2st::print_msg_warning "Repository checkout › $(git describe --all --exact-match)"
-          else
-            n2st::print_msg_warning "Bats test run › skip \"Execute git checkout\""
-          fi
+            # shellcheck disable=SC2034
+            SHOW_SPLASH_EC='false'
 
-          # ....Validate the DN tag correspond to the checkout branch..............................
-#        elif [[ "${EACH_DN_VERSION}" == 'latest' ]] && [[ ${IS_TEAMCITY_RUN} != true ]]; then
-        elif [[ "${EACH_DN_VERSION}" == 'latest' ]]; then  # (Priority) ToDo: validate TC run checkout branch name
-          if [[ $(git symbolic-ref -q --short HEAD) != main ]]; then
-              n2st::print_msg_error_and_exit "The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
-          fi
-#        elif [[ "${EACH_DN_VERSION}" == 'bleeding' ]] && [[ ${IS_TEAMCITY_RUN} != true ]]; then
-        elif [[ "${EACH_DN_VERSION}" == 'bleeding' ]]; then  # (Priority) ToDo: validate TC run checkout branch name
-          if [[ $(git symbolic-ref -q --short HEAD) != dev ]]; then
-              n2st::print_msg_error_and_exit "The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
-          fi
-        fi
-
-        n2st::print_msg "Repository checkout › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
+            # shellcheck disable=SC2001
+            EACH_BASE_IMAGE=$(echo "${EACH_BASE_IMAGES}" | sed 's/:.*//')
+            # shellcheck disable=SC2001
+            EACH_BASE_IMAGE_TAG_PREFIX=$(echo "${EACH_BASE_IMAGES}" | sed 's/.*://')
+            unset BASE_IMAGE_TAG_PREFIX_FLAG
+            if [[ -n "${EACH_BASE_IMAGE_TAG_PREFIX}" ]]; then
+                BASE_IMAGE_TAG_PREFIX_FLAG+=(--base-img-tag-prefix "${EACH_BASE_IMAGE_TAG_PREFIX}")
+            fi
 
 
-        # ....Execute docker command...............................................................
+            if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+              echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash' description='${MSG_DIMMED_FORMAT_TEAMCITY} --dockerized-norlab-version ${EACH_DN_VERSION} --base-image ${EACH_BASE_IMAGE} --os-name ${EACH_OS_NAME} --tag-os-version ${EACH_OS_VERSION} ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[*]} -- ${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT_TEAMCITY}|n']"
+              echo
+            fi
 
-        # shellcheck disable=SC2086
-        dn::execute_compose \
-          ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} \
-          --dockerized-norlab-version "${EACH_DN_VERSION}" \
-          --base-image "${EACH_BASE_IMAGE}" \
-          --os-name "${EACH_OS_NAME}" \
-          --tag-package "${EACH_TAG_PKG}" \
-          --tag-version "${EACH_OS_VERSION}" \
-          ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]} \
-          -- ${DOCKER_COMPOSE_CMD_ARGS[@]}
+            # ....Repository version checkout logic..........................................................
+            if [[ "${EACH_DN_VERSION}" != 'latest' ]] && [[ "${EACH_DN_VERSION}" != 'bleeding' ]] && [[ "${EACH_DN_VERSION}" != 'hot' ]]; then
+              cd "${DN_PATH:?err}" || exit 1
 
-        DOCKER_EXIT_CODE=$?
+              if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+                # Solution for "error: object directory ... .git/objects does not exist"
+                n2st::print_msg "Git fetch all remote"
+                git fetch --all --recurse-submodules --unshallow
+              fi
+
+              # Note: keep it here as a testing tool
+              n2st::print_msg "Git fetch tag list\n$(git tag --list)"
+
+              # Execute if not run in bats test framework
+              if [[ -z ${BATS_VERSION} ]]; then
+                n2st::print_msg "Execute git checkout"
+                git checkout tags/"${EACH_DN_VERSION}"
+              else
+                n2st::print_msg_warning "Bats test run › skip \"Execute git checkout\""
+              fi
+
+              # ....Validate the DN tag correspond to the checkout branch..............................
+            elif [[ "${EACH_DN_VERSION}" == 'latest' ]]; then
+              if [[ $(git symbolic-ref -q --short HEAD) != main ]]; then
+                  n2st::print_msg_error_and_exit "The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
+              fi
+            elif [[ "${EACH_DN_VERSION}" == 'bleeding' ]]; then
+              if [[ $(git symbolic-ref -q --short HEAD) != dev ]]; then
+                  n2st::print_msg_error_and_exit "The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
+              fi
+            fi
+
+            n2st::print_msg "Repository curently checkout at › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
 
 
-        # ....Collect image tags exported by dn_execute_compose.bash...............................
-        if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
-          MSG_STATUS="${MSG_DONE_FORMAT}Pass ${MSG_DIMMED_FORMAT}›"
-          MSG_STATUS_TC_TAG="Pass ›"
-        else
-          MSG_STATUS="${MSG_ERROR_FORMAT}Fail ${MSG_DIMMED_FORMAT}›"
-          MSG_STATUS_TC_TAG="Fail ›"
-          _BUILD_STATUS_PASS=$DOCKER_EXIT_CODE
+            # ....Execute docker command...............................................................
 
-          if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-            # Fail the build › Will appear on the TeamCity Build Results page
-            echo -e "##teamcity[buildProblem description='BUILD FAIL with docker exit code: ${_BUILD_STATUS_PASS}']"
-          fi
-        fi
+            # shellcheck disable=SC2086
+            dn::execute_compose \
+              ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} \
+              --dockerized-norlab-version "${EACH_DN_VERSION}" \
+              --base-image "${EACH_BASE_IMAGE}" \
+              --os-name "${EACH_OS_NAME}" \
+              ${BASE_IMAGE_TAG_PREFIX_FLAG[@]} \
+              --tag-os-version "${EACH_OS_VERSION}" \
+              ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]} \
+              -- ${DOCKER_COMPOSE_CMD_ARGS[@]}
 
-        # Collect image tags exported by dn_execute_compose.bash
-        # Global: Read 'DN_IMAGE_TAG' env variable exported by dn_execute_compose.bash
-        IMAGE_TAG_CRAWLED=( "${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG:?"Env variable not set"}" )
-        IMAGE_TAG_CRAWLED_TC=( "${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}" )
-        # .........................................................................................
+            DOCKER_EXIT_CODE=$?
 
-        if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-          echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash']"
-        fi
 
+            # ....Collect image tags exported by dn_execute_compose.bash...............................
+            if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
+              MSG_STATUS="${MSG_DONE_FORMAT}Pass ${MSG_DIMMED_FORMAT}›"
+              MSG_STATUS_TC_TAG="Pass ›"
+            else
+              MSG_STATUS="${MSG_ERROR_FORMAT}Fail ${MSG_DIMMED_FORMAT}›"
+              MSG_STATUS_TC_TAG="Fail ›"
+              _BUILD_STATUS_PASS=$DOCKER_EXIT_CODE
+
+              if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+                # Fail the build › Will appear on the TeamCity Build Results page
+                echo -e "##teamcity[buildProblem description='BUILD FAIL with docker exit code: ${_BUILD_STATUS_PASS}']"
+              fi
+            fi
+
+            # Collect image tags exported by dn_execute_compose.bash
+            # Global: Read 'DN_IMAGE_TAG' env variable exported by dn_execute_compose.bash
+            IMAGE_TAG_CRAWLED=( "${IMAGE_TAG_CRAWLED[@]}" "${MSG_STATUS} ${DN_IMAGE_TAG:?"Env variable not set"}" )
+            IMAGE_TAG_CRAWLED_TC=( "${IMAGE_TAG_CRAWLED_TC[@]}" "${MSG_STATUS_TC_TAG} ${DN_IMAGE_TAG}" )
+            # .........................................................................................
+
+            if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+              echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} execute dn_execute_compose.bash']"
+            fi
+
+          done
+          dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_ROS_PKG}"
+        done
+        dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_ROS_DISTRO}"
       done
       dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_VERSION}"
     done
@@ -438,7 +481,7 @@ done
 dn::print_env_var_build_matrix "used by ${STR_DOCKER_MANAGEMENT_COMMAND}"
 
 # Fetch and format the compose file NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE services list
-STR_BUILT_SERVICES=$( docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services | sed 's/^/   - /' )
+STR_BUILT_SERVICES=$( docker compose -f "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" config --services --no-interpolate --dry-run | sed 's/^/   - /' )
 
 # Format tag list
 for tag in "${IMAGE_TAG_CRAWLED[@]}"; do

@@ -1,91 +1,90 @@
-name: ${DN_COMPOSE_NAME}
-
 services:
-
-  # ====Fast test service==========================================================================
-#  dependencies-test:
-#    extends:
-#      file: ../global-service-builder/docker-compose.global-service.build.yaml
-#      service: global-service-builder
-#    build:
-#      context: .
-#      dockerfile: Dockerfile.test
-#      args:
-#        BASE_IMAGE: nvcr.io/nvidia/l4t-jetpack
-#        BASE_IMAGE_TAG: r35.2.1
-#    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-test:r35.2.1
-
   # ====Dockerized-NorLab dependencies=============================================================
 
-  # ....dependencies-core..........................................................................
-  dependencies-core:
+  dependencies-core-main:
     extends:
-      file: ../global-service-builder/docker-compose.global-service.build.yaml
-      service: global-service-builder
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
     build:
       context: .
       dockerfile: Dockerfile.core
       args:
-        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-jetson
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-clean
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+
+
+  # ....dependencies-core..........................................................................
+  dependencies-core:
+    extends:
+      service: dependencies-core-main
     image: ${DN_HUB:?err}/dockerized-norlab-dependencies-core:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-core-main
 
   # ....dependencies-prompt........................................................................
   dependencies-prompt:
-    extends: dependencies-core
+    extends:
+      service: dependencies-core
     build:
       dockerfile: Dockerfile.prompt
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-core
-        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     environment:
       DN_ACTIVATE_POWERLINE_PROMT: false
       DN_CONTAINER_NAME: IamInteractive
-    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-prompt:${DN_IMAGE_TAG:?err}
     container_name: IamInteractive
+    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-prompt:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-core
 
   # ....dependencies-python-science-stack..........................................................
   dependencies-python-science-stack:
-    extends: dependencies-core
+    extends:
+      service: dependencies-core-main
     build:
       dockerfile: Dockerfile.python-science-stack
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-prompt
-        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dockerized-norlab-dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-prompt
 
   # ....dependencies-ros2-custom...................................................................
-  dependencies-ros2-custom-main: # ›› no push build service
-    extends: dependencies-python-science-stack
+  dependencies-ros2-custom-main:
+    extends:
+      service: dependencies-core-main
     build:
       dockerfile: Dockerfile.ros2-dn-custom
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-dependencies-python-science-stack
-        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     depends_on:
       - dependencies-python-science-stack
 
   dependencies-ros2-custom-tester:
-    extends: dependencies-ros2-custom-main
+    extends:
+      service: dependencies-ros2-custom-main
     build:
       target: test
     depends_on:
       - dependencies-ros2-custom-main
 
   dependencies-ros2-custom:
-    extends: dependencies-ros2-custom-main
+    extends:
+      service: dependencies-ros2-custom-main
+    build:
+      target: final
+      tags:
+        - ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dockerized-norlab-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
     depends_on:
-      - dependencies-ros2-custom-main
+      - dependencies-ros2-custom-tester
 
-  # ....dependencies (full)........................................................................
-  dependencies-full:
-    extends: dependencies-ros2-custom
-    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
-    depends_on:
-      - dependencies-ros2-custom
+#  # ....dependencies (full)........................................................................
+#  dependencies-full:
+#    extends:
+#        service: dependencies-ros2-custom
+#    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-full:${DN_IMAGE_TAG:?err}
+#    depends_on:
+#      - dependencies-ros2-custom
 

@@ -48,8 +48,8 @@ RUN echo "Sanity check"\
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --symlink-install --event-handlers console_direct+
@@ -74,6 +74,7 @@ RUN echo "===Check that ROS source is available via the ssh daemon user=========
     && [[ -n "$(ros2 pkg list | grep -e ackermann_msgs)" ]] ||  exit 1  \
     && [[ -n "$(ros2 pkg list | grep -e vesc_msgs)" ]] ||  exit 1
 
+# unset entrypoint for running test stage
 ENTRYPOINT [ "" ]
 
 FROM package-project-src-code AS final

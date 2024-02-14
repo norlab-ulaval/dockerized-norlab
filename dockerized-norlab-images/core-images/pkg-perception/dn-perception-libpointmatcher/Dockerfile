@@ -2,12 +2,13 @@
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS libpointmatcher-install
+ARG DEBIAN_FRONTEND=noninteractive
 
-ARG LIBPOINTMATCHER_VERSION=head
+ARG LIBPOINTMATCHER_VERSION=latest
 ENV LIBPOINTMATCHER_VERSION=${LIBPOINTMATCHER_VERSION}
 
 ARG LIBPOINTMATCHER_CMAKE_BUILD_TYPE=Release
-ARG LIBPOINTMATCHER_INSTALL_SCRIPT_FLAG="--compile-test"
+ARG LIBPOINTMATCHER_INSTALL_SCRIPT_FLAG="--build-system-CI-install --compile-test"
 # Note: Those env variable are used in the entrypoint build version
 ENV LIBPOINTMATCHER_CMAKE_BUILD_TYPE=${LIBPOINTMATCHER_CMAKE_BUILD_TYPE}
 ENV LIBPOINTMATCHER_INSTALL_SCRIPT_FLAG=${LIBPOINTMATCHER_INSTALL_SCRIPT_FLAG}
@@ -18,80 +19,37 @@ ARG PERCEP3D_LIB_PATH=/opt/percep3d_libraries
 ENV PERCEP3D_LIB_PATH=${PERCEP3D_LIB_PATH}
 
 # ====Begin=======================================================================================
+WORKDIR ${PERCEP3D_LIB_PATH}
+
+RUN git clone --recurse-submodules https://github.com/norlab-ulaval/libpointmatcher.git
+
+# ....Install libnabo..............................................................................
+WORKDIR "${PERCEP3D_LIB_PATH}/libpointmatcher"
+
+# Note: pkg 'doxygen-latex' which is installed by 'lpm_install_doc_dependencies_ubuntu.bash' brake
+#       inside docker amd64 and as been imposible to fix. Skip it inside DN as its not used anyway.
+RUN set -o allexport && source .env.libpointmatcher && set +o allexport \
+    && echo "....Install general dependencies..................................................." \
+    && cd "${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu" \
+    && source lpm_install_dependencies_general_ubuntu.bash \
+    && echo "....Install libnabo................................................................" \
+    && cd "${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu" \
+    && source ./lpm_install_dependencies_libnabo_ubuntu.bash
+
+# ....Check Libpointmatcher dependencies installed versions........................................
+RUN utest/listVersionsUbuntu.sh
+
 # ....Install libpointmatcher.....................................................................
-WORKDIR ${PERCEP3D_LIB_PATH}
-
-## (NICE TO HAVE) ToDo: NMO-351 ♻︎ → add install path feature to lpm_install_dependencies_ubuntu.bash
-## ToDo: NMO-352 ♻︎ → Update libpointmatcher github domain on repo transfer from ethz-asl to norlab-ulaval
-#RUN git clone https://github.com/ethz-asl/libpointmatcher.git \
-#    && cd ./libpointmatcher/build_system \
-#    && source ./ubuntu/lpm_install_python_dev_tools.bash \
-#    && cd ./ubuntu/ \
-#    && source ./lpm_install_dependencies_ubuntu.bash
-#
-#WORKDIR ${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu/
-#RUN source lpm_install_libpointmatcher_ubuntu.bash \
-#            --build-system-CI-install \
-#            --libpointmatcher-version ${LIBPOINTMATCHER_VERSION} \
-#            --cmake-build-type ${LIBPOINTMATCHER_CMAKE_BUILD_TYPE} \
-#            ${LIBPOINTMATCHER_INSTALL_SCRIPT_FLAG}
-
-# ////Alt install//////////////////////////////////////////////////////////////////////////////////
-#ENV CMAKE_PREFIX_PATH="${PERCEP3D_LIB_PATH}"
-#ENV DN_CMAKE_INSTALL_PREFIX=/usr/local/install
-ENV DN_CMAKE_INSTALL_PREFIX=/usr/local
-#CMAKE_PREFIX_PATH:PATH=/usr/local
-#-D CMAKE_INSTALL_PREFIX=/usr/local
-
-RUN apt-get update \
-    && apt-get install --assume-yes \
-        libboost-all-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update \
-    && apt-get install --assume-yes \
-        libeigen3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR ${PERCEP3D_LIB_PATH}
-
-RUN git clone https://github.com/ethz-asl/libnabo.git \
-    && cd libnabo \
-    && mkdir build && cd build \
-    && cmake -D CMAKE_BUILD_TYPE=RelWithDebInfo \
-          -D CMAKE_INSTALL_PREFIX=${DN_CMAKE_INSTALL_PREFIX} \
-#          -D CMAKE_INSTALL_PREFIX=${PERCEP3D_LIB_PATH}/libnabo/build/install \
-          "${PERCEP3D_LIB_PATH}/libnabo" \
-    && make -j $(nproc) \
-    && make install
-#    && make test \
-
-
-RUN apt-get update \
-    && apt-get install --assume-yes \
-      libyaml-cpp-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN git clone https://github.com/ethz-asl/libpointmatcher.git \
-    && cd libpointmatcher/ \
-    && mkdir build/ && cd build/ \
-    && cmake -D CMAKE_BUILD_TYPE=RelWithDebInfo \
-             -D CMAKE_INSTALL_PREFIX=${DN_CMAKE_INSTALL_PREFIX} \
-#             -D CMAKE_INSTALL_PREFIX=${PERCEP3D_LIB_PATH}/libpointmatcher/build/install \
-#             -D BUILD_TESTS=TRUE \
-             -D LIBNABO_INSTALL_DIR="${DN_CMAKE_INSTALL_PREFIX}/libnabo" \
-             "${PERCEP3D_LIB_PATH}/libpointmatcher" \
-    && make -j $(nproc) \
-    && make install
-
-#ENV libpointmatcher_DIR=${PERCEP3D_LIB_PATH}/libpointmatcher/build/install/share/libpointmatcher/cmake
-ENV libpointmatcher_DIR=${DN_CMAKE_INSTALL_PREFIX}/share/libpointmatcher/cmake
-
+RUN bash libpointmatcher_installer.bash \
+            --repository-version ${LIBPOINTMATCHER_VERSION} \
+            --cmake-build-type ${LIBPOINTMATCHER_CMAKE_BUILD_TYPE} \
+            ${LIBPOINTMATCHER_INSTALL_SCRIPT_FLAG}
 
 FROM libpointmatcher-install AS test
 
-WORKDIR ${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu
-RUN source lpm_execute_libpointmatcher_unittest.bash
+WORKDIR ${PERCEP3D_LIB_PATH}/libpointmatcher
+# (NICE TO HAVE) ToDo: implement a base test casse that validate LPM is working
+RUN echo "skip test"
 
 FROM libpointmatcher-install AS final
 

@@ -85,7 +85,11 @@ setup() {
 #  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}"
+  local _CI_TEST=true
+  mock_docker_command_config_services_base_image_squash
+#  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}"
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+                                  --ci-test-force-runing-docker-cmd
   assert_success
   refute_output  --partial "No such file or directory"
 #  bats_print_run_env_variable
@@ -95,7 +99,9 @@ setup() {
 #  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash -c "yes 1 | bash ./${TESTED_FILE_PATH}/$TESTED_FILE"
+  local _CI_TEST=true
+  mock_docker_command_config_services_base_image_squash_exit_error
+  run bash -c "yes 1 | source ./${TESTED_FILE_PATH}/$TESTED_FILE" --ci-test-force-runing-docker-cmd
   assert_failure
   assert_output --partial "Missing the dotenv build matrix file mandatory argument"
 
@@ -108,12 +114,15 @@ setup() {
 @test "docker command are passed to show_and_execute_docker" {
 #  skip "tmp dev"
 
-  local DOCKER_CMD="build --no-cache --push"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} -- ${DOCKER_CMD}"
+  local DOCKER_CMD="config --dry-run"
+  local _CI_TEST=true
+  mock_docker_command_config_services_base_image_squash
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --ci-test-force-runing-docker-cmd -- ${DOCKER_CMD}
   assert_success
-  assert_output --regexp .*"Skipping the execution of Docker command".*
-  assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}".*
-  assert_output --regexp .*"with command".*"${DOCKER_CMD}".*
+#  assert_output --regexp .*"Skipping the execution of Docker command".*
+#  assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}".*
+#  assert_output --regexp .*"with command".*"${DOCKER_CMD}".*
+  assert_output --regexp .*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml".*"${DOCKER_CMD}".*"completed successfully and exited docker."
 }
 
 @test "dotenv build matrix file argument › ok" {
@@ -126,7 +135,7 @@ setup() {
   local DOCKER_CMD="version"
   local _CI_TEST=true
   set +e
-  mock_docker_command_exit_ok
+  mock_docker_command_config_services_base_image_squash
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                               --ci-test-force-runing-docker-cmd \
                                               -- "$DOCKER_CMD"
@@ -148,7 +157,7 @@ setup() {
   local DOCKER_CMD="version"
   local _CI_TEST=true
   set +e
-  mock_docker_command_exit_ok
+  mock_docker_command_config_services_base_image_squash
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                               --ci-test-force-runing-docker-cmd \
                                               -- "$DOCKER_CMD"
@@ -159,60 +168,90 @@ setup() {
 #  bats_print_run_env_variable
 }
 
+@test "multi OS build › expect pass" {
+##  skip "tmp dev"
+
+  local DOCKER_CMD="version"
+  local _CI_TEST=true
+
+  mock_docker_command_config_services_base_image_squash
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+                                          --ci-test-force-runing-docker-cmd \
+                                          -- "$DOCKER_CMD"
+  assert_success
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-12-py3-focal".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-12-py3-jammy".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-12-py3-focal".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-12-py3-jammy".*
+
+#  bats_print_run_env_variable
+}
+
 @test "docker exit code propagation on pass › expect pass" {
+#  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
   set +e
 
-  mock_docker_command_exit_ok
+  mock_docker_command_config_services_base_image_squash
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                           --ci-test-force-runing-docker-cmd \
                                           -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"Pass".*"DN-hot-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
 #  bats_print_run_env_variable
 }
 
 @test "docker exit code propagation on faillure › expect pass" {
+#  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
-  fake_IS_TEAMCITY_RUN
-  set +e
+#  fake_IS_TEAMCITY_RUN
+#  set +e
 
-  mock_docker_command_exit_error
+  mock_docker_command_config_services_base_image_squash_exit_error
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                               --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
-  set -e
+#  set -e
   assert_failure
-  assert_output --regexp .*"Fail".*"DN-hot-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-hot-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-pytorch-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
 }
 
 @test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
+#  skip "tmp dev"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
   fake_IS_TEAMCITY_RUN
   set +e
 
-  mock_docker_command_exit_error
+  mock_docker_command_config_services_base_image_squash_exit_error
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                         --ci-test-force-runing-docker-cmd \
                                         -- "$DOCKER_CMD"
@@ -227,20 +266,24 @@ setup() {
 #  skip "tmp dev"
 
   set +e
-  mock_docker_command_exit_ok
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  local _CI_TEST=true
+  mock_docker_command_config_services_base_image_squash
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+                                      --ci-test-force-runing-docker-cmd \
                                       --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r33.3.3'
   set -e
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-l4t-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
 
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
 }
 
 @test "--force-push 'latest' tag sanity check ok" {
+#  skip "tmp dev"
+
   if [[ $(git symbolic-ref -q --short HEAD) == main ]]; then
     skip "Curent checkout branch is 'main' which invalidate this test logic"
   fi
@@ -256,6 +299,8 @@ setup() {
 }
 
 @test "--force-push 'bleeding' tag sanity check ok" {
+#  skip "tmp dev"
+
   if [[ $(git symbolic-ref -q --short HEAD) == dev ]]; then
     skip "Curent checkout branch is 'dev' which invalidate this test logic"
   fi
@@ -275,7 +320,6 @@ setup() {
 
   local _CI_TEST=true
   mock_docker_command_config_services
-#  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --force-push -- build"
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                               --force-push \
                               --ci-test-force-runing-docker-cmd \
@@ -283,7 +327,16 @@ setup() {
 
   assert_success
 
-  assert_output --regexp .*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-one image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-one".*"completed successfully and exited docker.".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-two image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system done".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml push mock-service-two".*"completed successfully and exited docker.".*
+  assert_output --partial "mock-service-one mock-service-two"
+
+  if [[ ${TEAMCITY_VERSION} ]] ; then
+    SHOW_AND_EXECUTE_DOCKER_DONE_MSG="DN-build-system"
+  else
+    SHOW_AND_EXECUTE_DOCKER_DONE_MSG="DN-build-system done"
+  fi
+
+  assert_output --regexp .*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml".*"build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-one".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-one image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml".*"push mock-service-one".*"completed successfully and exited docker.".*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml".*"build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 mock-service-two".*"completed successfully and exited docker.".*"\[".*"DN-build-system".*"\]".*"Force push mock-service-two image to docker registry".*"\[".*"DN-build-system".*"\]".*"\[".*"${SHOW_AND_EXECUTE_DOCKER_DONE_MSG}".*"\]".*"Command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml".*"push mock-service-two".*"completed successfully and exited docker.".*
+
 }
 
 @test "flag --help" {
@@ -299,7 +352,11 @@ setup() {
 #  skip "tmp dev"
 
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --buildx-bake -- ${DOCKER_CMD}"
+  local _CI_TEST=true
+  mock_docker_command_config_services_base_image_squash
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --buildx-bake \
+                  --ci-test-force-runing-docker-cmd \
+                  -- ${DOCKER_CMD}
 
   assert_success
   assert_output --regexp .*"docker buildx bake -f ".*"${DOCKER_CMD}"
@@ -308,14 +365,14 @@ setup() {
 
 
 @test "repository version checkout" {
+#  skip "tmp dev"
 
   cd "${BATS_DOCKER_WORKDIR}"
   run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}" \
                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                         --os-name-build-matrix-override 'l4t' \
-                        --l4t-version-build-matrix-override 'r33.3.3' \
-                        --fail-fast
+                        --l4t-version-build-matrix-override 'r33.3.3'
 
-  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"DN-build-system".*"\]".*"Repository checkout".*
+  assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"DN-build-system".*"\]".*"Repository curently checkout at".*
 
 }

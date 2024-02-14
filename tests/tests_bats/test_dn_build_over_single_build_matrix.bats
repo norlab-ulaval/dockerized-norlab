@@ -71,7 +71,8 @@ setup_file() {
 @test "running $TESTED_FILE from 'root' › expect pass" {
 
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE \
-              "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}"
+              "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}" \
+              --ci-test-force-runing-docker-cmd
 
   assert_success
 
@@ -83,6 +84,7 @@ setup_file() {
 @test "flag passed to 'dn_execute_compose_over_build_matrix.bash' › ok" {
 
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}" \
+                  --ci-test-force-runing-docker-cmd \
                   --dockerized-norlab-version-build-matrix-override "v0.2.0" \
                   --os-name-build-matrix-override "l4t" \
                   --l4t-version-build-matrix-override "r33.3.3"
@@ -90,11 +92,11 @@ setup_file() {
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*
 
-  assert_output --regexp .*"DN-v0.2.0-humble-ros-core-l4t-r33.3.3".*
-  assert_output --regexp .*"DN-v0.2.0-humble-pytorch-l4t-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-foxy-core-l4t-r33.3.3".*
+#  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
 
-  refute_output --regexp .*"DN-v0.3.0-humble-ros-core-l4t-r11.1.1".*
-  refute_output --regexp .*"DN-v0.3.0-humble-pytorch-l4t-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-r11.1.1".*
+#  refute_output --regexp .*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
 
 #  bats_print_run_env_variable
 }

@@ -23,7 +23,7 @@ apt-get update \
 # - https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
 # Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
 # ToDo: test › expect no substitution
-#  echo "Port $"DN_SSH_SERVER_PORT""; \
+#  echo "Port \$``DN_SSH_SERVER_PORT``"; \
 ( \
   echo "LogLevel DEBUG2"; \
   echo "PermitRootLogin yes"; \

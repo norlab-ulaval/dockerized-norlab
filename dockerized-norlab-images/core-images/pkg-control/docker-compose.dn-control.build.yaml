@@ -1,12 +1,12 @@
-name: ${DN_COMPOSE_NAME}
-
 services:
+
 
   # ====Dockerized-NorLab control =================================================================
   dn-control:
     extends:
-      file: ../global-service-builder/docker-compose.global-service.build.yaml
-      service: global-service-builder
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
     build:
       context: dn-control
       args:
@@ -14,10 +14,11 @@ services:
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dockerized-norlab-control:${DN_IMAGE_TAG:?err}
 
-#  dn-control-gym:
-#    extends: dn-control
+#  dn-control-openai-gym:
+#    extends:
+#      service: dn-control
 #    build:
-#      context: dn-control-gym
+#      context: dn-control-openai-gym
 #      args:
 #        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control
 #    image: ${DN_HUB:?err}/dockerized-norlab-control-gym:${DN_IMAGE_TAG:?err}
@@ -26,7 +27,8 @@ services:
 
 #  # (!) Install problem, skipping for now, will use the 'dockerized-norlab-control-deep-rl-f1tenth' image in the mean time
 #  dn-control-f1tenth:
-#    extends: dn-control
+#    extends:
+#      service: dn-control
 #    build:
 #      context: dn-control-f1tenth
 #      args:

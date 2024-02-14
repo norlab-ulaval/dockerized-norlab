@@ -117,7 +117,7 @@ teardown() {
 @test "${TESTED_FILE} › check if .env.dockerized-norlab-project was properly sourced › expect pass" {
   # ....Pre-condition..............................................................................
   assert_empty ${DN_HUB}
-  assert_empty ${DN_COMPOSE_NAME}
+  assert_empty ${COMPOSE_PROJECT_NAME}
   assert_empty ${DN_SPLASH_NAME}
   assert_empty ${NBS_SPLASH_NAME}
   assert_empty ${DN_PROJECT_HUB}
@@ -133,7 +133,7 @@ teardown() {
 
   # ....Tests......................................................................................
   assert_equal "${DN_HUB}" "norlabulaval"
-  assert_equal "${DN_COMPOSE_NAME}" "dockerized-norlab"
+  assert_equal "${COMPOSE_PROJECT_NAME}" "dockerized-norlab"
   assert_equal "${DN_SPLASH_NAME}" "Dockerized-NorLab"
   assert_equal "${NBS_SPLASH_NAME}" "Dockerized-NorLab"
   assert_equal "${DN_PROJECT_HUB}" "norlabulaval"

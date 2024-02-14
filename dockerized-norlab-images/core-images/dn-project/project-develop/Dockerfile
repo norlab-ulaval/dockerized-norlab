@@ -3,10 +3,6 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS debugging-tools
 
-# ToDo: quickhack >> (ref task NMO-385 refactor: norlab-shell-script-tools integration)
-# (Priority) ToDo: refactor >> must be set earlier, most likely in 'dockerized-norlab-images/core-images/dependencies/Dockerfile.prompt'
-ENV PROJECT_PROMPT_NAME=dockerized-norlab
-
 # Set python to print stdin/sderr in real-time for dev/debug
 # Note: set to 0 for deploy as it affect performances
 ENV PYTHONUNBUFFERED=1

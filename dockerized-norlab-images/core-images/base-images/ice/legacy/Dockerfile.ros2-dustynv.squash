@@ -1,7 +1,7 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-#ARG TAG_VERSION
+#ARG TAG_OS_VERSION
 
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
@@ -9,10 +9,9 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
-# (CRITICAL) ToDo: validate using l4t-base instead of l4t-jetson <-- we are here
 FROM scratch AS squash-base-image
-#FROM nvcr.io/nvidia/l4t-jetpack:${TAG_VERSION:?err} AS squash-base-image
-#FROM nvcr.io/nvidia/l4t-base:${TAG_VERSION:?err} AS squash-base-image
+#FROM nvcr.io/nvidia/l4t-jetpack:${TAG_OS_VERSION:?err} AS squash-base-image
+#FROM nvcr.io/nvidia/l4t-base:${TAG_OS_VERSION:?err} AS squash-base-image # ToDo: validate using l4t-base instead of l4t-jetson
 #FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
 COPY --from=base-image / /
 # Note:
@@ -43,7 +42,7 @@ ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
 # ....Transfer environment variable from base-images...............................................
-# En var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
+# Env var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
 ARG CUDA_HOME
 ARG NVIDIA_VISIBLE_DEVICES
 ARG NVIDIA_DRIVER_CAPABILITIES
@@ -56,7 +55,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:?'Environment variab
 ENV PATH=${PATH:?'Environment variable was not passed from base-image build stage'}
 ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'}
 
-# En var added by jetson-container 'dustynv/ros' base images
+# Env var added by jetson-container 'dustynv/ros' base images
 ARG ROS_DISTRO
 ARG ROS_ROOT
 ARG ROS_PYTHON_VERSION
@@ -68,11 +67,11 @@ ENV ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Environment variable was not passe
 ENV RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:?'Environment variable was not passed from base-image build stage'}
 
 # ....The following env var does not appear in every jetson-container ros base images..............
-# En var added by jetson-container 'dustynv/ros' base images
+# Env var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
 
-# En var added by jetson-container pytorch related base images
+# Env var added by jetson-container pytorch related base images
 ARG OPENBLAS_CORETYPE
 ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 
@@ -89,25 +88,27 @@ ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 #COPY --from=base-image /opt /opt
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
+# ....Make python 3 default........................................................................
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
+    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
 FROM squash-base-image AS squashed-base-image-tester
 
 RUN dpkg --get-selections | grep nvidia
 
-# Only test that the ros install from jetson-container was transfered ok between build-stages
 RUN python -c "import numpy" \
-    && python -c "import pytest"
+    && cat /usr/local/cuda/version*
 
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/install/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/install/setup.bash \
+# Only test that the ros install from jetson-container was transfered ok between build-stages
+RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
+    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && echo "Sanity check" \
-    && echo ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
-    && echo ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
+    && echo ROS_VERSION=${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
+    && echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+#    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
+    && echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy" \
     && ros2 pkg list
-
 
 CMD [ "bash" ]

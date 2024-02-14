@@ -73,6 +73,8 @@ touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable 
   echo "NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}"; \
   echo "NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES}"; \
   echo "LD_PRELOAD=${LD_PRELOAD}"; \
+  echo "TORCH_HOME=${TORCH_HOME}"; \
+  echo "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}"; \
   echo ""; \
   echo "# Display forwarding related env"; \
   echo "DISPLAY=${DISPLAY}"; \

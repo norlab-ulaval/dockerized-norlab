@@ -65,35 +65,49 @@ Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
 
 [//]: # ( ==== Body ================================================== )
 
-### Features
-- Multi ros distros: `foxy`, `humble` ...
-- Multi ros packages: `core`, `base`, `desktop`
-- Multi packages: `libpoitmatcher`, `pytorch`, `torchvision`, `numba`, `stable-baseline`, `f1tenth-gym` ...
+## Features
+- CUDA support via _nvidia-docker_
+- Multi architectures: `l4t/arm64`, `linux/amd64`
 - Multi OS versions:
-  - Jetpack: `r35.2.1`, `r32.7.1` ...
-  - Ubuntu: `focal` (in progress: `bionic` and `jammy`)
-- Multi architectures: `l4t/arm64` (in progress: `linux/arm64`, `linux/x86`)
+  - Jetpack: `r35.2.1`, `r35.4.1`, `r36.2.8` ...
+  - Ubuntu: `focal`, `jammy`
+- Multi ros2 distros: `foxy`, `humble` ...
+- Multi ros2 packages: `core`, `base`, `desktop`
+- Multi packages (non-exhaustive list): 
+  - Numerical computing: `numpy`, `numba`, `pycuda`, `tensorrt`
+  - Deep-learning: `pytorch`, `torch2trt`, `tensordict`
+  - Vision: `opencv`, `torchvision`
+  - NorLab perception stack: `libpointmatcher[-ros]`, `norlab-icp-mapper[-ros]` 
+  - NorLab control stack: (in progress) 
+  - MLOps: `ray`, `omegaconf`, `hydra-core`, `wandb`
+  - Deep-rl: `stable-baseline3`
+  - Simulation: `gym`, `f1tenth-gym`
  
-### Why
+## Why
 1. custom dependency management; 
 2. development environment consistency; 
 3. codebase stabilization trough continuous integration pipeline;
 4. easy deployment to robots compute box;
 5. results reproducibility.
  
-### Clone repository
+## Build matrix summary › `[ Services ... ] x [ build tag ... ]`
+
+![](visual/crawl_1.png)
+![](visual/crawl_2.png)
+
+## Clone repository
 ```shell
  git clone --recurse-submodule https://github.com/norlab-ulaval/dockerized-norlab.git
 ```
 
-### Usage example
+## Usage example
 Assuming a _docker builder_ with multi-architecture _docker-container_ driver named `local-builder-multiarch-virtual`
 execute the following in repository root
 ```shell
 export BUILDX_BUILDER=local-builder-multiarch-virtual \
   && export NBS_OVERRIDE_BUILD_MATRIX_MAIN=".env.build_matrix.main" \
-  && export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build" \
-  && source dockerized-norlab-scripts/build_script/dn_build_all.bash --force-push
+  && export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push" \
+  && source dockerized-norlab-scripts/build_script/dn_build_all.bash
 ```
 
 Note: To create a multi-architecture _docker builder_ with architecture virtualization
@@ -106,3 +120,4 @@ docker buildx create \
     --bootstrap \
     --use
 ```
+
