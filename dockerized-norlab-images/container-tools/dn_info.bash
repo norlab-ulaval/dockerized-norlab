@@ -1,5 +1,7 @@
 #!/bin/bash
 
+TMP_CWD=$(pwd)
+
 PCK_VERSION=$(pip3 list --format freeze)
 SP="    "
 
@@ -93,3 +95,6 @@ volume \033[1;37m dockerized-norlab-tools/dn_container_env_variable/ \033[0m mak
 ${SP} $ dn_expose_container_env_variables
 \033[0m "
 n2st::draw_horizontal_line_across_the_terminal_window '.'
+
+# ....Teardown.....................................................................................
+cd $TMP_CWD || exit 1
