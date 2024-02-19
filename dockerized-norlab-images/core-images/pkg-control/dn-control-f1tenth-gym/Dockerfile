@@ -52,14 +52,20 @@ RUN pip3 install --upgrade \
         'wheel==0.38.4' \
         'setuptools==65.5.1'
 
-#WORKDIR /opt
-#RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
-#    && cd ./f1tenth_gym  \
-#    && pip3 install -e .
-##    && pip3 install -e ".[dev]"
-
-RUN pip3 install --no-cache-dir  \
-    git+https://github.com/f1tenth/f1tenth_gym.git
+# Notes › f110_gym:
+#   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools
+#   - f110_gym need to be installed in editable mode because there is curently no MANIFESTE.in file
+#       which prevent some required assets (e.g. maps/) to be included in the install path
+WORKDIR /opt
+RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
+    && cd ./f1tenth_gym  \
+    && pip3 install -e . --config-settings editable_mode=compat \
+    && echo \
+    && pip3 show f110_gym \
+    && echo \
+    && python3 -c "import f110_gym" \
+    && python3 -c "from f110_gym.envs import F110Env" \
+    && python3 -c "import gym; env = gym.make('f110_gym:f110-v0', num_agents=1, timestep=0.01, ego_idx=0)"
 
 
 # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
