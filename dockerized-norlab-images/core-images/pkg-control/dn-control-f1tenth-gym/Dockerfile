@@ -34,7 +34,6 @@ RUN apt-get update --fix-missing \
 
 ## ....F1TENTH install.............................................................................
 
-
 # Fix for gym <-> F1TENTH TypeError:
 # >>> obs, step_reward, done, info = env.reset(np.array([[conf.sx, conf.sy, conf.stheta]]))
 # >>>     TypeError: reset() takes 1 positional argument but 2 were given
@@ -53,11 +52,15 @@ RUN pip3 install --upgrade \
         'wheel==0.38.4' \
         'setuptools==65.5.1'
 
-WORKDIR /opt
-RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
-    && cd ./f1tenth_gym  \
-    && pip3 install -e .
-#    && pip3 install -e ".[dev]"
+#WORKDIR /opt
+#RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
+#    && cd ./f1tenth_gym  \
+#    && pip3 install -e .
+##    && pip3 install -e ".[dev]"
+
+RUN pip3 install --no-cache-dir  \
+    git+https://github.com/f1tenth/f1tenth_gym.git
+
 
 # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
 # See known issues comment https://github.com/f1tenth/f1tenth_gym
