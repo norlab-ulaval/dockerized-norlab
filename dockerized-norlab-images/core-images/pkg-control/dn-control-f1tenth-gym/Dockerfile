@@ -59,13 +59,7 @@ RUN pip3 install --upgrade \
 WORKDIR /opt
 RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
     && cd ./f1tenth_gym  \
-    && pip3 install -e . --config-settings editable_mode=compat \
-    && echo \
-    && pip3 show f110_gym \
-    && echo \
-    && python3 -c "import f110_gym" \
-    && python3 -c "from f110_gym.envs import F110Env" \
-    && python3 -c "import gym; env = gym.make('f110_gym:f110-v0', num_agents=1, timestep=0.01, ego_idx=0)"
+    && pip3 install -e . --config-settings editable_mode=compat
 
 
 # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
@@ -80,9 +74,10 @@ FROM main AS test
 
 RUN echo "Sanity-check" \
     && pip3 show f110_gym \
+    && echo \
     && python3 -c "import f110_gym" \
-    && python3 -c "from f110_gym.envs import F110Env"
-
+    && python3 -c "from f110_gym.envs import F110Env" \
+    && python3 -c "import gym; env = gym.make('f110_gym:f110-v0', num_agents=1, timestep=0.01, ego_idx=0)"
 
 FROM main AS final
 WORKDIR ${DN_DEV_WORKSPACE}
