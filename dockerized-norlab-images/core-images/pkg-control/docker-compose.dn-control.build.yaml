@@ -26,11 +26,11 @@ services:
 #      - dn-control
 
 #  # (!) Install problem, skipping for now, will use the 'dockerized-norlab-control-deep-rl-f1tenth' image in the mean time
-#  dn-control-f1tenth:
+#  dn-control-f1tenth-gym:
 #    extends:
 #      service: dn-control
 #    build:
-#      context: dn-control-f1tenth
+#      context: dn-control-f1tenth-gym
 #      args:
 #        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control
 ##      no_cache: true

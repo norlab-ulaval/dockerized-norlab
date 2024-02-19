@@ -17,15 +17,22 @@ WORKDIR /opt
 #     (see torch <-> torchvision compatible pair: https://github.com/pytorch/vision#installation)
 
 
-RUN mkdir /pytorch-labs && cd /pytorch-labs  \
-    && git clone https://github.com/pytorch-labs/tensordict.git  \
-    && cd /pytorch-labs/tensordict && pip3 install -e .
+RUN #mkdir /pytorch-labs && cd /pytorch-labs  \
+#    && git clone https://github.com/pytorch-labs/tensordict.git  \
+#    && cd /pytorch-labs/tensordict  \
+#    && pip3 install -e .
+
+RUN pip3 install --no-cache-dir  \
+    git+https://github.com/pytorch-labs/tensordict.git
 
 RUN pip3 install --no-cache-dir --upgrade torchvision
 
-RUN mkdir /torchrl && cd /torchrl  \
-    && git clone https://github.com/pytorch/rl  \
-    && cd ./rl && pip3 install -e .
+#RUN mkdir /torchrl && cd /torchrl  \
+#    && git clone https://github.com/pytorch/rl  \
+#    && cd ./rl && pip3 install -e .
+
+RUN pip3 install --no-cache-dir  \
+    git+https://github.com/pytorch/rl
 
 #RUN pip3 install --no-cache-dir \
 #  git+https://github.com/pytorch-labs/tensordict@v0.1.0 \

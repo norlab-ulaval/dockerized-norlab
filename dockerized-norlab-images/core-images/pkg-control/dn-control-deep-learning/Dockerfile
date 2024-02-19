@@ -26,5 +26,6 @@ RUN pip3 install --no-cache-dir -r /requirements_deep_learning.txt  \
         echo "alias dn_python3_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch.py'"; \
        ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 
+WORKDIR ${DN_DEV_WORKSPACE}
 CMD [ "bash" ]
 

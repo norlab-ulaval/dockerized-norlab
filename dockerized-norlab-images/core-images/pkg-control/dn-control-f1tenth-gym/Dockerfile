@@ -1,7 +1,7 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
 
 # ====Begin=============================================================================================
 # See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
@@ -69,6 +69,16 @@ RUN pip3 install --no-cache-dir  \
 RUN pip3 install --no-cache-dir --upgrade  \
     'pyglet<1.5.11'
 
-# ====End===============================================================================================
+
+FROM main AS test
+
+RUN echo "Sanity-check" \
+    && pip3 show f110_gym \
+    && python3 -c "import f110_gym" \
+    && python3 -c "from f110_gym.envs import F110Env"
+
+
+FROM main AS final
+WORKDIR ${DN_DEV_WORKSPACE}
 CMD [ "bash" ]
 

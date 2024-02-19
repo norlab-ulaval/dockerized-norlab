@@ -58,4 +58,5 @@ RUN apt-get update \
         echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
         ) >> ~/.bashrc
 
+WORKDIR ${DN_DEV_WORKSPACE}
 CMD [ "bash" ]

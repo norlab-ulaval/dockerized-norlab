@@ -170,7 +170,7 @@ RUN sed --in-place "s;source /ros_entrypoint.sh;;" "$HOME/.bashrc" \
     && rm --force /ros_entrypoint.sh
 
 
-FROM ros2-install as test
+FROM ros2-install AS test
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
@@ -206,5 +206,5 @@ RUN echo "Check workspace directory installation"  \
     && [[ -d ${DN_DEV_WORKSPACE}/src ]] \
     || exit 1
 
-FROM ros2-install as final
+FROM ros2-install AS final
 CMD [ "bash" ]
