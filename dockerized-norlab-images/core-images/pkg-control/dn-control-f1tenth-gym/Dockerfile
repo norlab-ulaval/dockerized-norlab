@@ -3,6 +3,9 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
 
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
 # ====Begin=============================================================================================
 # See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
 
@@ -52,6 +55,8 @@ RUN pip3 install --upgrade \
         'wheel==0.38.4' \
         'setuptools==65.5.1'
 
+# (Priority) ToDo: temporary hack >> delete next line ← when solved
+RUN rm -r /opt/f1tenth_gym
 # Notes › f110_gym:
 #   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools
 #   - f110_gym need to be installed in editable mode because there is curently no MANIFESTE.in file

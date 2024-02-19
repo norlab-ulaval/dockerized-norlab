@@ -23,6 +23,7 @@ services:
       service: dn-control-deep-learning
     build:
       context: dn-control-deep-rl
+      target: main
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-learning
     depends_on:
@@ -68,6 +69,7 @@ services:
       service: dn-control-deep-rl-openai-gym
     build:
       context: dn-control-f1tenth-gym
+      target: main
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl-openai-gym
     pull_policy: build
