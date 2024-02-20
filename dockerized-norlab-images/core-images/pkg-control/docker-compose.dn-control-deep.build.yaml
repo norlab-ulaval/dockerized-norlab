@@ -1,6 +1,8 @@
 services:
 
   # ====Dockerized-NorLab control =================================================================
+
+  # ....dn-control-deep-learning...................................................................
   dn-control-deep-learning:
 #    extends:
 #      file: docker-compose.dn-control.build.yaml
@@ -8,7 +10,6 @@ services:
     extends:
       file: "../global/docker-compose.global.yaml"
       service: global-service-builder-config
-#    pull_policy: build
     build:
       context: dn-control-deep-learning
       args:
@@ -16,24 +17,43 @@ services:
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     image: ${DN_HUB:?err}/dockerized-norlab-control-deep-learning:${DN_IMAGE_TAG:?err}
 
-  dn-control-deep-rl:
-    extends:
-      service: dn-control-deep-learning
-    build:
-      context: dn-control-deep-rl
-      args:
-        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-learning
-    image: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl:${DN_IMAGE_TAG:?err}
-    depends_on:
-      - dn-control-deep-learning
-
-  dn-control-deep-rl-openai-gym:
-#    extends:
-#      service: dn-control-deep-learning
+  # ....dn-control-deep-rl.........................................................................
+  dn-control-deep-rl-main:
     extends:
       file: "../global/docker-compose.global.yaml"
       service: global-service-builder-config
-#    pull_policy: build
+    build:
+      context: dn-control-deep-rl
+      target: main
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-learning
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-control-deep-learning
+
+  dn-control-deep-rl-tester:
+    extends:
+      service: dn-control-deep-rl-main
+    build:
+      target: test
+    depends_on:
+      - dn-control-deep-rl-main
+
+  dn-control-deep-rl:
+    extends:
+      service: dn-control-deep-rl-main
+    build:
+      target: final
+    image: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-control-deep-rl-tester
+
+  # ....dn-control-deep-rl-openai-gym..............................................................
+  dn-control-deep-rl-openai-gym:
+    extends:
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
     build:
       context: dn-control-openai-gym
       args:
@@ -43,17 +63,40 @@ services:
     depends_on:
       - dn-control-deep-rl
 
-  dn-control-deep-rl-f1tenth:
+  # ....dn-control-deep-rl-f1tenth-gym.............................................................
+  dn-control-deep-rl-f1tenth-gym-main:
     extends:
-      service: dn-control-deep-rl-openai-gym
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
     build:
-      context: dn-control-f1tenth
+      context: dn-control-f1tenth-gym
+      target: main
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl-openai-gym
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     pull_policy: build
-    image: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl-f1tenth:${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-control-deep-rl-openai-gym
+
+  dn-control-deep-rl-f1tenth-gym-tester:
+    extends:
+      service: dn-control-deep-rl-f1tenth-gym-main
+    build:
+      target: test
+    depends_on:
+      - dn-control-deep-rl-f1tenth-gym-main
+
+  dn-control-deep-rl-f1tenth-gym:
+    extends:
+      service: dn-control-deep-rl-f1tenth-gym-main
+    build:
+      target: final
+      tags:
+        - ${DN_HUB:?err}/dockerized-norlab-control-deep-rl-f1tenth:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl-f1tenth-gym:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dn-control-deep-rl-f1tenth-gym-tester
+
 
 
 #  dn-control-torchrl:

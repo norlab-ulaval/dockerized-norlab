@@ -1,7 +1,11 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
 # ====Begin=============================================================================================
 # See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
@@ -34,7 +38,6 @@ RUN apt-get update --fix-missing \
 
 ## ....F1TENTH install.............................................................................
 
-
 # Fix for gym <-> F1TENTH TypeError:
 # >>> obs, step_reward, done, info = env.reset(np.array([[conf.sx, conf.sy, conf.stheta]]))
 # >>>     TypeError: reset() takes 1 positional argument but 2 were given
@@ -53,11 +56,21 @@ RUN pip3 install --upgrade \
         'wheel==0.38.4' \
         'setuptools==65.5.1'
 
+## (Priority) ToDo: temporary hack >> delete next line ← when solved
+#RUN rm -f -r /opt/f1tenth_gym
+RUN if [[ -d /opt/f1tenth_gym ]]; then \
+     tree -L 1 -a && echo "/opt/f1tenth_gym alredy exist!" && exit 1 ; \
+    fi
+
+# Notes › f110_gym:
+#   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools
+#   - f110_gym need to be installed in editable mode because there is curently no MANIFESTE.in file
+#       which prevent some required assets (e.g. maps/) to be included in the install path
 WORKDIR /opt
 RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
     && cd ./f1tenth_gym  \
-    && pip3 install -e .
-#    && pip3 install -e ".[dev]"
+    && pip3 install -e . --config-settings editable_mode=compat
+
 
 # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
 # See known issues comment https://github.com/f1tenth/f1tenth_gym
@@ -66,6 +79,17 @@ RUN git clone https://github.com/f1tenth/f1tenth_gym.git  \
 RUN pip3 install --no-cache-dir --upgrade  \
     'pyglet<1.5.11'
 
-# ====End===============================================================================================
+
+FROM main AS test
+
+RUN echo "Sanity-check" \
+    && pip3 show f110_gym \
+    && echo \
+    && python3 -c "import f110_gym" \
+    && python3 -c "from f110_gym.envs import F110Env" \
+    && python3 -c "import gym; env = gym.make('f110_gym:f110-v0', num_agents=1, timestep=0.01, ego_idx=0)"
+
+FROM main AS final
+WORKDIR ${DN_DEV_WORKSPACE}
 CMD [ "bash" ]
 

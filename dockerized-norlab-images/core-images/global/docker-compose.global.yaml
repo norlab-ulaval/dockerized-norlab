@@ -48,8 +48,7 @@ services:
       platforms: !reset []
       labels:
         org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-    pull_policy: missing  #Note: enforce pulling image only if not available in cache
-#    pull_policy: build
+    pull_policy: build
 
   global-service-builder-config:
     extends:
@@ -65,4 +64,4 @@ services:
       platforms:
         - linux/arm64
         - linux/amd64
-    pull_policy: missing  #Note: enforce pulling image only if not available in cache
+    pull_policy: build
