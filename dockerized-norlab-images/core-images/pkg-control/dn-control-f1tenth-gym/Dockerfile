@@ -3,6 +3,7 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
 
+ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -57,6 +58,9 @@ RUN pip3 install --upgrade \
 
 ## (Priority) ToDo: temporary hack >> delete next line ← when solved
 #RUN rm -f -r /opt/f1tenth_gym
+RUN if [[ -d /opt/f1tenth_gym ]]; then \
+     tree -L 1 -a && echo "/opt/f1tenth_gym alredy exist!" && exit 1 ; \
+    fi
 
 # Notes › f110_gym:
 #   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools

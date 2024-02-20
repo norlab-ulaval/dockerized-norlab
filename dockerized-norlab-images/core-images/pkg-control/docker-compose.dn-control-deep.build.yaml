@@ -20,12 +20,14 @@ services:
   # ....dn-control-deep-rl.........................................................................
   dn-control-deep-rl-main:
     extends:
-      service: dn-control-deep-learning
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
     build:
       context: dn-control-deep-rl
       target: main
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-learning
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     depends_on:
       - dn-control-deep-learning
 
@@ -48,8 +50,6 @@ services:
 
   # ....dn-control-deep-rl-openai-gym..............................................................
   dn-control-deep-rl-openai-gym:
-#    extends:
-#      service: dn-control-deep-learning
     extends:
       file: "../global/docker-compose.global.yaml"
       service: global-service-builder-config
@@ -66,12 +66,14 @@ services:
   # ....dn-control-deep-rl-f1tenth-gym.............................................................
   dn-control-deep-rl-f1tenth-gym-main:
     extends:
-      service: dn-control-deep-rl-openai-gym
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
     build:
       context: dn-control-f1tenth-gym
       target: main
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl-openai-gym
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
     pull_policy: build
     depends_on:
       - dn-control-deep-rl-openai-gym

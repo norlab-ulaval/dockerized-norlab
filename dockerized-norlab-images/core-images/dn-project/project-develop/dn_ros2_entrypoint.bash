@@ -35,8 +35,8 @@ echo -e "Starting container \033[1;37m internal ssh server for IDE remote develo
 
 source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
 
-if [[ -f /dn_entrypoint.callback.bash ]]; then
-  source /dn_entrypoint.callback.bash
+if [[ -f /dn_entrypoint.project.callback.bash ]]; then
+  source /dn_entrypoint.project.callback.bash
 fi
 
 exec "$@"
