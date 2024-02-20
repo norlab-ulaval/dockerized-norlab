@@ -17,7 +17,7 @@ WORKDIR /opt
 #     (see torch <-> torchvision compatible pair: https://github.com/pytorch/vision#installation)
 
 
-RUN #mkdir /pytorch-labs && cd /pytorch-labs  \
+#RUN mkdir /pytorch-labs && cd /pytorch-labs  \
 #    && git clone https://github.com/pytorch-labs/tensordict.git  \
 #    && cd /pytorch-labs/tensordict  \
 #    && pip3 install -e .
