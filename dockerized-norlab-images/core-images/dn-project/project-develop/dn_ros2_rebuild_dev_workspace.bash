@@ -17,10 +17,10 @@ rosdep install --from-paths ./src --ignore-packages-from-source --rosdistro "${R
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 
 COLCON_FLAGS=()
-if [[ ${PARAM_ARCH} == 'native' ]]; then
+if [[ "${PARAM_ARCH}" == "native" ]]; then
   echo -e "Builder is running on native architecture"
   COLCON_FLAGS+=(--symlink-install)
-elif [[ ${PARAM_ARCH} == 'virtualization' ]]; then
+elif [[ "${PARAM_ARCH}" == "virtualization" ]]; then
   echo -e "Builder is running in architecture virtualisation"
   COLCON_FLAGS+=(--executor sequential)
 fi

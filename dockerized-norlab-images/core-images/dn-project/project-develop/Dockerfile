@@ -92,10 +92,11 @@ RUN bash dn_expose_container_env_variables.bash \
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
-      bash dn_ros2_rebuild_dev_workspace.bash 'virtualization'; \
+      bash dn_ros2_rebuild_dev_workspace.bash 'virtualization' ; \
     else \
       bash dn_ros2_rebuild_dev_workspace.bash 'native' ; \
     fi
+
 RUN bash dn_ros2_entrypoint.bash
 RUN bash dn_fetch_ros_env_variables.bash
 

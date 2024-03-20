@@ -149,10 +149,10 @@ RUN apt-get update --fix-missing \
         ros-${ROS_DISTRO}-rosbridge-server \
         ros-${ROS_DISTRO}-rqt-graph \
         ros-${ROS_DISTRO}-rviz2 \
-        ros-${ROS_DISTRO}-demo-nodes-py \
-        ros-${ROS_DISTRO}-demo-nodes-cpp \
+        tree \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
 
 ## ToDo: assessment >> maybe not usefull anymore (pining setuptools as been moved earlier)
 #RUN echo "Quick hack for building ros2 example under ROS foxy focal linux/amd64"  \
@@ -170,8 +170,31 @@ WORKDIR ${DN_DEV_WORKSPACE}/src
 
 # ....Quick start workspace with a minimal ROS package.............................................
 WORKDIR ${DN_DEV_WORKSPACE}
-RUN git clone https://github.com/ros2/examples src/examples -b ${ROS_DISTRO} \
-    && cd src/examples/rclcpp || exit 1
+#RUN git clone https://github.com/ros2/examples src/examples -b ${ROS_DISTRO} \
+#    && cd src/examples/rclpy || exit 1
+
+## Note: both ros-${ROS_DISTRO}-demo-nodes-py and ros-${ROS_DISTRO}-demo-nodes-cpp are convenient \
+##       package from https://github.com/ros2/examples
+#RUN apt-get update --fix-missing \
+#    && apt-get install --assume-yes --no-install-recommends \
+#        ros-${ROS_DISTRO}-demo-nodes-py \
+#        ros-${ROS_DISTRO}-demo-nodes-cpp \
+#    && apt-get clean \
+#    && rm -rf /var/lib/apt/lists/*
+
+# Note: The goal is to have a minimum ros package to build. Only fetch rclpy as rclcpp is a lot
+#        longer to build especily on non-native architecture.
+#RUN wget --show-progress  \
+#    --directory-prefix="src/examples" "https://raw.githubusercontent.com/ros2/examples/${ROS_DISTRO}/rclpy" \
+#    && cd src/examples/rclpy || exit 1
+
+
+RUN git clone --depth=1 https://github.com/ros2/examples src/ros2_examples -b ${ROS_DISTRO} \
+    && cd src/ros2_examples \
+    && git sparse-checkout set --no-cone rclpy/topics/minimal_publisher rclpy/topics/minimal_subscriber \
+    && cd rclpy/topics/minimal_publisher || exit 1 \
+    && cd - && cd rclpy/topics/minimal_subscriber || exit 1
+
 
 # Note: For some reason, building ros2 example under ROS foxy focal linux/amd64 fail when \
 #       "rosdep update" use those flags:
@@ -193,6 +216,7 @@ WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
+    && tree src/ros2_examples \
     && rosdep install  \
             --ignore-packages-from-source \
             --from-path ./src  \
