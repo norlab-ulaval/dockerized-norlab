@@ -89,7 +89,13 @@ RUN bash dn_expose_container_env_variables.bash \
     && TMP_DOTENV_EXPOSE_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}" \
     && [[ -f "${TMP_DOTENV_EXPOSE_PATH}" ]] || exit 1
 
-RUN bash dn_ros2_rebuild_dev_workspace.bash
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
+      bash dn_ros2_rebuild_dev_workspace.bash 'virtualization'; \
+    else \
+      bash dn_ros2_rebuild_dev_workspace.bash 'native' ; \
+    fi
 RUN bash dn_ros2_entrypoint.bash
 RUN bash dn_fetch_ros_env_variables.bash
 

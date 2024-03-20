@@ -41,18 +41,40 @@ RUN echo "Sanity check"\
     && echo "Pull latest ${DN_DEPLOY_REPO_BRANCH} branch" \
     && git clone --branch ${DN_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git  \
     && cd ${DN_DEV_WORKSPACE} \
-    && apt-get update \
-    && rosdep install --from-paths src --ignore-src --default-yes \
+    && apt-get update --fix-missing \
+    && rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
+    && rosdep fix-permissions \
+    && rosdep install  \
+            --ignore-packages-from-source \
+            --from-path ./src  \
+            --rosdistro ${ROS_DISTRO}  \
+            -y \
     && rm -rf /var/lib/apt/lists/*
 
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
     && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && colcon build --symlink-install --event-handlers console_direct+
+    && COLCON_FLAGS=() \
+    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
+         echo -e "Builder is running in architecture virtualisation" \
+         && COLCON_FLAGS+=(--executor sequential) ; \
+      else \
+         echo -e "Builder is running on native architecture" \
+         && COLCON_FLAGS+=(--symlink-install) ; \
+      fi \
+    && COLCON_FLAGS+=( \
+          --cmake-clean-cache \
+          --cmake-args -DCMAKE_BUILD_TYPE=Release \
+          --event-handlers console_direct+ \
+       ) \
+    && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
+    && colcon build ${COLCON_FLAGS[@]}
 
 
 FROM package-project-src-code AS test
