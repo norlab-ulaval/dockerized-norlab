@@ -64,6 +64,8 @@ RUN apt-get update --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
 # ToDo: validate install steps in here -> https://github.com/norlab-ulaval/Norlab_wiki/wiki/Tutorials:-3D-Mapping-(ros2)
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
@@ -77,9 +79,21 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
             --rosdistro ${ROS_DISTRO}  \
             -y \
     && colcon version-check \
-    && colcon build \
-            --symlink-install \
-            --event-handlers console_direct+
+    && COLCON_FLAGS=() \
+    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
+         echo -e "Builder is running in architecture virtualisation" \
+         && COLCON_FLAGS+=(--executor sequential) ; \
+      else \
+         echo -e "Builder is running on native architecture" \
+         && COLCON_FLAGS+=(--symlink-install) ; \
+      fi \
+    && COLCON_FLAGS+=( \
+          --cmake-clean-cache \
+          --cmake-args -DCMAKE_BUILD_TYPE=Release \
+          --event-handlers console_direct+ \
+       ) \
+    && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
+    && colcon build ${COLCON_FLAGS[@]}
 
 #RUN echo "Check workspace directory installation" \
 #    && [[ -f ${HOME}/demo/config.rviz ]] \

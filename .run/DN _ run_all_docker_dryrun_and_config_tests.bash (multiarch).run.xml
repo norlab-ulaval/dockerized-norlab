@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="DN | run_all_docker_dryrun_and_config_tests.bash (buildx multiarch builder)" type="ShConfigurationType" folderName="[DN] B | dry-run and config tests">
+  <configuration default="false" name="DN | run_all_docker_dryrun_and_config_tests.bash (local-builder-multiarch-virtual)" type="ShConfigurationType" folderName="[DN] B | dry-run and config tests">
     <option name="SCRIPT_TEXT" value="cd tests/ &amp;&amp; bash run_all_docker_dryrun_and_config_tests.bash" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />

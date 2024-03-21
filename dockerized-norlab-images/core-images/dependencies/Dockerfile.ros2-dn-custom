@@ -19,6 +19,7 @@ RUN pip3 install --no-cache-dir \
       osrf-pycommon \
       rosbags \
       rosbags-dataframe \
+      rosbag-tools[plot] \
     && echo \
     && apt-get update --fix-missing \
     && apt-get install --assume-yes \
@@ -48,6 +49,8 @@ RUN pip3 install --no-cache-dir \
 # ====Build ROS2 workspace=========================================================================
 WORKDIR ${DN_DEV_WORKSPACE}
 
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
@@ -61,9 +64,21 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
             --rosdistro ${ROS_DISTRO}  \
             -y \
     && colcon version-check \
-    && colcon build \
-            --symlink-install \
-            --event-handlers console_direct+
+    && COLCON_FLAGS=() \
+    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
+         echo -e "Builder is running in architecture virtualisation" \
+         && COLCON_FLAGS+=(--executor sequential) ; \
+      else \
+         echo -e "Builder is running on native architecture" \
+         && COLCON_FLAGS+=(--symlink-install) ; \
+      fi \
+    && COLCON_FLAGS+=( \
+          --cmake-clean-cache \
+          --cmake-args -DCMAKE_BUILD_TYPE=Release \
+          --event-handlers console_direct+ \
+       ) \
+    && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
+    && colcon build ${COLCON_FLAGS[@]}
 
 # ===Execute ros sourcing system wide instead of in .bashrc========================================
 # (since .bashrc is not executed in non-interactive shell)
