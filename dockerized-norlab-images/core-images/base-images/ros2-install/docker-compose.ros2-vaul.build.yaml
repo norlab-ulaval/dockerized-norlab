@@ -1,7 +1,7 @@
 services:
 
   # ....ROS2 base images...........................................................................
-  base-image-ros2-clean-main:
+  base-image-vaul-ros2-clean-main:
     extends:
       file: "../../global/docker-compose.global.yaml"
       service: global-service-builder-config
@@ -16,19 +16,20 @@ services:
         ROS_PKG: ${ROS_PKG}
         DN_DEV_WORKSPACE_DIR: f1tenth_ws
 
-  base-image-ros2-clean-tester:
+  base-image-vaul-ros2-clean-tester:
     extends:
-      service: base-image-ros2-clean-main
+      service: base-image-vaul-ros2-clean-main
     build:
       target: test
     depends_on:
-      - base-image-ros2-clean-main
+      - base-image-vaul-ros2-clean-main
 
-  base-image-ros2-clean:
+  base-image-vaul-ros2-clean:
     extends:
-      service: base-image-ros2-clean-main
+      service: base-image-vaul-ros2-clean-main
     image: ${DN_HUB:?err}/dockerized-vaul-base-image-ros2-clean:${DN_IMAGE_TAG:?err}
     build:
       target: final
     depends_on:
-      - base-image-ros2-clean-tester
+      - base-image-vaul-ros2-clean-tester
+

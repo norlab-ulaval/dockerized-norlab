@@ -1,0 +1,62 @@
+
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-vaul-custom-install
+
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
+SHELL ["/bin/bash", "-c"]
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV TZ=Etc/UTC
+ENV TERM=${TERM:-"xterm-256color"}
+
+# ====Begin install================================================================================
+#WORKDIR ${DN_DEV_WORKSPACE}
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y \
+      "ros-${ROS_DISTRO:?err}-rosbridge-server" \
+      "ros-${ROS_DISTRO}-slam-toolbox" \
+    && apt-get autoremove -y \
+    && apt-get clean
+
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+WORKDIR "/opt"
+# (vaul-ulaval/setup_scripts) Dependencies not in rosdep
+#   See https://github.com/vaul-ulaval/setup_scripts/blob/main/6_load_ros_ws.bash
+RUN echo "Procedure at https://github.com/f1tenth/range_libc?tab=readme-ov-file#python-wrappers" \
+    && pip3 install --no-cache-dir  \
+            transforms3d \
+    && echo \
+    && echo "Procedure at https://github.com/f1tenth/range_libc/blob/foxy-devel/pywrapper/compile_with_cuda.sh" \
+    && apt-get update \
+    && apt-get install -y \
+        gcc-8 \
+        g++-8 \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8 \
+    && echo \
+    && git clone https://github.com/f1tenth/range_libc \
+    && cd range_libc/pywrapper \
+    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
+          echo -e "Builder is running in architecture virtualisation" \
+          && bash ./compile.sh ; \
+       else \
+          echo -e "Builder is running on native architecture" \
+          && bash ./compile_with_cuda.sh ; \
+       fi \
+    && apt-get update \
+    && apt-get install -y \
+      "ros-${ROS_DISTRO}-laser-filters" \
+    && apt-get autoremove -y \
+    && apt-get clean
+
+CMD [ "bash" ]
+
+
+
