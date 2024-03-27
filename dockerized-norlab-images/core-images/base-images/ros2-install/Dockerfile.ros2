@@ -20,7 +20,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-ENV DN_DEV_WORKSPACE=$HOME/ros2_ws
+ARG DN_DEV_WORKSPACE_DIR
+ENV DN_DEV_WORKSPACE="${HOME}/${DN_DEV_WORKSPACE_DIR:-ros2_ws}"
 
 # ====Begin Dockerized-NorLab======================================================================
 

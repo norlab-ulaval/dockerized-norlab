@@ -1,0 +1,90 @@
+services:
+  # ====Dockerized-NorLab dependencies=============================================================
+
+  dependencies-core-main:
+    extends:
+      file: "../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: Dockerfile.core
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-vaul-base-image-ros2-clean
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
+
+
+  # ....dependencies-core..........................................................................
+  dependencies-core:
+    extends:
+      service: dependencies-core-main
+    image: ${DN_HUB:?err}/dockerized-vaul-dependencies-core:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-core-main
+
+  # ....dependencies-prompt........................................................................
+  dependencies-prompt:
+    extends:
+      service: dependencies-core
+    build:
+      dockerfile: Dockerfile.prompt
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-vaul-dependencies-core
+    environment:
+      DN_ACTIVATE_POWERLINE_PROMT: false
+      DN_CONTAINER_NAME: IamInteractive
+    container_name: IamInteractive
+    image: ${DN_HUB:?err}/dockerized-vaul-dependencies-prompt:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-core
+
+  # ....dependencies-python-science-stack..........................................................
+  dependencies-python-science-stack:
+    extends:
+      service: dependencies-core-main
+    build:
+      dockerfile: Dockerfile.python-science-stack
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-vaul-dependencies-prompt
+    image: ${DN_HUB:?err}/dockerized-vaul-dependencies-python-science-stack:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-prompt
+
+  # ....dependencies-ros2-custom...................................................................
+  dependencies-ros2-custom-main:
+    extends:
+      service: dependencies-core-main
+    build:
+      dockerfile: Dockerfile.ros2-dn-custom
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-vaul-dependencies-python-science-stack
+    depends_on:
+      - dependencies-python-science-stack
+
+  dependencies-ros2-custom-tester:
+    extends:
+      service: dependencies-ros2-custom-main
+    build:
+      target: test
+    depends_on:
+      - dependencies-ros2-custom-main
+
+  dependencies-ros2-custom:
+    extends:
+      service: dependencies-ros2-custom-main
+    build:
+      target: final
+      tags:
+        - ${DN_HUB:?err}/dockerized-vaul-dependencies-full:${DN_IMAGE_TAG:?err}
+    image: ${DN_HUB:?err}/dockerized-vaul-dependencies-ros2-custom:${DN_IMAGE_TAG:?err}
+    depends_on:
+      - dependencies-ros2-custom-tester
+
+#  # ....dependencies (full)........................................................................
+#  dependencies-full:
+#    extends:
+#        service: dependencies-ros2-custom
+#    image: ${DN_HUB:?err}/dockerized-vaul-dependencies-full:${DN_IMAGE_TAG:?err}
+#    depends_on:
+#      - dependencies-ros2-custom
+
