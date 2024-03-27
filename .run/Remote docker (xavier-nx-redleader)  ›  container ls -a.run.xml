@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="[DN] Remote docker (xavier-nx-redleader)  ›  container ls -a" type="ShConfigurationType" folderName="remote › xavier-nx-redleader">
+  <configuration default="false" name="[DN] Remote docker (REMOTE_ASSET_ACTIVE)  ›  container ls" type="ShConfigurationType" folderName="remote jetson via REMOTE_ASSET_ACTIVE">
     <option name="SCRIPT_TEXT" value="docker -H ssh://$REMOTE_ASSET_ACTIVE container ls" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
