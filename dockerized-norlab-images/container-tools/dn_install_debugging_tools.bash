@@ -90,6 +90,11 @@ pip3 uninstall --yes pytest-cov
 ## Version 2.9.0 is responsible for the pytest<->pycharm RuntimeError
 pip3 install --no-cache-dir 'dash[testing]!=2.9.0'
 
+## (!) Skip pytest bogus release 8.1.1
+## Ref
+##  - https://github.com/sea-bass/pyrobosim/pull/162
+##  - https://github.com/ros2/launch/issues/765
+RUN pip3 install 'pytest!=8.1.1'
 
 # Note: the ssh daemon still need to be started.
 #  Curently its done by 'dn_ros2_entrypoint.bash' # (CRITICAL) ToDo: assessment

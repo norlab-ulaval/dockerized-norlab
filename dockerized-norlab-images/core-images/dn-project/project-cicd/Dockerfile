@@ -17,7 +17,7 @@ WORKDIR /
 # ===install teamcity & CI/CD utilities==================================================================
 
 RUN pip3 install --no-cache-dir  --upgrade pip
-RUN pip3 install --no-cache-dir --upgrade pytest
+RUN pip3 install --no-cache-dir --upgrade 'pytest!=8.1.1'
 RUN pip3 install --no-cache-dir teamcity-messages
 
 RUN ( \
