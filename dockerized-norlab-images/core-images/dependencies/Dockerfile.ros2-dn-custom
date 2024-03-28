@@ -101,6 +101,7 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 # ===Execute ros sourcing system wide instead of in .bashrc========================================
 # (since .bashrc is not executed in non-interactive shell)
 
+## (NICE TO HAVE) ToDo: on task end >> delete next bloc ↓↓ (ref tsk NMO-540)
 #RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
 #    && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
 #    && ( \
