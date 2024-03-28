@@ -101,9 +101,39 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 # ===Execute ros sourcing system wide instead of in .bashrc========================================
 # (since .bashrc is not executed in non-interactive shell)
 
+#RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
+#    && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
+#    && ( \
+#      echo ""; \
+#      echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
+#      echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
+#      echo "echo \"sourcing /opt/ros/\$``{ROS_DISTRO}``/setup.bash from /etc/profile.d/\""; \
+#      echo "source /opt/ros/\$``{ROS_DISTRO}``/setup.bash"; \
+#      echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"; \
+#      echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from /etc/profile.d/\""; \
+#      echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"; \
+#      echo "fi"; \
+#      echo ""; \
+#    ) > /etc/profile.d/02-dn-source-ros-system-wide.sh \
+#    && echo "" \
+#    && ( \
+#      echo ""; \
+#      echo "# Dockerized-NorLab › Source ROS2 environment"; \
+#      echo "echo \"sourcing /opt/ros/\$``{ROS_DISTRO}``/setup.bash from ~/.bashrc\""; \
+#      echo "source /opt/ros/\$``{ROS_DISTRO}``/setup.bash";  \
+#      echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"; \
+#      echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from ~/.bashrc\""; \
+#      echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"; \
+#      echo "fi"; \
+#      echo ""; \
+#    ) >> ~/.bashrc
+
+# (Priority) ToDo: validate the line '"source /dockerized-norlab/dockerized-norlab-images/core-images/dn-project/project-develop/dn_expose_container_env_variables.bash"' (ref task NMO-540)
 RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \
+      echo ""; \
+      echo "source /dockerized-norlab/dockerized-norlab-images/core-images/dn-project/project-develop/dn_expose_container_env_variables.bash"; \
       echo ""; \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
       echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
