@@ -14,6 +14,24 @@ ENV TERM=${TERM:-"xterm-256color"}
 
 # ====Begin install================================================================================
 
+RUN pip3 install --no-cache-dir  \
+        transforms3d \
+    && echo \
+    && apt-get update \
+    && apt-get update --fix-missing  \
+    && apt-get upgrade -y \
+    && echo "Quickhack: reinstall 'robot-state-publisher' to solved the 'process has died' error" \
+    && apt-get install -y \
+            ros-${ROS_DISTRO}-robot-state-publisher \
+    && apt-get install -y \
+            ros-${ROS_DISTRO}-rviz2 \
+            ros-${ROS_DISTRO}-rviz-visual-tools \
+            ros-${ROS_DISTRO}-nav2-rviz-plugins \
+            ros-${ROS_DISTRO}-rqt-graph \
+            libqt5svg5 \
+    && apt-get autoremove -y \
+    && apt-get clean
+
 # ....install ROS2 specific utilities..............................................................
 RUN pip3 install --no-cache-dir \
       osrf-pycommon \
@@ -118,6 +136,19 @@ ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
 #      echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
 #      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
 #      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
+
+RUN echo "Add ROS2 specific aliases" && \
+    ( \
+      echo "alias dn_source_ros_worspace_overlay='echo \"Sourcing ${DN_DEV_WORKSPACE} overlay \" && source ${DN_DEV_WORKSPACE}/install/local_setup.bash'"; \
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash && \
+    echo "Add ROS2 specific config to .bashrc" && \
+    ( \
+      echo ""; \
+      echo "# Enable ROS2 log collouring"; \
+      echo "export RCUTILS_COLORIZED_OUTPUT=1"; \
+      echo ""; \
+    ) >> ~/.bashrc
+
 
 FROM ros2-custom-install AS test
 

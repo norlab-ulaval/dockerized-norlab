@@ -1,0 +1,35 @@
+services:
+
+  # ....ROS2 base images...........................................................................
+  base-image-vaul-ros2-clean-main:
+    extends:
+      file: "../../global/docker-compose.global.yaml"
+      service: global-service-builder-config
+    build:
+      context: "."
+      dockerfile: Dockerfile.ros2
+      target: ros2-install
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image
+        BASE_IMAGE_TAG: ${DN_IMAGE_TAG_NO_ROS:?err}
+        ROS_DISTRO: ${ROS_DISTRO}
+        ROS_PKG: ${ROS_PKG}
+        DN_DEV_WORKSPACE_DIR: f1tenth_ws
+
+  base-image-vaul-ros2-clean-tester:
+    extends:
+      service: base-image-vaul-ros2-clean-main
+    build:
+      target: test
+    depends_on:
+      - base-image-vaul-ros2-clean-main
+
+  base-image-vaul-ros2-clean:
+    extends:
+      service: base-image-vaul-ros2-clean-main
+    image: ${DN_HUB:?err}/dockerized-vaul-base-image-ros2-clean:${DN_IMAGE_TAG:?err}
+    build:
+      target: final
+    depends_on:
+      - base-image-vaul-ros2-clean-tester
+

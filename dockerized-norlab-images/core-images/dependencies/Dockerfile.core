@@ -99,6 +99,18 @@ RUN apt-get update \
 # https://github.com/quiqua/pytest-dotenv
 # How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
 
+# ....X11 forwarding dev tools.....................................................................
+# ref https://gist.github.com/sorny/969fe55d85c9b0035b0109a31cbcb088
+# Note: Test X11 forwarding config by executing the following command in the container:
+#         $ xclock -analog      or   $ xclock -digital
+#       The xclock should be displayed on your local computer in macOS XQuartz app.
+#       To test X11 forwarding with OpenGL, run in the container
+#         $ glxgears
+#       The animated gears should be displayed on your local computer in macOS XQuartz app.
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
+      x11-apps \
+    && rm -rf /var/lib/apt/lists/*
 
 # ===Setup submodule===============================================================================
 WORKDIR /dockerized-norlab

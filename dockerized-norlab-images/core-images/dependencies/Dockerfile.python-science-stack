@@ -12,9 +12,6 @@ RUN pip3 install --no-cache-dir  \
     numpy\
     numba
 
-#    scikit-learn \
-#    pycuda
-
 
 # ...Configure Matplotlib to use a non-interactive backends for TeamCity run..........................
 # Procedure to fix NLSAR-343 ﹅→ `ModuleNotFoundError` when using pyplot & `couldn't connect to display`
@@ -36,10 +33,5 @@ RUN apt-get update \
       python3-matplotlib \
       python3-tk \
     && rm -rf /var/lib/apt/lists/*
-
-#RUN cat <<END \
-#hello world \
-#END
-
 
 CMD [ "bash" ]
