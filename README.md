@@ -90,6 +90,10 @@ Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
 4. easy deployment to robots compute box;
 5. results reproducibility.
  
+Recommanded reading by [Tobit Flatscher](https://github.com/2b-t)
+- [Why should I use Docker when developing robotics software?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#2-why-should-i-use-docker-when-developing-robotics-software)
+- [Why is Docker important in particular for academic and research institutions?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#3-why-is-docker-important-in-particular-for-academic-and-research-institutions)
+
 ## Build matrix summary › `[ Services ... ] x [ build tag ... ]`
 
 ![](visual/crawl_1.png)
