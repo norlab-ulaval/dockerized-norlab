@@ -19,6 +19,8 @@ services:
     extends:
       service: dependencies-core-main
     image: ${DN_HUB:?err}/dockerized-norlab-dependencies-core:${DN_IMAGE_TAG:?err}
+    build:
+      dockerfile: Dockerfile.core
     depends_on:
       - dependencies-core-main
 
