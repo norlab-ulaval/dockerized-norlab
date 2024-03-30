@@ -34,8 +34,8 @@ services:
       QT_X11_NO_MITSHM: 1
 
   global-service-builder-base-images-config:
-#    extends:
-#      service: global-service-dev-config #ToDo: on dev task end >> mute this line ←
+    extends:
+      service: global-service-dev-config #ToDo: on dev task end >> mute this line ←
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
       dockerfile: Dockerfile
