@@ -49,6 +49,7 @@ RUN apt-get update \
         git \
         libusb-dev \
         usbutils \
+        iputils-ping \
         bash-completion \
         python3-argcomplete \
         vim \
