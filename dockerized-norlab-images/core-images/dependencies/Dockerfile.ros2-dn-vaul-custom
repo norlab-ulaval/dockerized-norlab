@@ -76,12 +76,15 @@ RUN echo "------------------------------------" \
     && unzip opencv_contrib-${version}.zip \
     && rm opencv-${version}.zip opencv_contrib-${version}.zip
 
-WORKDIR "/opt/${folder}/opencv-${version}/"
+WORKDIR "/opt/${folder}/opencv-${version}/release"
+&& echo -e "[WARNING] ${CV_WARN[*]}" ;
 RUN echo "------------------------------------" \
     && echo "** Build opencv "${version}" (3/4)" \
     && echo "------------------------------------" \
-    && mkdir release \
-    && cd release/ \
+    && CV_WARN=("Removing previously installed version of opencv as VAUL require CUDA enable version.") \
+    && apt-get purge -y *opencv* \
+    && echo "${CV_WARN[*]}" >> /dn_warning.log \
+    && echo -e "[WARNING] ${CV_WARN[*]}" ; \
     && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
         echo -e "Builder is running in architecture virtualisation, so no cuda available" \
         && python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )" ; \
