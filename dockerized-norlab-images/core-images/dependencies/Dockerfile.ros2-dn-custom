@@ -142,8 +142,8 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
       echo "  set +o allexport"; \
       echo "else"; \
       echo "  # Intermediate step prior to the dn-project services building stage"; \
-      echo "  export ${ROS_DISTRO}"; \
-      echo "  export ${DN_DEV_WORKSPACE}"; \
+      echo "  export ROS_DISTRO=${ROS_DISTRO}"; \
+      echo "  export DN_DEV_WORKSPACE=${DN_DEV_WORKSPACE}"; \
       echo "fi"; \
       echo ""; \
       echo "# Dockerized-NorLab › Execute ros sourcing system wide instead of in .bashrc "; \
