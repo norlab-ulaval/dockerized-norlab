@@ -77,7 +77,6 @@ RUN echo "------------------------------------" \
     && rm opencv-${version}.zip opencv_contrib-${version}.zip
 
 WORKDIR "/opt/${folder}/opencv-${version}/release"
-&& echo -e "[WARNING] ${CV_WARN[*]}" ;
 RUN echo "------------------------------------" \
     && echo "** Build opencv "${version}" (3/4)" \
     && echo "------------------------------------" \
