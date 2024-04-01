@@ -80,7 +80,7 @@ WORKDIR "/opt/${folder}/opencv-${version}/release"
 RUN CV_WARN=("Removing previously installed version of opencv as VAUL require CUDA enable version.") \
     && apt-get purge -y *opencv* \
     && echo "${CV_WARN[*]}" >> /dn_warning.log \
-    && echo -e "[WARNING] ${CV_WARN[*]}" ; \
+    && echo -e "[WARNING] ${CV_WARN[*]}" \
     && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
         echo -e "Builder is running in architecture virtualisation, so no cuda available" \
         && echo "------------------------------------" \
