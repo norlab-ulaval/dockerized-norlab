@@ -10,18 +10,10 @@ services:
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw # Share system folder
     tty: true
     stdin_open: true
-    init: true  # Propagate exit code (See remark in task NMO-266)
     devices:
       - /dev/input/js0
     privileged: true
-    security_opt: # options needed for gdb debugging
-      - seccomp=unconfined
-      - apparmor=unconfined
-    cap_add:
-      - SYS_PTRACE
     network_mode: host    # allow the container to have full access to the host’s networking system
-    pid: host
-    ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
     environment:
       ROS_DOMAIN_ID: 1
       NVIDIA_VISIBLE_DEVICES: all   # substitute for `--gpus all` flag
@@ -49,6 +41,14 @@ services:
       labels:
         org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
     pull_policy: build
+    init: true  # Propagate exit code (See remark in task NMO-266)
+    security_opt: # options needed for gdb debugging
+      - seccomp=unconfined
+      - apparmor=unconfined
+    cap_add:
+      - SYS_PTRACE
+    pid: host
+    ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
 
   global-service-builder-config:
     extends:

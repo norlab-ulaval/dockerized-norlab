@@ -20,9 +20,89 @@ RUN apt-get update \
     && apt-get install -y \
       "ros-${ROS_DISTRO:?err}-rosbridge-server" \
       "ros-${ROS_DISTRO}-slam-toolbox" \
+      cifs-utils \
+      g++ \
     && apt-get autoremove -y \
     && apt-get clean
 
+
+# Copied from https://github.com/vaul-ulaval/setup_scripts/blob/main/2_install_opencv4_source.sh
+#
+# (Priority) ToDo: Implement logic to fetch and execute 2_install_opencv4_source.sh file instead
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG version="4.6.0"
+ARG folder="workspace"
+WORKDIR "/opt"
+RUN echo "------------------------------------" \
+    && echo "** Install requirement (1/4)" \
+    && echo "------------------------------------" \
+    && apt-get update \
+    && apt-get install -y \
+        build-essential \
+        make \
+        git \
+        libgtk2.0-dev \
+        pkg-config \
+        libavcodec-dev \
+        libavformat-dev \
+        libswscale-dev \
+        libgstreamer1.0-dev \
+        libgstreamer-plugins-base1.0-dev \
+        python3.8-dev \
+        python-dev \
+        python-numpy \
+        python3-numpy \
+        libtbb2 \
+        libtbb-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libtiff-dev \
+        libdc1394-22-dev \
+        libv4l-dev \
+        v4l-utils \
+        qv4l2 \
+        curl \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && echo "------------------------------------" \
+    && echo "** Download opencv "${version}" (2/4)" \
+    && echo "------------------------------------" \
+    && mkdir $folder \
+    && cd ${folder} \
+    && curl -L https://github.com/opencv/opencv/archive/${version}.zip -o opencv-${version}.zip \
+    && curl -L https://github.com/opencv/opencv_contrib/archive/${version}.zip -o opencv_contrib-${version}.zip \
+    && unzip opencv-${version}.zip \
+    && unzip opencv_contrib-${version}.zip \
+    && rm opencv-${version}.zip opencv_contrib-${version}.zip
+
+WORKDIR "/opt/${folder}/opencv-${version}/"
+RUN echo "------------------------------------" \
+    && echo "** Build opencv "${version}" (3/4)" \
+    && echo "------------------------------------" \
+    && mkdir release \
+    && cd release/ \
+    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
+         echo -e "Builder is running in architecture virtualisation, so no cuda available" 1>&2 \
+         && exit 1 ; \
+       else \
+         echo -e "Builder is running on native architecture" \
+         && cmake -D WITH_CUDA=ON -D WITH_CUDNN=ON -D CUDA_ARCH_BIN="7.2,8.7" -D CUDA_ARCH_PTX="" -D OPENCV_GENERATE_PKGCONFIG=ON -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-${version}/modules -D WITH_GSTREAMER=ON -D WITH_LIBV4L=ON -D BUILD_opencv_python3=ON -D BUILD_TESTS=OFF -D BUILD_PERF_TESTS=OFF -D BUILD_EXAMPLES=OFF -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local .. ; \
+       fi \
+    && make -j$(nproc)
+
+WORKDIR "/opt/${folder}/opencv-${version}/release"
+RUN echo "------------------------------------" \
+    && echo "** Install opencv "${version}" (4/4)" \
+    && echo "------------------------------------" \
+    && make install \
+    && echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc \
+    && echo 'export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH' >> ~/.bashrc \
+    && source ~/.bashrc \
+    && echo "** Install opencv "${version}" successfully" \
+    && echo "** Bye :)"
+
+# =================================================================================================
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -44,7 +124,7 @@ RUN echo "Procedure at https://github.com/f1tenth/range_libc?tab=readme-ov-file#
     && git clone https://github.com/f1tenth/range_libc \
     && cd range_libc/pywrapper \
     && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
-          echo -e "Builder is running in architecture virtualisation" \
+          echo -e "Builder is running in architecture virtualisation, so no cuda available" \
           && bash ./compile.sh ; \
        else \
           echo -e "Builder is running on native architecture" \
@@ -55,6 +135,8 @@ RUN echo "Procedure at https://github.com/f1tenth/range_libc?tab=readme-ov-file#
       "ros-${ROS_DISTRO}-laser-filters" \
     && apt-get autoremove -y \
     && apt-get clean
+
+#
 
 CMD [ "bash" ]
 
