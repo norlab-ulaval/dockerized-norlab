@@ -75,6 +75,7 @@ RUN CV_WARN=("Removing previously installed version of opencv as VAUL require CU
     && cd /dockerized-norlab/dockerized-norlab-images/container-tools \
     && source import_dockerized_norlab_container_tools.bash \
     && n2st::teamcity_service_msg_blockOpened "Download opencv" \
+    && cd "/opt/${OPENCV_DIR}/" \
     && curl -L https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip -o opencv-${OPENCV_VERSION}.zip \
     && curl -L https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip -o opencv_contrib-${OPENCV_VERSION}.zip \
     && unzip opencv-${OPENCV_VERSION}.zip \
