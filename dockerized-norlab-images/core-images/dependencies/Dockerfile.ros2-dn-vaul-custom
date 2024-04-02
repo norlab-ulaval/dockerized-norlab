@@ -42,7 +42,7 @@ ARG OPENCV_VERSION="4.6.0"
 ARG OPENCV_DIR="opencv"
 
 WORKDIR "/opt/${OPENCV_DIR}"
-RUN RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
     && source import_dockerized_norlab_container_tools.bash \
     && n2st::set_which_architecture_and_os \
     && DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err} \
@@ -141,8 +141,12 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
        fi
 
     ## Note: Will compile for all compute capabilities if arch not specified
+    #   ref https://github.com/opencv/opencv/issues/24739#issuecomment-1866541141
+    #   Alt: Compile for specific cuda arch:
     #               -D CUDA_ARCH_BIN="7.2,8.7" \
     #               -D CUDA_ARCH_PTX="" \
+    #   Alt: use to compile with host cuda
+    #               -D CUDA_GENERATION=Auto \
 
 FROM opencv-build AS opencv-install
 ARG IS_TEAMCITY_RUN
