@@ -18,6 +18,8 @@ ARG BUILDPLATFORM
 # ====Begin install================================================================================
 #WORKDIR ${DN_DEV_WORKSPACE}
 
+## (NICE TO HAVE) ToDo: fixme!! (ref task NMO-543 perf: add opencv cuda support to VAUL base image)
+
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y \

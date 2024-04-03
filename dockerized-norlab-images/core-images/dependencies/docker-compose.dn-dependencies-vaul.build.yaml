@@ -50,9 +50,7 @@ services:
     depends_on:
       - vaul-dependencies-prompt
 
-## (NICE TO HAVE) ToDo: fixme!! (ref build http://132.203.26.125:8111/buildConfiguration/DockerizedNorlab_OnPrFromFeatureToDevRunTestPublishStatus/6703?expandBuildDeploymentsSection=false&hideTestsFromDependencies=false&hideProblemsFromDependencies=false&expandPull+Request+Details=true&expandBuildProblemsSection=true&expandBuildChangesSection=true)
-## 💎 Todo: check dustynv opencv with cuda install logic
-## 💎 Todo: investigate -> might require building binary separately
+## (NICE TO HAVE) ToDo: fixme!! (ref task NMO-543 perf: add opencv cuda support to VAUL base image)
 #  # ....dependencies-ros2-vaul-custom (CUDA).......................................................
 #  vaul-dependencies-ros2-vaul-custom-main:
 #    extends:

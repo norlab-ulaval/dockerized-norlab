@@ -35,6 +35,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
+## (NICE TO HAVE) ToDo: fixme!! (ref task NMO-543 perf: add opencv cuda support to VAUL base image)
+
 # Copied from https://github.com/vaul-ulaval/setup_scripts/blob/main/2_install_opencv4_source.sh
 #
 # (Priority) ToDo: Implement logic to fetch and execute 2_install_opencv4_source.sh file instead
