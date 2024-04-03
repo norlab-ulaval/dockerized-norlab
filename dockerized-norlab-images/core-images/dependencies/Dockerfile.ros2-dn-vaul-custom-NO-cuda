@@ -12,24 +12,36 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
 # ====Begin install================================================================================
 #WORKDIR ${DN_DEV_WORKSPACE}
+
+## (NICE TO HAVE) ToDo: fixme!! (ref task NMO-543 perf: add opencv cuda support to VAUL base image)
 
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y \
       "ros-${ROS_DISTRO:?err}-rosbridge-server" \
       "ros-${ROS_DISTRO}-slam-toolbox" \
+      "python3-opencv" \
     && apt-get autoremove -y \
-    && apt-get clean
+    && apt-get clean \
+    && echo "Validate opencv install"\
+    && python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )"
+
+#      cifs-utils \
 
 
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 WORKDIR "/opt"
 # (vaul-ulaval/setup_scripts) Dependencies not in rosdep
 #   See https://github.com/vaul-ulaval/setup_scripts/blob/main/6_load_ros_ws.bash
-RUN echo "Procedure at https://github.com/f1tenth/range_libc?tab=readme-ov-file#python-wrappers" \
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_architecture_and_os \
+    && DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err} \
+    && echo "Procedure at https://github.com/f1tenth/range_libc?tab=readme-ov-file#python-wrappers" \
     && pip3 install --no-cache-dir  \
             transforms3d \
     && echo \
@@ -43,12 +55,12 @@ RUN echo "Procedure at https://github.com/f1tenth/range_libc?tab=readme-ov-file#
     && echo \
     && git clone https://github.com/f1tenth/range_libc \
     && cd range_libc/pywrapper \
-    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
-          echo -e "Builder is running in architecture virtualisation" \
-          && bash ./compile.sh ; \
+    && if [[ ${DN_IMAGE_ARCHITECTURE} == 'l4t/arm64' ]]; then \
+        echo -e "Builder is targeting Jetson device. Imply CUDA support on target device." \
+        && bash ./compile_with_cuda.sh ; \
        else \
-          echo -e "Builder is running on native architecture" \
-          && bash ./compile_with_cuda.sh ; \
+        echo -e "Builder is targeting non Jetson device. Assume there's no CUDA support" \
+        && bash ./compile.sh ; \
        fi \
     && apt-get update \
     && apt-get install -y \

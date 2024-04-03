@@ -1,0 +1,240 @@
+
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-vaul-custom-install
+
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
+SHELL ["/bin/bash", "-c"]
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV TZ=Etc/UTC
+ENV TERM=${TERM:-"xterm-256color"}
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+# ====Begin install================================================================================
+#WORKDIR ${DN_DEV_WORKSPACE}
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y \
+      "ros-${ROS_DISTRO:?err}-rosbridge-server" \
+      "ros-${ROS_DISTRO}-slam-toolbox" \
+    && apt-get autoremove -y \
+    && apt-get clean
+
+#      cifs-utils \
+#      g++ \
+
+FROM ros2-vaul-custom-install AS opencv-requirements
+ARG IS_TEAMCITY_RUN
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+## (NICE TO HAVE) ToDo: fixme!! (ref task NMO-543 perf: add opencv cuda support to VAUL base image)
+
+# Copied from https://github.com/vaul-ulaval/setup_scripts/blob/main/2_install_opencv4_source.sh
+#
+# (Priority) ToDo: Implement logic to fetch and execute 2_install_opencv4_source.sh file instead
+ARG OPENCV_VERSION="4.6.0"
+ARG OPENCV_DIR="opencv"
+
+WORKDIR "/opt/${OPENCV_DIR}"
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_architecture_and_os \
+    && DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err} \
+    && if [[ ${DN_IMAGE_ARCHITECTURE} == 'l4t/arm64' ]]; then \
+        CV_WARN=("Removing previously installed version of opencv as VAUL require CUDA enable version.") \
+        && apt-get purge -y '.*opencv.*' \
+        && echo "${CV_WARN[*]}" >> /dn_warning.log \
+        && echo -e "[WARNING] ${CV_WARN[*]}" \
+        && n2st::teamcity_service_msg_blockOpened "Install opencv apt requirement" \
+        && echo "------------------------------------" \
+        && echo "** Install requirement (1/4)" \
+        && echo "------------------------------------" \
+        && apt-get update \
+        && apt-get install -y \
+            make \
+            libgtk2.0-dev \
+            pkg-config \
+            libavcodec-dev \
+            libavformat-dev \
+            libswscale-dev \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            python3-dev \
+            python3-numpy \
+            libtbb2 \
+            libtbb-dev \
+            libjpeg-dev \
+            libpng-dev \
+            libtiff-dev \
+            libdc1394-22-dev \
+            libv4l-dev \
+            v4l-utils \
+            qv4l2 \
+        && apt-get autoremove -y \
+        && apt-get clean \
+        && n2st::teamcity_service_msg_blockClosed "Install opencv apt requirement" \
+        && n2st::teamcity_service_msg_blockOpened "Download opencv" \
+        && echo "------------------------------------" \
+        && echo "** Download opencv "${OPENCV_VERSION}" (2/4)" \
+        && echo "------------------------------------" \
+        && cd "/opt/${OPENCV_DIR}/" \
+        && curl -L https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip -o opencv-${OPENCV_VERSION}.zip \
+        && curl -L https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip -o opencv_contrib-${OPENCV_VERSION}.zip \
+        && unzip opencv-${OPENCV_VERSION}.zip \
+        && unzip opencv_contrib-${OPENCV_VERSION}.zip \
+        && rm opencv-${OPENCV_VERSION}.zip opencv_contrib-${OPENCV_VERSION}.zip \
+        && n2st::teamcity_service_msg_blockClosed "Download opencv" ; \
+      fi
+
+FROM opencv-requirements AS opencv-build
+ARG IS_TEAMCITY_RUN
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG OPENCV_VERSION="4.6.0"
+ARG OPENCV_DIR="opencv"
+
+ENV CUDA_HOME="/usr/local/cuda"
+ENV PATH="/usr/local/cuda/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+
+# OpenCV looks for the cuDNN version in cudnn_version.h, but it's been renamed to cudnn_version_v8.h
+# Ref https://github.com/dusty-nv/jetson-containers/blob/1a7fb07dd6183be744784a1c418799c1e0796ca3/packages/opencv/opencv_builder/Dockerfile#L27
+RUN ln -s /usr/include/$(uname -i)-linux-gnu/cudnn_version_v8.h /usr/include/$(uname -i)-linux-gnu/cudnn_version.h
+
+WORKDIR "/opt/${OPENCV_DIR}/opencv-${OPENCV_VERSION}/release"
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_architecture_and_os \
+    && DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err} \
+    && if [[ ${DN_IMAGE_ARCHITECTURE} == 'l4t/arm64' ]]; then \
+        echo -e "Builder is targeting Jetson device. Imply CUDA support on target device." \
+        && n2st::teamcity_service_msg_blockOpened "Build opencv" \
+        && echo "------------------------------------" \
+        && echo "** Build opencv "${OPENCV_VERSION}" (3/4)" \
+        && echo "------------------------------------" \
+        && cd "/opt/${OPENCV_DIR}/opencv-${OPENCV_VERSION}/release" \
+        && cmake -D WITH_CUDA=ON \
+                  -D CUDA_GENERATION=Auto \
+                  -D WITH_CUDNN=ON \
+                  -D WITH_CUBLAS=ON \
+                  -D WITH_GSTREAMER=ON \
+                  -D WITH_LIBV4L=ON \
+                  -D OPENCV_GENERATE_PKGCONFIG=ON \
+                  -D OPENCV_EXTRA_MODULES_PATH=/opt/${OPENCV_DIR}/opencv_contrib-${OPENCV_VERSION}/modules \
+                  -D BUILD_opencv_python2=OFF \
+                  -D BUILD_opencv_python3=ON \
+                  -D BUILD_opencv_java=OFF \
+                  -D BUILD_TESTS=OFF \
+                  -D BUILD_PERF_TESTS=OFF \
+                  -D BUILD_EXAMPLES=OFF  \
+                  -D CMAKE_BUILD_TYPE=RELEASE  \
+                  -D CMAKE_INSTALL_PREFIX=/usr/local  \
+                  .. \
+        && make -j $(nproc)  \
+        && n2st::teamcity_service_msg_blockClosed "Build opencv" ; \
+       fi
+
+    ## Note: Will compile for all compute capabilities if arch not specified
+    #   ref https://github.com/opencv/opencv/issues/24739#issuecomment-1866541141
+    #   Alt: Compile for specific cuda arch:
+    #               -D CUDA_ARCH_BIN="7.2,8.7" \
+    #               -D CUDA_ARCH_PTX="" \
+    #   Alt: use to compile with host cuda
+    #               -D CUDA_GENERATION=Auto \
+
+FROM opencv-build AS opencv-install
+ARG IS_TEAMCITY_RUN
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG OPENCV_VERSION="4.6.0"
+ARG OPENCV_DIR="opencv"
+
+WORKDIR "/opt/${OPENCV_DIR}/opencv-${OPENCV_VERSION}/release"
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_architecture_and_os \
+    && DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err} \
+    && if [[ ${DN_IMAGE_ARCHITECTURE} == 'l4t/arm64' ]]; then \
+        echo -e "Builder is targeting Jetson device. Imply CUDA support on target device." \
+        && n2st::teamcity_service_msg_blockOpened "Install opencv with cuda support" \
+        && echo "------------------------------------" \
+        && echo "** Install opencv "${OPENCV_VERSION}" (4/4)" \
+        && echo "------------------------------------" \
+        && make install \
+        && echo '' >> ~/.bashrc \
+        && echo '# Opencv related' >> ~/.bashrc \
+        && echo 'export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH' >> ~/.bashrc \
+        && echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc \
+        && source ~/.bashrc \
+        && n2st::teamcity_service_msg_blockClosed "Install opencv with cuda support" ; \
+       else \
+        echo -e "Builder is targeting non Jetson device. Assume there's no CUDA support" \
+        && n2st::teamcity_service_msg_blockOpened "Install opencv NO cuda" \
+        && echo "------------------------------------" \
+        && echo "** Install opencv "${OPENCV_VERSION}" (4/4)" \
+        && echo "------------------------------------" \
+        && pip3 install --no-cache-dir opencv-contrib-python \
+        && python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )"  \
+        && n2st::teamcity_service_msg_blockClosed "Install opencv NO cuda" ; \
+       fi \
+    && echo "** Install opencv "${OPENCV_VERSION}" successfully" \
+    && echo "** Bye :)"
+
+# =================================================================================================
+
+FROM opencv-install AS vaul-dependencies-final
+ARG IS_TEAMCITY_RUN
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+WORKDIR "/opt"
+# (vaul-ulaval/setup_scripts) Dependencies not in rosdep
+#   See https://github.com/vaul-ulaval/setup_scripts/blob/main/6_load_ros_ws.bash
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_architecture_and_os \
+    && DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err} \
+    && echo "Procedure at https://github.com/f1tenth/range_libc?tab=readme-ov-file#python-wrappers" \
+    && pip3 install --no-cache-dir  \
+            transforms3d \
+    && echo \
+    && echo "Procedure at https://github.com/f1tenth/range_libc/blob/foxy-devel/pywrapper/compile_with_cuda.sh" \
+    && apt-get update \
+    && apt-get install -y \
+        gcc-8 \
+        g++-8 \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8 \
+    && echo \
+    && git clone https://github.com/f1tenth/range_libc \
+    && cd range_libc/pywrapper \
+    && if [[ ${DN_IMAGE_ARCHITECTURE} == 'l4t/arm64' ]]; then \
+        echo -e "Builder is targeting Jetson device. Imply CUDA support on target device." \
+        && bash ./compile_with_cuda.sh ; \
+       else \
+        echo -e "Builder is targeting non Jetson device. Assume there's no CUDA support" \
+        && bash ./compile.sh ; \
+       fi \
+    && apt-get update \
+    && apt-get install -y \
+      "ros-${ROS_DISTRO}-laser-filters" \
+    && apt-get autoremove -y \
+    && apt-get clean
+
+#
+
+CMD [ "bash" ]
+
+
+
