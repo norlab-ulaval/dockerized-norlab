@@ -93,7 +93,7 @@ services:
       target: vaul-dependencies-final
     image: ${DN_HUB:?err}/dockerized-vaul-dependencies-ros2-vaul-custom:${DN_IMAGE_TAG:?err}
     depends_on:
-      - vaul-dependencies-ros2-vaul-custom-opencv-build
+      - vaul-dependencies-ros2-vaul-custom-opencv-install
 
 
   # ....dependencies-ros2-custom...................................................................

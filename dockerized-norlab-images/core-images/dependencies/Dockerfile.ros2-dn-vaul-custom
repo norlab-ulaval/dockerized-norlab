@@ -121,6 +121,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && echo "------------------------------------" \
         && cd "/opt/${OPENCV_DIR}/opencv-${OPENCV_VERSION}/release" \
         && cmake -D WITH_CUDA=ON \
+                  -D CUDA_GENERATION=Auto \
                   -D WITH_CUDNN=ON \
                   -D WITH_CUBLAS=ON \
                   -D WITH_GSTREAMER=ON \
@@ -189,7 +190,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
 
 # =================================================================================================
 
-FROM opencv-build AS vaul-dependencies-final
+FROM opencv-install AS vaul-dependencies-final
 ARG IS_TEAMCITY_RUN
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETPLATFORM
