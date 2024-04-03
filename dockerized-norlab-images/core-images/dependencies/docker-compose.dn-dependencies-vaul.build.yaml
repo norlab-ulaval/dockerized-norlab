@@ -50,51 +50,65 @@ services:
     depends_on:
       - vaul-dependencies-prompt
 
-  # ....dependencies-ros2-vaul-custom..............................................................
-  vaul-dependencies-ros2-vaul-custom-main:
-    extends:
-      service: vaul-dependencies-core-main
-    build:
-      dockerfile: Dockerfile.ros2-dn-vaul-custom
-      target: ros2-vaul-custom-install
-      args:
-        BASE_IMAGE: ${DN_HUB:?err}/dockerized-vaul-dependencies-python-science-stack
-    depends_on:
-      - vaul-dependencies-python-science-stack
+## (NICE TO HAVE) ToDo: fixme!! (ref build http://132.203.26.125:8111/buildConfiguration/DockerizedNorlab_OnPrFromFeatureToDevRunTestPublishStatus/6703?expandBuildDeploymentsSection=false&hideTestsFromDependencies=false&hideProblemsFromDependencies=false&expandPull+Request+Details=true&expandBuildProblemsSection=true&expandBuildChangesSection=true)
+## 💎 Todo: check dustynv opencv with cuda install logic
+## 💎 Todo: investigate -> might require building binary separately
+#  # ....dependencies-ros2-vaul-custom (CUDA).......................................................
+#  vaul-dependencies-ros2-vaul-custom-main:
+#    extends:
+#      service: vaul-dependencies-core-main
+#    build:
+#      dockerfile: Dockerfile.ros2-dn-vaul-custom-cuda
+#      target: ros2-vaul-custom-install
+#      args:
+#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-vaul-dependencies-python-science-stack
+#    depends_on:
+#      - vaul-dependencies-python-science-stack
+#
+#  vaul-dependencies-ros2-vaul-custom-opencv-requirements:
+#    extends:
+#      service: vaul-dependencies-ros2-vaul-custom-main
+#    build:
+#      target: opencv-requirements
+#    depends_on:
+#      - vaul-dependencies-ros2-vaul-custom-main
+#
+#  vaul-dependencies-ros2-vaul-custom-opencv-build:
+#    extends:
+#      service: vaul-dependencies-ros2-vaul-custom-main
+#    build:
+#      target: opencv-build
+#    depends_on:
+#      - vaul-dependencies-ros2-vaul-custom-opencv-requirements
+#
+#  vaul-dependencies-ros2-vaul-custom-opencv-install:
+#    extends:
+#      service: vaul-dependencies-ros2-vaul-custom-main
+#    build:
+#      target: opencv-install
+#    depends_on:
+#      - vaul-dependencies-ros2-vaul-custom-opencv-build
+#
+#  vaul-dependencies-ros2-vaul-custom:
+#    extends:
+#      service: vaul-dependencies-core-main
+#    build:
+#      target: vaul-dependencies-final
+#    image: ${DN_HUB:?err}/dockerized-vaul-dependencies-ros2-vaul-custom:${DN_IMAGE_TAG:?err}
+#    depends_on:
+#      - vaul-dependencies-ros2-vaul-custom-opencv-install
 
-  vaul-dependencies-ros2-vaul-custom-opencv-requirements:
-    extends:
-      service: vaul-dependencies-ros2-vaul-custom-main
-    build:
-      target: opencv-requirements
-    depends_on:
-      - vaul-dependencies-ros2-vaul-custom-main
-
-  vaul-dependencies-ros2-vaul-custom-opencv-build:
-    extends:
-      service: vaul-dependencies-ros2-vaul-custom-main
-    build:
-      target: opencv-build
-    depends_on:
-      - vaul-dependencies-ros2-vaul-custom-opencv-requirements
-
-  vaul-dependencies-ros2-vaul-custom-opencv-install:
-    extends:
-      service: vaul-dependencies-ros2-vaul-custom-main
-    build:
-      target: opencv-install
-    depends_on:
-      - vaul-dependencies-ros2-vaul-custom-opencv-build
-
+# ....dependencies-ros2-vaul-custom (NO CUDA)....................................................
   vaul-dependencies-ros2-vaul-custom:
     extends:
       service: vaul-dependencies-core-main
     build:
-      target: vaul-dependencies-final
+      dockerfile: Dockerfile.ros2-dn-vaul-custom-NO-cuda
+      args:
+        BASE_IMAGE: ${DN_HUB:?err}/dockerized-vaul-dependencies-python-science-stack
     image: ${DN_HUB:?err}/dockerized-vaul-dependencies-ros2-vaul-custom:${DN_IMAGE_TAG:?err}
     depends_on:
-      - vaul-dependencies-ros2-vaul-custom-opencv-install
-
+      - vaul-dependencies-python-science-stack
 
   # ....dependencies-ros2-custom...................................................................
   vaul-dependencies-ros2-custom-main:

@@ -1,0 +1,74 @@
+
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-vaul-custom-install
+
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
+SHELL ["/bin/bash", "-c"]
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV TZ=Etc/UTC
+ENV TERM=${TERM:-"xterm-256color"}
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+# ====Begin install================================================================================
+#WORKDIR ${DN_DEV_WORKSPACE}
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y \
+      "ros-${ROS_DISTRO:?err}-rosbridge-server" \
+      "ros-${ROS_DISTRO}-slam-toolbox" \
+    && apt-get autoremove -y \
+    && apt-get clean
+
+#      cifs-utils \
+
+RUN pip3 install --no-cache-dir opencv-contrib-python \
+    && python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )"
+
+
+WORKDIR "/opt"
+# (vaul-ulaval/setup_scripts) Dependencies not in rosdep
+#   See https://github.com/vaul-ulaval/setup_scripts/blob/main/6_load_ros_ws.bash
+RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
+    && source import_dockerized_norlab_container_tools.bash \
+    && n2st::set_which_architecture_and_os \
+    && DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err} \
+    && echo "Procedure at https://github.com/f1tenth/range_libc?tab=readme-ov-file#python-wrappers" \
+    && pip3 install --no-cache-dir  \
+            transforms3d \
+    && echo \
+    && echo "Procedure at https://github.com/f1tenth/range_libc/blob/foxy-devel/pywrapper/compile_with_cuda.sh" \
+    && apt-get update \
+    && apt-get install -y \
+        gcc-8 \
+        g++-8 \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8 \
+    && echo \
+    && git clone https://github.com/f1tenth/range_libc \
+    && cd range_libc/pywrapper \
+    && if [[ ${DN_IMAGE_ARCHITECTURE} == 'l4t/arm64' ]]; then \
+        echo -e "Builder is targeting Jetson device. Imply CUDA support on target device." \
+        && bash ./compile_with_cuda.sh ; \
+       else \
+        echo -e "Builder is targeting non Jetson device. Assume there's no CUDA support" \
+        && bash ./compile.sh ; \
+       fi \
+    && apt-get update \
+    && apt-get install -y \
+      "ros-${ROS_DISTRO}-laser-filters" \
+    && apt-get autoremove -y \
+    && apt-get clean
+
+#
+
+CMD [ "bash" ]
+
+
+
