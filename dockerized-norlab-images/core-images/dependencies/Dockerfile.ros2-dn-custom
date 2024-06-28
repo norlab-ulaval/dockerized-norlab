@@ -160,8 +160,8 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \
       echo ""; \
       echo "# Dockerized-NorLab › Source ROS2 environment"; \
-      echo "echo \"sourcing /opt/ros/\$``{ROS_DISTRO}``/setup.bash from ~/.bashrc\""; \
-      echo "source /opt/ros/\$``{ROS_DISTRO}``/setup.bash";  \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from ~/.bashrc\""; \
+      echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
       echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"; \
       echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from ~/.bashrc\""; \
       echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"; \
