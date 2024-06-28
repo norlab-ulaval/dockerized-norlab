@@ -52,7 +52,9 @@ RUN apt-get update --fix-missing \
 
 # Note: fix openai gym + f110 gym install error
 #   See "ERROR: Failed building wheel for gym" https://github.com/freqtrade/freqtrade/issues/8376#issuecomment-1520844382
+# Note: pip<24.1 is required for backward compatibility
 RUN pip3 install --upgrade \
+        'pip<24.1' \
         'wheel==0.38.4' \
         'setuptools==65.5.1'
 
