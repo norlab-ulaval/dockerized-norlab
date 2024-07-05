@@ -28,6 +28,9 @@ COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 RUN source ./dn_install_debugging_tools.bash \
     && rm ./dn_install_debugging_tools.bash
 
+# Create the remote interpreter directory
+WORKDIR /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}
+
 
 FROM debugging-tools AS project-specific-ros-setup
 
