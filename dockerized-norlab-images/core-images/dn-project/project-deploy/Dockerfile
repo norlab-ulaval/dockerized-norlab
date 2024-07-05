@@ -12,12 +12,20 @@ EXPOSE ${DN_SSH_SERVER_PORT}
 ENV DN_GDB_SERVER_PORT=${DN_GDB_SERVER_PORT:-7777}
 EXPOSE ${DN_GDB_SERVER_PORT}
 
+# ...debugging user config.........................................................................
+ARG DN_SSH_SERVER_USER=pycharm-debugger
+ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
+ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
+
 # ....install debugging tools......................................................................
 WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 RUN source ./dn_install_debugging_tools.bash \
     && rm ./dn_install_debugging_tools.bash
+
+# Create the remote interpreter directory
+WORKDIR /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}
 
 
 FROM debugging-tools AS package-project-src-code

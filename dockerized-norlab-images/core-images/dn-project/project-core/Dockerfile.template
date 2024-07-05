@@ -12,11 +12,6 @@ ENV DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN:?'Build argument needs to be s
 
 ENV DN_PROJECT_PATH=${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 
-# ...debugging user config.........................................................................
-ARG DN_SSH_SERVER_USER=pycharm-debugger
-ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
-ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
-
 FROM project-setup AS project-custom-docker-steps
 # ====Project custom steps===========================================================================
 # ToDo: add custom step here
