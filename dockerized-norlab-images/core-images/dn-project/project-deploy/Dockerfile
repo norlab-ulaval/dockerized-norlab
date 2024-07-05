@@ -26,7 +26,7 @@ RUN source ./dn_install_debugging_tools.bash \
 
 # Create the remote interpreter directory
 WORKDIR /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}
-
+RUN chown -R ${DN_SSH_SERVER_USER} /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME}/
 
 FROM debugging-tools AS package-project-src-code
 
