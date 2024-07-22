@@ -120,16 +120,16 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 #    && ( \
 #      echo ""; \
 #      echo "# Dockerized-NorLab › Source ROS2 environment"; \
-#      echo "echo \"sourcing /opt/ros/\$``{ROS_DISTRO}``/setup.bash from ~/.bashrc\""; \
+#      echo "echo \"sourcing /opt/ros/\$``{ROS_DISTRO}``/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash\""; \
 #      echo "source /opt/ros/\$``{ROS_DISTRO}``/setup.bash";  \
 #      echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"; \
-#      echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from ~/.bashrc\""; \
+#      echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash\""; \
 #      echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"; \
 #      echo "fi"; \
 #      echo ""; \
-#    ) >> ~/.bashrc
+#    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 
-# (Priority) ToDo: assess command '"source /dockerized-norlab/dockerized-norlab-images/core-images/dn-project/project-develop/dn_expose_container_env_variables.bash"' (ref task NMO-540)
+# (Priority) ToDo: assess command '"source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash"' (ref task NMO-540)
 RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && chmod +x /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \
@@ -160,14 +160,14 @@ RUN touch /etc/profile.d/02-dn-source-ros-system-wide.sh \
     && ( \
       echo ""; \
       echo "# Dockerized-NorLab › Source ROS2 environment"; \
-      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from ~/.bashrc\""; \
+      echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash\""; \
       echo "source /opt/ros/${ROS_DISTRO}/setup.bash";  \
       echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"; \
-      echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from ~/.bashrc\""; \
+      echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash\""; \
       echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"; \
       echo "fi"; \
       echo ""; \
-    ) >> ~/.bashrc
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 
 # To source ros in non-interactive & non-login shell
 ENV BASH_ENV=/etc/profile.d/02-dn-source-ros-system-wide.sh
@@ -182,13 +182,13 @@ RUN echo "Add ROS2 specific aliases" && \
     ( \
       echo "alias dn_source_ros_worspace_overlay='echo \"Sourcing ${DN_DEV_WORKSPACE} overlay \" && source ${DN_DEV_WORKSPACE}/install/local_setup.bash'"; \
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash && \
-    echo "Add ROS2 specific config to .bashrc" && \
+    echo "Add ROS2 specific config to /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash" && \
     ( \
       echo ""; \
       echo "# Enable ROS2 log collouring"; \
       echo "export RCUTILS_COLORIZED_OUTPUT=1"; \
       echo ""; \
-    ) >> ~/.bashrc
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 
 
 FROM ros2-custom-install AS test

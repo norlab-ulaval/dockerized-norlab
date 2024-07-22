@@ -1,48 +1,30 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS debugging-tools
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS package-project-src-code
 
-# ....ssh and gdb server config....................................................................
-# ssh port, remaped from default 22 to 2222
-ENV DN_SSH_SERVER_PORT=${DN_SSH_SERVER_PORT:-2222}
-EXPOSE ${DN_SSH_SERVER_PORT}
+ARG DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
 
-# gdbserver port, remaped from default 77 to 7777
-ENV DN_GDB_SERVER_PORT=${DN_GDB_SERVER_PORT:-7777}
-EXPOSE ${DN_GDB_SERVER_PORT}
+#ARG DN_PROJECT_USER
+#ENV DN_PROJECT_USER=${DN_PROJECT_USER:?'Build argument needs to be set and non-empty.'}
 
-# ...debugging user config.........................................................................
-ARG DN_SSH_SERVER_USER=pycharm-debugger
-ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
-ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
+RUN echo "Pre-condition checks" && {  \
+        test $(whoami) == "root" &&  \
+        test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
+        test -d /home/${DN_PROJECT_USER} && \
+        test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
+        test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
+        test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ; \
+    } || exit 1
 
-# ....install debugging tools......................................................................
-WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 
-COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
-RUN source ./dn_install_debugging_tools.bash \
-    && rm ./dn_install_debugging_tools.bash
-
-# Create the remote interpreter directory
-WORKDIR /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}
-RUN chown -R ${DN_SSH_SERVER_USER} /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME}/
-
-FROM debugging-tools AS package-project-src-code
-
-ARG DN_DEPLOY_REPO_BRANCH=main
-
-## (Priority) todo:implement >> everything ↓↓
-#RUN echo "${0}:not implemented error" && exit
+RUN echo "(WARNING) PYTHONUNBUFFERED env variable will be set to 0 for deployment as it affect performances"
+# Note: Set python to NOT print stdin/sderr in real-time as it affect overall performances
+ENV PYTHONUNBUFFERED=0
 
 WORKDIR ${DN_DEV_WORKSPACE}/src
-RUN echo "Sanity check"\
-    && echo ${DN_PROJECT_GIT_NAME:?'Build argument needs to be set and non-empty.'} \
-    && echo ${DN_PROJECT_GIT_DOMAIN:?'Build argument needs to be set and non-empty.'} \
-    && echo ${DN_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'} \
-    && echo \
-    && echo "Pull latest ${DN_DEPLOY_REPO_BRANCH} branch" \
-    && git clone --branch ${DN_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git  \
+RUN echo "Pull latest ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch" \
+    && git clone --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git  \
     && cd ${DN_DEV_WORKSPACE} \
     && apt-get update --fix-missing \
     && rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
@@ -79,38 +61,57 @@ RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
     && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
     && colcon build ${COLCON_FLAGS[@]}
 
+# Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
+ENV DN_PROJECT_DEVELOP_DIR=/dockerized-norlab/project/project-develop
+WORKDIR ${DN_PROJECT_DEVELOP_DIR}
+COPY dn_ros2_entrypoint.bash ./
+RUN chmod +x ./dn_ros2_entrypoint.bash
+
+ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
+WORKDIR ${DN_PROJECT_USER_HOME}
+
+# Create soft link in the home dir
+RUN ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_ros2_entrypoint.bash ${DN_PROJECT_USER_HOME}/dn_ros2_entrypoint.bash
+
 
 FROM package-project-src-code AS test
 
-USER "${DN_SSH_SERVER_USER}"
-
+# ....Test project user............................................................................
+USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
 
-RUN echo "===Check that ROS source is available via the ssh daemon user====================" \
-    && [[ $(whoami) == ${DN_SSH_SERVER_USER}  ]] \
+RUN test $(whoami) == "${DN_PROJECT_USER}" && test -d /home/${DN_PROJECT_USER} || exit 1
+
+RUN echo "===Check that ROS source is available in DN_PROJECT_USER user=============" \
     && printenv \
     && echo "" \
     && echo "AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" \
     && python -c "import rclpy" \
     && echo "" \
     && echo "===ros2 install pkg sanity check=================================================" \
-    && [[ -n "$(ros2 pkg list | grep -e ros_core)" ]] ||  exit 1  \
-    && [[ -n "$(ros2 pkg list | grep -e rclpy)" ]] ||  exit 1  \
-    && [[ -n "$(ros2 pkg list | grep -e ackermann_msgs)" ]] ||  exit 1  \
-    && [[ -n "$(ros2 pkg list | grep -e vesc_msgs)" ]] ||  exit 1
+    && { \
+        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
+        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" &&  \
+        test -n "$(ros2 pkg list | grep -e vesc_msgs)" ; \
+    } ||  exit 1
+
+RUN test -x "${DN_PROJECT_USER_HOME}/dn_ros2_entrypoint.bash" && \
+    bash ./dn_ros2_entrypoint.bash  || exit 1
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "" ]
 
 FROM package-project-src-code AS final
 
-COPY dn_ros2_entrypoint.bash /
-RUN chmod +x /dn_ros2_entrypoint.bash
+# (CRITICAL) ToDo: validate that the container login as DN_PROJECT_USER (ref task NMO-548)
+USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
+SHELL ["/bin/bash", "-c"]
 
-WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
-ENTRYPOINT [ "/dn_ros2_entrypoint.bash" ]
+#WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
+WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}
+ENTRYPOINT [ "/dockerized-norlab/project/project-develop/dn_ros2_entrypoint.bash" ]
 CMD [ "bash" ]
-
 
 
 

@@ -4,30 +4,45 @@ services:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
     #  no_cache: true  # Enforce full rebuild                               <-- mute on task end
     #command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw # Share system folder
     tty: true
     stdin_open: true
     devices:
       - /dev/input/js0
     privileged: true
-    network_mode: host    # allow the container to have full access to the host’s networking system
     environment:
       ROS_DOMAIN_ID: 1
-      NVIDIA_VISIBLE_DEVICES: all   # substitute for `--gpus all` flag
-      # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#environment-variables-oci-spec
-      NVIDIA_DRIVER_CAPABILITIES: all
-      # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
       DISPLAY: ${DISPLAY}
       # DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
       # DISPLAY: '169.254.205.89:0.0'
       QT_X11_NO_MITSHM: 1
 
+  global-service-dev-config-jetson:
+    extends:
+      service: global-service-dev-config
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw # Share system folder
+    network_mode: host    # allow the container to have full access to the host’s networking system
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all   # substitute for `--gpus all` flag
+      # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#environment-variables-oci-spec
+      NVIDIA_DRIVER_CAPABILITIES: all
+      # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
+
+  global-service-dev-config-darwin:
+    extends:
+      service: global-service-dev-config
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    # Note: Port mapping on macosx is incompatible with network_mode: host
+    network_mode: bridge
+
   global-service-builder-base-images-config:
 #    extends:
-#      service: global-service-dev-config #ToDo: on dev task end >> mute this line ←
+#      service: global-service-dev-config-jetson #ToDo: on dev task end >> mute this line ←
+#      service: global-service-dev-config-darwin #ToDo: on dev task end >> mute this line ←
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
       dockerfile: Dockerfile
@@ -49,6 +64,11 @@ services:
       - SYS_PTRACE
     pid: host
     ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
+    ports:
+      - "2222:2222" # ssh pycharm-debugger
+      - "6006:6006" # tensorboard
+      # - "7777:7777" # gdbserver
+
 
   global-service-builder-config:
     extends:
@@ -56,12 +76,8 @@ services:
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
       dockerfile: Dockerfile
-        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
-        #   DN_TARGET_DEVICE: ${DN_TARGET_DEVICE:?err}
-        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
-      # platforms:
-      #  ["${DN_COMPOSE_PLATFORMS:?err}"]
       platforms:
         - linux/arm64
-        - linux/amd64
+        - linux/amd64 # (CRITICAL) ToDo: on task end (ref task RLRP-213) >> unmute next line <--
     pull_policy: build
+

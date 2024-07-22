@@ -126,7 +126,8 @@ WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 COPY --from=context-dn-container-tools . .
 
 RUN echo "Create soft link in the root dir" \
-    && ln -s $(pwd)/import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash
+    && ln -s /dockerized-norlab/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash \
+    && test -f /import_dockerized_norlab_container_tools.bash || exit 1
 
 WORKDIR /dockerized-norlab
 
@@ -134,6 +135,12 @@ RUN ( \
       echo ""; \
       echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
       echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash"; \
+      echo ""; \
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
+    && ( \
+      echo ""; \
+      echo "# >>> dockerized-norlab bashrc"; \
+      echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash"; \
       echo ""; \
     ) >> ~/.bashrc
 
@@ -143,6 +150,10 @@ RUN echo "Sanity check (dn-container tools)" \
     && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}" \
     && echo  \
     && echo "Sanity check (container-tools directory copy)" \
-    && bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
+    && { \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash && \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash && \
+        bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash ; \
+    } || exit 1
 
 CMD [ "bash" ]

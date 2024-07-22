@@ -12,6 +12,18 @@ ENV DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN:?'Build argument needs to be s
 
 ENV DN_PROJECT_PATH=${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 
+ARG DN_PROJECT_USER
+ARG DN_PROJECT_UID
+ARG DN_PROJECT_GID
+ENV DN_PROJECT_USER=${DN_PROJECT_USER:?'Build argument needs to be set and non-empty.'}
+ENV DN_PROJECT_UID=${DN_PROJECT_UID:?'Build argument needs to be set and non-empty.'}
+ENV DN_PROJECT_GID=${DN_PROJECT_GID:?'Build argument needs to be set and non-empty.'}
+
+COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
+RUN source ./dn_project_core_init.bash \
+    && rm ./dn_project_core_init.bash
+
+
 FROM project-setup AS project-custom-docker-steps
 # ====Project custom steps===========================================================================
 # ToDo: add custom step here
@@ -19,6 +31,7 @@ FROM project-setup AS project-custom-docker-steps
 
 
 
+# ====Project custom python libraries==============================================================
 FROM project-custom-docker-steps AS project-custom-python-libraries
 WORKDIR /opt
 
@@ -28,6 +41,7 @@ RUN pip3 install --no-cache-dir -r /requirements_manual.txt  \
     && rm -rf /requirements_manual.txt
 
 
+# ====Final========================================================================================
 FROM project-custom-python-libraries AS final
 
 WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}

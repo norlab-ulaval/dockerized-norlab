@@ -4,9 +4,10 @@ set -e
 # (Priority) ToDo: unit-test (ref task TASK)
 
 # ....Check pre-conditions.........................................................................
-echo "${DN_SSH_SERVER_PORT:?'Build argument needs to be set and non-empty.'}"
-echo "${DN_SSH_SERVER_USER:?'Build argument needs to be set and non-empty.'}"
-echo "${DN_SSH_SERVER_USER_PASSWORD:?'Build argument needs to be set and non-empty.'}"
+test -n "${DN_SSH_SERVER_PORT:?'Env variable needs to be set and non-empty.'}"
+test -n "${DN_SSH_SERVER_USER:?'Env variable needs to be set and non-empty.'}"
+test -n "${DN_SSH_SERVER_USER_PASSWORD:?'Env variable needs to be set and non-empty.'}"
+test -n "${DN_PROJECT_GID:?'Env variable needs to be set and non-empty.'}"
 
 # ===Service: ssh server===========================================================================
 apt-get update \
@@ -41,10 +42,16 @@ sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' 
 
 useradd -m "${DN_SSH_SERVER_USER}" \
   && yes "${DN_SSH_SERVER_USER_PASSWORD}" | passwd "${DN_SSH_SERVER_USER}"
+
+# (CRITICAL) ToDo: assessment >> assigning project user primary group to pycharm-debugger work (ref task NMO-548)
+usermod --gid "${DN_PROJECT_GID:?err}" "${DN_SSH_SERVER_USER}"
+
 # Add the 'video' groups to new user as it's required for GPU access.
 # (not a problem on norlab-og but mandatory on Jetson device)
 # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
 usermod -a -G video,sudo "${DN_SSH_SERVER_USER}"
+# (CRITICAL) ToDo: assessment >> can DN test logic integration work without giving pycharm-debugger the sudo group (ref task NMO-548)
+#usermod -a -G video "${DN_SSH_SERVER_USER}"
 
 # ...root config...................................................................................
 # user:newpassword
