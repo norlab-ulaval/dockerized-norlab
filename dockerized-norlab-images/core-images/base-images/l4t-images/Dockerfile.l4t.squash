@@ -116,9 +116,9 @@ COPY --from=base-image / /
 #COPY --from=base-image /opt /opt
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
-## Update symlink to point to system python3 instead of system python2
-#RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-#    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+# Update symlink to point to system python3 instead of system python2
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
+    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
 
 FROM --platform=linux/amd64 ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
