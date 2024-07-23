@@ -48,10 +48,6 @@ fi
 set +o allexport
 
 
-## (Priority) todo:on task end, delete next bloc ↓↓
-#printenv
-#echo -e "\n${0}: debug breakpoint\n" && exit 1
-
 # . . Build_matrix logging functions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # (☕MINOR) ToDo: change .log directory
 BUILD_LOG_PATH=./dockerized-norlab-scripts/build_script/build_all.log
@@ -79,6 +75,12 @@ DOCKER_COMMAND_W_FLAGS="${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG:-"build"}"
 
 # ....execute all build matrix.....................................................................
 _CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]:?err}}" )
+
+
+# (Priority) todo:on task end, delete next bloc ↓↓
+printenv
+echo -e "\n${0}: debug breakpoint\n" && exit 1
+
 
 for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
 
