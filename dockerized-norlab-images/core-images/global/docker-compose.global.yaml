@@ -1,70 +1,153 @@
+#services:
+#
+#  # ===============================================================================================
+#  #                          Runtime global configuration for development
+#  # ===============================================================================================
+#
+#  runtime-global-dev-config:
+#    build:
+#      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+#      dockerfile: Dockerfile
+#    #  no_cache: true  # Enforce full rebuild                               <-- mute on task end
+#    #command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
+#    tty: true
+#    stdin_open: true
+#    devices:
+#      - /dev/input/js0
+#    privileged: true
+#    environment:
+#      ROS_DOMAIN_ID: 1
+#      DISPLAY: ${DISPLAY}
+#      # DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
+#      # DISPLAY: '169.254.205.89:0.0'
+#      QT_X11_NO_MITSHM: 1
+#    ports:
+#      - "2222:2222" # ssh pycharm-debugger
+#      - "6006:6006" # tensorboard
+#      - "7777:7777" # gdbserver
+#
+#  runtime-global-dev-config-jetson:
+#    extends:
+#      service: runtime-global-dev-config
+#    build:
+#      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+#    volumes:
+#      - /etc/localtime:/etc/localtime:ro
+#      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw # Share system folder
+#    network_mode: host    # allow the container to have full access to the host’s networking system
+#    environment:
+#      NVIDIA_VISIBLE_DEVICES: all   # substitute for `--gpus all` flag
+#      # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#environment-variables-oci-spec
+#      NVIDIA_DRIVER_CAPABILITIES: all
+#      # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
+#
+#  runtime-global-dev-config-darwin:
+#    extends:
+#      service: runtime-global-dev-config
+#    build:
+#      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+#    volumes:
+#      - /etc/localtime:/etc/localtime:ro
+#      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#    # Note: Port mapping on macosx is incompatible with network_mode: host
+#    network_mode: bridge
+#
+#
+#  # ===============================================================================================
+#  #                                 Build time global configuration
+#  # ===============================================================================================
+#
+#  global-service-builder-base-images-config:
+#    # ....DEV config...............................................................................
+#    # ToDo: For CI builds, keep MUTED the 'extends' instructions ↓↓
+#    #extends:
+#    #  #service: runtime-global-dev-config-jetson
+#    #  service: runtime-global-dev-config-darwin
+#    # ................................................................................DEV config...
+#    build:
+#      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+#      dockerfile: Dockerfile
+#      additional_contexts:
+#        context-dn-container-tools: "${DN_PATH:?err}/dockerized-norlab-images/container-tools/"
+#        context-dn-submodules: "${DN_PATH:?err}/utilities/"
+#        context-dn-root: "${DN_PATH:?err}"
+#      args:
+#        IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
+#      platforms: !reset [] # Arch logic is handled by 'base-images' compose files
+#      labels:
+#        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+#    init: true  # Propagate exit code (See remark in task NMO-266)
+#    security_opt: # options needed for gdb debugging
+#      - seccomp=unconfined
+#      - apparmor=unconfined
+#    cap_add:
+#      - SYS_PTRACE
+#    pid: host
+#    ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
+#    pull_policy: build
+#
+##  global-service-builder-config:
+##    # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
+##    extends:
+##      service: global-service-builder-base-images-config
+##    build:
+##      platforms: !reset []
+##    pull_policy: build
+#
+#  global-service-builder-config:
+#   # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
+#    extends:
+#      service: global-service-builder-base-images-config
+#    build:
+#      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+#      dockerfile: Dockerfile
+#      platforms:
+#        - linux/arm64
+#        - linux/amd64
+#    pull_policy: build
+#
+
+## ////Last working config/////////////////////////////////////////////////////////////////////////
+# Revision numer: 52d806c6db3d0ffb35059835bad502e25a3a905c
 services:
-
-  # ===============================================================================================
-  #                          Runtime global configuration for development
-  # ===============================================================================================
-
-  runtime-global-dev-config:
+  global-service-dev-config:
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-      dockerfile: Dockerfile
-    #  no_cache: true  # Enforce full rebuild                               <-- mute on task end
+#      no_cache: true  # Enforce full rebuild                               <-- mute on task end
     #command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
-    tty: true
-    stdin_open: true
-    devices:
-      - /dev/input/js0
-    privileged: true
-    environment:
-      ROS_DOMAIN_ID: 1
-      DISPLAY: ${DISPLAY}
-      # DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
-      # DISPLAY: '169.254.205.89:0.0'
-      QT_X11_NO_MITSHM: 1
-    ports:
-      - "2222:2222" # ssh pycharm-debugger
-      - "6006:6006" # tensorboard
-      - "7777:7777" # gdbserver
-
-  runtime-global-dev-config-jetson:
-    extends:
-      service: runtime-global-dev-config
-    build:
-      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw # Share system folder
+    tty: true
+    stdin_open: true
+    init: true  # Propagate exit code (See remark in task NMO-266)
+    devices:
+      - /dev/input/js0
+    privileged: true
+    security_opt: # options needed for gdb debugging
+      - seccomp=unconfined
+      - apparmor=unconfined
+    cap_add:
+      - SYS_PTRACE
     network_mode: host    # allow the container to have full access to the host’s networking system
+    pid: host
+    ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
     environment:
+      ROS_DOMAIN_ID: 1
       NVIDIA_VISIBLE_DEVICES: all   # substitute for `--gpus all` flag
       # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#environment-variables-oci-spec
       NVIDIA_DRIVER_CAPABILITIES: all
       # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
+      DISPLAY: ${DISPLAY}
+      # DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
+      # DISPLAY: '169.254.205.89:0.0'
+      QT_X11_NO_MITSHM: 1
 
-  runtime-global-dev-config-darwin:
+  global-service-builder-config:
     extends:
-      service: runtime-global-dev-config
-    build:
-      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    # Note: Port mapping on macosx is incompatible with network_mode: host
-    network_mode: bridge
-
-
-  # ===============================================================================================
-  #                                 Build time global configuration
-  # ===============================================================================================
-
-  global-service-builder-base-images-config:
-    # ....DEV config...............................................................................
-    # ToDo: For CI builds, keep MUTED the 'extends' instructions ↓↓
-    #extends:
-    #  #service: runtime-global-dev-config-jetson
-    #  service: runtime-global-dev-config-darwin
-    # ................................................................................DEV config...
+      service: global-service-dev-config #ToDo: on dev task end >> mute this line ←
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
       dockerfile: Dockerfile
@@ -74,36 +157,24 @@ services:
         context-dn-root: "${DN_PATH:?err}"
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-      platforms: !reset [] # Arch logic is handled by 'base-images' compose files
-      labels:
-        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-    init: true  # Propagate exit code (See remark in task NMO-266)
-    security_opt: # options needed for gdb debugging
-      - seccomp=unconfined
-      - apparmor=unconfined
-    cap_add:
-      - SYS_PTRACE
-    pid: host
-    ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
-    pull_policy: build
-
-#  global-service-builder-config:
-#    # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
-#    extends:
-#      service: global-service-builder-base-images-config
-#    build:
-#      platforms: !reset []
-#    pull_policy: build
-
-  global-service-builder-config:
-   # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
-    extends:
-      service: global-service-builder-base-images-config
-    build:
-      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-      dockerfile: Dockerfile
+        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
+        #   DN_TARGET_DEVICE: ${DN_TARGET_DEVICE:?err}
+        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
+      # platforms:
+      #  ["${DN_COMPOSE_PLATFORMS:?err}"]
       platforms:
         - linux/arm64
         - linux/amd64
+      labels:
+        org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+#    pull_policy: missing  #Note: enforce pulling image only if not available in cache
     pull_policy: build
 
+  global-service-builder-base-images-config:
+    extends:
+      service: global-service-builder-config
+    build:
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+      dockerfile: Dockerfile
+      platforms: !reset []
+#    pull_policy: build
