@@ -7,6 +7,7 @@ services:
   runtime-global-dev-config:
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+      dockerfile: Dockerfile
     #  no_cache: true  # Enforce full rebuild                               <-- mute on task end
     #command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     tty: true
@@ -28,6 +29,8 @@ services:
   runtime-global-dev-config-jetson:
     extends:
       service: runtime-global-dev-config
+    build:
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -42,6 +45,8 @@ services:
   runtime-global-dev-config-darwin:
     extends:
       service: runtime-global-dev-config
+    build:
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -95,6 +100,8 @@ services:
     extends:
       service: global-service-builder-base-images-config
     build:
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+      dockerfile: Dockerfile
       platforms:
         - linux/arm64
         - linux/amd64
