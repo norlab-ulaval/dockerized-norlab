@@ -15,6 +15,10 @@ services:
       # DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
       # DISPLAY: '169.254.205.89:0.0'
       QT_X11_NO_MITSHM: 1
+    ports:
+      - "2222:2222" # ssh pycharm-debugger
+      - "6006:6006" # tensorboard
+      # - "7777:7777" # gdbserver
 
   global-service-dev-config-jetson:
     extends:
@@ -45,15 +49,17 @@ services:
     # Note: Port mapping on macosx is incompatible with network_mode: host
     network_mode: bridge
 
-  global-service-multiarchitecture:
+  global-service-multiarchitecture-build:
     build:
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+      dockerfile: Dockerfile
       platforms:
         - linux/arm64
         - linux/amd64
 
   global-service-builder-base-images-config:
     extends:
-      service: global-service-multiarchitecture # Keep unmuted (!)
+      service: global-service-multiarchitecture-build #ToDo: Keep unmuted for CI builds (!)
 #      service: global-service-dev-config-jetson #ToDo: on dev task end >> mute this line ←
 #      service: global-service-dev-config-darwin #ToDo: on dev task end >> mute this line ←
     build:
@@ -77,10 +83,6 @@ services:
       - SYS_PTRACE
     pid: host
     ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
-    ports:
-      - "2222:2222" # ssh pycharm-debugger
-      - "6006:6006" # tensorboard
-      # - "7777:7777" # gdbserver
 
 
   global-service-builder-config:
