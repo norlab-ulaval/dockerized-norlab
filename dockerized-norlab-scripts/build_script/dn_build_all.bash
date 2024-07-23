@@ -48,9 +48,9 @@ fi
 set +o allexport
 
 
-# (Priority) todo:on task end, delete next bloc ↓↓
-printenv
-echo -e "\n${0}: debug breakpoint\n" && exit 1
+## (Priority) todo:on task end, delete next bloc ↓↓
+#printenv
+#echo -e "\n${0}: debug breakpoint\n" && exit 1
 
 # . . Build_matrix logging functions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # (☕MINOR) ToDo: change .log directory
