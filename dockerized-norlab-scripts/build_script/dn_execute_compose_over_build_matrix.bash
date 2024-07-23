@@ -424,6 +424,16 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             n2st::print_msg "Repository curently checkout at › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
 
 
+            # ////DEV TMP//////////////////////////////////////////////////////////////////////////////////////////////
+            # (CRITICAL) todo:on task end, delete next bloc ↓↓
+            printenv
+
+            tree -a "${DN_PATH}"
+            echo -e "\n${0}: debug breakpoint\n" && exit 1
+
+            # ////DEV TMP//////////////////////////////////////////////////////////////////////////////////////////////
+
+
             # ....Execute docker command...............................................................
 
             # shellcheck disable=SC2086

@@ -76,12 +76,6 @@ DOCKER_COMMAND_W_FLAGS="${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG:-"build"}"
 # ....execute all build matrix.....................................................................
 _CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]:?err}}" )
 
-
-# (Priority) todo:on task end, delete next bloc ↓↓
-printenv
-echo -e "\n${0}: debug breakpoint\n" && exit 1
-
-
 for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
 
   n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}
