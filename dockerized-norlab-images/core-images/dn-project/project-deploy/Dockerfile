@@ -104,7 +104,6 @@ ENTRYPOINT [ "" ]
 
 FROM package-project-src-code AS final
 
-# (CRITICAL) ToDo: validate that the container login as DN_PROJECT_USER (ref task NMO-548)
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
 

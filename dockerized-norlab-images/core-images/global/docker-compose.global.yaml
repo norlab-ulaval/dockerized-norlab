@@ -19,6 +19,9 @@ services:
   global-service-dev-config-jetson:
     extends:
       service: global-service-dev-config
+    build:
+      platforms:
+        - linux/arm64
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -33,14 +36,24 @@ services:
   global-service-dev-config-darwin:
     extends:
       service: global-service-dev-config
+    build:
+      platforms:
+        - linux/arm64
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     # Note: Port mapping on macosx is incompatible with network_mode: host
     network_mode: bridge
 
+  global-service-multiarchitecture:
+    build:
+      platforms:
+        - linux/arm64
+        - linux/amd64
+
   global-service-builder-base-images-config:
-#    extends:
+    extends:
+      service: global-service-multiarchitecture # Keep unmuted (!)
 #      service: global-service-dev-config-jetson #ToDo: on dev task end >> mute this line ←
 #      service: global-service-dev-config-darwin #ToDo: on dev task end >> mute this line ←
     build:
@@ -76,8 +89,5 @@ services:
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
       dockerfile: Dockerfile
-      platforms:
-        - linux/arm64
-        - linux/amd64 # (CRITICAL) ToDo: on task end (ref task RLRP-213) >> unmute next line <--
     pull_policy: build
 

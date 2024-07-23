@@ -139,7 +139,7 @@ teardown() {
   assert_equal "${DN_PROJECT_HUB}" "norlabulaval"
   assert_equal "${DN_PROJECT_GIT_DOMAIN}" "norlab-ulaval"
   assert_equal "${DN_PROJECT_IMAGE_NAME}" "dockerized-norlab-project-template"
-  assert_equal "${DN_PROJECT_BASE_IMG}" "dockerized-norlab-control-deep-rl-f1tenth"
+  assert_equal "${DN_PROJECT_BASE_IMG}" "dockerized-norlab-dependencies-full"
   assert_equal "${DN_PROJECT_GIT_NAME}" "dockerized-norlab-project-mock"
   assert_equal "${DN_PROJECT_COMPOSE_NAME}" "dockerized-norlab-project-mock"
 }
