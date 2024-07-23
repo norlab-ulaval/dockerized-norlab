@@ -20,7 +20,6 @@ services:
   l4t-base-image-main:
     extends:
       file: "../../global/docker-compose.global.yaml"
-#      service: global-service-builder-base-images-config-arm64
       service: global-service-builder-base-images-config
     build:
       context: "."

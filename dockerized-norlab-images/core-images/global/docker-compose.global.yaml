@@ -1,5 +1,10 @@
 services:
-  global-service-dev-config:
+
+  # ===============================================================================================
+  #                          Runtime global configuration for development
+  # ===============================================================================================
+
+  runtime-global-dev-config:
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
     #  no_cache: true  # Enforce full rebuild                               <-- mute on task end
@@ -18,14 +23,11 @@ services:
     ports:
       - "2222:2222" # ssh pycharm-debugger
       - "6006:6006" # tensorboard
-      # - "7777:7777" # gdbserver
+      - "7777:7777" # gdbserver
 
-  global-service-dev-config-jetson:
+  runtime-global-dev-config-jetson:
     extends:
-      service: global-service-dev-config
-    build:
-      platforms:
-        - linux/arm64
+      service: runtime-global-dev-config
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -37,31 +39,27 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: all
       # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 
-  global-service-dev-config-darwin:
+  runtime-global-dev-config-darwin:
     extends:
-      service: global-service-dev-config
-    build:
-      platforms:
-        - linux/arm64
+      service: runtime-global-dev-config
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     # Note: Port mapping on macosx is incompatible with network_mode: host
     network_mode: bridge
 
-  global-service-multiarchitecture-build:
-    build:
-      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-      dockerfile: Dockerfile
-      platforms:
-        - linux/arm64
-        - linux/amd64
+
+  # ===============================================================================================
+  #                                 Build time global configuration
+  # ===============================================================================================
 
   global-service-builder-base-images-config:
-    extends:
-      service: global-service-multiarchitecture-build #ToDo: Keep unmuted for CI builds (!)
-#      service: global-service-dev-config-jetson #ToDo: on dev task end >> mute this line ←
-#      service: global-service-dev-config-darwin #ToDo: on dev task end >> mute this line ←
+    # ....DEV config...............................................................................
+    # ToDo: For CI builds, keep MUTED the 'extends' instructions ↓↓
+    #extends:
+    #  #service: runtime-global-dev-config-jetson
+    #  service: runtime-global-dev-config-darwin
+    # ................................................................................DEV config...
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
       dockerfile: Dockerfile
@@ -71,10 +69,9 @@ services:
         context-dn-root: "${DN_PATH:?err}"
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
-      platforms: !reset []
+      platforms: !reset [] # Arch logic is handled by 'base-images' compose files
       labels:
         org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
-    pull_policy: build
     init: true  # Propagate exit code (See remark in task NMO-266)
     security_opt: # options needed for gdb debugging
       - seccomp=unconfined
@@ -83,13 +80,23 @@ services:
       - SYS_PTRACE
     pid: host
     ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
+    pull_policy: build
 
+#  global-service-builder-config:
+#    # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
+#    extends:
+#      service: global-service-builder-base-images-config
+#    build:
+#      platforms: !reset []
+#    pull_policy: build
 
   global-service-builder-config:
+   # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
     extends:
       service: global-service-builder-base-images-config
     build:
-      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-      dockerfile: Dockerfile
+      platforms:
+        - linux/arm64
+        - linux/amd64
     pull_policy: build
 
