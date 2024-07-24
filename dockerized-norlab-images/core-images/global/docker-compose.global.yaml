@@ -95,6 +95,7 @@ services:
 #      platforms: !reset []
 #    pull_policy: build
 
+
   global-service-builder-config:
    # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
     extends:
