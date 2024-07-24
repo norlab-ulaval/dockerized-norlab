@@ -434,22 +434,22 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             tree -a -L 2 "${DN_PATH}"
             echo -e "\n==============================================================================================="
             echo -e "===============================================================================================\n"
-            printenv | grep -e DN_
+            printenv | grep --max-count=1 -e DN_*=* -e IS_TEAMCITY_RUN=*
             echo -e "\n===============================================================================================\n"
-            printenv | grep -e TEAMCITY
+            printenv | grep --max-count=1 -e TEAMCITY_*=*
             echo -e "\n===============================================================================================\n"
-            printenv | grep -e NBS_
+            printenv | grep --max-count=1 -e NBS_*=*
             echo -e "\n===============================================================================================\n"
-            printenv | grep -e N2ST_
+            printenv | grep --max-count=1 -e N2ST_*=*
             echo -e "\n===============================================================================================\n"
-            printenv | grep -e PATH
+            printenv | grep --max-count=1 -e PATH=*
             echo -e "\n===============================================================================================\n"
-            printenv | grep -e -e PWD -e OLDPWD -e HOME
+            printenv | grep --max-count=1 -e -e PWD=* -e OLDPWD=* -e HOME=*
             echo -e "\n===============================================================================================\n"
-            printenv | grep -e _REPO_ROOT -e _PATH_TO_SCRIPT
+            printenv | grep --max-count=1 -e _REPO_ROOT=* -e _PATH_TO_SCRIPT=*
             echo -e "\n============================================================================Debug breakpoint==="
             echo -e "===============================================================================================\n"
-            echo -e "\n${0}: debug breakpoint\n" && exit 1
+#            echo -e "\n${0}: debug breakpoint\n" && exit 1
             # ////DEV TMP//////////////////////////////////////////////////////////////////////////////////////////////
 
 
