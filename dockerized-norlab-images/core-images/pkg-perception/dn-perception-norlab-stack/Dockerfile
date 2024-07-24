@@ -102,7 +102,7 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 COPY ./entrypoint.norlab-stack.bash ./
 RUN chmod +x entrypoint.norlab-stack.bash
 
-FROM build-norlab-perception-ros-stack as test
+FROM build-norlab-perception-ros-stack AS test
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
@@ -114,7 +114,7 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 
 #    && ros2 launch mapper_config_template mapper.launch \
 
-FROM build-norlab-perception-ros-stack as final
+FROM build-norlab-perception-ros-stack AS final
 
 # (NICE TO HAVE) ToDo: implement entrypoint with demo example runing
 

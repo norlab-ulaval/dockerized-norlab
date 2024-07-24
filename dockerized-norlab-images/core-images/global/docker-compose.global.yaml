@@ -66,12 +66,12 @@ services:
     #  service: runtime-global-dev-config-darwin
     # ................................................................................DEV config...
     build:
-      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-      dockerfile: Dockerfile
+      context: ${DN_PATH:?err}
+      dockerfile: ./dockerized-norlab-images/core-images/global/Dockerfile
       additional_contexts:
-        context-dn-container-tools: "${DN_PATH:?err}/dockerized-norlab-images/container-tools"
-        context-dn-submodules: "${DN_PATH:?err}/utilities"
-        context-dn-root: "${DN_PATH:?err}"
+        context-dn-container-tools: ${DN_PATH:?err}/dockerized-norlab-images/container-tools
+        context-dn-submodules: ${DN_PATH:?err}/utilities
+        context-dn-root: ${DN_PATH:?err}
       args:
         IS_TEAMCITY_RUN: ${IS_TEAMCITY_RUN}
       platforms: !reset [] # Arch logic is handled by 'base-images' compose files
