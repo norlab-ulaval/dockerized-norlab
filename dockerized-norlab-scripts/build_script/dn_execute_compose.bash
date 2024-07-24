@@ -47,24 +47,75 @@ function dn::show_debug_build_information() {
   tree -a -L 1 "${DN_PATH}"
   echo -e "\n==============================================================================================="
   echo -e "===============================================================================================\n"
-  tree -a -L 2 "${DN_PATH}"
+  tree -a -L 3 "${DN_PATH}"
   echo -e "\n==============================================================================================="
   echo -e "===============================================================================================\n"
-  printenv | grep -e DN_*=* -e IS_TEAMCITY_RUN=*
+  printenv | grep \
+      -e DN_IMAGE_TAG=* \
+      -e DN_PROJECT_GID=* \
+      -e DN_PROJECT_DEPLOY_REPO_BRANCH=* \
+      -e DN_PROJECT_COMPOSE_NAME=* \
+      -e DN_PROJECT_UID=* \
+      -e DN_CONTAINER_NAME=* \
+      -e DN_SPLASH_NAME=* \
+      -e DN_PROJECT_BASE_IMG=* \
+      -e DN_PROJECT_HUB=* \
+      -e DN_PROJECT_IMAGE_NAME=* \
+      -e DN_SRC_NAME=* \
+      -e DN_COMPOSE_PLATFORMS=* \
+      -e DN_GIT_NAME=* \
+      -e DN_IMPORTED=* \
+      -e DN_PROMPT_NAME=* \
+      -e DN_PROJECT_USER=* \
+      -e DN_PATH=* \
+      -e DN_PROJECT_GIT_NAME=* \
+      -e DN_TARGET_DEVICE=* \
+      -e DN_GIT_REMOTE_URL=* \
+      -e DN_HUB=* \
+      -e DN_PROJECT_GIT_DOMAIN=* \
+      -e DN_IMAGE_TAG_NO_ROS=* \
+      -e IS_TEAMCITY_RUN=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -e TEAMCITY_*=*
+  printenv | grep \
+      -e TEAMCITY_GIT_PATH=* \
+      -e TEAMCITY_BUILD_PROPERTIES_FILE=* \
+      -e TEAMCITY_GIT_VERSION=* \
+      -e TEAMCITY_CAPTURE_ENV=* \
+      -e TEAMCITY_PROCESS_PARENT_FLOW_ID=* \
+      -e TEAMCITY_PROCESS_FLOW_ID=* \
+      -e TEAMCITY_BUILDCONF_NAME=* \
+      -e TEAMCITY_VERSION=* \
+      -e TEAMCITY_PROJECT_NAME=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -e NBS_*=*
+  printenv | grep \
+      -e NBS_TMP_TEST_LIB_SOURCING_ENV_EXPORT=* \
+      -e NBS_BUILD_MATRIX_CONFIG=* \
+      -e NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=* \
+      -e NBS_GIT_REMOTE_URL=* \
+      -e NBS_GIT_NAME=* \
+      -e NBS_COMPOSE_DIR=* \
+      -e NBS_SRC_NAME=* \
+      -e NBS_PATH=* \
+      -e NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=* \
+      -e NBS_SPLASH_NAME=* \
+      -e NBS_PROMPT_NAME=* \
+      -e NBS_IMPORTED=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -e N2ST_*=*
+  printenv | grep \
+      -e N2ST_GIT_NAME=* \
+      -e N2ST_PROMPT_NAME=* \
+      -e N2ST_PATH=* \
+      -e N2ST_SRC_NAME=* \
+      -e N2ST_GIT_REMOTE_URL=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -e PATH=*
+  echo "PATH=$(printenv PATH)"
   echo -e "\n===============================================================================================\n"
-  printenv | grep -e -e PWD=* -e OLDPWD=* -e HOME=*
+  echo "PWD=$(printenv PWD)"
+  echo "OLDPWD=$(printenv OLDPWD)"
+  echo "HOME=$(printenv HOME)"
   echo -e "\n===============================================================================================\n"
-  printenv | grep -e _REPO_ROOT=*
-  printenv | grep -e _PATH_TO_SCRIPT=*
-#  printenv | grep --max-count=1 -e _PATH_TO_SCRIPT=*
+  echo "_REPO_ROOT=$(printenv _REPO_ROOT)"
+  echo "_PATH_TO_SCRIPT=$(printenv _PATH_TO_SCRIPT)"
   echo -e "\n============================================================================Debug breakpoint==="
   echo -e "===============================================================================================\n"
 
