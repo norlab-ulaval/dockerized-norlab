@@ -50,20 +50,20 @@ function dn::show_debug_build_information() {
   tree -a -L 2 "${DN_PATH}"
   echo -e "\n==============================================================================================="
   echo -e "===============================================================================================\n"
-  printenv | grep -A 0 -e DN_*=* -e IS_TEAMCITY_RUN=*
+  printenv | grep -e DN_*=* -e IS_TEAMCITY_RUN=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -A 0 -e TEAMCITY_*=*
+  printenv | grep -e TEAMCITY_*=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -A 0 -e NBS_*=*
+  printenv | grep -e NBS_*=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -A 0 -e N2ST_*=*
+  printenv | grep -e N2ST_*=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -A 0 -e PATH=*
+  printenv | grep -e PATH=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -A 0 -e -e PWD=* -e OLDPWD=* -e HOME=*
+  printenv | grep -e -e PWD=* -e OLDPWD=* -e HOME=*
   echo -e "\n===============================================================================================\n"
-  printenv | grep -A 0 -e _REPO_ROOT=*
-  printenv | grep -A 0 -e _PATH_TO_SCRIPT=*
+  printenv | grep -e _REPO_ROOT=*
+  printenv | grep -e _PATH_TO_SCRIPT=*
 #  printenv | grep --max-count=1 -e _PATH_TO_SCRIPT=*
   echo -e "\n============================================================================Debug breakpoint==="
   echo -e "===============================================================================================\n"
