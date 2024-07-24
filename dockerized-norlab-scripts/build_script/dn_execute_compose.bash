@@ -311,10 +311,11 @@ function dn::execute_compose() {
     if [[ "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*--dry-run.* ]]; then
       :
     else
-      # (CRITICAL) todo:on task end, mute next line ↓↓
       dn::show_debug_build_information
     fi
   fi
+  # (CRITICAL) todo:on task end, mute next line ↓↓
+  dn::show_debug_build_information
 
 
   # ...Docker cmd conditional logic................................................................
@@ -426,7 +427,7 @@ function dn::execute_compose() {
 
 
 function dn::show_debug_build_information() {
-  n2st::teamcity_service_msg_blockOpened "dn::show_debug_build_information"
+  n2st::teamcity_service_msg_blockOpened "DN show_debug_build_information"
 
   echo -e "\n==============================================================================================="
   echo -e "===Debug breakpoint============================================================================\n"
@@ -502,7 +503,7 @@ function dn::show_debug_build_information() {
   echo -e "\n============================================================================Debug breakpoint==="
   echo -e "===============================================================================================\n"
 
-  n2st::teamcity_service_msg_blockClosed "dn::show_debug_build_information"
+  n2st::teamcity_service_msg_blockClosed "DN show_debug_build_information"
 
   # Unmute to let the fct beahave as a breakpoint
 #  n2st::print_msg_error_and_exit "debug breakpoint"
