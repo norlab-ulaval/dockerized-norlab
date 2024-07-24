@@ -58,7 +58,7 @@ services:
   #                                 Build time global configuration
   # ===============================================================================================
 
-  global-service-builder-base-images-config:
+  global-service-builder-config-base-images:
     # ....DEV config...............................................................................
     # ToDo: For CI builds, keep MUTED the 'extends' instructions ↓↓
     #extends:
@@ -90,7 +90,7 @@ services:
 #  global-service-builder-config:
 #    # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
 #    extends:
-#      service: global-service-builder-base-images-config
+#      service: global-service-builder-config-base-images
 #    build:
 #      platforms: !reset []
 #    pull_policy: build
@@ -98,7 +98,7 @@ services:
   global-service-builder-config:
    # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
     extends:
-      service: global-service-builder-base-images-config
+      service: global-service-builder-config-base-images
     build:
       context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
       dockerfile: Dockerfile

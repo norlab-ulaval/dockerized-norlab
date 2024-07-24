@@ -20,7 +20,7 @@ services:
   l4t-base-image-main:
     extends:
       file: "../../global/docker-compose.global.yaml"
-      service: global-service-builder-base-images-config
+      service: global-service-builder-config-base-images
     build:
       context: "."
       dockerfile: Dockerfile.l4t.squash
