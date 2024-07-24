@@ -308,6 +308,11 @@ function dn::execute_compose() {
     dn::callback_execute_compose_pre
   fi
 
+
+  # (CRITICAL) todo:on task end, mute next line ↓↓
+  dn::show_debug_build_information
+
+
   # ...............................................................................................
   n2st::print_msg "Environment variables set for ${DOCKER_MANAGEMENT_COMMAND[*]}:
     ${MSG_DIMMED_FORMAT}
@@ -359,9 +364,6 @@ function dn::execute_compose() {
     declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --services --no-interpolate --dry-run) )
     for each_service in ${STR_BUILT_SERVICES[@]}; do
       echo
-
-      # (CRITICAL) todo:on task end, mute next line ↓↓
-      dn::show_debug_build_information
 
       if [[ "${each_service}" =~ "global-service-builder-config".* ]] || [[ "${each_service}" =~ "runtime-global-dev-config".* ]]; then
          n2st::print_msg_warning "Skip building ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
