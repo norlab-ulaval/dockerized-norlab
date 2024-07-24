@@ -50,63 +50,59 @@ function dn::show_debug_build_information() {
   tree -a -L 3 "${DN_PATH}"
   echo -e "\n==============================================================================================="
   echo -e "===============================================================================================\n"
-  printenv | grep \
-      -e DN_IMAGE_TAG=* \
-      -e DN_PROJECT_GID=* \
-      -e DN_PROJECT_DEPLOY_REPO_BRANCH=* \
-      -e DN_PROJECT_COMPOSE_NAME=* \
-      -e DN_PROJECT_UID=* \
-      -e DN_CONTAINER_NAME=* \
-      -e DN_SPLASH_NAME=* \
-      -e DN_PROJECT_BASE_IMG=* \
-      -e DN_PROJECT_HUB=* \
-      -e DN_PROJECT_IMAGE_NAME=* \
-      -e DN_SRC_NAME=* \
-      -e DN_COMPOSE_PLATFORMS=* \
-      -e DN_GIT_NAME=* \
-      -e DN_IMPORTED=* \
-      -e DN_PROMPT_NAME=* \
-      -e DN_PROJECT_USER=* \
-      -e DN_PATH=* \
-      -e DN_PROJECT_GIT_NAME=* \
-      -e DN_TARGET_DEVICE=* \
-      -e DN_GIT_REMOTE_URL=* \
-      -e DN_HUB=* \
-      -e DN_PROJECT_GIT_DOMAIN=* \
-      -e DN_IMAGE_TAG_NO_ROS=* \
-      -e IS_TEAMCITY_RUN=*
+  echo "DN_IMAGE_TAG=$(printenv DN_IMAGE_TAG)"
+  echo "DN_PROJECT_GID=$(printenv DN_PROJECT_GID)"
+  echo "DN_PROJECT_DEPLOY_REPO_BRANCH=$(printenv DN_PROJECT_DEPLOY_REPO_BRANCH)"
+  echo "DN_PROJECT_COMPOSE_NAME=$(printenv DN_PROJECT_COMPOSE_NAME)"
+  echo "DN_PROJECT_UID=$(printenv DN_PROJECT_UID)"
+  echo "DN_CONTAINER_NAME=$(printenv DN_CONTAINER_NAME)"
+  echo "DN_SPLASH_NAME=$(printenv DN_SPLASH_NAME)"
+  echo "DN_PROJECT_BASE_IMG=$(printenv DN_PROJECT_BASE_IMG)"
+  echo "DN_PROJECT_HUB=$(printenv DN_PROJECT_HUB)"
+  echo "DN_PROJECT_IMAGE_NAME=$(printenv DN_PROJECT_IMAGE_NAME)"
+  echo "DN_SRC_NAME=$(printenv DN_SRC_NAME)"
+  echo "DN_COMPOSE_PLATFORMS=$(printenv DN_COMPOSE_PLATFORMS)"
+  echo "DN_GIT_NAME=$(printenv DN_GIT_NAME)"
+  echo "DN_IMPORTED=$(printenv DN_IMPORTED)"
+  echo "DN_PROMPT_NAME=$(printenv DN_PROMPT_NAME)"
+  echo "DN_PROJECT_USER=$(printenv DN_PROJECT_USER)"
+  echo "DN_PATH=$(printenv DN_PATH)"
+  echo "DN_PROJECT_GIT_NAME=$(printenv DN_PROJECT_GIT_NAME)"
+  echo "DN_TARGET_DEVICE=$(printenv DN_TARGET_DEVICE)"
+  echo "DN_GIT_REMOTE_URL=$(printenv DN_GIT_REMOTE_URL)"
+  echo "DN_HUB=$(printenv DN_HUB)"
+  echo "DN_PROJECT_GIT_DOMAIN=$(printenv DN_PROJECT_GIT_DOMAIN)"
+  echo "DN_IMAGE_TAG_NO_ROS=$(printenv DN_IMAGE_TAG_NO_ROS)"
+  echo "IS_TEAMCITY_RUN=$(printenv IS_TEAMCITY_RUN)"
   echo -e "\n===============================================================================================\n"
-  printenv | grep \
-      -e TEAMCITY_GIT_PATH=* \
-      -e TEAMCITY_BUILD_PROPERTIES_FILE=* \
-      -e TEAMCITY_GIT_VERSION=* \
-      -e TEAMCITY_CAPTURE_ENV=* \
-      -e TEAMCITY_PROCESS_PARENT_FLOW_ID=* \
-      -e TEAMCITY_PROCESS_FLOW_ID=* \
-      -e TEAMCITY_BUILDCONF_NAME=* \
-      -e TEAMCITY_VERSION=* \
-      -e TEAMCITY_PROJECT_NAME=*
+  echo "TEAMCITY_GIT_PATH=$(printenv TEAMCITY_GIT_PATH)"
+  echo "TEAMCITY_BUILD_PROPERTIES_FILE=$(printenv TEAMCITY_BUILD_PROPERTIES_FILE)"
+  echo "TEAMCITY_GIT_VERSION=$(printenv TEAMCITY_GIT_VERSION)"
+  echo "TEAMCITY_CAPTURE_ENV=$(printenv TEAMCITY_CAPTURE_ENV)"
+  echo "TEAMCITY_PROCESS_PARENT_FLOW_ID=$(printenv TEAMCITY_PROCESS_PARENT_FLOW_ID)"
+  echo "TEAMCITY_PROCESS_FLOW_ID=$(printenv TEAMCITY_PROCESS_FLOW_ID)"
+  echo "TEAMCITY_BUILDCONF_NAME=$(printenv TEAMCITY_BUILDCONF_NAME)"
+  echo "TEAMCITY_VERSION=$(printenv TEAMCITY_VERSION)"
+  echo "TEAMCITY_PROJECT_NAME=$(printenv TEAMCITY_PROJECT_NAME)"
   echo -e "\n===============================================================================================\n"
-  printenv | grep \
-      -e NBS_TMP_TEST_LIB_SOURCING_ENV_EXPORT=* \
-      -e NBS_BUILD_MATRIX_CONFIG=* \
-      -e NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=* \
-      -e NBS_GIT_REMOTE_URL=* \
-      -e NBS_GIT_NAME=* \
-      -e NBS_COMPOSE_DIR=* \
-      -e NBS_SRC_NAME=* \
-      -e NBS_PATH=* \
-      -e NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=* \
-      -e NBS_SPLASH_NAME=* \
-      -e NBS_PROMPT_NAME=* \
-      -e NBS_IMPORTED=*
+  echo "NBS_TMP_TEST_LIB_SOURCING_ENV_EXPORT=$(printenv NBS_TMP_TEST_LIB_SOURCING_ENV_EXPORT)"
+  echo "NBS_BUILD_MATRIX_CONFIG=$(printenv NBS_BUILD_MATRIX_CONFIG)"
+  echo "NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=$(printenv NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE)"
+  echo "NBS_GIT_REMOTE_URL=$(printenv NBS_GIT_REMOTE_URL)"
+  echo "NBS_GIT_NAME=$(printenv NBS_GIT_NAME)"
+  echo "NBS_COMPOSE_DIR=$(printenv NBS_COMPOSE_DIR)"
+  echo "NBS_SRC_NAME=$(printenv NBS_SRC_NAME)"
+  echo "NBS_PATH=$(printenv NBS_PATH)"
+  echo "NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=$(printenv NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG)"
+  echo "NBS_SPLASH_NAME=$(printenv NBS_SPLASH_NAME)"
+  echo "NBS_PROMPT_NAME=$(printenv NBS_PROMPT_NAME)"
+  echo "NBS_IMPORTED=$(printenv NBS_IMPORTED)"
   echo -e "\n===============================================================================================\n"
-  printenv | grep \
-      -e N2ST_GIT_NAME=* \
-      -e N2ST_PROMPT_NAME=* \
-      -e N2ST_PATH=* \
-      -e N2ST_SRC_NAME=* \
-      -e N2ST_GIT_REMOTE_URL=*
+  echo "N2ST_GIT_NAME=$(printenv N2ST_GIT_NAME)"
+  echo "N2ST_PROMPT_NAME=$(printenv N2ST_PROMPT_NAME)"
+  echo "N2ST_PATH=$(printenv N2ST_PATH)"
+  echo "N2ST_SRC_NAME=$(printenv N2ST_SRC_NAME)"
+  echo "N2ST_GIT_REMOTE_URL=$(printenv N2ST_GIT_REMOTE_URL)"
   echo -e "\n===============================================================================================\n"
   echo "PATH=$(printenv PATH)"
   echo -e "\n===============================================================================================\n"
