@@ -425,15 +425,39 @@ function dn::execute_compose() {
 
 
 function dn::show_debug_build_information() {
-  n2st::teamcity_service_msg_blockOpened "DN show_debug_build_information"
 
+  # ....Manual setting.............................................................................
+  # Set to true to print tree to stdin
+  SHOW_TREE=false
+  # Set to true to let the fct behave as a breakpoint
+  BREAKPOINT_BEAVIOUR=false
+
+  # ....Begin......................................................................................
+  n2st::teamcity_service_msg_blockOpened "DN show_debug_build_information"
   echo -e "\n==============================================================================================="
   echo -e "===Debug breakpoint============================================================================\n"
-  tree -a -L 1 "${DN_PATH}"
-  echo -e "\n==============================================================================================="
-  echo -e "===============================================================================================\n"
-  tree -a "${DN_PATH}/dockerized-norlab-images"
-  tree -a "${DN_PATH}/dockerized-norlab-scripts"
+  if [[ ${SHOW_TREE} == true ]]; then
+    tree -a -L 1 "${DN_PATH}"
+    echo -e "\n==============================================================================================="
+    echo -e "===============================================================================================\n"
+    tree -a "${DN_PATH}/dockerized-norlab-images"
+    tree -a "${DN_PATH}/dockerized-norlab-scripts"
+    echo -e "\n==============================================================================================="
+    echo -e "===============================================================================================\n"
+  fi
+  echo -e "Explicit cmd"
+  DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED="https://github.com/norlab-ulaval/dockerized-norlab"
+  DEBUG_PROJECT_GIT_REMOTE_URL=$( git remote get-url origin )
+  DEBUG_PROJECT_GIT_NAME_HARDCODED=$( basename "${DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED}" .git )
+  DEBUG_PROJECT_GIT_NAME=$( basename "${DEBUG_PROJECT_GIT_REMOTE_URL}" .git )
+  DEBUG_PROJECT_PATH=$( git rev-parse --show-toplevel )
+  DEBUG_PROJECT_SRC_NAME="$( basename "${DEBUG_PROJECT_PATH}" )"
+  echo -e "DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED=${DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED}"
+  echo -e "DEBUG_PROJECT_GIT_REMOTE_URL=${DEBUG_PROJECT_GIT_REMOTE_URL}"
+  echo -e "DEBUG_PROJECT_GIT_NAME_HARDCODED=${DEBUG_PROJECT_GIT_NAME_HARDCODED}"
+  echo -e "DEBUG_PROJECT_GIT_NAME=${DEBUG_PROJECT_GIT_NAME}"
+  echo -e "DEBUG_PROJECT_PATH=${DEBUG_PROJECT_PATH}"
+  echo -e "DEBUG_PROJECT_SRC_NAME=${DEBUG_PROJECT_SRC_NAME}"
   echo -e "\n==============================================================================================="
   echo -e "===============================================================================================\n"
   echo "DN_IMAGE_TAG=$(printenv DN_IMAGE_TAG)"
@@ -500,11 +524,11 @@ function dn::show_debug_build_information() {
   echo "_PATH_TO_SCRIPT=$(printenv _PATH_TO_SCRIPT)"
   echo -e "\n============================================================================Debug breakpoint==="
   echo -e "===============================================================================================\n"
-
   n2st::teamcity_service_msg_blockClosed "DN show_debug_build_information"
 
-  # Unmute to let the fct beahave as a breakpoint
-#  n2st::print_msg_error_and_exit "debug breakpoint"
+  if [[ ${BREAKPOINT_BEAVIOUR} == true ]]; then
+    n2st::print_msg_error_and_exit "debug breakpoint"
+  fi
 
   return 0
 }
