@@ -314,8 +314,6 @@ function dn::execute_compose() {
       dn::show_debug_build_information
     fi
   fi
-  # (CRITICAL) todo:on task end, mute next line ↓↓
-  dn::show_debug_build_information
 
 
   # ...Docker cmd conditional logic................................................................
