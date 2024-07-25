@@ -171,11 +171,11 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && echo "** Install opencv "${OPENCV_VERSION}" (4/4)" \
         && echo "------------------------------------" \
         && make install \
-        && echo '' >> ~/.bashrc \
-        && echo '# Opencv related' >> ~/.bashrc \
-        && echo 'export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH' >> ~/.bashrc \
-        && echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc \
-        && source ~/.bashrc \
+        && echo '' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
+        && echo '# Opencv related' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
+        && echo 'export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
+        && echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
+        && source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
         && n2st::teamcity_service_msg_blockClosed "Install opencv with cuda support" ; \
        else \
         echo -e "Builder is targeting non Jetson device. Assume there's no CUDA support" \

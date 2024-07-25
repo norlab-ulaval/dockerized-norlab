@@ -89,7 +89,7 @@ ${MSG_END_FORMAT}"
   cd "${DN_PATH:?'Variable not set'}" || exit 1
   bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
                         "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/$EACH_BUILD_MATRIX" \
-                        $@ -- "${DOCKER_COMMAND_W_FLAGS}"
+                        "$@" -- "${DOCKER_COMMAND_W_FLAGS}"
 
     dn::fetch_build_log
     dn::agregate_build_logs

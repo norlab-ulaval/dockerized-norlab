@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run › dn_run_a_service.bash (dev)" type="ShConfigurationType" folderName="[DN] development ( .env.build_matrix.dev )">
-    <option name="SCRIPT_TEXT" value="cd dockerized-norlab-scripts/build_script/ &amp;&amp; bash dn_run_a_service.bash &quot;dev/.env.build_matrix.dev&quot; &quot;project-develop&quot;" />
+  <configuration default="false" name="DN | test_configuration_dn_crawl_all_build_matrix.bash (docker context)" type="ShConfigurationType" folderName="[DN] B | dry-run and config tests">
+    <option name="SCRIPT_TEXT" value="cd tests/tests_docker_dryrun_and_config/ &amp;&amp; bash test_configuration_dn_crawl_all_build_matrix.bash" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_run_a_service.bash" />
-    <option name="SCRIPT_OPTIONS" value="dev/.env.build_matrix.dev dn-perception-norlab-stack" />
+    <option name="SCRIPT_PATH" value="" />
+    <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
     <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />

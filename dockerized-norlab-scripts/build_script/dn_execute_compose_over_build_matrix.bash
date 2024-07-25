@@ -153,6 +153,7 @@ function print_help_in_terminal() {
                           main command (to use when using buildx docker-container driver)
       --docker-debug-logs
                           Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
+      --show-dn-debug-build-info
       --fail-fast         Exit script at first encountered error
       --ci-test-force-runing-docker-cmd
       --buildx-bake       (experimental) Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
@@ -227,6 +228,10 @@ while [ $# -gt 0 ]; do
     #    set -x
     export BUILDKIT_PROGRESS=plain
     shift # Remove argument (--docker-debug-logs)
+    ;;
+  --show-dn-debug-build-info)
+    DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--show-dn-debug-build-info)
+    shift # Remove argument (--show-dn-debug-build-info)
     ;;
   --force-push)
     DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--force-push)
@@ -422,7 +427,6 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             fi
 
             n2st::print_msg "Repository curently checkout at › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
-
 
             # ....Execute docker command...............................................................
 

@@ -15,6 +15,9 @@ services:
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
         DN_PROJECT_GIT_DOMAIN: ${DN_PROJECT_GIT_DOMAIN:?err}   # norlab-ulaval
         DN_PROJECT_GIT_NAME: ${DN_PROJECT_GIT_NAME:?err}   # dockerized-norlab-project-mock
+        DN_PROJECT_USER: ${DN_PROJECT_USER:?err}
+        DN_PROJECT_UID: ${DN_PROJECT_UID:?err}
+        DN_PROJECT_GID: ${DN_PROJECT_GID:?err}
 
   project-core:
     extends:
@@ -70,7 +73,7 @@ services:
       args:
         BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
         BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
-        DN_DEPLOY_REPO_BRANCH: main  # Option: main, dev or tag version (ie v*.*.*)
+        DN_PROJECT_DEPLOY_REPO_BRANCH: ${DN_PROJECT_DEPLOY_REPO_BRANCH:?err}  # Option: main, dev or tag version (ie v*.*.*)
     depends_on:
       - project-core
 

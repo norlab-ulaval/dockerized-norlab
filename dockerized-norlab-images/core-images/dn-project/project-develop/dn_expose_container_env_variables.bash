@@ -40,7 +40,8 @@ cd "${DN_EXPOSE_TMP_CWD}" || exit 1
 n2st::print_msg "Sourcing ${DN_DEV_WORKSPACE:?'Variable DN_DEV_WORKSPACE unset'} ros overlay"
 source "${DN_DEV_WORKSPACE}/install/local_setup.bash"
 
-touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable DN_CONTAINER_NAME unset'}"
+# (CRITICAL) ToDo: validate that file permision are set to DN_PROJECT_USER (ref task NMO-548)
+sudo touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable DN_CONTAINER_NAME unset'}"
 
 ( \
   echo ""; \
@@ -93,6 +94,7 @@ touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable 
   echo "DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN}"; \
   echo "PYTHONUNBUFFERED=${PYTHONUNBUFFERED}"; \
   echo ""; \
-) > "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
+#) > "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
+) | sudo tee "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
 
 

@@ -89,7 +89,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         echo "fi"; \
         echo "# <<< dockerized-norlab prompt "; \
         echo ""; \
-      ) >> ~/.bashrc
+      ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 
 
 ENV POWERLINE_TMP=/tmp/powerline_tmp
@@ -114,12 +114,12 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
 
 # ....Set Prompt logo..............................................................................
 ## Dockerized-Norlab (legacy code)
-#RUN echo DS_LOGO=$'\u22EF𝐒\u22EF' >> ~/.bashrc
-#RUN export DS_LOGO=$'\uf2dc' >> ~/.bashrc  #            nf-fa-snowflake_o
+#RUN echo DS_LOGO=$'\u22EF𝐒\u22EF' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+#RUN export DS_LOGO=$'\uf2dc' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash  #            nf-fa-snowflake_o
 ## Dockerized-snow (legacy code)
 #RUN export DS_LOGO=$'\U22EF\U1D412\U22EF'  # ⋯𝐒⋯        mathematical bold capital s (U+1D412)
-#RUN export DS_LOGO=$'\U1D516' >> ~/.bashrc # 𝔖         mathematical fraktur capital s U+1D516
-#RUN export DS_LOGO=$'\U1D57E' >> ~/.bashrc # 𝕾         mathematical bold fraktur capital s U+1D57E
+#RUN export DS_LOGO=$'\U1D516' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash # 𝔖         mathematical fraktur capital s U+1D516
+#RUN export DS_LOGO=$'\U1D57E' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash # 𝕾         mathematical bold fraktur capital s U+1D57E
 
 CMD [ "bash" ]
 

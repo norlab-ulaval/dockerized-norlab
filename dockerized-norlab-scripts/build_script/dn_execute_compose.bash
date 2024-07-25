@@ -40,6 +40,8 @@ declare -a COMPOSE_FILE_OVERRIDE_FLAG
 declare -x DN_TARGET_DEVICE
 declare -x DN_COMPOSE_PLATFORMS
 
+
+
 function dn::execute_compose() {
   # ....Positional argument........................................................................
   local COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
@@ -52,6 +54,7 @@ function dn::execute_compose() {
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
   local _CI_TEST=false
   local DOCKER_FORCE_PUSH=false
+  local SHOW_DN_DEBUG_BUILD_INFO=false
   unset DOCKER_EXIT_CODE
   local MAIN_DOCKER_EXIT_CODE=0
   local ROS_DISTRO_PKG=none
@@ -97,6 +100,7 @@ function dn::execute_compose() {
         --force-push                            Execute docker compose push right after the docker
                                                 main command (to use when using buildx docker-container driver)
         --docker-debug-logs                     Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
+        --show-dn-debug-build-info
         --fail-fast                             Exit script at first encountered error
         --ci-test-force-runing-docker-cmd
         --buildx-bake                           (experimental) Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
@@ -173,6 +177,10 @@ function dn::execute_compose() {
   #    set -x
       export BUILDKIT_PROGRESS=plain
       shift # Remove argument (--docker-debug-logs)
+      ;;
+    --show-dn-debug-build-info)
+      SHOW_DN_DEBUG_BUILD_INFO=true
+      shift # Remove argument (--show-dn-debug-build-info)
       ;;
     --buildx-bake)
       n2st::print_msg_warning "Be advise, the DN --buildx-bake flag is still in developemenmt. Use at your own risk"
@@ -299,6 +307,15 @@ function dn::execute_compose() {
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 
+  if [[ ${SHOW_DN_DEBUG_BUILD_INFO} == true ]]; then
+    if [[ "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*--dry-run.* ]]; then
+      :
+    else
+      dn::show_debug_build_information
+    fi
+  fi
+
+
   # ...Docker cmd conditional logic................................................................
   ## (☕minor) ToDo: assessment if still usefull >> next bloc ↓↓
   # Note:
@@ -326,8 +343,8 @@ function dn::execute_compose() {
     for each_service in ${STR_BUILT_SERVICES[@]}; do
       echo
 
-      if [[ "${each_service}" =~ "global-service".* ]]; then
-        # n2st::print_msg_warning "Skip building ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
+      if [[ "${each_service}" =~ "global-service-builder-config".* ]] || [[ "${each_service}" =~ "runtime-global-dev-config".* ]]; then
+         n2st::print_msg_warning "Skip building ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
         :
       else
         n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
@@ -406,6 +423,115 @@ function dn::execute_compose() {
   return "${MAIN_DOCKER_EXIT_CODE}"
 }
 
+
+function dn::show_debug_build_information() {
+
+  # ....Manual setting.............................................................................
+  # Set to true to print tree to stdin
+  SHOW_TREE=false
+  # Set to true to let the fct behave as a breakpoint
+  BREAKPOINT_BEAVIOUR=false
+
+  # ....Begin......................................................................................
+  n2st::teamcity_service_msg_blockOpened "DN show_debug_build_information"
+  echo -e "\n==============================================================================================="
+  echo -e "===Debug breakpoint============================================================================\n"
+  if [[ ${SHOW_TREE} == true ]]; then
+    tree -a -L 1 "${DN_PATH}"
+    echo -e "\n==============================================================================================="
+    echo -e "===============================================================================================\n"
+    tree -a "${DN_PATH}/dockerized-norlab-images"
+    tree -a "${DN_PATH}/dockerized-norlab-scripts"
+    echo -e "\n==============================================================================================="
+    echo -e "===============================================================================================\n"
+  fi
+  echo -e "Explicit cmd"
+  DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED="https://github.com/norlab-ulaval/dockerized-norlab"
+  DEBUG_PROJECT_GIT_REMOTE_URL=$( git remote get-url origin )
+  DEBUG_PROJECT_GIT_NAME_HARDCODED=$( basename "${DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED}" .git )
+  DEBUG_PROJECT_GIT_NAME=$( basename "${DEBUG_PROJECT_GIT_REMOTE_URL}" .git )
+  DEBUG_PROJECT_PATH=$( git rev-parse --show-toplevel )
+  DEBUG_PROJECT_SRC_NAME="$( basename "${DEBUG_PROJECT_PATH}" )"
+  echo -e "DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED=${DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED}"
+  echo -e "DEBUG_PROJECT_GIT_REMOTE_URL=${DEBUG_PROJECT_GIT_REMOTE_URL}"
+  echo -e "DEBUG_PROJECT_GIT_NAME_HARDCODED=${DEBUG_PROJECT_GIT_NAME_HARDCODED}"
+  echo -e "DEBUG_PROJECT_GIT_NAME=${DEBUG_PROJECT_GIT_NAME}"
+  echo -e "DEBUG_PROJECT_PATH=${DEBUG_PROJECT_PATH}"
+  echo -e "DEBUG_PROJECT_SRC_NAME=${DEBUG_PROJECT_SRC_NAME}"
+  echo -e "\n==============================================================================================="
+  echo -e "===============================================================================================\n"
+  echo "DN_IMAGE_TAG=$(printenv DN_IMAGE_TAG)"
+  echo "DN_PROJECT_GID=$(printenv DN_PROJECT_GID)"
+  echo "DN_PROJECT_DEPLOY_REPO_BRANCH=$(printenv DN_PROJECT_DEPLOY_REPO_BRANCH)"
+  echo "DN_PROJECT_COMPOSE_NAME=$(printenv DN_PROJECT_COMPOSE_NAME)"
+  echo "DN_PROJECT_UID=$(printenv DN_PROJECT_UID)"
+  echo "DN_CONTAINER_NAME=$(printenv DN_CONTAINER_NAME)"
+  echo "DN_SPLASH_NAME=$(printenv DN_SPLASH_NAME)"
+  echo "DN_PROJECT_BASE_IMG=$(printenv DN_PROJECT_BASE_IMG)"
+  echo "DN_PROJECT_HUB=$(printenv DN_PROJECT_HUB)"
+  echo "DN_PROJECT_IMAGE_NAME=$(printenv DN_PROJECT_IMAGE_NAME)"
+  echo "DN_SRC_NAME=$(printenv DN_SRC_NAME)"
+  echo "DN_COMPOSE_PLATFORMS=$(printenv DN_COMPOSE_PLATFORMS)"
+  echo "DN_GIT_NAME=$(printenv DN_GIT_NAME)"
+  echo "DN_IMPORTED=$(printenv DN_IMPORTED)"
+  echo "DN_PROMPT_NAME=$(printenv DN_PROMPT_NAME)"
+  echo "DN_PROJECT_USER=$(printenv DN_PROJECT_USER)"
+  echo "DN_PATH=$(printenv DN_PATH)"
+  echo "DN_PROJECT_GIT_NAME=$(printenv DN_PROJECT_GIT_NAME)"
+  echo "DN_TARGET_DEVICE=$(printenv DN_TARGET_DEVICE)"
+  echo "DN_GIT_REMOTE_URL=$(printenv DN_GIT_REMOTE_URL)"
+  echo "DN_HUB=$(printenv DN_HUB)"
+  echo "DN_PROJECT_GIT_DOMAIN=$(printenv DN_PROJECT_GIT_DOMAIN)"
+  echo "DN_IMAGE_TAG_NO_ROS=$(printenv DN_IMAGE_TAG_NO_ROS)"
+  echo "IS_TEAMCITY_RUN=$(printenv IS_TEAMCITY_RUN)"
+  echo -e "\n===============================================================================================\n"
+  echo "TEAMCITY_GIT_PATH=$(printenv TEAMCITY_GIT_PATH)"
+  echo "TEAMCITY_BUILD_PROPERTIES_FILE=$(printenv TEAMCITY_BUILD_PROPERTIES_FILE)"
+  echo "TEAMCITY_GIT_VERSION=$(printenv TEAMCITY_GIT_VERSION)"
+  echo "TEAMCITY_CAPTURE_ENV=$(printenv TEAMCITY_CAPTURE_ENV)"
+  echo "TEAMCITY_PROCESS_PARENT_FLOW_ID=$(printenv TEAMCITY_PROCESS_PARENT_FLOW_ID)"
+  echo "TEAMCITY_PROCESS_FLOW_ID=$(printenv TEAMCITY_PROCESS_FLOW_ID)"
+  echo "TEAMCITY_BUILDCONF_NAME=$(printenv TEAMCITY_BUILDCONF_NAME)"
+  echo "TEAMCITY_VERSION=$(printenv TEAMCITY_VERSION)"
+  echo "TEAMCITY_PROJECT_NAME=$(printenv TEAMCITY_PROJECT_NAME)"
+  echo -e "\n===============================================================================================\n"
+  echo "NBS_TMP_TEST_LIB_SOURCING_ENV_EXPORT=$(printenv NBS_TMP_TEST_LIB_SOURCING_ENV_EXPORT)"
+  echo "NBS_BUILD_MATRIX_CONFIG=$(printenv NBS_BUILD_MATRIX_CONFIG)"
+  echo "NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE=$(printenv NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE)"
+  echo "NBS_GIT_REMOTE_URL=$(printenv NBS_GIT_REMOTE_URL)"
+  echo "NBS_GIT_NAME=$(printenv NBS_GIT_NAME)"
+  echo "NBS_COMPOSE_DIR=$(printenv NBS_COMPOSE_DIR)"
+  echo "NBS_SRC_NAME=$(printenv NBS_SRC_NAME)"
+  echo "NBS_PATH=$(printenv NBS_PATH)"
+  echo "NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=$(printenv NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG)"
+  echo "NBS_SPLASH_NAME=$(printenv NBS_SPLASH_NAME)"
+  echo "NBS_PROMPT_NAME=$(printenv NBS_PROMPT_NAME)"
+  echo "NBS_IMPORTED=$(printenv NBS_IMPORTED)"
+  echo -e "\n===============================================================================================\n"
+  echo "N2ST_GIT_NAME=$(printenv N2ST_GIT_NAME)"
+  echo "N2ST_PROMPT_NAME=$(printenv N2ST_PROMPT_NAME)"
+  echo "N2ST_PATH=$(printenv N2ST_PATH)"
+  echo "N2ST_SRC_NAME=$(printenv N2ST_SRC_NAME)"
+  echo "N2ST_GIT_REMOTE_URL=$(printenv N2ST_GIT_REMOTE_URL)"
+  echo -e "\n===============================================================================================\n"
+  echo "PATH=$(printenv PATH)"
+  echo -e "\n===============================================================================================\n"
+  echo "PWD=$(printenv PWD)"
+  echo "OLDPWD=$(printenv OLDPWD)"
+  echo "HOME=$(printenv HOME)"
+  echo -e "\n===============================================================================================\n"
+  echo "_REPO_ROOT=$(printenv _REPO_ROOT)"
+  echo "_PATH_TO_SCRIPT=$(printenv _PATH_TO_SCRIPT)"
+  echo -e "\n============================================================================Debug breakpoint==="
+  echo -e "===============================================================================================\n"
+  n2st::teamcity_service_msg_blockClosed "DN show_debug_build_information"
+
+  if [[ ${BREAKPOINT_BEAVIOUR} == true ]]; then
+    n2st::print_msg_error_and_exit "debug breakpoint"
+  fi
+
+  return 0
+}
 
 # ::::Main:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then

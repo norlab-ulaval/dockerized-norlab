@@ -31,8 +31,8 @@ COLCON_FLAGS+=(
 )
 
 echo -e "COLCON_FLAGS=( ${COLCON_FLAGS[*]} )"
-colcon build ${COLCON_FLAGS[@]}
+colcon build "${COLCON_FLAGS[@]}"
 source "${DN_DEV_WORKSPACE}/install/setup.bash"
 
-cd "${DN_PROJECT_PATH}"
+cd "${DN_PROJECT_PATH}" || exit 1
 

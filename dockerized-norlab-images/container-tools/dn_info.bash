@@ -38,7 +38,7 @@ ${SP}ROS container workspace:     ${DN_DEV_WORKSPACE}
 ${SP}RMW_IMPLEMENTATION:          ${RMW_IMPLEMENTATION}
 ${SP}
 ${SP}python3 version:             ${DN_PYTHON3_VERSION}
-${SP}numpy version:               $(echo "${PCK_VERSION}" | grep numpy | sed 's/numpy==//g')
+${SP}numpy version:               $(echo "${PCK_VERSION}" | grep numpy== | sed 's/numpy==//g')
 ${SP}pyTorch version:             $(echo "${PCK_VERSION}" | grep -w torch | sed 's/torch==//g')
 ${SP}torchvision version:         $(echo "${PCK_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
 ${SP}numba version:               $(echo "${PCK_VERSION}" | grep numba | sed 's/numba==//g')
@@ -54,12 +54,6 @@ $( \
     sed "s;alias dn_;${SP}$ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | grep -e dn_ \
  )
 \033[0m"
-#${SP}$ dn_info
-#${SP}$ dn_python3_check
-#${SP}$ dn_gym_check
-#${SP}$ dn_ros2_rebuild_dev_workspace
-#${SP}$ dn_fetch_ros_env
-#${SP}$ dn_expose_container_env_variables
 
 echo -e "IDE remote development workflow › to connect to the container internal ssh server:
 \033[1;37m
