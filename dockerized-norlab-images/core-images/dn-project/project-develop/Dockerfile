@@ -137,8 +137,7 @@ RUN { \
         fi ; \
     } || exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_ros2_entrypoint.bash" && \
-    bash ./dn_ros2_entrypoint.bash || exit 1
+RUN test -x "${DN_PROJECT_USER_HOME}/dn_ros2_entrypoint.bash"
 
 RUN test -x "${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash" && \
     bash ./dn_fetch_ros_env_variables.bash || exit 1

@@ -3,7 +3,8 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS package-project-src-code
 
-ARG DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
+ARG DN_PROJECT_DEPLOY_REPO_BRANCH
+ENV DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
 
 #ARG DN_PROJECT_USER
 #ENV DN_PROJECT_USER=${DN_PROJECT_USER:?'Build argument needs to be set and non-empty.'}
@@ -96,8 +97,7 @@ RUN echo "===Check that ROS source is available in DN_PROJECT_USER user=========
         test -n "$(ros2 pkg list | grep -e vesc_msgs)" ; \
     } ||  exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_ros2_entrypoint.bash" && \
-    bash ./dn_ros2_entrypoint.bash  || exit 1
+RUN test -x "${DN_PROJECT_USER_HOME}/dn_ros2_entrypoint.bash"
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "" ]

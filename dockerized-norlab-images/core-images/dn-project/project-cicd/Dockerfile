@@ -33,10 +33,10 @@ ENV PYTEST_CI_RUN=true
 
 WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 
-# ====Project custom steps===========================================================================
+# ....Project custom steps.........................................................................
 # ToDo: add custom step here
 
 
-# ... Finish container setup ............................................................
-WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
+# ====Teardown=====================================================================================
+RUN echo "All test have passed!"
 CMD [ "bash" ]

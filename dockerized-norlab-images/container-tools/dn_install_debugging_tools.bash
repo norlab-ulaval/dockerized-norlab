@@ -22,9 +22,6 @@ apt-get update \
 # - https://austinmorlan.com/posts/docker_clion_development/
 # - https://www.allaban.me/posts/2020/08/ros2-setup-ide-docker/
 # - https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
-# Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
-# ToDo: test › expect no substitution
-#  echo "Port \$``DN_SSH_SERVER_PORT``"; \
 ( \
   echo "LogLevel DEBUG2"; \
   echo "PermitRootLogin yes"; \
