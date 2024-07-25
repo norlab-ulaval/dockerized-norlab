@@ -6,8 +6,8 @@ services:
 
   runtime-global-dev-config:
     build:
-      context: ${DN_PATH:?err}/dockerized-norlab-images/core-images
-      dockerfile: ./global/Dockerfile.global
+      context: ${DN_PATH:?err}/dockerized-norlab-images/core-images/global
+      dockerfile: Dockerfile.global
     #  no_cache: true  # Enforce full rebuild                               <-- mute on task end
     #command: bash -c "tree -L 1 -a && printenv | grep -i -e DN_ && bash" # <-- mute on task end
     tty: true
@@ -30,8 +30,8 @@ services:
     extends:
       service: runtime-global-dev-config
     build:
-      context: ${DN_PATH:?err}/dockerized-norlab-images/core-images
-      dockerfile: ./global/Dockerfile.global
+      context: ${DN_PATH:?err}/dockerized-norlab-images/core-images/global
+      dockerfile: Dockerfile.global
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -47,8 +47,8 @@ services:
     extends:
       service: runtime-global-dev-config
     build:
-      context: ${DN_PATH:?err}/dockerized-norlab-images/core-images
-      dockerfile: ./global/Dockerfile.global
+      context: ${DN_PATH:?err}/dockerized-norlab-images/core-images/global
+      dockerfile: Dockerfile.global
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -68,8 +68,8 @@ services:
     #  service: runtime-global-dev-config-darwin
     # ................................................................................DEV config...
     build:
-      context: ${DN_PATH:?err}/dockerized-norlab-images/core-images
-      dockerfile: ./global/Dockerfile.global
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+      dockerfile: Dockerfile.global
       additional_contexts:
         context-dn-container-tools: ${DN_PATH:?err}/dockerized-norlab-images/container-tools
         context-dn-submodules: ${DN_PATH:?err}/utilities
@@ -103,8 +103,13 @@ services:
     extends:
       service: global-service-builder-config-base-images
     build:
-      context: ${DN_PATH:?err}/dockerized-norlab-images/core-images
-      dockerfile: ./global/Dockerfile.global
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+      dockerfile: Dockerfile.global
+        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
+        #   DN_TARGET_DEVICE: ${DN_TARGET_DEVICE:?err}
+        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
+      # platforms:
+      #  ["${DN_COMPOSE_PLATFORMS:?err}"]
       platforms:
         - linux/arm64
         - linux/amd64
