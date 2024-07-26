@@ -14,10 +14,10 @@ ENV DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN:?'Build argument needs to be s
 ENV DN_PROJECT_PATH=${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 
 ARG DN_PROJECT_USER
-ARG DN_PROJECT_UID
-ARG DN_PROJECT_GID
 ENV DN_PROJECT_USER=${DN_PROJECT_USER:?'Build argument needs to be set and non-empty.'}
+ARG DN_PROJECT_UID
 ENV DN_PROJECT_UID=${DN_PROJECT_UID:?'Build argument needs to be set and non-empty.'}
+ARG DN_PROJECT_GID
 ENV DN_PROJECT_GID=${DN_PROJECT_GID:?'Build argument needs to be set and non-empty.'}
 
 COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
