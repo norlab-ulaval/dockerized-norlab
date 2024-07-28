@@ -1,6 +1,5 @@
 #!/bin/bash
 # =================================================================================================
-#
 # Execute build matrix on docker compose docker-compose.dn-dependencies.build.yaml
 #
 # Usage:

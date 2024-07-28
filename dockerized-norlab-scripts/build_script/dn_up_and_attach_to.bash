@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Note: This is a dev utility script implemented at project early stage.
+#       It's still usefull for debug purposes ... but it need to be updated and refactored heavily.
+# (CRITICAL) ToDo: Refactor based on up_and_attach.bash from DN-project
+
 # =================================================================================================
 #
 # Convenient script for spinning a specific service from the docker compose

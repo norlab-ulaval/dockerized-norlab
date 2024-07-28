@@ -1,6 +1,5 @@
 #!/bin/bash
 # =================================================================================================
-#
 # Convenient script for building all images by crawling over all ".env.build_matrix.dn-*" file
 #
 # Usage:
@@ -21,15 +20,12 @@
 # =================================================================================================
 
 # ....Pre-condition................................................................................
-
 if [[ ! -f  ".env.dockerized-norlab-build-system" ]]; then
   echo -e "\n[\033[1;31mERROR\033[0m] 'dn_build_all.bash' script must be executed from the project root!\n Curent working directory is '$(pwd)'"  1>&2
   exit 1
 fi
 
-
 # ....Load environment variables from file.........................................................
-
 set -o allexport
 source .env.dockerized-norlab-build-system || exit 1
 

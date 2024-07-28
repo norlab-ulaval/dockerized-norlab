@@ -1,6 +1,5 @@
 #!/bin/bash
 # =================================================================================================
-#
 # Quickly spawn DN container instance(s) without having to worry about name collision
 # i.e. IamNorLab-97168
 #

@@ -423,14 +423,42 @@ function dn::execute_compose() {
   return "${MAIN_DOCKER_EXIT_CODE}"
 }
 
-
+# ==================================================================================================
+# dn::show_debug_build_information
+#
+# This shell function outputs project, environment, and system details intended for use in debugging
+# the Dockerized Norlab build process. It prints a plethora of values for variables associated with
+# different components, paths, and settings of the build.
+#
+# Usage:
+#   Add or modify arguments to the function call if desired,
+#     - Set SHOW_TREE to true to print tree to stdin
+#     - Set BREAKPOINT_BEAVIOUR to true to let the fct behave as a breakpoint
+#   then
+#   $ dn::show_debug_build_information
+#
+#
+# Globals:
+#   Read:
+#     DN_*, TEAMCITY_*, NBS_*, N2ST_*, _REPO_ROOT, _PATH_TO_SCRIPT, PATH, PWD, OLDPWD, HOME
+#
+# Arguments: None.
+#
+# Outputs:
+#   This function prints the value of various environment variables and project details to stdout.
+#
+# Returns:
+#   The function returns an exit status of 0, or exits with an error message if
+#   the breakpoint behaviour is set to true.
+# ===================================================================================================
+# (NICE TO HAVE) ToDo: refactor fct out to external util script
 function dn::show_debug_build_information() {
 
   # ....Manual setting.............................................................................
   # Set to true to print tree to stdin
-  SHOW_TREE=false
+  local SHOW_TREE=false
   # Set to true to let the fct behave as a breakpoint
-  BREAKPOINT_BEAVIOUR=false
+  local BREAKPOINT_BEAVIOUR=false
 
   # ....Begin......................................................................................
   n2st::teamcity_service_msg_blockOpened "DN show_debug_build_information"
@@ -446,6 +474,12 @@ function dn::show_debug_build_information() {
     echo -e "===============================================================================================\n"
   fi
   echo -e "Explicit cmd"
+  local DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED
+  local DEBUG_PROJECT_GIT_REMOTE_URL
+  local DEBUG_PROJECT_GIT_NAME_HARDCODED
+  local DEBUG_PROJECT_GIT_NAME
+  local DEBUG_PROJECT_PATH
+  local DEBUG_PROJECT_SRC_NAME
   DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED="https://github.com/norlab-ulaval/dockerized-norlab"
   DEBUG_PROJECT_GIT_REMOTE_URL=$( git remote get-url origin )
   DEBUG_PROJECT_GIT_NAME_HARDCODED=$( basename "${DEBUG_PROJECT_GIT_REMOTE_URL_HARDCODED}" .git )
