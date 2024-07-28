@@ -107,6 +107,9 @@ FROM package-project-src-code AS final
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
 
+WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
+COPY --chown=${DN_PROJECT_USER} ../../ ${DN_PROJECT_PATH:?err}/
+
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}
 ENTRYPOINT [ "/dockerized-norlab/project/project-develop/dn_ros2_entrypoint.bash" ]
