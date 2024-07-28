@@ -15,6 +15,7 @@
 #
 # =================================================================================================
 #clear
+# (Priority) ToDo: NMO-375 refactor: run and attach logic using 'f1tenth-redleader-controller' implemention
 
 _DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value

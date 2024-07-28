@@ -5,7 +5,8 @@
 #       - but it need to be updated and refactored heavily
 #       - _up_and_attach_to.bash might already cover every use case.
 # (CRITICAL) ToDo: validate if its still usefull >> compare with dockerized-norlab-scripts/build_script/dn_up_and_attach_to.bash
-# (CRITICAL) ToDo: Refactor based on up_and_attach.bash from DN-project
+# (CRITICAL) ToDo: Refactor based on up_and_attach.bash from DN-project (ref task NMO-375)
+# (Priority) ToDo: NMO-375 refactor: run and attach logic using 'f1tenth-redleader-controller' implemention
 
 # =================================================================================================
 #

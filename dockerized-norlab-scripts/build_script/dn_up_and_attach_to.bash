@@ -2,7 +2,8 @@
 
 # Note: This is a dev utility script implemented at project early stage.
 #       It's still usefull for debug purposes ... but it need to be updated and refactored heavily.
-# (CRITICAL) ToDo: Refactor based on up_and_attach.bash from DN-project
+# (CRITICAL) ToDo: Refactor based on up_and_attach.bash from DN-project (ref task NMO-375)
+# (Priority) ToDo: NMO-375 refactor: run and attach logic using 'f1tenth-redleader-controller' implemention
 
 # =================================================================================================
 #
