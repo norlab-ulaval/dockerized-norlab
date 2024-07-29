@@ -10,6 +10,7 @@ services:
     build:
       context: project-core
       dockerfile: Dockerfile.template
+      pull: false # Use the local image store to execute the FROM directive
       args:
         BASE_IMAGE: ${DN_HUB:?err}/${DN_PROJECT_BASE_IMG:?err}
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
@@ -22,6 +23,7 @@ services:
   project-core:
     extends:
       service: project-core-main
+    pull_policy: build # Execute the `build` attribute over pulling the `image` attribute
     image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core:${PROJECT_TAG:?err}
     environment:
       DN_CONTAINER_NAME: ${DN_CONTAINER_NAME:?err}
@@ -41,26 +43,37 @@ services:
     build:
       context: project-develop
       dockerfile: Dockerfile
+      pull: false # Use the local image store to execute the FROM directive
       args:
         BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
         BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
     depends_on:
       - project-core
 
-  project-develop-tester:
+  project-develop-test-ssh-user:
     extends:
       service: project-develop-main
     build:
-      target: test
+      target: test-ssh-user
+    depends_on:
+      - project-develop-main
+
+  project-develop-test-project-user:
+    extends:
+      service: project-develop-main
+    build:
+      target: test-project-user
     depends_on:
       - project-develop-main
 
   project-develop:
     extends:
       service: project-develop-main
+    pull_policy: build # Execute the `build` attribute over pulling the `image` attribute
     image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-develop:${PROJECT_TAG:?err}
     depends_on:
-      - project-develop-tester
+      - project-develop-test-ssh-user
+      - project-develop-test-project-user
 
   # ....project-deploy.............................................................................
   project-deploy-main: # ›› no push build service
@@ -70,6 +83,7 @@ services:
     build:
       context: project-deploy
       dockerfile: Dockerfile
+      pull: false # Use the local image store to execute the FROM directive
       args:
         BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
         BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
@@ -88,6 +102,7 @@ services:
   project-deploy:
     extends:
       service: project-deploy-main
+    pull_policy: build # Execute the `build` attribute over pulling the `image` attribute
     image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${PROJECT_TAG:?err}
     depends_on:
       - project-deploy-tester
