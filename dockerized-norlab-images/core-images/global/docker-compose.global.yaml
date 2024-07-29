@@ -88,29 +88,29 @@ services:
     ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
     pull_policy: build
 
-  global-service-builder-config:
-    # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
-    extends:
-      service: global-service-builder-config-base-images
-    build:
-      platforms: !reset []
-    pull_policy: build
-
-
 #  global-service-builder-config:
-#   # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
+#    # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
 #    extends:
 #      service: global-service-builder-config-base-images
 #    build:
-#      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
-#      dockerfile: Dockerfile
-#        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
-#        #   DN_TARGET_DEVICE: ${DN_TARGET_DEVICE:?err}
-#        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
-#      # platforms:
-#      #  ["${DN_COMPOSE_PLATFORMS:?err}"]
-#      platforms:
-#        - linux/arm64
-#        - linux/amd64
+#      platforms: !reset []
 #    pull_policy: build
-#
+
+
+  global-service-builder-config:
+   # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
+    extends:
+      service: global-service-builder-config-base-images
+    build:
+      context: "${DN_PATH:?err}/dockerized-norlab-images/core-images/global"
+      dockerfile: Dockerfile
+        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
+        #   DN_TARGET_DEVICE: ${DN_TARGET_DEVICE:?err}
+        ## (NICE TO HAVE) ToDo: assessment >> next line ↓↓
+      # platforms:
+      #  ["${DN_COMPOSE_PLATFORMS:?err}"]
+      platforms:
+        - linux/arm64
+        - linux/amd64
+    pull_policy: build
+
