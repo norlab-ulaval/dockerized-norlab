@@ -30,14 +30,14 @@ tree -L 4 -agu ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 if [[ -d ${DN_PROJECT_GIT_NAME}/.git  ]]; then
   # Repository is already cloned
   cd ${DN_PROJECT_GIT_NAME}
-  git checkout ${DN_PROJECT_DEPLOY_REPO_BRANCH}
+  git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
 elif [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
   # Directory already exist, so delete it and clone
   rm -rf ${DN_PROJECT_GIT_NAME}
-  git clone --recurse-submodules --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
+  git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
 else
   # Clone repo
-  git clone --recurse-submodules --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
+  git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
 fi
 EOT
 
