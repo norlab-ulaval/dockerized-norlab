@@ -65,7 +65,7 @@ ${SP}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_SSH_SERVER_USER}@$(host
 # (NICE TO HAVE) ToDo: Add >> procedure for configuring .env file
 echo -e "Terminal prompt › The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m
 or\033[1;37m Powerline10k\033[0m be installed on the host terminal. To change to a minimal prompt,
-either set permanently the ENV variable in\033[1;37m docker-compose.<spec>.run.yaml\033[0m:
+either set permanently the ENV variable in\033[1;37m docker-compose.project.run.<host-arch>.yaml\033[0m:
 ${SP}
 ${SP}services:
 ${SP}  develop: # the service name
