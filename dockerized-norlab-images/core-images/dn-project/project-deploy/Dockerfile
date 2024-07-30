@@ -26,11 +26,16 @@ ENV PYTHONUNBUFFERED=0
 WORKDIR ${DN_DEV_WORKSPACE}/src
 RUN <<EOT
 echo "Checkout ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
-if [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
+if [[ -d ${DN_PROJECT_GIT_NAME}/.git  ]]; then
+  # Repository is already cloned
   cd ${DN_PROJECT_GIT_NAME}
   git checkout ${DN_PROJECT_DEPLOY_REPO_BRANCH}
+elif [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
+  # Directory already exist, so clone into it
+  git clone --recurse-submodules --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git ${DN_PROJECT_GIT_NAME}
 else
-  git clone --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
+  # Clone repo
+  git clone --recurse-submodules --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
 fi
 EOT
 
