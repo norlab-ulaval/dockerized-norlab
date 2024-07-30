@@ -47,12 +47,12 @@ FROM debugging-tools AS project-specific-ros-setup
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_DEVELOP_DIR=/dockerized-norlab/project/project-develop
 WORKDIR ${DN_PROJECT_DEVELOP_DIR}
-COPY dn_entrypoint.bash ./
+COPY dn_entrypoint.init.bash ./
 COPY dn_ros2_rebuild_dev_workspace.bash ./
 COPY dn_fetch_ros_env_variables.bash ./
 COPY dn_expose_container_env_variables.bash ./
 
-RUN chmod +x dn_entrypoint.bash \
+RUN chmod +x dn_entrypoint.init.bash \
     && chmod +x dn_ros2_rebuild_dev_workspace.bash \
     && chmod +x dn_fetch_ros_env_variables.bash \
     && chmod +x dn_expose_container_env_variables.bash
@@ -63,7 +63,7 @@ WORKDIR /dn_container_env_variable/
 RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
 
 # Create soft link in the home dir
-RUN ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_entrypoint.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.bash \
+RUN ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
     && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_ros2_rebuild_dev_workspace.bash ${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash \
     && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
     && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
@@ -136,7 +136,7 @@ RUN { \
         fi ; \
     } || exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.bash"
+RUN test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash"
 
 RUN test -x "${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash" && \
     bash ./dn_fetch_ros_env_variables.bash || exit 1
@@ -151,7 +151,7 @@ SHELL ["/bin/bash", "-c"]
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}
-ENTRYPOINT [ "/dockerized-norlab/project/project-develop/dn_entrypoint.bash" ]
+ENTRYPOINT [ "/dockerized-norlab/project/project-develop/dn_entrypoint.init.bash" ]
 CMD [ "bash" ]
 
 

@@ -247,7 +247,7 @@ RUN COLCON_FLAGS=() \
     && colcon build ${COLCON_FLAGS[@]}
 
 # ===Remove dustynv entrypoint from .bashrc. ======================================================
-# Note: Source ROS in the dn_entrypoint.bash instead"
+# Note: Source ROS in the dn_entrypoint.init.bash instead"
 RUN sed --in-place "s;source /ros_entrypoint.sh;;" "$HOME/.bashrc" \
     && rm --force /ros_entrypoint.sh
 

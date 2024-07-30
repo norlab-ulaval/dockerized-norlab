@@ -24,12 +24,16 @@ COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
 RUN source ./dn_project_core_init.bash \
     && rm ./dn_project_core_init.bash
 
-# Required by Dockerized-NorLab dn_entrypoint.bash
+# (Priority) ToDo: refactor project_entrypoints logic a fct. Either in DN container-tools or in DN-project
+# Required by Dockerized-NorLab dn_entrypoint.init.bash
 WORKDIR /project_entrypoints
 COPY ./project_entrypoints .
-RUN for each_file in ./dn_entrypoint.*.bash ; do \
+RUN for each_file in ./dn_entrypoint.*.bash; do \
       chmod +x "${each_file}" ; \
-  done
+    done && \
+    for each_file in ./project-*/dn_entrypoint.*.bash; do \
+      chmod +x "${each_file}" ; \
+    done
 
 
 # ====User Project custom steps====================================================================

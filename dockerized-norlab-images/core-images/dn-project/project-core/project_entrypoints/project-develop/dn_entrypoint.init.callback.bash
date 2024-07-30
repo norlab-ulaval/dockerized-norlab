@@ -1,10 +1,10 @@
 #!/bin/bash
 # =================================================================================================
-# Dockerized-NorLab deploy container entrypoint callback
-# Is executed at the end of the project-deploy entrypoints
+# Dockerized-NorLab container up_and_attach.bash entrypoint callback.
+# Is executed only once on container initialisation, at the end of the project-develop entrypoints.
 #
 # Usage:
-#   Just add you code
+#   Add only project-develop specific logic that need to be executed only on startup.
 #
 # Globals:
 #   Read/write all environment variable exposed in DN at runtime
