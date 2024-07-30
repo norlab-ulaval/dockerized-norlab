@@ -32,8 +32,9 @@ if [[ -d ${DN_PROJECT_GIT_NAME}/.git  ]]; then
   cd ${DN_PROJECT_GIT_NAME}
   git checkout ${DN_PROJECT_DEPLOY_REPO_BRANCH}
 elif [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
-  # Directory already exist, so clone into it
-  git clone --recurse-submodules --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git ${DN_PROJECT_GIT_NAME}
+  # Directory already exist, so delete it and clone
+  rm -rf ${DN_PROJECT_GIT_NAME}
+  git clone --recurse-submodules --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
 else
   # Clone repo
   git clone --recurse-submodules --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
