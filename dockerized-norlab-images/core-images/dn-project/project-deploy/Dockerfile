@@ -63,16 +63,17 @@ RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
     && colcon build ${COLCON_FLAGS[@]}
 
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
-ENV DN_PROJECT_DEVELOP_DIR=/dockerized-norlab/project/project-develop
-WORKDIR ${DN_PROJECT_DEVELOP_DIR}
-COPY dn_entrypoint.init.bash ./
-RUN chmod +x ./dn_entrypoint.init.bash
+ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-deploy
+WORKDIR ${DN_PROJECT_SERVICE_DIR}
+COPY dn_entrypoint.init.bash dn_entrypoint.exec.bash ./
+RUN chmod +x dn_entrypoint.init.bash && \
+    chmod +x dn_entrypoint.exec.bash
 
 ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
 WORKDIR ${DN_PROJECT_USER_HOME}
 
 # Create soft link in the home dir
-RUN ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash
+RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash
 
 
 FROM package-project-src-code AS test

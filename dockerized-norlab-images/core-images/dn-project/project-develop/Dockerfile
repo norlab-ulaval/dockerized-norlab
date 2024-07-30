@@ -45,17 +45,15 @@ FROM debugging-tools AS project-specific-ros-setup
 # (Priority) ToDo: refactor the rest of the stage as a standalone script that can be executed by project-deploy
 
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
-ENV DN_PROJECT_DEVELOP_DIR=/dockerized-norlab/project/project-develop
-WORKDIR ${DN_PROJECT_DEVELOP_DIR}
-COPY dn_entrypoint.init.bash ./
-COPY dn_ros2_rebuild_dev_workspace.bash ./
-COPY dn_fetch_ros_env_variables.bash ./
-COPY dn_expose_container_env_variables.bash ./
+ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-develop
+WORKDIR ${DN_PROJECT_SERVICE_DIR}
+COPY dn_entrypoint.init.bash dn_entrypoint.exec.bash dn_ros2_rebuild_dev_workspace.bash dn_fetch_ros_env_variables.bash dn_expose_container_env_variables.bash ./
 
-RUN chmod +x dn_entrypoint.init.bash \
-    && chmod +x dn_ros2_rebuild_dev_workspace.bash \
-    && chmod +x dn_fetch_ros_env_variables.bash \
-    && chmod +x dn_expose_container_env_variables.bash
+RUN chmod +x dn_entrypoint.init.bash && \
+    chmod +x dn_entrypoint.exec.bash && \
+    chmod +x dn_ros2_rebuild_dev_workspace.bash && \
+    chmod +x dn_fetch_ros_env_variables.bash && \
+    chmod +x dn_expose_container_env_variables.bash
 
 # Create directories
 ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
@@ -63,10 +61,10 @@ WORKDIR /dn_container_env_variable/
 RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
 
 # Create soft link in the home dir
-RUN ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
-    && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_ros2_rebuild_dev_workspace.bash ${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash \
-    && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
-    && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
+RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_ros2_rebuild_dev_workspace.bash ${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
 
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
