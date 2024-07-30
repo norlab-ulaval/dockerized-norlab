@@ -24,6 +24,17 @@ RUN echo "(WARNING) PYTHONUNBUFFERED env variable will be set to 0 for deploymen
 ENV PYTHONUNBUFFERED=0
 
 WORKDIR ${DN_DEV_WORKSPACE}/src
+RUN <<EOT
+echo "Checkout ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
+if [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
+  cd ${DN_PROJECT_GIT_NAME}
+  git checkout ${DN_PROJECT_DEPLOY_REPO_BRANCH}
+else
+  git clone --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
+fi
+EOT
+
+WORKDIR ${DN_DEV_WORKSPACE}
 RUN echo "Pull latest ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch" \
     && git clone --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git  \
     && cd ${DN_DEV_WORKSPACE} \
