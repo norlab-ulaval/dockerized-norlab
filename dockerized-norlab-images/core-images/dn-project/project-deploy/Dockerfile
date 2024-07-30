@@ -26,7 +26,7 @@ ENV PYTHONUNBUFFERED=0
 WORKDIR ${DN_DEV_WORKSPACE}/src
 RUN <<EOT
 echo "Checkout ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
-tree -L 2 -agu
+tree -L 4 -agu ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 if [[ -d ${DN_PROJECT_GIT_NAME}/.git  ]]; then
   # Repository is already cloned
   cd ${DN_PROJECT_GIT_NAME}
