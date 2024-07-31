@@ -5,24 +5,22 @@ set -e  # exit script if any statement returns a non-true return value
 
 # ====DN-project internal logic====================================================================
 
-# ....User feedback................................................................................
-source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash
 
 # ====DN-project user defined logic================================================================
 # Sanity check
 test -d "/project_entrypoints" || { echo "Dir /project_entrypoints is unreachable" && exit 1 ; }
 
 # ....Execute DN-project user callback.............................................................
-if [[ -f /project_entrypoints/dn_entrypoint.global.exec.callback.bash ]]; then
-  source /project_entrypoints/dn_entrypoint.global.exec.callback.bash || exit 1
+if [[ -f /project_entrypoints/dn_entrypoint.global.attach.callback.bash ]]; then
+  source /project_entrypoints/dn_entrypoint.global.attach.callback.bash || exit 1
 else
-  echo "dn_entrypoint.global.exec.callback.bash unavailable"
+  echo "dn_entrypoint.global.attach.callback.bash unavailable"
 fi
 
-if [[ -f /project_entrypoints/project-develop/dn_entrypoint.exec.callback.bash ]]; then
-  source /project_entrypoints/project-develop/dn_entrypoint.exec.callback.bash || exit 1
+if [[ -f /project_entrypoints/project-develop/dn_entrypoint.attach.callback.bash ]]; then
+  source /project_entrypoints/project-develop/dn_entrypoint.attach.callback.bash || exit 1
 else
-  echo "project-develop/dn_entrypoint.exec.callback.bash unavailable"
+  echo "project-develop/dn_entrypoint.attach.callback.bash unavailable"
 fi
 
 # ....Release......................................................................................

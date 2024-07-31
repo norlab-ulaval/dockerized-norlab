@@ -85,9 +85,9 @@ RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-deploy
 WORKDIR ${DN_PROJECT_SERVICE_DIR}
-COPY dn_entrypoint.init.bash dn_entrypoint.exec.bash ./
+COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash ./
 RUN chmod +x dn_entrypoint.init.bash && \
-    chmod +x dn_entrypoint.exec.bash
+    chmod +x dn_entrypoint.attach.bash
 
 ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
 WORKDIR ${DN_PROJECT_USER_HOME}
@@ -127,11 +127,6 @@ FROM package-project-src-code AS final
 
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
-
-
-# (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-# This logic should replace git clone
-#COPY --chown=${DN_PROJECT_USER} ../../ ${DN_PROJECT_PATH:?err}/
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}

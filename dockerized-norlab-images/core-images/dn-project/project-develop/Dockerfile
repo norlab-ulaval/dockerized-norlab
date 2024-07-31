@@ -47,10 +47,10 @@ FROM debugging-tools AS project-specific-ros-setup
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-develop
 WORKDIR ${DN_PROJECT_SERVICE_DIR}
-COPY dn_entrypoint.init.bash dn_entrypoint.exec.bash dn_ros2_rebuild_dev_workspace.bash dn_fetch_ros_env_variables.bash dn_expose_container_env_variables.bash ./
+COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash dn_ros2_rebuild_dev_workspace.bash dn_fetch_ros_env_variables.bash dn_expose_container_env_variables.bash ./
 
 RUN chmod +x dn_entrypoint.init.bash && \
-    chmod +x dn_entrypoint.exec.bash && \
+    chmod +x dn_entrypoint.attach.bash && \
     chmod +x dn_ros2_rebuild_dev_workspace.bash && \
     chmod +x dn_fetch_ros_env_variables.bash && \
     chmod +x dn_expose_container_env_variables.bash
