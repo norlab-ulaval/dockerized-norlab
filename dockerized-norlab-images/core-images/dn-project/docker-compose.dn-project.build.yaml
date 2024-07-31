@@ -6,11 +6,10 @@ services:
     extends:
       file: "../global/docker-compose.global.yaml"
       service: global-service-builder-config
-    pull_policy: build
+    pull_policy: build # Execute the `build` attribute over pulling the `image` attribute
     build:
       context: project-core
       dockerfile: Dockerfile.template
-      pull: false # Use the local image store to execute the FROM directive
       args:
         BASE_IMAGE: ${DN_HUB:?err}/${DN_PROJECT_BASE_IMG:?err}
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
@@ -23,7 +22,6 @@ services:
   project-core:
     extends:
       service: project-core-main
-    pull_policy: build # Execute the `build` attribute over pulling the `image` attribute
     image: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core:${PROJECT_TAG:?err}
     environment:
       DN_CONTAINER_NAME: ${DN_CONTAINER_NAME:?err}
@@ -40,6 +38,7 @@ services:
     extends:
       file: "../global/docker-compose.global.yaml"
       service: global-service-builder-config
+    pull_policy: build # Execute the `build` attribute over pulling the `image` attribute
     build:
       context: project-develop
       dockerfile: Dockerfile
@@ -83,11 +82,15 @@ services:
     build:
       context: project-deploy
       dockerfile: Dockerfile
+      # (Priority) ToDo: will be useful, mute for now (ref task NMO-558)
+#      additional_contexts:
+#        context-dn-project-local-src-path: ${DN_PROJECT_LOCAL_SRC_PATH:?err}
       pull: false # Use the local image store to execute the FROM directive
       args:
         BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
         BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
         DN_PROJECT_DEPLOY_REPO_BRANCH: ${DN_PROJECT_DEPLOY_REPO_BRANCH:?err}  # Option: main, dev or tag version (ie v*.*.*)
+        BUILDKIT_CONTEXT_KEEP_GIT_DIR: 1
     depends_on:
       - project-core
 
@@ -106,37 +109,4 @@ services:
     image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-deploy:${PROJECT_TAG:?err}
     depends_on:
       - project-deploy-tester
-
-
-# ....project-cicd...............................................................................
-#  # ToDo: implement
-#  project-cicd:
-#    extends:
-#     service: project-core
-#    build:
-#      context: project-cicd
-#      dockerfile: Dockerfile
-#      args:
-#        BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
-#        BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
-#    depends_on:
-#      - project-core
-
-
-  # ====Dockerized-NorLab Project public===========================================================
-
-  # ....project-release............................................................................
-#  # ToDo: implement
-#  project-release:
-#    extends:
-#     service: project-core
-#    build:
-#      context: project-release
-#      dockerfile: Dockerfile
-#      args:
-#        BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}
-#        BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
-#    image: ${DN_PROJECT_HUB}/${DN_PROJECT_IMAGE_NAME}-release:${PROJECT_TAG:?err}
-#    depends_on:
-#      - project-core
 

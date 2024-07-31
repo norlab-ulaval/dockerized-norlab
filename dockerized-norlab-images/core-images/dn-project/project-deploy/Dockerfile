@@ -6,9 +6,6 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS package-project-src-code
 ARG DN_PROJECT_DEPLOY_REPO_BRANCH
 ENV DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
 
-#ARG DN_PROJECT_USER
-#ENV DN_PROJECT_USER=${DN_PROJECT_USER:?'Build argument needs to be set and non-empty.'}
-
 RUN echo "Pre-condition checks" && {  \
         test $(whoami) == "root" &&  \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
@@ -25,28 +22,34 @@ ENV PYTHONUNBUFFERED=0
 
 WORKDIR ${DN_DEV_WORKSPACE}/src
 RUN <<EOT
-echo "Checkout ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
-tree -L 4 -agu ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-if [[ -d ${DN_PROJECT_GIT_NAME}/.git  ]]; then
-  # Repository is already cloned
+echo "\nCheckout ${DN_PROJECT_GIT_NAME} at ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
+
+echo -e "\nLog relevant debug information on failure\n"
+tree -L 2 -a ${DN_DEV_WORKSPACE}/src
+tree -L 2 -a ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+echo
+
+if [[ -e ${DN_PROJECT_GIT_NAME}/.git  ]]; then
+  echo "Repository is already cloned"
   cd ${DN_PROJECT_GIT_NAME}
   git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
 elif [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
-  # Directory already exist, so delete it and clone
+  echo "Directory already exist but is not a git repository, so delete it and clone"
   rm -rf ${DN_PROJECT_GIT_NAME}
   git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
 else
-  # Clone repo
+  echo "Clone repository"
   git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
 fi
+
+chown -R ${DN_PROJECT_USER} ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+
+echo -e "\nLog relevant debug information on failure\n"
+tree -L 2 -aug ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 EOT
 
 WORKDIR ${DN_DEV_WORKSPACE}
-RUN echo "Pull latest ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch" \
-    && git clone --branch ${DN_PROJECT_DEPLOY_REPO_BRANCH} https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git  \
-    && cd ${DN_DEV_WORKSPACE} \
-    && apt-get update --fix-missing \
-    && rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
+RUN rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
     && rosdep fix-permissions \
     && rosdep install  \
             --ignore-packages-from-source \
@@ -57,7 +60,6 @@ RUN echo "Pull latest ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch" \
 
 
 WORKDIR ${DN_DEV_WORKSPACE}
-
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
@@ -126,8 +128,10 @@ FROM package-project-src-code AS final
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
 
-WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
-COPY --chown=${DN_PROJECT_USER} ../../ ${DN_PROJECT_PATH:?err}/
+
+# (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
+# This logic should replace git clone
+#COPY --chown=${DN_PROJECT_USER} ../../ ${DN_PROJECT_PATH:?err}/
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}
