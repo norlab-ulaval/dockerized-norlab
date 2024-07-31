@@ -39,7 +39,7 @@ RUN pip3 install --verbose \
     -r /python.requirements.txt \
 #    --no-cache-dir \
 #    --upgrade \
-    && rm -rf /python.requirements.txt
+    && rm -rf /python.requirements.txtÎ
 
 
 # (Priority) ToDo: refactor to dn_project_core_init.bash (ref task RLRP-213 and NMO-548)
@@ -67,6 +67,8 @@ RUN for each_file in ./dn_entrypoint.*.bash; do \
     for each_file in ./project-*/dn_entrypoint.*.bash; do \
       chmod +x "${each_file}" ; \
     done
+
+ENV DN_ENTRYPOINT_TRACE_EXECUTION=true
 
 WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 CMD [ "bash" ]
