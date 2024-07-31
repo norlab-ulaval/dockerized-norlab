@@ -11,3 +11,12 @@
 #
 # =================================================================================================
 set -e
+
+# ====DN-project internal logic====================================================================
+if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
+  n2st::print_msg "Execute ${BASH_SOURCE[0]}"
+fi
+
+# ====DN-project user defined logic================================================================
+# Add your code here
+
