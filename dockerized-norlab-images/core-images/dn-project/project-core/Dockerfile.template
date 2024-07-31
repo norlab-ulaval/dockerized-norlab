@@ -24,17 +24,6 @@ COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
 RUN source ./dn_project_core_init.bash \
     && rm ./dn_project_core_init.bash
 
-# (Priority) ToDo: refactor project_entrypoints logic a fct. Either in DN container-tools or in DN-project
-# Required by Dockerized-NorLab dn_entrypoint.init.bash
-WORKDIR /project_entrypoints
-COPY ./project_entrypoints .
-RUN for each_file in ./dn_entrypoint.*.bash; do \
-      chmod +x "${each_file}" ; \
-    done && \
-    for each_file in ./project-*/dn_entrypoint.*.bash; do \
-      chmod +x "${each_file}" ; \
-    done
-
 
 # ====User Project custom steps====================================================================
 FROM project-setup AS project-custom-docker-steps
@@ -59,8 +48,25 @@ RUN source /shell.requirements.bash \
     && rm -rf /shell.requirements.bash
 
 
-# ====Final========================================================================================
+# ====DN-project final=============================================================================
 FROM project-custom-docker-steps AS final
+
+# (Priority) ToDo: refactor project_entrypoints logic a fct. Either in DN container-tools or in DN-project
+# Note: project-develop container mounth those directories as a volume to skip rebuilding
+#       each time they are modify (see docker-compose.project.run.*.yaml). However, project-deploy
+#       and project release container will need them copied in the image for portability.
+# Note: Files copied from project_entrypoints/ directory are required by Dockerized-NorLab
+#       dn_entrypoint.init.bash and dn_entrypoint.attach.bash
+WORKDIR /project_entrypoints
+ENV MOCK_PROJECT_ENTRYPOINT_PATH=./project_entrypoints
+COPY ${MOCK_PROJECT_ENTRYPOINT_PATH} .
+# Note: DN-project path would be ".dockerized_norlab_project/configuration/project_entrypoints"
+RUN for each_file in ./dn_entrypoint.*.bash; do \
+      chmod +x "${each_file}" ; \
+    done && \
+    for each_file in ./project-*/dn_entrypoint.*.bash; do \
+      chmod +x "${each_file}" ; \
+    done
 
 WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 CMD [ "bash" ]

@@ -7,10 +7,18 @@ set -e  # exit script if any statement returns a non-true return value
 
 
 # ====DN-project user defined logic================================================================
+
+# ....Load library.................................................................................
+source /import_dockerized_norlab_container_tools.bash
+n2st::set_which_python3_version && test -n "${PYTHON3_VERSION}" || exit 1
+if [[ -n "${PYTHON3_VERSION}" ]]; then
+  echo -e "[\033[1;31mERROR\033[0m] dn_entrypoint.init.bash | Script import_dockerized_norlab_container_tools.bash failled" 1>&2
+fi
+
+# ....Execute DN-project user callback.............................................................
 # Sanity check
 test -d "/project_entrypoints" || { echo "Dir /project_entrypoints is unreachable" && exit 1 ; }
 
-# ....Execute DN-project user callback.............................................................
 if [[ -f /project_entrypoints/dn_entrypoint.global.attach.callback.bash ]]; then
   source /project_entrypoints/dn_entrypoint.global.attach.callback.bash || exit 1
 else
