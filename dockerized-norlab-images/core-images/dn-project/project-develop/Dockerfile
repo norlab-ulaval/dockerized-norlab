@@ -45,17 +45,15 @@ FROM debugging-tools AS project-specific-ros-setup
 # (Priority) ToDo: refactor the rest of the stage as a standalone script that can be executed by project-deploy
 
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
-ENV DN_PROJECT_DEVELOP_DIR=/dockerized-norlab/project/project-develop
-WORKDIR ${DN_PROJECT_DEVELOP_DIR}
-COPY ./dn_ros2_entrypoint.bash ./
-COPY ./dn_ros2_rebuild_dev_workspace.bash ./
-COPY ./dn_fetch_ros_env_variables.bash ./
-COPY ./dn_expose_container_env_variables.bash ./
+ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-develop
+WORKDIR ${DN_PROJECT_SERVICE_DIR}
+COPY dn_entrypoint.init.bash dn_entrypoint.exec.bash dn_ros2_rebuild_dev_workspace.bash dn_fetch_ros_env_variables.bash dn_expose_container_env_variables.bash ./
 
-RUN chmod +x ./dn_ros2_entrypoint.bash \
-    && chmod +x ./dn_ros2_rebuild_dev_workspace.bash \
-    && chmod +x ./dn_fetch_ros_env_variables.bash \
-    && chmod +x ./dn_expose_container_env_variables.bash
+RUN chmod +x dn_entrypoint.init.bash && \
+    chmod +x dn_entrypoint.exec.bash && \
+    chmod +x dn_ros2_rebuild_dev_workspace.bash && \
+    chmod +x dn_fetch_ros_env_variables.bash && \
+    chmod +x dn_expose_container_env_variables.bash
 
 # Create directories
 ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
@@ -63,22 +61,20 @@ WORKDIR /dn_container_env_variable/
 RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
 
 # Create soft link in the home dir
-RUN ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_ros2_entrypoint.bash ${DN_PROJECT_USER_HOME}/dn_ros2_entrypoint.bash \
-    && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_ros2_rebuild_dev_workspace.bash ${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash \
-    && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
-    && ln -s ${DN_PROJECT_DEVELOP_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
+RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_ros2_rebuild_dev_workspace.bash ${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
 
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
 
 
-FROM project-specific-ros-setup AS test
-WORKDIR /
-
-# ....Test ssh user................................................................................
+FROM project-specific-ros-setup AS test-ssh-user
 USER "${DN_SSH_SERVER_USER}"
 SHELL ["/bin/bash", "-c"]
+WORKDIR /
 
 RUN test $(whoami) == "${DN_SSH_SERVER_USER}" && test -d /home/${DN_SSH_SERVER_USER} || exit 1
 
@@ -96,9 +92,12 @@ RUN echo "===Check that ROS source is available via the ssh daemon user=========
         test -n "$(ros2 pkg list | grep -e vesc_msgs)" ; \
     }||  exit 1
 
-# ....Test project user............................................................................
+FROM project-specific-ros-setup AS test-project-user
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+WORKDIR /
 
 RUN test $(whoami) == "${DN_PROJECT_USER}" && test -d /home/${DN_PROJECT_USER} || exit 1
 
@@ -126,8 +125,6 @@ RUN { \
         test -f "${TMP_DOTENV_EXPOSE_USER_PATH}" ; \
     } || exit 1
 
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 RUN { \
         test -x "${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash" && \
         if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
@@ -137,7 +134,7 @@ RUN { \
         fi ; \
     } || exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_ros2_entrypoint.bash"
+RUN test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash"
 
 RUN test -x "${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash" && \
     bash ./dn_fetch_ros_env_variables.bash || exit 1
@@ -152,7 +149,7 @@ SHELL ["/bin/bash", "-c"]
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}
-ENTRYPOINT [ "/dockerized-norlab/project/project-develop/dn_ros2_entrypoint.bash" ]
+ENTRYPOINT [ "/dockerized-norlab/project/project-develop/dn_entrypoint.init.bash" ]
 CMD [ "bash" ]
 
 

@@ -57,7 +57,6 @@ set -e
 {
   DN_CONTAINER_TOOLS_DIR=/dockerized-norlab/dockerized-norlab-images/container-tools
   ln -s "${DN_CONTAINER_TOOLS_DIR}/dn_info.bash" "${DN_PROJECT_USER_HOME}/dn_info.bash"
-  ln -s "${DN_CONTAINER_TOOLS_DIR}/dn_install_debugging_tools.bash" "${DN_PROJECT_USER_HOME}/dn_install_debugging_tools.bash"
   ln -s "${DN_CONTAINER_TOOLS_DIR}/import_dockerized_norlab_container_tools.bash" "${DN_PROJECT_USER_HOME}/import_dockerized_norlab_container_tools.bash"
 }
 

@@ -101,6 +101,6 @@ pip3 install --no-cache-dir 'dash[testing]!=2.9.0'
 RUN pip3 install 'pytest!=8.1.1'
 
 # Note: the ssh daemon still need to be started.
-#  Curently its done by 'dn_ros2_entrypoint.bash' # (CRITICAL) ToDo: assessment
+#  Curently its done by 'dn_entrypoint.init.bash' # (CRITICAL) ToDo: assessment
 
 return 0
