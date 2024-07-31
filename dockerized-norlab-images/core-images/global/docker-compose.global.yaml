@@ -88,18 +88,18 @@ services:
     pid: host
     ipc: host   # see comment  https://stable-baselines3.readthedocs.io/en/master/guide/install.html#run-the-images-cpu-gpu
 
-  global-service-builder-config:
-    # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
-    extends:
-      service: global-service-builder-config-base-images
-    build:
-      platforms: !reset []
-
-#  # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
 #  global-service-builder-config:
+#    # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
 #    extends:
 #      service: global-service-builder-config-base-images
 #    build:
-#      platforms:
-#        - linux/arm64
-#        - linux/amd64
+#      platforms: !reset []
+
+  # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
+  global-service-builder-config:
+    extends:
+      service: global-service-builder-config-base-images
+    build:
+      platforms:
+        - linux/arm64
+        - linux/amd64
