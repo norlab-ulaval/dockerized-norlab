@@ -51,6 +51,7 @@ set -e
 {
   ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}/"
   ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
+  chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
   chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_DEV_WORKSPACE}"
 }
 # ....Simlink and change ownership of DN container-tools...........................................
