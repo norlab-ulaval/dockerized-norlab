@@ -3,6 +3,9 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS debugging-tools
 
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
 RUN echo "Pre-condition checks" && { \
       test $(whoami) == "root" &&  \
       test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
