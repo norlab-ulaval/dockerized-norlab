@@ -88,20 +88,25 @@ RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-deploy
 WORKDIR ${DN_PROJECT_SERVICE_DIR}
-COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash dn_ros2_rebuild_dev_workspace.bash dn_fetch_ros_env_variables.bash ./
+COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash ./
+
+# ToDo: refactor project-develop/Dockerfile the project-specific-ros-setup stage as a standalone
+#script that can be executed by project-deploy (ref task NMO-558)
+
+# ToDo: Move project-develop/dn_ros2_rebuild_dev_workspace.bash and
+# project-develop/dn_fetch_ros_env_variables.bash to a dn-project wide dir so that its available on
+# all dn-project service (ref task NMO-558)
 
 RUN chmod +x dn_entrypoint.init.bash && \
-    chmod +x dn_entrypoint.attach.bash && \
-    chmod +x dn_ros2_rebuild_dev_workspace.bash && \
-    chmod +x dn_fetch_ros_env_variables.bash
+    chmod +x dn_entrypoint.attach.bash
 
+# Create directories
 ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
 WORKDIR ${DN_PROJECT_USER_HOME}
 
 # Create soft link in the home dir
 RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
-    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_ros2_rebuild_dev_workspace.bash ${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash \
-    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.attach.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}

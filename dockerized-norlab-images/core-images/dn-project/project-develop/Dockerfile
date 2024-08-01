@@ -45,7 +45,13 @@ RUN chown -R ${DN_SSH_SERVER_USER} /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_
 # ====Project specific ros setup===================================================================
 FROM debugging-tools AS project-specific-ros-setup
 
-# (Priority) ToDo: refactor the rest of the stage as a standalone script that can be executed by project-deploy
+# ToDo: refactor the rest of the stage as a standalone script that can be executed
+# by project-deploy (ref task NMO-558)
+
+# ToDo: Move project-develop/dn_ros2_rebuild_dev_workspace.bash and
+# project-develop/dn_fetch_ros_env_variables.bash to a dn-project wide dir so that its available on
+# all dn-project service (ref task NMO-558)
+
 
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-develop
@@ -60,11 +66,13 @@ RUN chmod +x dn_entrypoint.init.bash && \
 
 # Create directories
 ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
+WORKDIR ${DN_PROJECT_USER_HOME}
 WORKDIR /dn_container_env_variable/
-RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
 
 # Create soft link in the home dir
-RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
+RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.attach.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_ros2_rebuild_dev_workspace.bash ${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
@@ -72,6 +80,7 @@ RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HO
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH}
+RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE}
 
 
 FROM project-specific-ros-setup AS test-ssh-user

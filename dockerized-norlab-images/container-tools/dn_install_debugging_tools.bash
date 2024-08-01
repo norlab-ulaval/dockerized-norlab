@@ -43,12 +43,15 @@ useradd -m "${DN_SSH_SERVER_USER}" \
 # (CRITICAL) ToDo: assessment >> assigning project user primary group to pycharm-debugger work (ref task NMO-548)
 usermod --gid "${DN_PROJECT_GID:?err}" "${DN_SSH_SERVER_USER}"
 
+echo "${DN_SSH_SERVER_USER} ALL=(root) NOPASSWD:ALL" >/etc/sudoers.d/"${DN_SSH_SERVER_USER}"
+chmod 0440 "/etc/sudoers.d/${DN_SSH_SERVER_USER}"
+mkdir -p "/home/${DN_SSH_SERVER_USER}"
+chown -R "${DN_SSH_SERVER_USER}":"${DN_PROJECT_GID}" "/home/${DN_SSH_SERVER_USER}"
+
 # Add the 'video' groups to new user as it's required for GPU access.
 # (not a problem on norlab-og but mandatory on Jetson device)
 # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
 usermod -a -G video,sudo "${DN_SSH_SERVER_USER}"
-# (CRITICAL) ToDo: assessment >> can DN test logic integration work without giving pycharm-debugger the sudo group (ref task NMO-548)
-#usermod -a -G video "${DN_SSH_SERVER_USER}"
 
 # ...root config...................................................................................
 # user:newpassword
