@@ -25,8 +25,10 @@ ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
 ENV DN_PROJECT_PATH=${DN_DEV_WORKSPACE:?'Build argument needs to be set and non-empty.'}/src/${DN_PROJECT_GIT_NAME}
 
 COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
-RUN source ./dn_project_core_init.bash \
-    && rm -f ./dn_project_core_init.bash
+RUN source ./dn_project_core_init.bash && \
+    rm ./dn_project_core_init.bash && \
+    test -d ${DN_PROJECT_USER_HOME} && \
+    test -d ${DN_PROJECT_PATH}
 
 
 
