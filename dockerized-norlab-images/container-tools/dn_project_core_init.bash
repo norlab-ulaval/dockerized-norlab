@@ -100,4 +100,5 @@ else
   pushd "$(pwd)"
   dn::initialize_dockerized_norlab_project
   popd
+  exit 0
 fi

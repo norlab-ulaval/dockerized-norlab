@@ -31,7 +31,6 @@ RUN source ./dn_project_core_init.bash && \
     test -d ${DN_PROJECT_PATH}
 
 
-
 # ====User Project custom steps====================================================================
 FROM project-setup AS project-custom-docker-steps
 

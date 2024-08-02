@@ -11,8 +11,8 @@ RUN echo "Pre-condition checks" && { \
     test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
     test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
     test -d ${DN_PROJECT_USER_HOME} && \
-    test -d ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
-    test -d ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} ; \
+    test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_PATH} ; \
     } || exit 1
 
 # Set python to print stdin/sderr in real-time for dev/debug
@@ -82,9 +82,19 @@ RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_va
 # ....Project directories ownership and simlink....................................................
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
-RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
-RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH}
-RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE}
+RUN <<EOF
+{
+  chown -R $(id -u ${DN_PROJECT_USER:?err}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME:?err}
+  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
+  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE:?err}
+} || {
+  pwd
+  tree -agu
+  tree -agu ${DN_PROJECT_USER_HOME}
+  tree -agu ${DN_DEV_WORKSPACE}
+  exit 1
+}
+EOF
 
 
 # (Priority) ToDo: Was moved in dn_project_core_init.bash. On task NMO-548 end >> delete next bloc ↓↓

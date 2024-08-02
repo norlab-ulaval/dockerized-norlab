@@ -14,7 +14,8 @@ RUN echo "Pre-condition checks" && { \
     test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
     test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
     test -d ${DN_PROJECT_USER_HOME} && \
-    test -d ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_PATH} && \
     test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
     test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
     test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ; \
@@ -27,7 +28,7 @@ ENV PYTHONUNBUFFERED=0
 
 # ....Clone or checkout project src code...........................................................
 WORKDIR ${DN_DEV_WORKSPACE}/src
-RUN <<EOT
+RUN <<EOF
 echo "\nCheckout ${DN_PROJECT_GIT_NAME} at ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
 
 echo -e "\nLog relevant debug information on failure\n"
@@ -48,9 +49,12 @@ else
   git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
 fi
 
+# Sanity check
+test -d ${DN_PROJECT_PATH}
+
 echo -e "\nLog relevant debug information on failure\n"
 tree -L 2 -aug ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-EOT
+EOF
 
 # ....Project spoecific ROS setup..................................................................
 
@@ -117,9 +121,19 @@ RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HO
 # ....Project directories ownership and simlink....................................................
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
-RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
-RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH}
-RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE}
+RUN <<EOF
+{
+  chown -R $(id -u ${DN_PROJECT_USER:?err}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME:?err}
+  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
+  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE:?err}
+} || {
+  pwd
+  tree -agu
+  tree -agu ${DN_PROJECT_USER_HOME}
+  tree -agu ${DN_DEV_WORKSPACE}
+  exit 1
+}
+EOF
 
 # (Priority) ToDo: Was moved in dn_project_core_init.bash. On task NMO-548 end >> delete next bloc ↓↓
 ## (Priority) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
