@@ -14,18 +14,21 @@ ENV DN_PROJECT_GIT_NAME=${DN_PROJECT_GIT_NAME:?'Build argument needs to be set a
 ARG DN_PROJECT_GIT_DOMAIN
 ENV DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN:?'Build argument needs to be set and non-empty.'}
 
-ENV DN_PROJECT_PATH=${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-
 ARG DN_PROJECT_USER
-ENV DN_PROJECT_USER=${DN_PROJECT_USER:?'Build argument needs to be set and non-empty.'}
 ARG DN_PROJECT_UID
-ENV DN_PROJECT_UID=${DN_PROJECT_UID:?'Build argument needs to be set and non-empty.'}
 ARG DN_PROJECT_GID
+ENV DN_PROJECT_USER=${DN_PROJECT_USER:?'Build argument needs to be set and non-empty.'}
+ENV DN_PROJECT_UID=${DN_PROJECT_UID:?'Build argument needs to be set and non-empty.'}
 ENV DN_PROJECT_GID=${DN_PROJECT_GID:?'Build argument needs to be set and non-empty.'}
+ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
+
+ENV DN_PROJECT_PATH=${DN_DEV_WORKSPACE:?'Build argument needs to be set and non-empty.'}/src/${DN_PROJECT_GIT_NAME}
+WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 
 COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
 RUN source ./dn_project_core_init.bash \
     && rm -f ./dn_project_core_init.bash
+
 
 
 # ====User Project custom steps====================================================================

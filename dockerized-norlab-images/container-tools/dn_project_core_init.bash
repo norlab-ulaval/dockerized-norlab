@@ -22,13 +22,13 @@ set -e
 # ....Check pre-conditions.........................................................................
 {
   test -n "${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'}"
+  test -n "${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'}"
   test -n "${DN_PROJECT_UID:?'Env variable need to be set and non-empty.'}"
   test -n "${DN_PROJECT_GID:?'Env variable need to be set and non-empty.'}"
   test -n "${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'}"
   test -n "${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'}"
 }
 # ....Create new user and home.....................................................................
-DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
 
 # Inspired from https://roboticseabass.com/2023/07/09/updated-guide-docker-and-ros2/
 {

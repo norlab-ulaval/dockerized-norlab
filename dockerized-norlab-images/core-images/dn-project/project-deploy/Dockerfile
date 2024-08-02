@@ -9,14 +9,15 @@ ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 ARG DN_PROJECT_DEPLOY_REPO_BRANCH
 ENV DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
 
-RUN echo "Pre-condition checks" && {  \
-        test $(whoami) == "root" &&  \
-        test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
-        test -d /home/${DN_PROJECT_USER} && \
-        test -d ${DN_PROJECT_PATH} && \
-        test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
-        test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
-        test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ; \
+RUN echo "Pre-condition checks" && { \
+    test $(whoami) == "root" &&  \
+    test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_USER_HOME} && \
+    test -d ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ; \
     } || exit 1
 
 
@@ -104,9 +105,10 @@ COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash ./
 RUN chmod +x dn_entrypoint.init.bash && \
     chmod +x dn_entrypoint.attach.bash
 
-# Create directories
-ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
-WORKDIR ${DN_PROJECT_USER_HOME}
+# (Priority) ToDo: refactor logic higher. On task end >> delete next bloc ↓↓
+## Create directories
+#ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
+#WORKDIR ${DN_PROJECT_USER_HOME}
 
 # Create soft link in the home dir
 RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \

@@ -7,10 +7,12 @@ ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
 RUN echo "Pre-condition checks" && { \
-      test $(whoami) == "root" &&  \
-      test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
-      test -d /home/${DN_PROJECT_USER} && \
-      test -d ${DN_PROJECT_PATH} ; \
+    test $(whoami) == "root" &&  \
+    test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_USER_HOME} && \
+    test -d ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} ; \
     } || exit 1
 
 # Set python to print stdin/sderr in real-time for dev/debug
@@ -55,7 +57,6 @@ FROM debugging-tools AS project-specific-ros-setup
 # project-develop/dn_fetch_ros_env_variables.bash to a dn-project wide dir so that its available on
 # all dn-project service (ref task NMO-558)
 
-
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-develop
 WORKDIR ${DN_PROJECT_SERVICE_DIR}
@@ -67,9 +68,7 @@ RUN chmod +x dn_entrypoint.init.bash && \
     chmod +x dn_fetch_ros_env_variables.bash && \
     chmod +x dn_expose_container_env_variables.bash
 
-# Create directories
-ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
-WORKDIR ${DN_PROJECT_USER_HOME}
+# Create required directories
 WORKDIR /dn_container_env_variable/
 
 # Create soft link in the home dir
