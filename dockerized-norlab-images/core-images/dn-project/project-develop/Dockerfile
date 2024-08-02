@@ -40,7 +40,7 @@ RUN source ./dn_install_debugging_tools.bash \
     && rm -f ./dn_install_debugging_tools.bash \
     && test -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server || exit 1
 
-## Create the remote interpreter directory
+## Create the pycharm-debugger user directory
 #WORKDIR /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}
 #RUN chown -R ${DN_SSH_SERVER_USER} /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME}/
 
@@ -86,9 +86,11 @@ RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJEC
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH}
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE}
 
-# (CRITICAL) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
-RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
-    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
+
+# (Priority) ToDo: Was moved in dn_project_core_init.bash. On task NMO-548 end >> delete next bloc ↓↓
+## (Priority) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
+#RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
+#    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
 
 FROM project-specific-ros-setup AS test-ssh-user
 USER "${DN_SSH_SERVER_USER}"

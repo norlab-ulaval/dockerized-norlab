@@ -8,6 +8,7 @@
 #
 # Globals:
 #   Read DN_PROJECT_USER
+#   Read DN_PROJECT_USER_HOME
 #   Read DN_PROJECT_UID
 #   Read DN_PROJECT_GID
 #   Read DN_PROJECT_PATH
@@ -27,6 +28,7 @@ set -e
   test -n "${DN_PROJECT_GID:?'Env variable need to be set and non-empty.'}"
   test -n "${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'}"
   test -n "${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'}"
+  test -n "${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'}"
 }
 # ....Create new user and home.....................................................................
 
@@ -45,13 +47,16 @@ set -e
   usermod -a -G video,sudo "${DN_PROJECT_USER}"
 }
 
-# ....Simlink and change ownership of project dev workspace........................................
-#{
-  # (CRITICAL) ToDo: assessment >> ownership change should probably go at the last project-develop/Dockerfile or at the dn_entrypoint.init.bash (ref task NMO-548)
-#  mkdir -p "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
-#  chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
-#  chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_DEV_WORKSPACE}"
-#}
+# ....Setup project dev workspace..................................................................
+{
+  mkdir -p "${DN_PROJECT_PATH}"
+  chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_PROJECT_PATH}"
+
+  # (Priority) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
+  # Add useful simlink in user root dir
+  ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}"
+  ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_GIT_NAME}"
+}
 
 # ....Simlink and change ownership of DN container-tools...........................................
 {
@@ -77,4 +82,4 @@ set -e
   echo ""
 ) >>"${DN_PROJECT_USER_HOME}/.bashrc"
 
-exit 0
+return 0

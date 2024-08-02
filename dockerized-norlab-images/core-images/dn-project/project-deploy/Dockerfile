@@ -121,9 +121,10 @@ RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJEC
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH}
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE}
 
-# (CRITICAL) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
-RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
-    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
+# (Priority) ToDo: Was moved in dn_project_core_init.bash. On task NMO-548 end >> delete next bloc ↓↓
+## (Priority) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
+#RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
+#    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
 
 
 FROM package-project-src-code AS test
