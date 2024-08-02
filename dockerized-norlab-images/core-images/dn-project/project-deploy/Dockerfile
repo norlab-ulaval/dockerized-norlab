@@ -13,6 +13,7 @@ RUN echo "Pre-condition checks" && {  \
         test $(whoami) == "root" &&  \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
         test -d /home/${DN_PROJECT_USER} && \
+        test -d ${DN_PROJECT_PATH} && \
         test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ; \
@@ -23,6 +24,7 @@ RUN echo "(WARNING) PYTHONUNBUFFERED env variable will be set to 0 for deploymen
 # Note: Set python to NOT print stdin/sderr in real-time as it affect overall performances
 ENV PYTHONUNBUFFERED=0
 
+# ....Clone or checkout project src code...........................................................
 WORKDIR ${DN_DEV_WORKSPACE}/src
 RUN <<EOT
 echo "\nCheckout ${DN_PROJECT_GIT_NAME} at ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
@@ -45,11 +47,11 @@ else
   git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
 fi
 
-chown -R ${DN_PROJECT_USER} ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-
 echo -e "\nLog relevant debug information on failure\n"
 tree -L 2 -aug ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 EOT
+
+# ....Project spoecific ROS setup..................................................................
 
 WORKDIR ${DN_DEV_WORKSPACE}
 RUN rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
@@ -85,6 +87,8 @@ RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
     && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
     && colcon build ${COLCON_FLAGS[@]}
 
+# ....DN and DN-project entrypoints and utilities................................................
+
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-deploy
 WORKDIR ${DN_PROJECT_SERVICE_DIR}
@@ -107,6 +111,8 @@ WORKDIR ${DN_PROJECT_USER_HOME}
 # Create soft link in the home dir
 RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.attach.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash
+
+# ....Project directories ownership and simlink....................................................
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
@@ -140,7 +146,13 @@ RUN echo "===Check that ROS source is available in DN_PROJECT_USER user=========
         test -n "$(ros2 pkg list | grep -e vesc_msgs)" ; \
     } ||  exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash"
+RUN { \
+    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash" && \
+    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash" && \
+    test -d "${DN_PROJECT_USER_HOME}" && \
+    test -d "${DN_PROJECT_PATH}" && \
+    test -d "${DN_DEV_WORKSPACE}" ; \
+    } || exit 1
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "" ]

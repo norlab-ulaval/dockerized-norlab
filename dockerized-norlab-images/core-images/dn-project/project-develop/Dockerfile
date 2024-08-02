@@ -9,7 +9,8 @@ ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 RUN echo "Pre-condition checks" && { \
       test $(whoami) == "root" &&  \
       test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
-      test -d /home/${DN_PROJECT_USER} ; \
+      test -d /home/${DN_PROJECT_USER} && \
+      test -d ${DN_PROJECT_PATH} ; \
     } || exit 1
 
 # Set python to print stdin/sderr in real-time for dev/debug
@@ -45,6 +46,8 @@ RUN source ./dn_install_debugging_tools.bash \
 # ====Project specific ros setup===================================================================
 FROM debugging-tools AS project-specific-ros-setup
 
+# ....DN and DN-project entrypoints and utilities................................................
+
 # ToDo: refactor the rest of the stage as a standalone script that can be executed
 # by project-deploy (ref task NMO-558)
 
@@ -77,6 +80,7 @@ RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_va
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
 
+# ....Project directories ownership and simlink....................................................
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
@@ -150,10 +154,19 @@ RUN { \
         fi ; \
     } || exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash"
+RUN { \
+    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash" && \
+    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash" && \
+    test -d "${DN_PROJECT_USER_HOME}" && \
+    test -d "${DN_PROJECT_PATH}" && \
+    test -d "${DN_DEV_WORKSPACE}" ; \
+    } || exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash" && \
-    bash ./dn_fetch_ros_env_variables.bash || exit 1
+
+RUN { \
+    test -x "${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash" && \
+    bash ./dn_fetch_ros_env_variables.bash ; \
+    } || exit 1
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "" ]
