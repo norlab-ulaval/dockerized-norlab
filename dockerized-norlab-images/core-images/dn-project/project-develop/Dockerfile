@@ -34,7 +34,7 @@ WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 RUN source ./dn_install_debugging_tools.bash \
-    && rm ./dn_install_debugging_tools.bash \
+    && rm -f ./dn_install_debugging_tools.bash \
     && test -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server || exit 1
 
 # Create the remote interpreter directory
@@ -77,11 +77,15 @@ RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_va
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
 
+
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH}
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE}
 
+# (CRITICAL) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
+RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
+    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
 
 FROM project-specific-ros-setup AS test-ssh-user
 USER "${DN_SSH_SERVER_USER}"

@@ -25,7 +25,7 @@ ENV DN_PROJECT_GID=${DN_PROJECT_GID:?'Build argument needs to be set and non-emp
 
 COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
 RUN source ./dn_project_core_init.bash \
-    && rm ./dn_project_core_init.bash
+    && rm -f ./dn_project_core_init.bash
 
 
 # ====User Project custom steps====================================================================
@@ -42,13 +42,13 @@ RUN pip3 install --verbose \
     -r /python.requirements.txt \
 #    --no-cache-dir \
 #    --upgrade \
-    && rm -rf /python.requirements.txtÎ
+    && rm -f /python.requirements.txtÎ
 
 
 # (Priority) ToDo: refactor to dn_project_core_init.bash (ref task RLRP-213 and NMO-548)
 COPY ./project_requirements/shell.requirements.bash /shell.requirements.bash
 RUN source /shell.requirements.bash \
-    && rm -rf /shell.requirements.bash
+    && rm -f /shell.requirements.bash
 
 
 # ====DN-project final=============================================================================

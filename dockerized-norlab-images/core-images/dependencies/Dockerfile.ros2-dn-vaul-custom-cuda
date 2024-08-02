@@ -90,7 +90,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && curl -L https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip -o opencv_contrib-${OPENCV_VERSION}.zip \
         && unzip opencv-${OPENCV_VERSION}.zip \
         && unzip opencv_contrib-${OPENCV_VERSION}.zip \
-        && rm opencv-${OPENCV_VERSION}.zip opencv_contrib-${OPENCV_VERSION}.zip \
+        && rm -f opencv-${OPENCV_VERSION}.zip opencv_contrib-${OPENCV_VERSION}.zip \
         && n2st::teamcity_service_msg_blockClosed "Download opencv" ; \
       fi
 

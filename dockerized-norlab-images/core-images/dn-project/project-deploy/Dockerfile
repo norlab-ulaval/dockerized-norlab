@@ -110,8 +110,12 @@ RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HO
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
 RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
-RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
+RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH}
+RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE}
 
+# (CRITICAL) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
+RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
+    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
 
 
 FROM package-project-src-code AS test

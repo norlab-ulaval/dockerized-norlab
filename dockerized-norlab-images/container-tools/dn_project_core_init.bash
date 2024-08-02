@@ -44,18 +44,15 @@ DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
   # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
   usermod -a -G video,sudo "${DN_PROJECT_USER}"
 }
+
 # ....Simlink and change ownership of project dev workspace........................................
-{
-  mkdir -p "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
-
-  ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}/"
-  ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
-
-  # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
+#{
   # (CRITICAL) ToDo: assessment >> ownership change should probably go at the last project-develop/Dockerfile or at the dn_entrypoint.init.bash (ref task NMO-548)
-  chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
-  chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_DEV_WORKSPACE}"
-}
+#  mkdir -p "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
+#  chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}/"
+#  chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_DEV_WORKSPACE}"
+#}
+
 # ....Simlink and change ownership of DN container-tools...........................................
 {
   DN_CONTAINER_TOOLS_DIR=/dockerized-norlab/dockerized-norlab-images/container-tools
