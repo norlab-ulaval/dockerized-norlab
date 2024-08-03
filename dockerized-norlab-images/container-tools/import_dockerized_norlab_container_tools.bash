@@ -21,8 +21,7 @@ MSG_ERROR_FORMAT="\033[1;31m"
 MSG_END_FORMAT="\033[0m"
 
 function dn::source_lib(){
-  local TMP_CWD
-  TMP_CWD=$(pwd)
+  pushd "$(pwd)" >/dev/null || exit 1
 
   # Note: can handle both sourcing cases
   #   i.e. from within a script or from an interactive terminal session
@@ -49,7 +48,7 @@ function dn::source_lib(){
   # Set reference that the DN tools where imported with this script
   export DN_IMPORTED=true
 
-  cd "${TMP_CWD}"
+  popd >/dev/null || exit 1
 }
 
 # ::::Main:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

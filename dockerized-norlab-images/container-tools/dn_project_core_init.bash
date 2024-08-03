@@ -97,8 +97,8 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  pushd "$(pwd)"
+  pushd "$(pwd)" >/dev/null || exit 1
   dn::initialize_dockerized_norlab_project
-  popd
+  popd >/dev/null || exit 1
   exit 0
 fi

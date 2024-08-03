@@ -48,14 +48,15 @@ set +o allexport
 # ....Helper function...............................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
-TMP_CWD=$(pwd)
+
+pushd "$(pwd)" >/dev/null || exit 1
 # ToDo: refactor > use N2ST_PATH set somewhere
-cd ./utilities/norlab-shell-script-tools/src/function_library
+cd ./utilities/norlab-shell-script-tools/src/function_library || exit 1
 source ./prompt_utilities.bash
 source ./terminal_splash.bash
-cd "$TMP_CWD"
-SP="    "
+popd >/dev/null || exit 1
 
+SP="    "
 function print_help_in_terminal() {
   echo -e "\$ ${0} [<optional argument>] <THE_CONTAINER_NAME>
 
