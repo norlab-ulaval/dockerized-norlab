@@ -11,7 +11,7 @@
 #set -e
 
 # ....Project root logic...........................................................................................
-TMP_CWD=$(pwd)
+pushd "$(pwd)" >/dev/null || exit 1
 
 if [[ "$(basename $(pwd))" = install_script ]]; then
   cd ../..
@@ -39,12 +39,12 @@ set +o allexport
 
 # ....Helper function...............................................................................
 
-TMP_CWD=$(pwd)
+pushd "$(pwd)" >/dev/null || exit 1
 # ToDo: refactor > use N2ST_PATH set somewhere
-cd ./utilities/norlab-shell-script-tools/src/function_library
+cd ./utilities/norlab-shell-script-tools/src/function_library || exit 1
 source ./prompt_utilities.bash
 source ./terminal_splash.bash
-cd "$TMP_CWD"
+popd >/dev/null || exit 1
 
 # ====Begin========================================================================================================
 n2st::print_formated_script_header 'install_and_setup_docker_tools.bash' '='
@@ -57,9 +57,10 @@ echo
 read -n 1 -r -a INPUT
 
 if [[ ${INPUT} == "Y" ]] || [[ ${INPUT} == "y" ]]; then
-  cd .utilities/norlab-shell-script-tools/src/utility_scripts/
+  pushd "$(pwd)" >/dev/null || exit 1
+  cd .utilities/norlab-shell-script-tools/src/utility_scripts/ || exit 1
   bash install_docker_tools.bash
-  cd "$TMP_CWD"
+  popd >/dev/null || exit 1
 fi
 unset INPUT
 echo
@@ -136,10 +137,9 @@ if [[ ${INPUT} == "Y" ]] || [[ ${INPUT} == "y" ]]; then
   docker buildx ls
   echo
 
-  cd "${TMP_CWD}"
 fi
 
 
 n2st::print_formated_script_footer 'install_and_setup_docker_tools.bash' '='
 # ====Teardown=====================================================================================================
-cd "${TMP_CWD}"
+popd >/dev/null || exit 1

@@ -16,23 +16,22 @@ if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
   n2st::print_msg "Execute $0"
 fi
 
-
 # ====DN-project user defined logic================================================================
 
 # ....Execute DN-project user callback.............................................................
 # Sanity check
 test -d "/project_entrypoints" || { echo "Dir /project_entrypoints is unreachable" && exit 1 ; }
 
-if [[ -f /project_entrypoints/dn_entrypoint.global.init.callback.bash ]]; then
-  source /project_entrypoints/dn_entrypoint.global.init.callback.bash || exit 1
+if [[ -f /project_entrypoints/dn_entrypoint.global.attach.callback.bash ]]; then
+  source /project_entrypoints/dn_entrypoint.global.attach.callback.bash || exit 1
 else
-  echo "dn_entrypoint.global.init.callback.bash unavailable"
+  echo "dn_entrypoint.global.attach.callback.bash unavailable"
 fi
 
-if [[ -f /project_entrypoints/project-develop/dn_entrypoint.init.callback.bash ]]; then
-  source /project_entrypoints/project-develop/dn_entrypoint.init.callback.bash || exit 1
+if [[ -f /project_entrypoints/project-develop/dn_entrypoint.attach.callback.bash ]]; then
+  source /project_entrypoints/project-develop/dn_entrypoint.attach.callback.bash || exit 1
 else
-  echo "project-develop/dn_entrypoint.init.callback.bash unavailable"
+  echo "project-develop/dn_entrypoint.attach.callback.bash unavailable"
 fi
 
 # ....Release......................................................................................

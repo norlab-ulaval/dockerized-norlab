@@ -1,6 +1,5 @@
 #!/bin/bash
-
-TMP_CWD=$(pwd)
+pushd "$(pwd)" >/dev/null || exit 1
 
 PCK_VERSION=$(pip3 list --format freeze)
 SP="    "
@@ -90,5 +89,6 @@ ${SP} $ dn_expose_container_env_variables
 \033[0m "
 n2st::draw_horizontal_line_across_the_terminal_window '.'
 
-# ....Teardown.....................................................................................
-cd $TMP_CWD || exit 1
+# ====Teardown=====================================================================================
+popd >/dev/null || exit 1
+

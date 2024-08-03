@@ -47,7 +47,7 @@ RUN git clone https://github.com/norlab-ulaval/mapper_config_template.git
 WORKDIR ${DN_DEV_WORKSPACE}
 RUN wget -O demo.zip "http://norlab.s3.valeria.science/demo.zip?AWSAccessKeyId=XMBLP3A0338XN5LASKV2&Expires=2290342833&Signature=NXn1f%2BeJ7NptrzUkNzHtEvdicjc%3D" \
     && unzip demo.zip \
-    && rm demo.zip
+    && rm -f demo.zip
 
 # ....Build perception 3D ROS packages.............................................................
 

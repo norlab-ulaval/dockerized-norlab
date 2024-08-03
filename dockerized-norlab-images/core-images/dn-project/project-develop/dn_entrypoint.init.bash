@@ -4,6 +4,16 @@ set -e  # exit script if any statement returns a non-true return value
 # (CRITICAL) ToDo: NMO-557 test: add missing dn_entrypoint.*.bash unit-tests
 
 # ====DN-project internal logic====================================================================
+# ....Load library.................................................................................
+source /import_dockerized_norlab_container_tools.bash
+n2st::set_which_python3_version && test -n "${PYTHON3_VERSION}" || exit 1
+if [[ -z "${PYTHON3_VERSION}" ]]; then
+  echo -e "[\033[1;31mERROR\033[0m] $0 | Script import_dockerized_norlab_container_tools.bash failled" 1>&2
+fi
+
+if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
+  n2st::print_msg "Execute $0"
+fi
 
 # ....SSH daemon...................................................................................
 # Check if sshd is running
@@ -23,10 +33,12 @@ else
 fi
 
 # ====DN-project user defined logic================================================================
+
+
+# ....Execute DN-project user callback.............................................................
 # Sanity check
 test -d "/project_entrypoints" || { echo "Dir /project_entrypoints is unreachable" && exit 1 ; }
 
-# ....Execute DN-project user callback.............................................................
 if [[ -f /project_entrypoints/dn_entrypoint.global.init.callback.bash ]]; then
   source /project_entrypoints/dn_entrypoint.global.init.callback.bash || exit 1
 else

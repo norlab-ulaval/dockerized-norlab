@@ -3,16 +3,22 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS package-project-src-code
 
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
 ARG DN_PROJECT_DEPLOY_REPO_BRANCH
 ENV DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
 
-RUN echo "Pre-condition checks" && {  \
-        test $(whoami) == "root" &&  \
-        test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
-        test -d /home/${DN_PROJECT_USER} && \
-        test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
-        test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
-        test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ; \
+RUN echo "Pre-condition checks" && { \
+    test $(whoami) == "root" &&  \
+    test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_USER_HOME} && \
+    test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_PATH} && \
+    test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ; \
     } || exit 1
 
 
@@ -20,8 +26,9 @@ RUN echo "(WARNING) PYTHONUNBUFFERED env variable will be set to 0 for deploymen
 # Note: Set python to NOT print stdin/sderr in real-time as it affect overall performances
 ENV PYTHONUNBUFFERED=0
 
+# ....Clone or checkout project src code...........................................................
 WORKDIR ${DN_DEV_WORKSPACE}/src
-RUN <<EOT
+RUN <<EOF
 echo "\nCheckout ${DN_PROJECT_GIT_NAME} at ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
 
 echo -e "\nLog relevant debug information on failure\n"
@@ -42,11 +49,14 @@ else
   git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
 fi
 
-chown -R ${DN_PROJECT_USER} ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+# Sanity check
+test -d ${DN_PROJECT_PATH}
 
 echo -e "\nLog relevant debug information on failure\n"
 tree -L 2 -aug ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-EOT
+EOF
+
+# ....Project spoecific ROS setup..................................................................
 
 WORKDIR ${DN_DEV_WORKSPACE}
 RUN rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
@@ -82,18 +92,53 @@ RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
     && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
     && colcon build ${COLCON_FLAGS[@]}
 
+# ....DN and DN-project entrypoints and utilities................................................
+
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-deploy
 WORKDIR ${DN_PROJECT_SERVICE_DIR}
-COPY dn_entrypoint.init.bash dn_entrypoint.exec.bash ./
-RUN chmod +x dn_entrypoint.init.bash && \
-    chmod +x dn_entrypoint.exec.bash
+COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash ./
 
-ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
-WORKDIR ${DN_PROJECT_USER_HOME}
+# ToDo: refactor project-develop/Dockerfile the project-specific-ros-setup stage as a standalone
+#script that can be executed by project-deploy (ref task NMO-558)
+
+# ToDo: Move project-develop/dn_ros2_rebuild_dev_workspace.bash and
+# project-develop/dn_fetch_ros_env_variables.bash to a dn-project wide dir so that its available on
+# all dn-project service (ref task NMO-558)
+
+RUN chmod +x dn_entrypoint.init.bash && \
+    chmod +x dn_entrypoint.attach.bash
+
+# (Priority) ToDo: refactor logic higher. On task end >> delete next bloc ↓↓
+## Create directories
+#ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
+#WORKDIR ${DN_PROJECT_USER_HOME}
 
 # Create soft link in the home dir
-RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash
+RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.attach.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash
+
+# ....Project directories ownership and simlink....................................................
+
+# (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
+RUN <<EOF
+{
+  chown -R $(id -u ${DN_PROJECT_USER:?err}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME:?err}
+  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
+  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE:?err}
+} || {
+  pwd
+  tree -agu
+  tree -agu ${DN_PROJECT_USER_HOME}
+  tree -agu ${DN_DEV_WORKSPACE}
+  exit 1
+}
+EOF
+
+# (Priority) ToDo: Was moved in dn_project_core_init.bash. On task NMO-548 end >> delete next bloc ↓↓
+## (Priority) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
+#RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
+#    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
 
 
 FROM package-project-src-code AS test
@@ -118,7 +163,13 @@ RUN echo "===Check that ROS source is available in DN_PROJECT_USER user=========
         test -n "$(ros2 pkg list | grep -e vesc_msgs)" ; \
     } ||  exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash"
+RUN { \
+    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash" && \
+    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash" && \
+    test -d "${DN_PROJECT_USER_HOME}" && \
+    test -d "${DN_PROJECT_PATH}" && \
+    test -d "${DN_DEV_WORKSPACE}" ; \
+    } || exit 1
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "" ]
@@ -127,11 +178,6 @@ FROM package-project-src-code AS final
 
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
-
-
-# (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-# This logic should replace git clone
-#COPY --chown=${DN_PROJECT_USER} ../../ ${DN_PROJECT_PATH:?err}/
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}

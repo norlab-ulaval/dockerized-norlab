@@ -3,10 +3,16 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS debugging-tools
 
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
 RUN echo "Pre-condition checks" && { \
-      test $(whoami) == "root" &&  \
-      test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
-      test -d /home/${DN_PROJECT_USER} ; \
+    test $(whoami) == "root" &&  \
+    test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
+    test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_USER_HOME} && \
+    test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+    test -d ${DN_PROJECT_PATH} ; \
     } || exit 1
 
 # Set python to print stdin/sderr in real-time for dev/debug
@@ -31,45 +37,70 @@ WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 RUN source ./dn_install_debugging_tools.bash \
-    && rm ./dn_install_debugging_tools.bash \
+    && rm -f ./dn_install_debugging_tools.bash \
     && test -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server || exit 1
 
-# Create the remote interpreter directory
-WORKDIR /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}
-RUN chown -R ${DN_SSH_SERVER_USER} /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME}/
+## Create the pycharm-debugger user directory
+#WORKDIR /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}
+#RUN chown -R ${DN_SSH_SERVER_USER} /home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME}/
 
 
 # ====Project specific ros setup===================================================================
 FROM debugging-tools AS project-specific-ros-setup
 
-# (Priority) ToDo: refactor the rest of the stage as a standalone script that can be executed by project-deploy
+# ....DN and DN-project entrypoints and utilities................................................
+
+# ToDo: refactor the rest of the stage as a standalone script that can be executed
+# by project-deploy (ref task NMO-558)
+
+# ToDo: Move project-develop/dn_ros2_rebuild_dev_workspace.bash and
+# project-develop/dn_fetch_ros_env_variables.bash to a dn-project wide dir so that its available on
+# all dn-project service (ref task NMO-558)
 
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-develop
 WORKDIR ${DN_PROJECT_SERVICE_DIR}
-COPY dn_entrypoint.init.bash dn_entrypoint.exec.bash dn_ros2_rebuild_dev_workspace.bash dn_fetch_ros_env_variables.bash dn_expose_container_env_variables.bash ./
+COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash dn_ros2_rebuild_dev_workspace.bash dn_fetch_ros_env_variables.bash dn_expose_container_env_variables.bash ./
 
 RUN chmod +x dn_entrypoint.init.bash && \
-    chmod +x dn_entrypoint.exec.bash && \
+    chmod +x dn_entrypoint.attach.bash && \
     chmod +x dn_ros2_rebuild_dev_workspace.bash && \
     chmod +x dn_fetch_ros_env_variables.bash && \
     chmod +x dn_expose_container_env_variables.bash
 
-# Create directories
-ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
+# Create required directories
 WORKDIR /dn_container_env_variable/
-RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
 
 # Create soft link in the home dir
-RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
+RUN ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
+    && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.attach.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_ros2_rebuild_dev_workspace.bash ${DN_PROJECT_USER_HOME}/dn_ros2_rebuild_dev_workspace.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_fetch_ros_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
 
+# ....Project directories ownership and simlink....................................................
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
-RUN chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME}
+RUN <<EOF
+{
+  chown -R $(id -u ${DN_PROJECT_USER:?err}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME:?err}
+  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
+  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE:?err}
+} || {
+  pwd
+  tree -agu
+  tree -agu ${DN_PROJECT_USER_HOME}
+  tree -agu ${DN_DEV_WORKSPACE}
+  exit 1
+}
+EOF
 
+
+# (Priority) ToDo: Was moved in dn_project_core_init.bash. On task NMO-548 end >> delete next bloc ↓↓
+## (Priority) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
+#RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
+#    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
 
 FROM project-specific-ros-setup AS test-ssh-user
 USER "${DN_SSH_SERVER_USER}"
@@ -134,10 +165,19 @@ RUN { \
         fi ; \
     } || exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash"
+RUN { \
+    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash" && \
+    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash" && \
+    test -d "${DN_PROJECT_USER_HOME}" && \
+    test -d "${DN_PROJECT_PATH}" && \
+    test -d "${DN_DEV_WORKSPACE}" ; \
+    } || exit 1
 
-RUN test -x "${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash" && \
-    bash ./dn_fetch_ros_env_variables.bash || exit 1
+
+RUN { \
+    test -x "${DN_PROJECT_USER_HOME}/dn_fetch_ros_env_variables.bash" && \
+    bash ./dn_fetch_ros_env_variables.bash ; \
+    } || exit 1
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "" ]

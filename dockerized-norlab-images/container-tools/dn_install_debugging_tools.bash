@@ -8,6 +8,7 @@ test -n "${DN_SSH_SERVER_PORT:?'Env variable needs to be set and non-empty.'}"
 test -n "${DN_SSH_SERVER_USER:?'Env variable needs to be set and non-empty.'}"
 test -n "${DN_SSH_SERVER_USER_PASSWORD:?'Env variable needs to be set and non-empty.'}"
 test -n "${DN_PROJECT_GID:?'Env variable needs to be set and non-empty.'}"
+test -n "${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}"
 
 # ===Service: ssh server===========================================================================
 apt-get update \
@@ -16,6 +17,8 @@ apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+
+# ....Setup ssh daemon.............................................................................
 
 # (CRITICAL) ToDo: (ref task NMO-348 validate that DN_SSH_SERVER_PORT var in 'sshd_config_dockerized_norlab_openssh_server' can be changed at runtime via compose ENV)
 # Inspired from:
@@ -37,25 +40,29 @@ apt-get update \
 # Ref https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
 sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
+# ....Create new user and home.....................................................................
 useradd -m "${DN_SSH_SERVER_USER}" \
   && yes "${DN_SSH_SERVER_USER_PASSWORD}" | passwd "${DN_SSH_SERVER_USER}"
 
-# (CRITICAL) ToDo: assessment >> assigning project user primary group to pycharm-debugger work (ref task NMO-548)
-usermod --gid "${DN_PROJECT_GID:?err}" "${DN_SSH_SERVER_USER}"
+echo "${DN_SSH_SERVER_USER} ALL=(root) NOPASSWD:ALL" >/etc/sudoers.d/"${DN_SSH_SERVER_USER}"
+chmod 0440 "/etc/sudoers.d/${DN_SSH_SERVER_USER}"
+mkdir -p "/home/${DN_SSH_SERVER_USER}"
+chown -R "${DN_SSH_SERVER_USER}":"${DN_PROJECT_GID}" "/home/${DN_SSH_SERVER_USER}"
 
 # Add the 'video' groups to new user as it's required for GPU access.
 # (not a problem on norlab-og but mandatory on Jetson device)
 # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
 usermod -a -G video,sudo "${DN_SSH_SERVER_USER}"
-# (CRITICAL) ToDo: assessment >> can DN test logic integration work without giving pycharm-debugger the sudo group (ref task NMO-548)
-#usermod -a -G video "${DN_SSH_SERVER_USER}"
 
-# ...root config...................................................................................
+## (CRITICAL) ToDo: assessment >> assigning project user primary group to pycharm-debugger work (ref task NMO-548)
+#usermod --gid "${DN_PROJECT_GID:?err}" "${DN_SSH_SERVER_USER}"
+
+# ....Set password for users.......................................................................
 # user:newpassword
+echo "${DN_PROJECT_USER}:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
 echo "root:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
 
 # ....add the ros distro source steps to debugger user..............................................
-
 usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
 # Note: Required for ssh in pycharm-debugger, otherwise it use .sh instead of .bash
 #       and result in not sourcing ros from .bashrc or /etc/profile.d/
