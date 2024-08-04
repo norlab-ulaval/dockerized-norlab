@@ -21,7 +21,8 @@ fi
 
 # ....Execute DN-project user callback.............................................................
 # Sanity check
-test -d "/project_entrypoints" || { echo "Dir /project_entrypoints is unreachable" && exit 1 ; }
+å
+
 
 if [[ -f /project_entrypoints/dn_entrypoint.global.attach.callback.bash ]]; then
   source /project_entrypoints/dn_entrypoint.global.attach.callback.bash || exit 1

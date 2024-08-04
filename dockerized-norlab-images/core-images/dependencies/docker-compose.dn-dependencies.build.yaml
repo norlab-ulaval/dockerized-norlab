@@ -1,6 +1,7 @@
 services:
   # ====Dockerized-NorLab dependencies=============================================================
 
+  # ....dependencies-core..........................................................................
   dependencies-core-main:
     extends:
       file: "../global/docker-compose.global.yaml"
@@ -9,25 +10,33 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.core
+      pull: false
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-base-image-ros2-clean
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
 
+  dependencies-core-tester:
+    extends:
+      service: dependencies-core-main
+    build:
+      target: test
+    depends_on:
+      - dependencies-core-main
 
-  # ....dependencies-core..........................................................................
   dependencies-core:
     extends:
       service: dependencies-core-main
-    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-core:${DN_IMAGE_TAG:?err}
     build:
+      target: final
       dockerfile: Dockerfile.core
+    image: ${DN_HUB:?err}/dockerized-norlab-dependencies-core:${DN_IMAGE_TAG:?err}
     depends_on:
-      - dependencies-core-main
+      - dependencies-core-tester
 
   # ....dependencies-prompt........................................................................
   dependencies-prompt:
     extends:
-      service: dependencies-core
+      service: dependencies-core-main
     build:
       dockerfile: Dockerfile.prompt
       args:

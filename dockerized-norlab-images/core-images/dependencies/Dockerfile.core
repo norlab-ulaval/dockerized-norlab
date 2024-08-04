@@ -25,19 +25,21 @@ ENV TERM=${TERM:-"xterm-256color"}
 
 # ....Setup timezone and localization..............................................................
 # change the locale from POSIX to UTF-8
-RUN apt-get update && \
-    apt-get install --assume-yes --no-install-recommends \
-        locales \
-    && rm -rf /var/lib/apt/lists/* \
-    && locale-gen en_US en_US.UTF-8 \
-    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+RUN <<EOF
+    apt-get update
+    apt-get install --assume-yes --no-install-recommends locales
+    rm -rf /var/lib/apt/lists/*
+    locale-gen en_US en_US.UTF-8
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+EOF
 
 ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
 
 # ....install development utilities................................................................
-RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
+RUN <<EOF
+    apt-get update \
+    apt-get install --assume-yes --no-install-recommends \
         apt-utils \
         lsb-release \
         cmake \
@@ -60,31 +62,36 @@ RUN apt-get update \
         gdb \
         gdbserver \
         tmux \
-        screen \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir  --upgrade pip  \
-    && echo ". . install python general packages. . . . . . . . . . . . . . . . . . . . . . . . " \
-    && pip3 install --no-cache-dir \
+        screen
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    # ....install python general packages..............................................................
+    pip3 install --no-cache-dir --upgrade pip
+
+    pip3 install --no-cache-dir \
         setuptools \
         wheel \
         build \
         psutil \
         tqdm \
         rich \
-        python-dotenv \
-    && echo ". . install python general development packages. . . . . . . . . . . . . . . . . . ." \
-    && pip3 install --no-cache-dir \
+        python-dotenv
+
+    # ....install python general development packages..................................................
+    pip3 install --no-cache-dir \
         pyyaml \
         termcolor \
         decorator \
-        black[d] \
-    && echo "# . . Type check. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ." \
-    && pip3 install --no-cache-dir \
+        black[d]
+
+    # ....Type check...................................................................................
+    pip3 install --no-cache-dir \
         pytype \
-        mypy \
-    && echo "# . . Testing tools . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ." \
-        && pip3 install --no-cache-dir \
+        mypy
+
+    # ....Testing tools ...............................................................................
+    pip3 install --no-cache-dir \
         pytest \
         pytest-benchmark \
         mock \
@@ -92,9 +99,12 @@ RUN apt-get update \
         pytest-env \
         pytest-instafail \
         pytest-xdist \
-        pytest-dotenv \
-    && pip3 install --no-cache-dir --ignore-installed  \
-           pybind11
+        pytest-dotenv
+
+    pip3 install --no-cache-dir --ignore-installed \
+       pybind11
+
+EOF
 
 # (CRITICAL) ToDo: test using pytest-dotenv in pycharm (ref task NMO-360 ﹅→ Fix the ROS environment variable not loaded in PyCharm pytest run nightmare)
 # https://github.com/quiqua/pytest-dotenv
@@ -108,10 +118,12 @@ RUN apt-get update \
 #       To test X11 forwarding with OpenGL, run in the container
 #         $ glxgears
 #       The animated gears should be displayed on your local computer in macOS XQuartz app.
-RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
-      x11-apps \
-    && rm -rf /var/lib/apt/lists/*
+RUN <<EOF
+    apt-get update
+    apt-get install --assume-yes --no-install-recommends \
+          x11-apps
+    rm -rf /var/lib/apt/lists/*
+EOF
 
 # ===Setup submodule===============================================================================
 WORKDIR /dockerized-norlab
@@ -125,35 +137,83 @@ COPY --from=context-dn-submodules ./norlab-shell-script-tools/ .
 WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 COPY --from=context-dn-container-tools . .
 
-RUN echo "Create soft link in the root dir" \
-    && ln -s /dockerized-norlab/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash \
-    && test -f /import_dockerized_norlab_container_tools.bash || exit 1
+RUN <<EOF
+    echo "Create soft link in the root dir"
+    ln -s /dockerized-norlab/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash
+    test -f /import_dockerized_norlab_container_tools.bash || exit 1
+EOF
 
 WORKDIR /dockerized-norlab
+RUN <<EOF
+    (
+        echo ""
+        echo "# >>> dockerized-norlab dependencies core"
+        echo "# Dockerized-norlab aliases"
+        echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash"
+        echo "# <<< dockerized-norlab dependencies core"
+        echo ""
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 
-RUN ( \
-      echo ""; \
-      echo "# >>> dockerized-norlab aliases (from dependencies img)"; \
-      echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash"; \
-      echo ""; \
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
-    && ( \
-      echo ""; \
-      echo "# >>> dockerized-norlab bashrc"; \
-      echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash"; \
-      echo ""; \
-    ) >> ~/.bashrc
+    (
+        echo ""
+        echo "# >>> dockerized-norlab dependencies core"
+        echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash"
+        echo "# <<< dockerized-norlab dependencies core"
+    echo ""
+    ) >> ${HOME}/.bashrc
+EOF
 
-RUN echo "Sanity check (dn-container tools)" \
-    && source /import_dockerized_norlab_container_tools.bash \
-    && n2st::set_which_python3_version || exit 1 \
-    && echo "PYTHON3_VERSION=${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}" \
-    && echo  \
-    && echo "Sanity check (container-tools directory copy)" \
-    && { \
+# Source ROS in non-interactive non-login shell
+# Note:
+#   - Unset BASH_ENV to disable non-interactive execution
+#   - Value of the PATH variable is not used to search for the file name
+ENV BASH_ENV=/dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+
+
+FROM dependencies AS test
+
+# Note: DN container-tools library should be sourced automaticaly via our dn_bashrc_non_interactive.bash setup
+RUN <<EOF
+    echo "(dn-container tools) Non-interactive shell sanity check. Validate dn_bashrc_non_interactive.bash logic"
+    {
+        # Check if import_dockerized_norlab_container_tools.bash was executed
+        test "$(type -t n2st::set_which_python3_version)" == "function" && \
+        n2st::set_which_python3_version && \
+        test -n "${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}" ;
+    } || { echo "Failed non-interactive shell sanity check" ; exit 1 ; }
+
+    echo "(container-tools directory copy) Sanity check"
+    {
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash && \
-        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash && \
-        bash /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash ; \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash && \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash ;
     } || exit 1
+EOF
+
+# Note: DN container-tools library should be sourced automaticaly via our dn_bashrc.bash setup
+SHELL ["/bin/bash", "-i", "-c"]
+RUN <<EOF
+    echo "(dn-container tools) Interactive shell sanity check. Validate dn_bashrc.bash logic"
+    {
+        # Check if import_dockerized_norlab_container_tools.bash was executed
+        test "$(type -t n2st::set_which_python3_version)" == "function" && \
+        n2st::set_which_python3_version && \
+        test -n "${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}" ;
+    } || { echo "Failed non-interactive shell sanity check" ; exit 1 ; }
+EOF
+
+FROM dependencies AS final
+WORKDIR /dockerized-norlab
+
+# ....TMP DEV introspection........................................................................
+## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
+#RUN <<EOF
+#    # TMP DEV introspection
+#    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+#    echo
+#    #cat ${HOME}/.bashrc
+#    echo "${0}:not implemented error" && exit 1
+#EOF
+# ........................................................................TMP DEV introspection....
 
 CMD [ "bash" ]

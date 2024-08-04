@@ -9,17 +9,23 @@ ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 ARG DN_PROJECT_DEPLOY_REPO_BRANCH
 ENV DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
 
-RUN echo "Pre-condition checks" && { \
-    test $(whoami) == "root" &&  \
-    test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
-    test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
-    test -d ${DN_PROJECT_USER_HOME} && \
-    test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
-    test -d ${DN_PROJECT_PATH} && \
-    test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
-    test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
-    test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ; \
+ENV DN_PROJECT_SERVICE=project-deploy
+ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
+
+RUN <<EOF
+    echo "Pre-condition checks"
+    {
+        test $(whoami) == "root" && \
+        test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
+        test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
+        test -d ${DN_PROJECT_USER_HOME} && \
+        test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+        test -d ${DN_PROJECT_PATH} && \
+        test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
+        test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
+        test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ;
     } || exit 1
+EOF
 
 
 RUN echo "(WARNING) PYTHONUNBUFFERED env variable will be set to 0 for deployment as it affect performances"
@@ -29,73 +35,78 @@ ENV PYTHONUNBUFFERED=0
 # ....Clone or checkout project src code...........................................................
 WORKDIR ${DN_DEV_WORKSPACE}/src
 RUN <<EOF
-echo "\nCheckout ${DN_PROJECT_GIT_NAME} at ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
+    echo "\nCheckout ${DN_PROJECT_GIT_NAME} at ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
 
-echo -e "\nLog relevant debug information on failure\n"
-tree -L 2 -a ${DN_DEV_WORKSPACE}/src
-tree -L 2 -a ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-echo
+    echo -e "\nLog relevant debug information on failure\n"
+    tree -L 2 -a ${DN_DEV_WORKSPACE}/src
+    tree -L 2 -a ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+    echo
 
-if [[ -e ${DN_PROJECT_GIT_NAME}/.git  ]]; then
-  echo "Repository is already cloned"
-  cd ${DN_PROJECT_GIT_NAME}
-  git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
-elif [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
-  echo "Directory already exist but is not a git repository, so delete it and clone"
-  rm -rf ${DN_PROJECT_GIT_NAME}
-  git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
-else
-  echo "Clone repository"
-  git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
-fi
+    if [[ -e ${DN_PROJECT_GIT_NAME}/.git  ]]; then
+      echo "Repository is already cloned"
+      cd ${DN_PROJECT_GIT_NAME}
+      git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
+    elif [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
+      echo "Directory already exist but is not a git repository, so delete it and clone"
+      rm -rf ${DN_PROJECT_GIT_NAME}
+      git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
+    else
+      echo "Clone repository"
+      git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
+    fi
 
-# Sanity check
-test -d ${DN_PROJECT_PATH}
+    # Sanity check
+    test -d ${DN_PROJECT_PATH} || exit 1
 
-echo -e "\nLog relevant debug information on failure\n"
-tree -L 2 -aug ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+    echo -e "\nLog relevant debug information on failure\n"
+    tree -L 2 -aug ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
 EOF
 
 # ....Project spoecific ROS setup..................................................................
 
 WORKDIR ${DN_DEV_WORKSPACE}
-RUN rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
-    && rosdep fix-permissions \
-    && rosdep install  \
-            --ignore-packages-from-source \
-            --from-path ./src  \
-            --rosdistro ${ROS_DISTRO}  \
-            -y \
-    && rm -rf /var/lib/apt/lists/*
+RUN <<EOF
+    rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros
+    rosdep fix-permissions
+    rosdep install \
+        --ignore-packages-from-source \
+        --from-path ./src  \
+        --rosdistro ${ROS_DISTRO} \
+        -y
+    rm -rf /var/lib/apt/lists/*
+EOF
 
 
 WORKDIR ${DN_DEV_WORKSPACE}
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-RUN echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && COLCON_FLAGS=() \
-    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
-         echo -e "Builder is running in architecture virtualisation" \
-         && COLCON_FLAGS+=(--executor sequential) ; \
-      else \
-         echo -e "Builder is running on native architecture" \
-         && COLCON_FLAGS+=(--symlink-install) ; \
-      fi \
-    && COLCON_FLAGS+=( \
-          --cmake-clean-cache \
-          --cmake-args -DCMAKE_BUILD_TYPE=Release \
-          --event-handlers console_direct+ \
-       ) \
-    && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
-    && colcon build ${COLCON_FLAGS[@]}
+RUN <<EOF
+    echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
+    source ${DN_DEV_WORKSPACE}/install/setup.bash
+    echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash"
+    source /opt/ros/${ROS_DISTRO}/setup.bash
+
+    COLCON_FLAGS=()
+    if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
+      echo -e "Builder is running in architecture virtualisation"
+      COLCON_FLAGS+=("--executor" "sequential")
+    else
+        echo -e "Builder is running on native architecture"
+        COLCON_FLAGS+=("--symlink-install")
+    fi
+
+    COLCON_FLAGS+=(
+        "--cmake-clean-cache"
+        "--cmake-args" "-DCMAKE_BUILD_TYPE=Release"
+        "--event-handlers" "console_direct+"
+    )
+    echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
+    colcon build ${COLCON_FLAGS[@]}
+EOF
 
 # ....DN and DN-project entrypoints and utilities................................................
 
 # Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
-ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/project-deploy
 WORKDIR ${DN_PROJECT_SERVICE_DIR}
 COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash ./
 
@@ -109,11 +120,6 @@ COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash ./
 RUN chmod +x dn_entrypoint.init.bash && \
     chmod +x dn_entrypoint.attach.bash
 
-# (Priority) ToDo: refactor logic higher. On task end >> delete next bloc ↓↓
-## Create directories
-#ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
-#WORKDIR ${DN_PROJECT_USER_HOME}
-
 # Create soft link in the home dir
 RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash \
     && ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.attach.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash
@@ -122,23 +128,44 @@ RUN ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HO
 
 # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
 RUN <<EOF
-{
-  chown -R $(id -u ${DN_PROJECT_USER:?err}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME:?err}
-  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
-  chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE:?err}
-} || {
-  pwd
-  tree -agu
-  tree -agu ${DN_PROJECT_USER_HOME}
-  tree -agu ${DN_DEV_WORKSPACE}
-  exit 1
-}
+    {
+      chown -R $(id -u ${DN_PROJECT_USER:?err}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME:?err}
+      chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
+      chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE:?err}
+    } || {
+      # Collect debugg information on faillure
+      pwd
+      tree -agu
+      tree -agu ${DN_PROJECT_USER_HOME}
+      tree -agu ${DN_DEV_WORKSPACE}
+      exit 1
+    }
+
+    echo "Add project-deploy aliases"
+    (
+      echo ""
+      echo "# >>> dockerized-norlab project-deploy"
+      echo "# Dockerized-NorLab aliases (from project-deploy img)"
+      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"
+      echo "# <<< dockerized-norlab project-deploy"
+      echo ""
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 EOF
 
-# (Priority) ToDo: Was moved in dn_project_core_init.bash. On task NMO-548 end >> delete next bloc ↓↓
-## (Priority) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
-#RUN ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}" && \
-#    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_PATH}"
+# ....TMP DEV introspection........................................................................
+## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
+#RUN <<EOF
+#    # TMP DEV introspection
+#    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
+#    echo -e "\n${0}: not implemented error\n" && exit 1
+#EOF
+# ........................................................................TMP DEV introspection....
+
+# ....TMP DEV dn_info.bash refactor................................................................
+## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
+WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+COPY --from=context-dn-container-tools ./dn_info.bash .
+# ................................................................TMP DEV dn_info.bash refactor....
 
 
 FROM package-project-src-code AS test
@@ -147,29 +174,35 @@ FROM package-project-src-code AS test
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
 
-RUN test $(whoami) == "${DN_PROJECT_USER}" && test -d /home/${DN_PROJECT_USER} || exit 1
+RUN <<EOF
+    {
+        test "$(whoami)" == "${DN_PROJECT_USER}" && \
+        test -d "/home/${DN_PROJECT_USER}" ;
+    } || exit 1
 
-RUN echo "===Check that ROS source is available in DN_PROJECT_USER user=============" \
-    && printenv \
-    && echo "" \
-    && echo "AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" \
-    && python -c "import rclpy" \
-    && echo "" \
-    && echo "===ros2 install pkg sanity check=================================================" \
-    && { \
-        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
-        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" &&  \
-        test -n "$(ros2 pkg list | grep -e vesc_msgs)" ; \
+    echo "===Check that ROS source is available in DN_PROJECT_USER user============="
+    printenv
+    {
+      test -n "${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" && \
+      python -c "import rclpy" ;
+    } || exit 1
+
+    echo "===ros2 install pkg sanity check================================================="
+    {
+        test -n "$(ros2 pkg list | grep -e ros_core)" && \
+        test -n "$(ros2 pkg list | grep -e rclpy)" && \
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" && \
+        test -n "$(ros2 pkg list | grep -e vesc_msgs)" ;
     } ||  exit 1
 
-RUN { \
-    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash" && \
-    test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash" && \
-    test -d "${DN_PROJECT_USER_HOME}" && \
-    test -d "${DN_PROJECT_PATH}" && \
-    test -d "${DN_DEV_WORKSPACE}" ; \
+    {
+        test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash" && \
+        test -x "${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash" && \
+        test -d "${DN_PROJECT_USER_HOME}" && \
+        test -d "${DN_PROJECT_PATH}" && \
+        test -d "${DN_DEV_WORKSPACE}" ;
     } || exit 1
+EOF
 
 # unset entrypoint for running test stage
 ENTRYPOINT [ "" ]

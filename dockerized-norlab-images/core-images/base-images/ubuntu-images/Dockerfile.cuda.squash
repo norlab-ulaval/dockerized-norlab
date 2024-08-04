@@ -119,24 +119,13 @@ FROM squash-base-image AS ros2-python-compatible
 ##   or keep conda in path and simply prepend the system python path to the front
 ##
 ## Prepend the system python path to PATH so that the system python can be reached first
-## (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "/etc/profile.d"
+## (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "dn_bashrc_non_interactive.bash"
 #ARG PATH="/usr/bin:${BASE_IMG_ENV_PATH:?err}"
 #ENV PATH=${PATH}
 
-# (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "/etc/profile.d"
-## ===Execute ros sourcing system wide instead of in .bashrc========================================
+# (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "dn_bashrc_non_interactive.bash"
+## ===Execute ros sourcing ========================================================================
 ## (since .bashrc is not executed in non-interactive shell)
-#
-#RUN touch /etc/profile.d/02-dn-set-default-python-env.sh \
-#    && chmod +x /etc/profile.d/02-dn-set-default-python-env.sh \
-#    && ( \
-#      echo ""; \
-#      echo "# Dockerized-NorLab › Unset conda as default python environment system wide instead of in .bashrc "; \
-#      echo "#   which is not executed in non-interactive shell such as in pycharm-debugger"; \
-#      echo "source /opt/ros/\$``{ROS_DISTRO}``/setup.bash"; \
-#      echo "PATH=/usr/bin:\$``{PATH:?'Env var is empty'}``"; \
-#      echo ""; \
-#    ) > /etc/profile.d/02-dn-set-default-python-env.sh
 
 # ....Make python 3 default........................................................................
 RUN if [[ $(which python) =~ "/opt/conda".* ]] || [[ ! $(which python) =~ .*"python3".* ]]; then \

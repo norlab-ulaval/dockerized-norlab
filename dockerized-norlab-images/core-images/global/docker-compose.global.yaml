@@ -61,10 +61,10 @@ services:
 
   global-service-builder-config-base-images:
     # ....DEV config...............................................................................
-    # ToDo: For CI builds, keep MUTED the 'extends' instructions ↓↓
-    #extends:
-    #  #service: runtime-global-dev-config-jetson
-    #  service: runtime-global-dev-config-darwin
+#    # ToDo: For CI builds, keep MUTED the 'extends' instructions ↓↓
+#    extends:
+#      #service: runtime-global-dev-config-jetson
+#      service: runtime-global-dev-config-darwin
     # ................................................................................DEV config...
     pull_policy: build # Execute the `build` attribute over pulling the `image` attribute
     build:
