@@ -17,22 +17,23 @@
 #
 # =================================================================================================
 set -e
+pushd "$(pwd)" >/dev/null || exit 1
 
 # (CRITICAL) ToDo: unit-test (ref task NMO-548 and RLRP-213)
 
 function dn::initialize_dockerized_norlab_project() {
 
-  # ....Check pre-conditions.........................................................................
+  # ....Check pre-conditions.......................................................................
   {
-    test -n "${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'}"
-    test -n "${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'}"
-    test -n "${DN_PROJECT_UID:?'Env variable need to be set and non-empty.'}"
-    test -n "${DN_PROJECT_GID:?'Env variable need to be set and non-empty.'}"
-    test -n "${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'}"
-    test -n "${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'}"
-    test -n "${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'}"
-  }
-  # ....Create new user and home.....................................................................
+    test -n "${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'}" && \
+    test -n "${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'}" && \
+    test -n "${DN_PROJECT_UID:?'Env variable need to be set and non-empty.'}" && \
+    test -n "${DN_PROJECT_GID:?'Env variable need to be set and non-empty.'}" && \
+    test -n "${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'}" && \
+    test -n "${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'}" && \
+    test -n "${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'}" ;
+  } || exit
+  # ....Create new user and home...................................................................
 
   # Inspired from https://roboticseabass.com/2023/07/09/updated-guide-docker-and-ros2/
   {
@@ -49,18 +50,17 @@ function dn::initialize_dockerized_norlab_project() {
     usermod -a -G video,sudo "${DN_PROJECT_USER}"
   }
 
-  # ....Setup project dev workspace..................................................................
+  # ....Setup project dev workspace................................................................
   {
     mkdir -p "${DN_PROJECT_PATH}"
     chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_PROJECT_PATH}"
 
-    # (Priority) ToDo: Not sure its usefull to symlink those (ref task NMO-548)
     # Add useful simlink in user root dir
-    ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}${DN_DEV_WORKSPACE}"
-    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}${DN_PROJECT_GIT_NAME}"
+    ln -s "${DN_DEV_WORKSPACE}" "${DN_PROJECT_USER_HOME}/$(basename "${DN_DEV_WORKSPACE}")"
+    ln -s "${DN_PROJECT_PATH}" "${DN_PROJECT_USER_HOME}/${DN_PROJECT_GIT_NAME}"
   }
 
-  # ....Simlink and change ownership of DN container-tools...........................................
+  # ....Simlink and change ownership of DN container-tools.........................................
   {
     DN_CONTAINER_TOOLS_DIR=/dockerized-norlab/dockerized-norlab-images/container-tools
     ln -s "${DN_CONTAINER_TOOLS_DIR}/dn_info.bash" "${DN_PROJECT_USER_HOME}/dn_info.bash"
@@ -74,9 +74,9 @@ function dn::initialize_dockerized_norlab_project() {
     test -n "${DN_PATH:?'Env variable need to be set by import_dockerized_norlab_container_tools.bash and non-empty.'}"
     chown -R "${DN_PROJECT_UID}":"${DN_PROJECT_GID}" "${DN_PATH}"
     git config --system --add safe.directory "*"
-  }
+  } || exit 1
 
-  # ....Add all dockerized-norlab accumulated bashrc instruction to project user bashrc..............
+  # ....Add all dockerized-norlab accumulated bashrc instruction to project user bashrc............
   (
     echo ""
     echo "# >>> dockerized-norlab bashrc"
@@ -97,8 +97,8 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  pushd "$(pwd)" >/dev/null || exit 1
   dn::initialize_dockerized_norlab_project
-  popd >/dev/null || exit 1
-  exit 0
 fi
+
+# ====Teardown=====================================================================================
+popd >/dev/null || exit 1

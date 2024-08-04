@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+# =================================================================================================
 # Fetch container ROS specific environment variables, seperated by ';' ready to copy/paste
 #
 # Usage:
@@ -14,29 +14,48 @@
 #
 # Credit: Anas Abou Allaban
 #   https://www.allaban.me/posts/2020/08/ros2-setup-ide-docker/
+# =================================================================================================
 
-ROS_ENV="
-ROS_DISTRO
-ROS_ROOT
-ROS_VERSION
-ROS_PYTHON_VERSION
-ROS_DOMAIN_ID
-ROS_LOCALHOST_ONLY
-AMENT_PREFIX_PATH
-CMAKE_PREFIX_PATH
-COLCON_PREFIX_PATH
-PKG_CONFIG_PATH
-PYTHONPATH
-PATH
-LD_LIBRARY_PATH
-HOSTNAME
-RMW_IMPLEMENTATION
-"
+function dn::collect_ros_environment_variables_values() {
 
-ENV_STRING=""
-for e in ${ROS_ENV}; do
-  ENV_STRING+="$e=${!e};"
-done
+  ROS_ENV="
+  ROS_DISTRO
+  ROS_ROOT
+  ROS_VERSION
+  ROS_PYTHON_VERSION
+  ROS_DOMAIN_ID
+  ROS_LOCALHOST_ONLY
+  AMENT_PREFIX_PATH
+  CMAKE_PREFIX_PATH
+  COLCON_PREFIX_PATH
+  PKG_CONFIG_PATH
+  PYTHONPATH
+  PATH
+  LD_LIBRARY_PATH
+  HOSTNAME
+  RMW_IMPLEMENTATION
+  "
 
-echo "$ENV_STRING"
+  ENV_STRING=""
+  for e in ${ROS_ENV}; do
+    ENV_STRING+="$e=${!e};"
+  done
+
+  echo "$ENV_STRING"
+
+  return 0
+}
+
+# ::::Main:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+  # This script is being run, ie: __name__="__main__"
+  MSG_ERROR_FORMAT="\033[1;31m"
+  MSG_END_FORMAT="\033[0m"
+  echo -e "${MSG_ERROR_FORMAT}[ERROR]${MSG_END_FORMAT} This script must be sourced!
+      i.e.: $ source $( basename "$0" )" 1>&2
+  exit 1
+else
+  # This script is being sourced, ie: __name__="__source__"
+  dn::collect_ros_environment_variables_values
+fi
 

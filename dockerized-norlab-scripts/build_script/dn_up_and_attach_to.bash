@@ -71,6 +71,7 @@ bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matr
   "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" \
   --fail-fast -- up "${DOCKER_UP_FLAGS[@]}" "${THE_SERVICE}"
 
+
 #CN=$(grep -A3 'project-develop:' ${THE_COMPOSE_FILE} | tail -n1); CN=${CN//*container_name: /}; echo "$CN"
 #echo "${CN}"
 
@@ -79,10 +80,12 @@ if [[ -n $TEAMCITY_VERSION ]]; then
   echo -e "${DS_MSG_EMPH_FORMAT}The container is running inside a TeamCity agent >> keep container detached${DS_MSG_END_FORMAT}"
 else
 
-  bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
-    "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" \
-    --fail-fast \
-    -- exec "${THE_SERVICE}" bash
+  EXEC_ARG=("${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" "--fail-fast" "--" "exec" "${THE_SERVICE}" "bash" )
+  bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${EXEC_ARG[@]}" || \
+  n2st::print_msg_error_and_exit "Service ${THE_SERVICE} is not running. Make sure that either one of ${MSG_DIMMED_FORMAT}runtime-global-dev-config-[jetson
+|darwin]${MSG_END_FORMAT} is un-muted in service ${MSG_DIMMED_FORMAT}global-service-builder-config-base-images${MSG_END_FORMAT} otherwise container wont start.
+See ${MSG_DIMMED_FORMAT}docker-compose.global.yaml${MSG_END_FORMAT}."
+
 fi
 
 n2st::print_formated_script_footer "${SCRIP_NAME}" "${MSG_LINE_CHAR_BUILDER_LVL1}"

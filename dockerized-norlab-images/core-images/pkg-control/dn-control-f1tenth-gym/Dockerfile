@@ -14,14 +14,12 @@ ARG BUILDPLATFORM
 #       and `libGL error: failed to load driver: swrast` error
 ENV LIBGL_ALWAYS_INDIRECT=1
 
-ENV NVIDIA_VISIBLE_DEVICES \
-    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
     # `all` if `NVIDIA_VISIBLE_DEVICES` is unset or null
     # NVIDIA_VISIBLE_DEVICES is a substitute for `--gpus all` flag
     # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#environment-variables-oci-spec
 
-ENV NVIDIA_DRIVER_CAPABILITIES \
-    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
     # set to `graphics` or add `graphics` to `NVIDIA_DRIVER_CAPABILITIES,`
     # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 
