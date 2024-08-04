@@ -6,7 +6,3 @@
 	path = utilities/norlab-build-system
 	url = https://github.com/norlab-ulaval/norlab-build-system.git
 	branch = main
-[submodule "utilities/dockerized-norlab-project-mock"]
-	path = utilities/dockerized-norlab-project-mock
-	url = https://github.com/norlab-ulaval/dockerized-norlab-project-mock.git
-	branch = main
