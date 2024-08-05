@@ -77,8 +77,8 @@ RUN <<EOF
 
 EOF
 
-# ....Project spoecific ROS setup..................................................................
 
+# ....Project spoecific ROS setup..................................................................
 WORKDIR ${DN_DEV_WORKSPACE}
 RUN <<EOF
     rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros
