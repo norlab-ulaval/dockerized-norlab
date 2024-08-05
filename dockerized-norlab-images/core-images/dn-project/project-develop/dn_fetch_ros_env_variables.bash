@@ -15,6 +15,8 @@
 # Credit: Anas Abou Allaban
 #   https://www.allaban.me/posts/2020/08/ros2-setup-ide-docker/
 # =================================================================================================
+n2st::print_formated_script_header "dn_fetch_ros_env_variables.bash" "${MSG_LINE_CHAR_INSTALLER}"
+
 
 function dn::collect_ros_environment_variables_values() {
 
@@ -59,3 +61,5 @@ else
   dn::collect_ros_environment_variables_values
 fi
 
+# ====Teardown=====================================================================================
+n2st::print_formated_script_footer "dn_fetch_ros_env_variables.bash" "${MSG_LINE_CHAR_INSTALLER}"

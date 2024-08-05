@@ -10,7 +10,7 @@ ENV DN_PROJECT_SERVICE=project-develop
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
 
 RUN <<EOF
-    echo "Pre-condition checks"
+    n2st::print_msg "Pre-condition checks"
     {
         test $(whoami) == "root" &&  \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
@@ -76,7 +76,7 @@ RUN chmod +x dn_entrypoint.init.bash && \
 WORKDIR /dn_container_env_variable/
 
 RUN <<EOF
-    # Create soft link in the home dir
+    n2st::print_msg "Create soft link in the home dir"
     ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
     ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash
     ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.attach.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.attach.bash
@@ -85,8 +85,7 @@ RUN <<EOF
     ln -s ${DN_PROJECT_SERVICE_DIR}/dn_expose_container_env_variables.bash ${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash
 
 
-    # ....Project directories ownership and simlink....................................................
-    # (CRITICAL) ToDo: validate user have permission to execute file in that dir (ref task NMO-548)
+    n2st::print_msg "Project directories ownership and simlink"
     {
       chown -R $(id -u ${DN_PROJECT_USER:?err}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_USER_HOME:?err}
       chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
@@ -100,7 +99,7 @@ RUN <<EOF
       exit 1
     }
 
-    echo "Add project-develop aliases"
+    n2st::print_msg "Add project-develop aliases"
     (
       echo ""
       echo "# >>> dockerized-norlab project-develop"
@@ -124,9 +123,9 @@ EOF
 # ........................................................................TMP DEV introspection....
 
 # ....TMP DEV dn_info.bash refactor................................................................
-## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-COPY --from=context-dn-container-tools ./dn_info.bash .
+### (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
+#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+#COPY --from=context-dn-container-tools ./dn_info.bash .
 # ................................................................TMP DEV dn_info.bash refactor....
 
 
@@ -141,14 +140,14 @@ RUN <<EOF
         test -d /home/${DN_SSH_SERVER_USER} ;
     } || exit 1
 
-    echo "===Check that ROS source is available via the ssh daemon user===================="
+    n2st::print_msg "Check that ROS source is available via the ssh daemon user"
     printenv
     {
       test -n "${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" && \
       python -c "import rclpy" ;
     } || exit 1
 
-    echo "===ros2 install pkg sanity check================================================="
+    n2st::print_msg "ros2 install pkg sanity check"
     {
         test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
         test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
@@ -172,14 +171,14 @@ RUN <<EOF
 EOF
 
 RUN <<EOF
-    echo "===Check that ROS source is available via the ssh daemon user===================="
+    n2st::print_msg "Check that ROS source is available via the ssh daemon user"
     printenv
     {
       test -n "${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" && \
       python -c "import rclpy" ;
     } || exit 1
 
-    echo "===ros2 install pkg sanity check================================================="
+    n2st::print_msg "ros2 install pkg sanity check"
     {
         test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
         test -n "$(ros2 pkg list | grep -e rclpy)" &&  \

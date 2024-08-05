@@ -17,7 +17,7 @@ fi
 
 # ....SSH daemon...................................................................................
 # Check if sshd is running
-echo -e "\nStarting container \033[1;37m internal ssh server for IDE remote development workflow on port ${DN_SSH_SERVER_PORT}\033[0m with \033[1;37m user ${DN_SSH_SERVER_USER}\033[0m (default pass: lasagne)"
+n2st::print_msg "\nStarting container \033[1;37m internal ssh server for IDE remote development workflow on port ${DN_SSH_SERVER_PORT}\033[0m with \033[1;37m user ${DN_SSH_SERVER_USER}\033[0m (default pass: lasagne)"
 
 #LAUNCH_SSN_DAEMON=( '/usr/sbin/sshd' '-D' '-e' '-f' '/etc/ssh/sshd_config_dockerized_norlab_openssh_server' )
 LAUNCH_SSN_DAEMON=( '/usr/sbin/sshd' '-e' '-f' '/etc/ssh/sshd_config_dockerized_norlab_openssh_server' )
@@ -28,7 +28,7 @@ LAUNCH_SSN_DAEMON=( '/usr/sbin/sshd' '-e' '-f' '/etc/ssh/sshd_config_dockerized_
 if [[ $(whoami) == "root" ]]; then
   "${LAUNCH_SSN_DAEMON[@]}"
 else
-  echo "Launch the ssh daemon in a subshell as root"
+  n2st::print_msg "Launch the ssh daemon in a subshell as root"
   sudo bash -c "${LAUNCH_SSN_DAEMON[*]}"
 fi
 
@@ -37,18 +37,18 @@ fi
 
 # ....Execute DN-project user callback.............................................................
 # Sanity check
-test -d "/project_entrypoints" || { echo "Dir /project_entrypoints is unreachable" ; exit 1 ; }
+test -d "/project_entrypoints" || n2st::print_msg_error_and_exit "Dir /project_entrypoints is unreachable"
 
 if [[ -f /project_entrypoints/dn_entrypoint.global.init.callback.bash ]]; then
   source /project_entrypoints/dn_entrypoint.global.init.callback.bash || exit 1
 else
-  echo "dn_entrypoint.global.init.callback.bash unavailable"
+  n2st::print_msg_warning "dn_entrypoint.global.init.callback.bash unavailable"
 fi
 
 if [[ -f /project_entrypoints/project-develop/dn_entrypoint.init.callback.bash ]]; then
   source /project_entrypoints/project-develop/dn_entrypoint.init.callback.bash || exit 1
 else
-  echo "project-develop/dn_entrypoint.init.callback.bash unavailable"
+  n2st::print_msg_warning "project-develop/dn_entrypoint.init.callback.bash unavailable"
 fi
 
 # ....Release......................................................................................

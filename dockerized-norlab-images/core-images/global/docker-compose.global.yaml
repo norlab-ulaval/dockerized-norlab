@@ -79,6 +79,8 @@ services:
       platforms: !reset [] # Arch logic is handled by 'base-images' compose files
       labels:
         org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
+        norlab.buildsystem.project: "dockerized-norlab"
+        norlab.dockerized-norlab.project: "dockerized-norlab"
     init: true  # Propagate exit code (See remark in task NMO-266)
     security_opt: # options needed for gdb debugging
       - seccomp=unconfined

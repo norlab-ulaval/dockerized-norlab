@@ -13,7 +13,7 @@ ENV DN_PROJECT_SERVICE=project-deploy
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
 
 RUN <<EOF
-    echo "Pre-condition checks"
+    n2st::print_msg "Pre-condition checks"
     {
         test $(whoami) == "root" && \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
@@ -55,16 +55,30 @@ RUN <<EOF
         } || exit 1
     fi
 
-    echo "....Debug information (pre-checkout)...................................................."
+    # ....Debug information (pre-checkout)....................................................
+    n2st::print_msg "Debug information (pre-checkout)"
     tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
     cat ${DN_PROJECT_PATH}/.git
     tree -L 2 -aug ${DN_PROJECT_PATH}/.git
 
-    echo "....Checkout..........................................................................."
+    # ....Checkout...........................................................................
+    n2st::print_msg "git status"
+    git status
+
+    n2st::print_msg "List repository branches local and remote"
+    git branch --list --all
+
+    n2st::print_msg "List repository tags"
+    git tag --list
+
+    n2st::print_msg "Checking out branch ${DN_PROJECT_DEPLOY_REPO_BRANCH}"
     git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
 
-    echo "....Debug information (post-checkout)...................................................."
-    echo -e "\nLog relevant debug information on failure\n"
+    n2st::print_msg_warning "Note on git checkout faillure: If you experience problem checking out a tag, use prefix 'tags/<my-tags-name>'
+    e.g.: DN_PROJECT_DEPLOY_REPO_BRANCH=\"tags/v0.0.1\" in your .dockerized_norlab_project/configuration/.env file"
+
+    # ....Debug information (post-checkout)....................................................
+    n2st::print_msg "Debug information (post-checkout)"
     tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
 
     if [[ "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" ]]; then
@@ -96,17 +110,17 @@ WORKDIR ${DN_DEV_WORKSPACE}
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN <<EOF
-    echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
-    source ${DN_DEV_WORKSPACE}/install/setup.bash
-    echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash"
-    source /opt/ros/${ROS_DISTRO}/setup.bash
+#    echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
+#    source ${DN_DEV_WORKSPACE}/install/setup.bash
+#    echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash"
+#    source /opt/ros/${ROS_DISTRO}/setup.bash
 
     COLCON_FLAGS=()
     if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
-      echo -e "Builder is running in architecture virtualisation"
+      n2st::print_msg "Builder is running in architecture virtualisation"
       COLCON_FLAGS+=("--executor" "sequential")
     else
-        echo -e "Builder is running on native architecture"
+        n2st::print_msg "Builder is running on native architecture"
         COLCON_FLAGS+=("--symlink-install")
     fi
 
@@ -115,7 +129,7 @@ RUN <<EOF
         "--cmake-args" "-DCMAKE_BUILD_TYPE=Release"
         "--event-handlers" "console_direct+"
     )
-    echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
+    n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
     colcon build ${COLCON_FLAGS[@]}
 EOF
 
@@ -177,9 +191,9 @@ EOF
 # ........................................................................TMP DEV introspection....
 
 # ....TMP DEV dn_info.bash refactor................................................................
-## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-COPY --from=context-dn-container-tools ./dn_info.bash .
+### (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
+#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+#COPY --from=context-dn-container-tools ./dn_info.bash .
 # ................................................................TMP DEV dn_info.bash refactor....
 
 
@@ -195,14 +209,14 @@ RUN <<EOF
         test -d "/home/${DN_PROJECT_USER}" ;
     } || exit 1
 
-    echo "===Check that ROS source is available in DN_PROJECT_USER user============="
+    n2st::print_msg "Check that ROS source is available in DN_PROJECT_USER user"
     printenv
     {
       test -n "${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" && \
       python -c "import rclpy" ;
     } || exit 1
 
-    echo "===ros2 install pkg sanity check================================================="
+    n2st::print_msg "ros2 install pkg sanity check"
     {
         test -n "$(ros2 pkg list | grep -e ros_core)" && \
         test -n "$(ros2 pkg list | grep -e rclpy)" && \
