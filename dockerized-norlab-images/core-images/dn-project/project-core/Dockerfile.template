@@ -28,11 +28,7 @@ COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
 RUN <<EOF
     source ./dn_project_core_init.bash
     rm ./dn_project_core_init.bash
-
-    {
-        test -d ${DN_PROJECT_USER_HOME} && \
-        test -d ${DN_PROJECT_PATH} ;
-    } || exit 1
+    { test -d ${DN_PROJECT_USER_HOME} && test -d ${DN_PROJECT_PATH} ; } || exit 1
 EOF
 
 
@@ -62,6 +58,7 @@ RUN source /shell.requirements.bash \
 # ====DN-project final=============================================================================
 FROM project-custom-docker-steps AS final
 
+# (NICE TO HAVE) ToDo: refactor project_entrypoints logic a fct. Either in DN container-tools or in DN-project
 # Note: project-develop container mounth those directories as a volume to skip rebuilding
 #       each time they are modify (see docker-compose.project.run.*.yaml). However, project-deploy
 #       and project release container will need them copied in the image for portability.
@@ -70,8 +67,6 @@ FROM project-custom-docker-steps AS final
 WORKDIR /project_entrypoints
 ENV MOCK_PROJECT_ENTRYPOINT_PATH=./project_entrypoints
 COPY ${MOCK_PROJECT_ENTRYPOINT_PATH} .
-
-# (NICE TO HAVE) ToDo: refactor project_entrypoints logic a fct. Either in DN container-tools or in DN-project
 RUN <<EOF
     # Note: DN-project path would be ".dockerized_norlab_project/configuration/project_entrypoints"
     for each_file in ./dn_entrypoint.*.bash; do

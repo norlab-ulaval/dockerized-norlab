@@ -82,8 +82,8 @@ else
 
   EXEC_ARG=("${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" "--fail-fast" "--" "exec" "${THE_SERVICE}" "bash" )
   bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash "${EXEC_ARG[@]}" || \
-  n2st::print_msg_error_and_exit "Service ${THE_SERVICE} is not running. Make sure that either one of ${MSG_DIMMED_FORMAT}runtime-global-dev-config-[jetson
-|darwin]${MSG_END_FORMAT} is un-muted in service ${MSG_DIMMED_FORMAT}global-service-builder-config-base-images${MSG_END_FORMAT} otherwise container wont start.
+  n2st::print_msg_error_and_exit "Service ${THE_SERVICE} is not running. ${MSG_EMPH_FORMAT}${MSG_ERROR_FORMAT}MAKE SURE THAT EITHER ONE OF ${MSG_DIMMED_FORMAT}runtime-global-dev-config-[jetson
+|darwin]${MSG_END_FORMAT} ${MSG_EMPH_FORMAT}${MSG_ERROR_FORMAT}IS UN-MUTED IN SERVICE ${MSG_DIMMED_FORMAT}global-service-builder-config-base-images${MSG_END_FORMAT}${MSG_EMPH_FORMAT}${MSG_ERROR_FORMAT} OTHERWISE CONTAINER WONT START!${MSG_END_FORMAT}
 See ${MSG_DIMMED_FORMAT}docker-compose.global.yaml${MSG_END_FORMAT}."
 
 fi

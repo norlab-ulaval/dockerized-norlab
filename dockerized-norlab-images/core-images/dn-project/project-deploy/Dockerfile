@@ -21,6 +21,7 @@ RUN <<EOF
         test -d ${DN_PROJECT_USER_HOME} && \
         test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
         test -d ${DN_PROJECT_PATH} && \
+        test -n ${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ;
@@ -33,33 +34,47 @@ RUN echo "(WARNING) PYTHONUNBUFFERED env variable will be set to 0 for deploymen
 ENV PYTHONUNBUFFERED=0
 
 # ....Clone or checkout project src code...........................................................
-WORKDIR ${DN_DEV_WORKSPACE}/src
+# Implementation note: Copying the repository in the container and then checkout is safer for case
+# where the repository is private. It circumvents the problematic of leaked secret that can persist
+# in build history and cached layer. Since the repository is already cloned on the host machine
+# whether it's a personal computer, a robot or a CI server its safer and easier to manage to
+# delegate the responsibility of secret management to the user.
+WORKDIR "${DN_DEV_WORKSPACE}/src"
+COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+WORKDIR ${DN_PROJECT_PATH}
+# Dev note:
+# - DN_DEV_WORKSPACE: /ros2_ws/src
+# - DN_PROJECT_PATH: /ros2_ws/src/dockerized-norlab-project-mock
 RUN <<EOF
-    echo "\nCheckout ${DN_PROJECT_GIT_NAME} at ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
-
-    echo -e "\nLog relevant debug information on failure\n"
-    tree -L 2 -a ${DN_DEV_WORKSPACE}/src
-    tree -L 2 -a ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-    echo
-
-    if [[ -e ${DN_PROJECT_GIT_NAME}/.git  ]]; then
-      echo "Repository is already cloned"
-      cd ${DN_PROJECT_GIT_NAME}
-      git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
-    elif [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
-      echo "Directory already exist but is not a git repository, so delete it and clone"
-      rm -rf ${DN_PROJECT_GIT_NAME}
-      git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
-    else
-      echo "Clone repository"
-      git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
+    if [[ "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" ]]; then
+        # Development test to validate that the git checkout operation was succesfull (pre)
+        {
+            test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" && \
+            test "$(git branch --show-current)" == "main" && \
+            test ! -f "src/mock_file.txt" ;
+        } || exit 1
     fi
 
-    # Sanity check
-    test -d ${DN_PROJECT_PATH} || exit 1
+    echo "....Debug information (pre-checkout)...................................................."
+    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+    cat ${DN_PROJECT_PATH}/.git
+    tree -L 2 -aug ${DN_PROJECT_PATH}/.git
 
+    echo "....Checkout..........................................................................."
+    git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
+
+    echo "....Debug information (post-checkout)...................................................."
     echo -e "\nLog relevant debug information on failure\n"
-    tree -L 2 -aug ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+
+    if [[ "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" ]]; then
+        # Development test to validate that the git checkout operation was succesfull (post)
+        {
+            test "$(git branch --show-current)" == "dev" && \
+            test -f "src/mock_file.txt" ;
+        } || exit 1
+    fi
+
 EOF
 
 # ....Project spoecific ROS setup..................................................................
