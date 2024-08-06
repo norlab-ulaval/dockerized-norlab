@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+# =================================================================================================
 # Fetch container environment variables and expose them to the host
 # through a mounted volume "dockerized-norlab-tools/dn_container_env_variable/"
 # making them availbale to sourcing in any IDEs.
@@ -24,6 +24,7 @@
 # Outputs:
 #   to stdout
 #
+# =================================================================================================
 
 n2st::print_formated_script_header "dn_expose_container_env_variables.bash" "${MSG_LINE_CHAR_INSTALLER}"
 
