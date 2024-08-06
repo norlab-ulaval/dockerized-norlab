@@ -81,6 +81,8 @@ services:
         org.opencontainers.image.authors: "luc.coupal.1@ulaval.ca"
         norlab.buildsystem.project: "dockerized-norlab"
         norlab.dockerized-norlab.project: "dockerized-norlab"
+        norlab.tools.norlab-shell-script-tools: "${N2ST_VERSION:?err}"
+        norlab.tools.norlab-build-system: "${NBS_VERSION:?err}"
     init: true  # Propagate exit code (See remark in task NMO-266)
     security_opt: # options needed for gdb debugging
       - seccomp=unconfined
