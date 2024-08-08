@@ -7,7 +7,7 @@
 #
 # =================================================================================================
 
-alias tree='pwd && tree -L 1'
-alias tree2='tree -L 2'
+alias tree='tree -a -L 1'
+alias tree2='tree -a -L 2'
 
 # ====Build-time appended instructions=============================================================

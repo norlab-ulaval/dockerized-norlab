@@ -61,7 +61,7 @@ function dn::agregate_build_logs() {
 # ====Begin========================================================================================
 if [[ -n $(set | grep -e NBS_OVERRIDE | sed 's/ZSH_EXECUTION_STRING.*//') ]]; then
   n2st::print_msg "Using the folowing environment variable override\n"
-  echo -e "${MSG_DIMMED_FORMAT}$(set | grep -e NBS_OVERRIDE | sed 's/ZSH_EXECUTION_STRING.*//' | sed 's/_p9k__.*//' | sed 's/^NBS_OVERRIDE/    NBS_OVERRIDE/')${MSG_END_FORMAT}"
+  echo -e "${MSG_DIMMED_FORMAT}$(set | grep -e NBS_OVERRIDE | sed 's/ZSH_EXECUTION_STRING.*//' | sed 's/_p9k__.*//' | sed 's/\[.*\]=//' | sed 's/^NBS_OVERRIDE/    NBS_OVERRIDE/')${MSG_END_FORMAT}"
   echo
 fi
 
@@ -70,7 +70,7 @@ fi
 DOCKER_COMMAND_W_FLAGS="${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG:-"build"}"
 
 # ....execute all build matrix.....................................................................
-_CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[*]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]:?err}}" )
+_CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[@]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]:?err}}" )
 
 for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
 
