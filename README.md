@@ -88,11 +88,15 @@ Recommanded reading by [Tobit Flatscher](https://github.com/2b-t)
 - [Why should I use Docker when developing robotics software?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#2-why-should-i-use-docker-when-developing-robotics-software)
 - [Why is Docker important in particular for academic and research institutions?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#3-why-is-docker-important-in-particular-for-academic-and-research-institutions)
 
+---
+
 # Available images
 
 Notes:
 - All images also have a tag pinned for each release version, starting from release v0.5.2, e.g. `DN-v0.5.2-foxy-ros-core-l4t-r35.2.1`.
 - Bleeding tags are build from the latest `dev` branch version (e.g. `DN-bleeding-foxy-base-l4t-pytorch-r35.4.1`) and are rebuild each week. 
+- All images are multi-architecture build (amr64 and amd64). 
+- Most have CUDA support via _nvidia-docker_ base image, both for L4T (aka Jetson OS) and ubuntu.
 
 
 ### Dockerized-Norlab Perception
@@ -206,9 +210,9 @@ Notes:
 
 
 
-<br>
-<details>
-  <summary style="font-weight: bolder;font-size: x-large;"><b> For developer and maintainer </b></summary>
+---
+
+# For developer and maintainer
 
 ## Clone repository
 ```shell
@@ -236,6 +240,5 @@ docker buildx create \
     --use
 ```
 
-</details>
 
 <br>
