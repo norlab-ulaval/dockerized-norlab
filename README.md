@@ -88,6 +88,34 @@ Recommanded reading by [Tobit Flatscher](https://github.com/2b-t)
 - [Why should I use Docker when developing robotics software?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#2-why-should-i-use-docker-when-developing-robotics-software)
 - [Why is Docker important in particular for academic and research institutions?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#3-why-is-docker-important-in-particular-for-academic-and-research-institutions)
 
+
+---
+
+# Basic usage
+Note: _**Dockerized-Norlab**_ images are intended to be used as base images for **_Dockerized-NorLab-Project_**
+
+1. Pick an images that fit your project, the most basic one is [dockerized-norlab-dependencies-full](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-dependencies-full)
+2. Pick the tag that fit your needs, e.g. `DN-bleeding-foxy-base-l4t-pytorch-r35.4.1`  
+   Notes: `bleeding` is for the DN `dev` branch, `foxy` is the ros version, `base` is the ROS package type, `l4t-pytorch` is the Jetson container pkg, `r35.4.1` is the _Jetpack_ version 
+3. Pull the image from _Dockerhub_
+    ```shell
+    docker pull norlabulaval/dockerized-norlab-dependencies-full:DN-bleeding-foxy-base-l4t-pytorch-r35.4.1
+    ```
+4. Pull the image from _Dockerhub_
+    
+   ```shell
+    docker run -it --rm \
+        --env ROS_DOMAIN_ID=1 --env DISPLAY="${DISPLAY}" --env QT_X11_NO_MITSHM=1 \
+        --net host -p 2222:2222 -p 6006:6006 -p 7777:7777 \
+        --privileged \
+        -v /etc/localtime:/etc/localtime:ro -v /tmp/.X11-unix:/tmp/.X11-unix:rw -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw \
+        norlabulaval/dockerized-norlab-dependencies-full:DN-bleeding-foxy-base-l4t-pytorch-r35.4.1
+    ``` 
+    Note: 
+    - Add the `--runtime nvidia` flag if you have nvidia gpu and _nvidia-docker_ is installed.
+    - For _MacOs_ user, replace the line `--net host -p 2222:2222 -p 6006:6006 -p 7777:7777` with `--net bridge`. 
+
+
 ---
 
 # Available images

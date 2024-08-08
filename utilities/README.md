@@ -1,13 +1,6 @@
-# Note on repository submodule and sub-repository
+# Note on repository submodule
 
-- `dockerized-norlab-project-mock` is a dev utility. It is needed to implement project-deploy
-  cloning/copying/checkout functionality in and out of docker container. For that reason, it is
-  cloned as a full repository, not a submodule. 
-
-<details>
-  <summary style="font-weight: bolder;font-size: large;"><b> Git submodule usage notes </b></summary>
-
-### Notes on submodule
+### Git submodule usage
 
 To **clone** your repository and its submodule at the same time, use
 
@@ -78,5 +71,3 @@ This should solve the problem permanently.
 #### Git command
 - [git-rm](https://git-scm.com/docs/git-rm)
 - [git-submodule](https://git-scm.com/docs/git-submodule#_name)
-
-</details>

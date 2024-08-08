@@ -11,4 +11,4 @@
 /dockerized-norlab-tools/dn_container_env_variable/*
 !/dockerized-norlab-tools/dn_container_env_variable/README.md
 
-/utilities/dockerized-norlab-project-mock
+/utilities/tmp/dockerized-norlab-project-mock

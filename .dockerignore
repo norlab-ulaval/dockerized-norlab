@@ -20,4 +20,4 @@ visual/*
 
 # Un-ignored files
 !/dockerized-norlab-scripts/build_script/build_all.log
-!/utilities/dockerized-norlab-project-mock/
+!/utilities/tmp/dockerized-norlab-project-mock/

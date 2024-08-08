@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# ===============================================================================================
+# Post docker command execution callback
+#
+# Usage:
+#   $ source dn_callback_execute_compose_post.bash && dn::callback_execute_compose_post
+#
+# Globals:
+#   Read DOCKER_COMPOSE_CMD_ARGS
+#   Read DN_HUB
+#
+# =================================================================================================
 function dn::callback_execute_compose_post() {
 
     if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]:?err} == build ]] && [[ "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*"--push".* ]] && [[ ! "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*"--dry-run".* ]]; then
