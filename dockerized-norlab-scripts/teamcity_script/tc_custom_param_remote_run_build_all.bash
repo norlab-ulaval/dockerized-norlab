@@ -1,4 +1,23 @@
 #!/bin/bash
+# ===================================================================================================
+# This a TeamCity (TC) build step script with configuration parameter support for custom run.
+#
+# The script reads, initializes, and exports various environment variables from TC configuration
+# parameters set via the custom run UI. It also checks conditions and adds specific flags to
+# DN_BUILD_ALL_FLAGS. Finally, it initiates a build process by sourcing the dn_build_all.bash
+# script.
+#
+# Globals:
+# Read/Write: NBS_OVERRIDE_BUILD_MATRIX_MAIN, NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG,
+#             NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY, DN_BUILD_ALL_FLAGS, DN_PUSH_HOT_TAG
+#
+# Outputs:
+# Writes the environment variables, added flags to stdout.
+#
+# Usage:
+#    copy the code into the "custom script" cell of a TC build step
+#
+# ===================================================================================================
 
 # ....NBS_OVERRIDE build matrix main............................
 NBS_OVERRIDE_BUILD_MATRIX_MAIN=%NBS_OVERRIDE_BUILD_MATRIX_MAIN%
@@ -11,7 +30,7 @@ fi
 # ....NBS_OVERRIDE add docker cmd and flag......................
 NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=%NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG%
 echo "NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=%NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG%"
-if [[ -n "$NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG"  ]]; then
+if [[ -n "${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}"  ]]; then
   export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG
   echo "execute: export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG"
 fi
@@ -38,11 +57,13 @@ DN_PUSH_HOT_TAG=%DN_PUSH_HOT_TAG%
 if [[ ${DN_PUSH_HOT_TAG} == true ]]; then
   DN_BUILD_ALL_FLAGS+=("--force-push" "--dockerized-norlab-version-build-matrix-override" "hot")
 fi
-echo "DN_BUILD_ALL_FLAGS=("
-for each in "${DN_BUILD_ALL_FLAGS[@]}" ; do
-    echo "  ${each}"
-done
-echo ")"
+if [[ -n "${DN_BUILD_ALL_FLAGS}" ]]; then
+  echo "DN_BUILD_ALL_FLAGS=("
+  for each in "${DN_BUILD_ALL_FLAGS[@]}" ; do
+      echo "  ${each}"
+  done
+  echo ")"
+fi
 
 # ....Final.....................................................
 echo -e "execute: source dockerized-norlab-scripts/build_script/dn_build_all.bash ${DN_BUILD_ALL_FLAGS[*]}"
