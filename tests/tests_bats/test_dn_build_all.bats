@@ -170,6 +170,34 @@ teardown() {
 
 }
 
+@test "env variable NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY pass to script › ok" {
+#  skip "tmp dev"
+
+  # ....Casse single dotenv file build matrix array................................................
+  local NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( 'prod/.env.build_matrix.dn-dependencies' )
+  local NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --dry-run"
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
+                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
+                         --os-name-build-matrix-override 'l4t' \
+                         --l4t-version-build-matrix-override 'r33.3.3'
+
+  assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
+
+  refute_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dn-project/docker-compose.dn-project.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
+
+  # ....Casse multiple dotenv file build matrix array..............................................
+  local NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( 'prod/.env.build_matrix.dn-dependencies' 'prod/.env.build_matrix.dn-project' )
+  local NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --dry-run"
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
+                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
+                         --os-name-build-matrix-override 'l4t' \
+                         --l4t-version-build-matrix-override 'r33.3.3'
+
+  assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
+
+  assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dn-project/docker-compose.dn-project.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
+}
+
 @test "use docker cmd buildx bake › ok" {
 #  skip "tmp dev"
 

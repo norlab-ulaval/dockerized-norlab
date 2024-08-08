@@ -13,7 +13,7 @@ ENV DN_PROJECT_SERVICE=project-deploy
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
 
 RUN <<EOF
-    echo "Pre-condition checks"
+    n2st::print_msg "Pre-condition checks"
     {
         test $(whoami) == "root" && \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
@@ -21,6 +21,7 @@ RUN <<EOF
         test -d ${DN_PROJECT_USER_HOME} && \
         test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
         test -d ${DN_PROJECT_PATH} && \
+        test -n ${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ;
@@ -33,37 +34,65 @@ RUN echo "(WARNING) PYTHONUNBUFFERED env variable will be set to 0 for deploymen
 ENV PYTHONUNBUFFERED=0
 
 # ....Clone or checkout project src code...........................................................
-WORKDIR ${DN_DEV_WORKSPACE}/src
+# Implementation note: Copying the repository in the container and then checkout is safer for case
+# where the repository is private. It circumvents the problematic of leaked secret that can persist
+# in build history and cached layer. Since the repository is already cloned on the host machine
+# whether it's a personal computer, a robot or a CI server its safer and easier to manage to
+# delegate the responsibility of secret management to the user.
+WORKDIR "${DN_DEV_WORKSPACE}/src"
+COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+WORKDIR ${DN_PROJECT_PATH}
+# Dev note:
+# - DN_DEV_WORKSPACE: /ros2_ws/src
+# - DN_PROJECT_PATH: /ros2_ws/src/dockerized-norlab-project-mock
 RUN <<EOF
-    echo "\nCheckout ${DN_PROJECT_GIT_NAME} at ${DN_PROJECT_DEPLOY_REPO_BRANCH} branch"
-
-    echo -e "\nLog relevant debug information on failure\n"
-    tree -L 2 -a ${DN_DEV_WORKSPACE}/src
-    tree -L 2 -a ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
-    echo
-
-    if [[ -e ${DN_PROJECT_GIT_NAME}/.git  ]]; then
-      echo "Repository is already cloned"
-      cd ${DN_PROJECT_GIT_NAME}
-      git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
-    elif [[ -d ${DN_PROJECT_GIT_NAME}  ]]; then
-      echo "Directory already exist but is not a git repository, so delete it and clone"
-      rm -rf ${DN_PROJECT_GIT_NAME}
-      git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
-    else
-      echo "Clone repository"
-      git clone --recurse-submodules --branch "${DN_PROJECT_DEPLOY_REPO_BRANCH}" "https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git"
+    if [[ "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" ]]; then
+        # Development test to validate that the git checkout operation was succesfull (pre)
+        {
+            test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" && \
+            test "$(git branch --show-current)" == "main" && \
+            test ! -f "src/mock_file.txt" ;
+        } || exit 1
     fi
 
-    # Sanity check
-    test -d ${DN_PROJECT_PATH} || exit 1
+    # ....Debug information (pre-checkout)....................................................
+    n2st::print_msg "Debug information (pre-checkout)"
+    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+    cat ${DN_PROJECT_PATH}/.git
+    tree -L 2 -aug ${DN_PROJECT_PATH}/.git
 
-    echo -e "\nLog relevant debug information on failure\n"
-    tree -L 2 -aug ${DN_DEV_WORKSPACE}/src/${DN_PROJECT_GIT_NAME}
+    # ....Checkout...........................................................................
+    n2st::print_msg "git status"
+    git status
+
+    n2st::print_msg "List repository branches local and remote"
+    git branch --list --all
+
+    n2st::print_msg "List repository tags"
+    git tag --list
+
+    n2st::print_msg "Checking out branch ${DN_PROJECT_DEPLOY_REPO_BRANCH}"
+    git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
+
+    n2st::print_msg_warning "Note on git checkout faillure: If you experience problem checking out a tag, use prefix 'tags/<my-tags-name>'
+    e.g.: DN_PROJECT_DEPLOY_REPO_BRANCH=\"tags/v0.0.1\" in your .dockerized_norlab_project/configuration/.env file"
+
+    # ....Debug information (post-checkout)....................................................
+    n2st::print_msg "Debug information (post-checkout)"
+    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+
+    if [[ "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" ]]; then
+        # Development test to validate that the git checkout operation was succesfull (post)
+        {
+            test "$(git branch --show-current)" == "dev" && \
+            test -f "src/mock_file.txt" ;
+        } || exit 1
+    fi
+
 EOF
 
-# ....Project spoecific ROS setup..................................................................
 
+# ....Project spoecific ROS setup..................................................................
 WORKDIR ${DN_DEV_WORKSPACE}
 RUN <<EOF
     rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros
@@ -81,17 +110,17 @@ WORKDIR ${DN_DEV_WORKSPACE}
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN <<EOF
-    echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
-    source ${DN_DEV_WORKSPACE}/install/setup.bash
-    echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash"
-    source /opt/ros/${ROS_DISTRO}/setup.bash
+#    echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
+#    source ${DN_DEV_WORKSPACE}/install/setup.bash
+#    echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash"
+#    source /opt/ros/${ROS_DISTRO}/setup.bash
 
     COLCON_FLAGS=()
     if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
-      echo -e "Builder is running in architecture virtualisation"
+      n2st::print_msg "Builder is running in architecture virtualisation"
       COLCON_FLAGS+=("--executor" "sequential")
     else
-        echo -e "Builder is running on native architecture"
+        n2st::print_msg "Builder is running on native architecture"
         COLCON_FLAGS+=("--symlink-install")
     fi
 
@@ -100,7 +129,7 @@ RUN <<EOF
         "--cmake-args" "-DCMAKE_BUILD_TYPE=Release"
         "--event-handlers" "console_direct+"
     )
-    echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
+    n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
     colcon build ${COLCON_FLAGS[@]}
 EOF
 
@@ -162,9 +191,9 @@ EOF
 # ........................................................................TMP DEV introspection....
 
 # ....TMP DEV dn_info.bash refactor................................................................
-## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-COPY --from=context-dn-container-tools ./dn_info.bash .
+### (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
+#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
+#COPY --from=context-dn-container-tools ./dn_info.bash .
 # ................................................................TMP DEV dn_info.bash refactor....
 
 
@@ -180,14 +209,14 @@ RUN <<EOF
         test -d "/home/${DN_PROJECT_USER}" ;
     } || exit 1
 
-    echo "===Check that ROS source is available in DN_PROJECT_USER user============="
+    n2st::print_msg "Check that ROS source is available in DN_PROJECT_USER user"
     printenv
     {
       test -n "${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" && \
       python -c "import rclpy" ;
     } || exit 1
 
-    echo "===ros2 install pkg sanity check================================================="
+    n2st::print_msg "ros2 install pkg sanity check"
     {
         test -n "$(ros2 pkg list | grep -e ros_core)" && \
         test -n "$(ros2 pkg list | grep -e rclpy)" && \

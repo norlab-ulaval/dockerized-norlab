@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+# =================================================================================================
 # Fetch container environment variables and expose them to the host
 # through a mounted volume "dockerized-norlab-tools/dn_container_env_variable/"
 # making them availbale to sourcing in any IDEs.
@@ -24,6 +24,9 @@
 # Outputs:
 #   to stdout
 #
+# =================================================================================================
+
+n2st::print_formated_script_header "dn_expose_container_env_variables.bash" "${MSG_LINE_CHAR_INSTALLER}"
 
 if [[ -d /dockerized-norlab ]]; then
     DN_PATH=/dockerized-norlab
@@ -97,4 +100,5 @@ sudo touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Vari
 #) > "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
 ) | sudo tee "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
 
-
+# ====Teardown=====================================================================================
+n2st::print_formated_script_footer "dn_expose_container_env_variables.bash" "${MSG_LINE_CHAR_INSTALLER}"

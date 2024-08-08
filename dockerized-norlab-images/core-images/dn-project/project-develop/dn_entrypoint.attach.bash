@@ -20,18 +20,18 @@ fi
 
 # ....Execute DN-project user callback.............................................................
 # Sanity check
-test -d "/project_entrypoints" || { echo "Dir /project_entrypoints is unreachable" ; exit 1 ; }
+test -d "/project_entrypoints" || n2st::print_msg_error_and_exit "Dir /project_entrypoints is unreachable"
 
 if [[ -f /project_entrypoints/dn_entrypoint.global.attach.callback.bash ]]; then
   source /project_entrypoints/dn_entrypoint.global.attach.callback.bash || exit 1
 else
-  echo "dn_entrypoint.global.attach.callback.bash unavailable"
+  n2st::print_msg_warning "dn_entrypoint.global.attach.callback.bash unavailable"
 fi
 
 if [[ -f /project_entrypoints/project-develop/dn_entrypoint.attach.callback.bash ]]; then
   source /project_entrypoints/project-develop/dn_entrypoint.attach.callback.bash || exit 1
 else
-  echo "project-develop/dn_entrypoint.attach.callback.bash unavailable"
+  n2st::print_msg_warning "project-develop/dn_entrypoint.attach.callback.bash unavailable"
 fi
 
 # ....Release......................................................................................
