@@ -13,6 +13,7 @@
 #   - Read NBS_OVERRIDE_BUILD_MATRIX_MAIN          Use to quickly change the .env.build_matrix.main file
 #   - Read NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG            Use to quickly add docker flag at runtime
 #             e.g.: $ NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push --dry-run" && source dn_build_all.bash
+#             Note accept string of flags or array of flags eg "build --push" or ("build" "--push)
 #   - Read NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY  Use to quickly override the build matrix list
 #             e.g.: $ NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev' ) && source dn_build_all.bash
 #   - Read STR_BUILD_MATRIX_SERVICES_AND_TAGS from build_all.log
@@ -67,7 +68,7 @@ fi
 
 # ....setup........................................................................................
 # Note: 'NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG' is set via commandline for convenience
-DOCKER_COMMAND_W_FLAGS="${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG:-"build"}"
+DOCKER_COMMAND_W_FLAGS=("${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG[@]:-"build"}")
 
 # ....execute all build matrix.....................................................................
 _CRAWL_BUILD_MATRIX=( "${NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY[@]:-${NBS_DOTENV_BUILD_MATRIX_ARRAY[@]:?err}}" )
@@ -78,14 +79,14 @@ for EACH_BUILD_MATRIX in "${_CRAWL_BUILD_MATRIX[@]}" ; do
 
     bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash
                  ${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/$EACH_BUILD_MATRIX
-                 $* -- ${DOCKER_COMMAND_W_FLAGS}
+                 $* -- ${DOCKER_COMMAND_W_FLAGS[*]}
 ${MSG_END_FORMAT}"
 
 
   cd "${DN_PATH:?'Variable not set'}" || exit 1
   bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
                         "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/$EACH_BUILD_MATRIX" \
-                        "$@" -- "${DOCKER_COMMAND_W_FLAGS}"
+                        "$@" -- "${DOCKER_COMMAND_W_FLAGS[@]}"
 
     dn::fetch_build_log
     dn::agregate_build_logs

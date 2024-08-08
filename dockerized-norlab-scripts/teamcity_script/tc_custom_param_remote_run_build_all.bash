@@ -38,6 +38,11 @@ DN_PUSH_HOT_TAG=%DN_PUSH_HOT_TAG%
 if [[ ${DN_PUSH_HOT_TAG} == true ]]; then
   DN_BUILD_ALL_FLAGS+=("--force-push" "--dockerized-norlab-version-build-matrix-override" "hot")
 fi
+echo "DN_BUILD_ALL_FLAGS=("
+for each in "${DN_BUILD_ALL_FLAGS[@]}" ; do
+    echo "  ${each}"
+done
+echo ")"
 
 # ....Final.....................................................
 echo -e "execute: source dockerized-norlab-scripts/build_script/dn_build_all.bash ${DN_BUILD_ALL_FLAGS[*]}"
