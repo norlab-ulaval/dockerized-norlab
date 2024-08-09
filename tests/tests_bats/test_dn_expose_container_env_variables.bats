@@ -73,6 +73,12 @@ setup() {
 
   export PROJECT_PROMPT_NAME=dockerized-norlab
 
+
+  pushd "$(pwd)" >/dev/null || exit 1
+  cd "${DN_PATH}"/dockerized-norlab-images/container-tools || exit 1
+  source import_dockerized_norlab_container_tools.bash
+  popd >/dev/null || exit 1
+
   source ./$TESTED_FILE
 }
 

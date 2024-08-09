@@ -16,4 +16,8 @@ visual/*
 /scratches/
 
 # Excluded files
+
+
+# Un-ignored files
 !/dockerized-norlab-scripts/build_script/build_all.log
+!/utilities/tmp/dockerized-norlab-project-mock/

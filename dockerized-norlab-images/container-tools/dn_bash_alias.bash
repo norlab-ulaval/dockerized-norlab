@@ -1,12 +1,13 @@
 #!/bin/bash
+# =================================================================================================
+# dn_bash_alias.bash
+#
+# This file act as a DN build stages temporary buffer to pass aliases instruction that will be
+# appended to .bashrc at the DN project-core build stage
+#
+# =================================================================================================
 
-alias tree='pwd && tree -L 1'
-alias tree2='tree -L 2'
+alias tree='tree -a -L 1'
+alias tree2='tree -a -L 2'
 
-# Dockerized-NorLab aliases (from dependencies img)
-alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'
-
-# Dockerized-NorLab aliases (from develop img)
-alias dn_ros2_rebuild_dev_workspace='source /dockerized-norlab/dockerized-norlab-images/core-images/dn-project/project-develop/dn_ros2_rebuild_dev_workspace.bash'
-alias dn_fetch_ros_env_variables='source /dockerized-norlab/dockerized-norlab-images/core-images/dn-project/project-develop/dn_fetch_ros_env_variables.bash'
-alias dn_expose_container_env_variables='source /dockerized-norlab/dockerized-norlab-images/core-images/dn-project/project-develop/dn_expose_container_env_variables.bash'
+# ====Build-time appended instructions=============================================================

@@ -3,9 +3,11 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS promt-tools
 
-# Note: We dont use ARG here has we want to be overwrited at runtime
-ENV DN_CONTAINER_NAME=${DN_CONTAINER_NAME:-IamNorLab}
-ENV DN_ACTIVATE_POWERLINE_PROMT="${DN_ACTIVATE_POWERLINE_PROMT:-true}"
+# Note: Set ENV default at build time via ARG in the dockerfile
+ARG DN_CONTAINER_NAME=IamNorLab
+ARG DN_ACTIVATE_POWERLINE_PROMT=true
+ENV DN_CONTAINER_NAME=${DN_CONTAINER_NAME}
+ENV DN_ACTIVATE_POWERLINE_PROMT="${DN_ACTIVATE_POWERLINE_PROMT}"
 
 SHELL ["/bin/bash", "-c"]
 
@@ -14,23 +16,25 @@ SHELL ["/bin/bash", "-c"]
 
 # Install Powerline requirement
 # Be advise, dont install `xrandr` it's not compatible with the Jetson kernel.
-RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
+RUN <<EOF
+    apt-get update
+    apt-get install --assume-yes --no-install-recommends \
         socat \
-        fonts-powerline \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir  \
+        fonts-powerline
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    pip3 install --no-cache-dir \
         psutil \
         powerline-status
 
-    # RUN pip3 install --no-cache-dir  pygit2  # Not required by Powerline if Git is installed
+    # pip3 install --no-cache-dir  pygit2  # Not required by Powerline if Git is installed
 
-# Require a Vim installation suporting python
-#       $ vim --version | grep +python
-#       +python/dyn +python3/dyn
-# 👍🏼 if it print either +python or +python3
-
+    # Require a Vim installation suporting python
+    #       $ vim --version | grep +python
+    #       +python/dyn +python3/dyn
+    # 👍🏼 if it print either +python or +python3
+EOF
 
 # . . Install Powerline + special font pack. . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 # Note: If Powerline prompt fonts are missing in PyCharm terminal, check that the `Console Scheme` / `Consol Font` /  `Use console font instead of default` is set to `Font:` `MesloLGS NF` (!)
@@ -55,41 +59,42 @@ RUN apt-get update \
 
 WORKDIR /dockerized-norlab
 
-RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
-    && source import_dockerized_norlab_container_tools.bash \
-    && n2st::set_which_python3_version \
-    && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
-    && ( \
+RUN <<EOF
+    cd /dockerized-norlab/dockerized-norlab-images/container-tools
+    source import_dockerized_norlab_container_tools.bash
+    n2st::set_which_python3_version
+    export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline
+    (
         ## Note: powerline-daemon and powerline10k are OS specific app.
-        echo ""; \
-        echo "# >>> dockerized-norlab prompt "; \
-    #    echo "if [ -f `which powerline-daemon` ]; then"; \
+        echo ""
+        echo "# >>> dockerized-norlab prompt "
+    #    echo "if [ -f `which powerline-daemon` ]; then"
         ## Note: Use $"VAR" instead of "$VAR" to write the $VAR in the bashrc without substitution
-    #    echo "if [[ '$DN_ACTIVATE_POWERLINE_PROMT' == 'true' ]]; then"; \
-        echo "if [[ $"DN_ACTIVATE_POWERLINE_PROMT" == 'true' ]]; then"; \
-        echo "  # Start the powerline daemon quietly"; \
-        echo "  powerline-daemon --quiet"; \
-        echo "  # Set Powerline env var for bash"; \
-        echo "  POWERLINE_BASH_CONTINUATION=1"; \
-        echo "  POWERLINE_BASH_SELECT=1"; \
-        echo "  # Invoke binding script"; \
-        echo "  . ${POWERLINE_DIR}/bindings/bash/powerline.sh"; \
-        echo "else "; \
-        echo "  # Skip or stop Powerline prompt configuration"; \
-        echo "  powerline-daemon --quiet --kill"; \
-    #    echo "  export PS1='❆  \e[0;34m$"{DN_CONTAINER_NAME}"\e[0m  \w\$ '"; \
-    #    echo "  export PS1='\033[1;34m❆  $"{DN_CONTAINER_NAME}" \033[0m\033[2m \w \033[0m\033[1;34m\033[0m '"; \
-    #    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w \033[0m\033[1;37m\033[0m '"; \
-    #    echo "  export PS1='\033[1;37m❆ ›\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
-    #    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"; \
+        echo "if [[ $"DN_ACTIVATE_POWERLINE_PROMT" == 'true' ]]; then"
+        echo "  # Start the powerline daemon quietly"
+        echo "  powerline-daemon --quiet"
+        echo "  # Set Powerline env var for bash"
+        echo "  POWERLINE_BASH_CONTINUATION=1"
+        echo "  POWERLINE_BASH_SELECT=1"
+        echo "  # Invoke binding script"
+        echo "  . ${POWERLINE_DIR}/bindings/bash/powerline.sh"
+        echo "else "
+        echo "  # Skip or stop Powerline prompt configuration"
+        echo "  powerline-daemon --quiet --kill"
+    #    echo "  export PS1='❆  \e[0;34m$"{DN_CONTAINER_NAME}"\e[0m  \w\$ '"
+    #    echo "  export PS1='\033[1;34m❆  $"{DN_CONTAINER_NAME}" \033[0m\033[2m \w \033[0m\033[1;34m\033[0m '"
+    #    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w \033[0m\033[1;37m\033[0m '"
+    #    echo "  export PS1='\033[1;37m❆ ›\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"
+    #    echo "  export PS1='\033[1;37m❆ \033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m '"
         ## Note: `\[ .. \]` is required to escape the sequence lenght from the prompt line lenght as there is a limit  \
         ##  https://unix.stackexchange.com/questions/71007/how-to-customize-ps1-properly
-    #    echo '  export PS1="\[\033[1;37m❆ ❯\033[0m\033[2m \$``{DN_CONTAINER_NAME}`` \033[0m\033[1;37m❯\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m \]"'; \
-        echo '  export PS1="\[\033[1;37m\]❆ ❯\[\033[0m\033[2m\] \$``{DN_CONTAINER_NAME}`` \[\033[0m\033[1;37m\]❯\[\033[0m\033[2m\] \w\[\033[0m\033[1;37m\]\$\[\033[0m\] "'; \
-        echo "fi"; \
-        echo "# <<< dockerized-norlab prompt "; \
-        echo ""; \
-      ) >> ~/.bashrc
+    #    echo '  export PS1="\[\033[1;37m❆ ❯\033[0m\033[2m \$``{DN_CONTAINER_NAME}`` \033[0m\033[1;37m❯\033[0m\033[2m \w\033[0m\033[1;37m\$\033[0m \]"'
+        echo '  export PS1="\[\033[1;37m\]❆ ❯\[\033[0m\033[2m\] \$``{DN_CONTAINER_NAME}`` \[\033[0m\033[1;37m\]❯\[\033[0m\033[2m\] \w\[\033[0m\033[1;37m\]\$\[\033[0m\] "'
+        echo "fi"
+        echo "# <<< dockerized-norlab prompt "
+        echo ""
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+EOF
 
 
 ENV POWERLINE_TMP=/tmp/powerline_tmp
@@ -100,26 +105,29 @@ COPY prompt/config_files/themes/shell/dockerized_snow.json config_files/themes/s
 COPY prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/colorschemes/shell/dockerized_snow.json
 
 #WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
-    && source import_dockerized_norlab_container_tools.bash \
-    && n2st::set_which_python3_version \
-    && export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline \
-    && cd $POWERLINE_TMP \
-    && mkdir -p $POWERLINE_DIR/config_files/ \
-    && mkdir -p $POWERLINE_DIR/config_files/themes/shell/ \
-    && mkdir -p $POWERLINE_DIR/config_files/colorschemes/shell/ \
-    && mv $POWERLINE_TMP/config_files/config.json $POWERLINE_DIR/config_files/ \
-    && mv $POWERLINE_TMP/config_files/themes/shell/dockerized_snow.json $POWERLINE_DIR/config_files/themes/shell/ \
-    && mv $POWERLINE_TMP/config_files/colorschemes/shell/dockerized_snow.json $POWERLINE_DIR/config_files/colorschemes/shell/
+RUN <<EOF
+    cd /dockerized-norlab/dockerized-norlab-images/container-tools
+    source import_dockerized_norlab_container_tools.bash
+    n2st::set_which_python3_version
+    export POWERLINE_DIR="/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline"
+
+    cd "${POWERLINE_TMP}"
+    mkdir -p "${POWERLINE_DIR}/config_files/"
+    mkdir -p "${POWERLINE_DIR}/config_files/themes/shell/"
+    mkdir -p "${POWERLINE_DIR}/config_files/colorschemes/shell/"
+    mv "${POWERLINE_TMP}/config_files/config.json" "${POWERLINE_DIR}/config_files/"
+    mv "${POWERLINE_TMP}/config_files/themes/shell/dockerized_snow.json" "${POWERLINE_DIR}/config_files/themes/shell/"
+    mv "${POWERLINE_TMP}/config_files/colorschemes/shell/dockerized_snow.json" "${POWERLINE_DIR}/config_files/colorschemes/shell/"
+EOF
 
 # ....Set Prompt logo..............................................................................
 ## Dockerized-Norlab (legacy code)
-#RUN echo DS_LOGO=$'\u22EF𝐒\u22EF' >> ~/.bashrc
-#RUN export DS_LOGO=$'\uf2dc' >> ~/.bashrc  #            nf-fa-snowflake_o
+#RUN echo DS_LOGO=$'\u22EF𝐒\u22EF' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+#RUN export DS_LOGO=$'\uf2dc' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash  #            nf-fa-snowflake_o
 ## Dockerized-snow (legacy code)
 #RUN export DS_LOGO=$'\U22EF\U1D412\U22EF'  # ⋯𝐒⋯        mathematical bold capital s (U+1D412)
-#RUN export DS_LOGO=$'\U1D516' >> ~/.bashrc # 𝔖         mathematical fraktur capital s U+1D516
-#RUN export DS_LOGO=$'\U1D57E' >> ~/.bashrc # 𝕾         mathematical bold fraktur capital s U+1D57E
+#RUN export DS_LOGO=$'\U1D516' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash # 𝔖         mathematical fraktur capital s U+1D516
+#RUN export DS_LOGO=$'\U1D57E' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash # 𝕾         mathematical bold fraktur capital s U+1D57E
 
 CMD [ "bash" ]
 

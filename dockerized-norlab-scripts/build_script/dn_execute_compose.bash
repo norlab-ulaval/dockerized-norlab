@@ -40,6 +40,8 @@ declare -a COMPOSE_FILE_OVERRIDE_FLAG
 declare -x DN_TARGET_DEVICE
 declare -x DN_COMPOSE_PLATFORMS
 
+
+
 function dn::execute_compose() {
   # ....Positional argument........................................................................
   local COMPOSE_FILE="${1:?'Missing the docker-compose.yaml file mandatory argument'}"
@@ -52,6 +54,7 @@ function dn::execute_compose() {
   declare -a DOCKER_COMPOSE_CMD_ARGS  # eg: 'build --no-cache --push' or 'up --build --force-recreate'
   local _CI_TEST=false
   local DOCKER_FORCE_PUSH=false
+  local SHOW_DN_DEBUG_BUILD_INFO=false
   unset DOCKER_EXIT_CODE
   local MAIN_DOCKER_EXIT_CODE=0
   local ROS_DISTRO_PKG=none
@@ -97,6 +100,7 @@ function dn::execute_compose() {
         --force-push                            Execute docker compose push right after the docker
                                                 main command (to use when using buildx docker-container driver)
         --docker-debug-logs                     Set Docker builder log output for debug (i.e.BUILDKIT_PROGRESS=plain)
+        --show-dn-debug-build-info
         --fail-fast                             Exit script at first encountered error
         --ci-test-force-runing-docker-cmd
         --buildx-bake                           (experimental) Use 'docker buildx bake <cmd>' instead of 'docker compose <cmd>'
@@ -173,6 +177,10 @@ function dn::execute_compose() {
   #    set -x
       export BUILDKIT_PROGRESS=plain
       shift # Remove argument (--docker-debug-logs)
+      ;;
+    --show-dn-debug-build-info)
+      SHOW_DN_DEBUG_BUILD_INFO=true
+      shift # Remove argument (--show-dn-debug-build-info)
       ;;
     --buildx-bake)
       n2st::print_msg_warning "Be advise, the DN --buildx-bake flag is still in developemenmt. Use at your own risk"
@@ -299,6 +307,16 @@ function dn::execute_compose() {
   n2st::print_msg "Executing docker ${DOCKER_MANAGEMENT_COMMAND[*]} command on ${MSG_DIMMED_FORMAT}${COMPOSE_FILE}${MSG_END_FORMAT} with command ${MSG_DIMMED_FORMAT}${DOCKER_COMPOSE_CMD_ARGS[*]}${MSG_END_FORMAT}"
   n2st::print_msg "Image tag ${MSG_DIMMED_FORMAT}${DN_IMAGE_TAG}${MSG_END_FORMAT}"
 
+  if [[ ${SHOW_DN_DEBUG_BUILD_INFO} == true ]]; then
+    if [[ "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*--dry-run.* ]]; then
+      :
+    else
+      source "${DN_PATH:?err}/dockerized-norlab-scripts/build_script/dn_debug_tools.bash"
+      dn::show_debug_build_information
+    fi
+  fi
+
+
   # ...Docker cmd conditional logic................................................................
   ## (☕minor) ToDo: assessment if still usefull >> next bloc ↓↓
   # Note:
@@ -326,8 +344,8 @@ function dn::execute_compose() {
     for each_service in ${STR_BUILT_SERVICES[@]}; do
       echo
 
-      if [[ "${each_service}" =~ "global-service".* ]]; then
-        # n2st::print_msg_warning "Skip building ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
+      if [[ "${each_service}" =~ "global-service-builder-config".* ]] || [[ "${each_service}" =~ "runtime-global-dev-config".* ]]; then
+         n2st::print_msg_warning "Skip building ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
         :
       else
         n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
@@ -405,6 +423,7 @@ function dn::execute_compose() {
 
   return "${MAIN_DOCKER_EXIT_CODE}"
 }
+
 
 
 # ::::Main:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

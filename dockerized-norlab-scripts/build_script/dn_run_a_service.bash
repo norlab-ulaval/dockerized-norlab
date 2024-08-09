@@ -1,6 +1,5 @@
 #!/bin/bash
 # =================================================================================================
-#
 # Quickly spawn DN container instance(s) without having to worry about name collision
 # i.e. IamNorLab-97168
 #
@@ -15,7 +14,8 @@
 # Global e.g.: $ OPTION_FLAG=--build
 #
 # =================================================================================================
-clear
+#clear
+# (Priority) ToDo: NMO-375 refactor: run and attach logic using 'f1tenth-redleader-controller' implemention
 
 _DOTENV_BUILD_MATRIX="${1:?' Missing the dotenv build matrix file mandatory argument'}"
 shift # Remove argument value
@@ -70,6 +70,7 @@ echo
 n2st::print_msg "Be advised that ${MSG_DIMMED_FORMAT}${SCRIP_NAME}${MSG_END_FORMAT} bypass the container_name field of the docker compose file, so that you can spin the same service multiple time and all spawned containers will have a unique name, i.e. ${MSG_DIMMED_FORMAT}${DN_CONTAINER_NAME}${MSG_END_FORMAT}"
 echo
 
+#OPTION_FLAG=${OPTION_FLAG:-"( --build )"}
 OPTION_FLAG=( --build )
 #OPTION_FLAG=( --user pycharm-debugger )
 #OPTION_FLAG=()

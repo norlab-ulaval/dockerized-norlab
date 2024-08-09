@@ -1,4 +1,14 @@
 #!/bin/bash
+
+# Note: This is a dev utility script implemented at project early stage.
+#       It could still be usefull for debug purposes ...
+#       - but it need to be updated and refactored heavily
+#       - _up_and_attach_to.bash might already cover every use case.
+# (CRITICAL) ToDo: validate if its still usefull >> compare with dockerized-norlab-scripts/build_script/dn_up_and_attach_to.bash
+# (CRITICAL) ToDo: Refactor based on up_and_attach.bash from DN-project (ref task NMO-375)
+# (Priority) ToDo: NMO-375 refactor: run and attach logic using 'f1tenth-redleader-controller' implemention
+
+# =================================================================================================
 #
 # Convenient script
 #
@@ -9,6 +19,7 @@
 #   You can pass any docker exec flag in <optional argument> eg.:
 #     --env=\"VAR=1\"        (to set environment variables)
 #
+# =================================================================================================
 
 if [[ $( basename $(pwd) ) = run_script ]]; then
     cd ../..
@@ -37,14 +48,15 @@ set +o allexport
 # ....Helper function...............................................................................
 ## import shell functions from norlab-shell-script-tools utilities library
 
-TMP_CWD=$(pwd)
+
+pushd "$(pwd)" >/dev/null || exit 1
 # ToDo: refactor > use N2ST_PATH set somewhere
-cd ./utilities/norlab-shell-script-tools/src/function_library
+cd ./utilities/norlab-shell-script-tools/src/function_library || exit 1
 source ./prompt_utilities.bash
 source ./terminal_splash.bash
-cd "$TMP_CWD"
-SP="    "
+popd >/dev/null || exit 1
 
+SP="    "
 function print_help_in_terminal() {
   echo -e "\$ ${0} [<optional argument>] <THE_CONTAINER_NAME>
 
@@ -89,7 +101,7 @@ fi
 THE_CONTAINER_NAME=""
 USER_ARG=""
 
-# (CRITICAL) ToDo: validate (ref task NMO-257 ♻︎ → dn_attach.bash command line flag logic)
+# (CRITICAL) ToDo: validate (ref task NMO-257) see example: dn_execute_compose_over_build_matrix.bash
 for arg in "$@"; do
   case $arg in
   -h | --help)

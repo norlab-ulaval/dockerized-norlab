@@ -5,7 +5,7 @@
 # Pre docker command execution callback
 #
 # Usage:
-#   $ callback_execute_compose_pre()
+#   $ source dn_callback_execute_compose_pre.bash && callback_execute_compose_pre
 #
 # Globals:
 #   Read REPOSITORY_VERSION

@@ -10,3 +10,5 @@
 /dockerized-norlab-scripts/build_script/build_all.log
 /dockerized-norlab-tools/dn_container_env_variable/*
 !/dockerized-norlab-tools/dn_container_env_variable/README.md
+
+/utilities/tmp/dockerized-norlab-project-mock

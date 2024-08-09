@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+# =================================================================================================
 # Fetch container environment variables and expose them to the host
 # through a mounted volume "dockerized-norlab-tools/dn_container_env_variable/"
 # making them availbale to sourcing in any IDEs.
@@ -24,23 +24,27 @@
 # Outputs:
 #   to stdout
 #
+# =================================================================================================
+
+n2st::print_formated_script_header "dn_expose_container_env_variables.bash" "${MSG_LINE_CHAR_INSTALLER}"
 
 if [[ -d /dockerized-norlab ]]; then
     DN_PATH=/dockerized-norlab
 else
   DN_PATH=$(git rev-parse --show-toplevel)
 fi
-DN_EXPOSE_TMP_CWD=$(pwd)
 
+pushd "$(pwd)" >/dev/null || exit 1
 cd "${DN_PATH}/dockerized-norlab-images/container-tools" || exit 1
 source import_dockerized_norlab_container_tools.bash
-cd "${DN_EXPOSE_TMP_CWD}" || exit 1
+popd >/dev/null || exit 1
 
 # (Priority) ToDo: implement >> add flag option to source or not the /ros2_ws overlay
 n2st::print_msg "Sourcing ${DN_DEV_WORKSPACE:?'Variable DN_DEV_WORKSPACE unset'} ros overlay"
 source "${DN_DEV_WORKSPACE}/install/local_setup.bash"
 
-touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable DN_CONTAINER_NAME unset'}"
+# (CRITICAL) ToDo: validate that file permision are set to DN_PROJECT_USER (ref task NMO-548)
+sudo touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable DN_CONTAINER_NAME unset'}"
 
 ( \
   echo ""; \
@@ -93,6 +97,8 @@ touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Variable 
   echo "DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN}"; \
   echo "PYTHONUNBUFFERED=${PYTHONUNBUFFERED}"; \
   echo ""; \
-) > "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
+#) > "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
+) | sudo tee "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
 
-
+# ====Teardown=====================================================================================
+n2st::print_formated_script_footer "dn_expose_container_env_variables.bash" "${MSG_LINE_CHAR_INSTALLER}"

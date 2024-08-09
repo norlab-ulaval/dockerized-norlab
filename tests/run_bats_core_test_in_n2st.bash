@@ -21,8 +21,7 @@ if [[ -z $PARAMS ]]; then
 fi
 
 function n2st::run_n2st_testsing_tools(){
-  local TMP_CWD
-  TMP_CWD=$(pwd)
+  pushd "$(pwd)" >/dev/null || exit 1
 
 # ....Project root logic.........................................................................
   DN_ROOT=$(git rev-parse --show-toplevel)
@@ -39,7 +38,7 @@ function n2st::run_n2st_testsing_tools(){
   bash "${N2ST_PATH:?err}/tests/bats_testing_tools/run_bats_tests_in_docker.bash" $PARAMS
 
   # ....Teardown...................................................................................
-  cd "$TMP_CWD"
+  popd >/dev/null || exit 1
   }
 
 n2st::run_n2st_testsing_tools
