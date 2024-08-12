@@ -2,7 +2,9 @@
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS icp-mapper-install
-ARG DEBIAN_FRONTEND=noninteractive
+
+# (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
+#ARG DEBIAN_FRONTEND=noninteractive
 
 # ====Begin=======================================================================================
 # Reference: https://github.com/norlab-ulaval/Norlab_wiki/wiki/Tutorials:-3D-Mapping-(ros2)
@@ -30,7 +32,4 @@ RUN echo "skip test"
 
 
 FROM icp-mapper-install AS final
-
-WORKDIR ${PERCEP3D_LIB_PATH}
-CMD [ "bash" ]
 

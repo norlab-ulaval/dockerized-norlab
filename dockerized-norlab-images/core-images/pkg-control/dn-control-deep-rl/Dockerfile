@@ -2,7 +2,6 @@
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
-WORKDIR /opt
 
 COPY requirements_deep_rl.txt /requirements_deep_rl.txt
 
@@ -22,6 +21,4 @@ RUN echo "Sanity check" \
     && python -c "from stable_baselines3 import SAC"
 
 FROM main AS final
-WORKDIR ${DN_DEV_WORKSPACE}
-CMD [ "bash" ]
 

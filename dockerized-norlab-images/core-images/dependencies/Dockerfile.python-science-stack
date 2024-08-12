@@ -36,5 +36,3 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 
 EOF
-
-CMD [ "bash" ]

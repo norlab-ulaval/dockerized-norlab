@@ -163,7 +163,7 @@ function print_help_in_terminal() {
 "
 }
 
-# ToDo: refactor out to 'norlab-shell-script-tools'
+# ToDo: refactor out to 'norlab-shell-script-tools' (ref task NMO-582)
 function dn::teamcity_service_msg_blockOpened_custom() {
   local THE_MSG=$1
   if [[ ${IS_TEAMCITY_RUN} == true ]]; then
@@ -171,7 +171,7 @@ function dn::teamcity_service_msg_blockOpened_custom() {
   fi
 }
 
-# ToDo: refactor out to 'norlab-shell-script-tools'
+# ToDo: refactor out to 'norlab-shell-script-tools' (ref task NMO-582)
 function dn::teamcity_service_msg_blockClosed_custom() {
   local THE_MSG=$1
   if [[ ${IS_TEAMCITY_RUN} == true ]]; then

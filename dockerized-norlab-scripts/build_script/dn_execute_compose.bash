@@ -341,7 +341,7 @@ function dn::execute_compose() {
 
     local STR_BUILT_SERVICES
     declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --services --no-interpolate --dry-run) )
-    for each_service in ${STR_BUILT_SERVICES[@]}; do
+    for each_service in "${STR_BUILT_SERVICES[@]}"; do
       echo
 
       if [[ "${each_service}" =~ "global-service-builder-config".* ]] || [[ "${each_service}" =~ "runtime-global-dev-config".* ]]; then

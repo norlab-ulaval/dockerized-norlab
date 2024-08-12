@@ -42,17 +42,19 @@ FROM project-setup AS project-custom-docker-steps
 
 # (NICE TO HAVE) ToDo: refactor to dn_project_core_init.bash (ref task RLRP-213 and NMO-548)
 COPY ./project_requirements/python.requirements.txt /python.requirements.txt
-RUN pip3 install --verbose \
-    -r /python.requirements.txt \
-#    --no-cache-dir \
-#    --upgrade \
-    && rm -f /python.requirements.txtÎ
-
+COPY ./project_requirements/shell.requirements.bash /shell.requirements.bash
 
 # (NICE TO HAVE) ToDo: refactor to dn_project_core_init.bash (ref task RLRP-213 and NMO-548)
-COPY ./project_requirements/shell.requirements.bash /shell.requirements.bash
-RUN source /shell.requirements.bash \
+RUN <<EOF
+  pip3 install --verbose \
+    -r /python.requirements.txt \
+    && rm -f /python.requirements.txt
+#    --no-cache-dir \
+#    --upgrade \
+
+  source /shell.requirements.bash \
     && rm -f /shell.requirements.bash
+EOF
 
 
 # ====DN-project final=============================================================================
