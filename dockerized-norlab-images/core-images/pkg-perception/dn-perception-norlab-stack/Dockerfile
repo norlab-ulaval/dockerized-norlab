@@ -3,10 +3,11 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS build-norlab-perception-ros-stack
 
-ARG DEBIAN_FRONTEND=noninteractive
+# (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
+#ARG DEBIAN_FRONTEND=noninteractive
 
 # ====Requirement==================================================================================
-WORKDIR ${DN_DEV_WORKSPACE}
+WORKDIR ${DN_DEV_WORKSPACE:?'Variable not set'}/src/
 
 RUN apt-get update --fix-missing \
     && apt-get install --assume-yes \
@@ -32,15 +33,12 @@ RUN apt-get update --fix-missing \
 
 # ....fetch libpointmatcher_ros....................................................................
 # (NICE TO HAVE) ToDo: move libpointmatcher_ros install step to dn-perception-libpointmatcher image
-WORKDIR ${DN_DEV_WORKSPACE:?'Variable not set'}/src/
 RUN git clone --branch ${ROS_DISTRO:?err} https://github.com/norlab-ulaval/libpointmatcher_ros.git
 
 # ....fetch norlab_icp_mapper_ros..................................................................
-WORKDIR ${DN_DEV_WORKSPACE}/src/
 RUN git clone --branch ${ROS_DISTRO} https://github.com/norlab-ulaval/norlab_icp_mapper_ros.git
 
 # ....fetch mapper_config_template.................................................................
-WORKDIR ${DN_DEV_WORKSPACE}/src/
 RUN git clone https://github.com/norlab-ulaval/mapper_config_template.git
 
 # ....Fetch demo data..............................................................................
@@ -54,7 +52,6 @@ RUN wget -O demo.zip "http://norlab.s3.valeria.science/demo.zip?AWSAccessKeyId=X
 # (CRITICAL) ToDo: investigate?? >> check for adding the package path to CMAKE_PREFIX_PATH like libpointmatcher, libnabo and norlab-icp-mapper
 #  see https://www.notion.so/redleader962/Dockerized-NorLab-cff173c35eba49989eee9275d3613ce0?pvs=4#89f6364a3a9f46ffb4a268c6f80e0db6
 
-WORKDIR ${DN_DEV_WORKSPACE}
 
 # (Priority) ToDo: assess moving rosbag install earlier
 RUN apt-get update --fix-missing \
@@ -99,8 +96,8 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
 #    && [[ -f ${HOME}/demo/config.rviz ]] \
 #    || exit 1
 
-COPY ./entrypoint.norlab-stack.bash ./
-RUN chmod +x entrypoint.norlab-stack.bash
+COPY ./entrypoint.norlab-stack.bash ${DN_DEV_WORKSPACE}
+RUN chmod +x ${DN_DEV_WORKSPACE}/entrypoint.norlab-stack.bash
 
 FROM build-norlab-perception-ros-stack AS test
 

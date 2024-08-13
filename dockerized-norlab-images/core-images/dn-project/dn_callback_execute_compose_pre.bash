@@ -18,6 +18,10 @@ function dn::callback_execute_compose_pre() {
   test -n "${DN_PATH:?err}" || n2st::print_msg_error_and_exit "Env variable DN_PATH need to be set and non-empty."
   test -d "${DN_PATH}/utilities/tmp" || n2st::print_msg_error_and_exit "The directory ${DN_PATH}/utilities/tmp is unreachable"
 
+  if [[ -d "${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock" ]]; then
+      # Delete git cloned repo
+      rm -rf "${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock"
+  fi
   if [[ ! -d "${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock" ]]; then
     mkdir "${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock"
   fi

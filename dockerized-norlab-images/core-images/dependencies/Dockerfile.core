@@ -1,7 +1,7 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-#ARG TAG_OS_VERSION
+ARG DEBIAN_FRONTEND=noninteractive
 
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS dependencies
 
@@ -16,7 +16,6 @@ ENV PROJECT_PROMPT_NAME=${PROJECT_PROMPT_NAME:-Dockerized-NorLab}
 #ENV DN_PROMPT_NAME=${DN_PROMPT_NAME:?err}
 
 SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
 
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
@@ -104,21 +103,20 @@ RUN <<EOF
     pip3 install --no-cache-dir --ignore-installed \
        pybind11
 
-EOF
 
-# (CRITICAL) ToDo: test using pytest-dotenv in pycharm (ref task NMO-360 ﹅→ Fix the ROS environment variable not loaded in PyCharm pytest run nightmare)
-# https://github.com/quiqua/pytest-dotenv
-# How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
+    # (CRITICAL) ToDo: test using pytest-dotenv in pycharm (ref task NMO-360 ﹅→ Fix the ROS environment variable not loaded in PyCharm pytest run nightmare)
+    # https://github.com/quiqua/pytest-dotenv
+    # How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
 
-# ....X11 forwarding dev tools.....................................................................
-# ref https://gist.github.com/sorny/969fe55d85c9b0035b0109a31cbcb088
-# Note: Test X11 forwarding config by executing the following command in the container:
-#         $ xclock -analog      or   $ xclock -digital
-#       The xclock should be displayed on your local computer in macOS XQuartz app.
-#       To test X11 forwarding with OpenGL, run in the container
-#         $ glxgears
-#       The animated gears should be displayed on your local computer in macOS XQuartz app.
-RUN <<EOF
+    # ....X11 forwarding dev tools.................................................................
+    # ref https://gist.github.com/sorny/969fe55d85c9b0035b0109a31cbcb088
+    # Note: Test X11 forwarding config by executing the following command in the container:
+    #         $ xclock -analog      or   $ xclock -digital
+    #       The xclock should be displayed on your local computer in macOS XQuartz app.
+    #       To test X11 forwarding with OpenGL, run in the container
+    #         $ glxgears
+    #       The animated gears should be displayed on your local computer in macOS XQuartz app.
+
     apt-get update
     apt-get install --assume-yes --no-install-recommends \
           x11-apps
@@ -130,21 +128,16 @@ WORKDIR /dockerized-norlab
 COPY --from=context-dn-root ./.git ./.git
 
 # ....Install norlab-shell-script-tool and norlab-build-system tools...............................
-WORKDIR /dockerized-norlab/utilities/norlab-shell-script-tools
-COPY --from=context-dn-submodules ./norlab-shell-script-tools/ .
+COPY --from=context-dn-submodules ./norlab-shell-script-tools/ ./utilities/norlab-shell-script-tools
 
 # ....Add dn-container tools.......................................................................
-WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-COPY --from=context-dn-container-tools . .
+COPY --from=context-dn-container-tools . ./dockerized-norlab-images/container-tools
 
 RUN <<EOF
     echo "Create soft link in the root dir"
     ln -s /dockerized-norlab/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash
     test -f /import_dockerized_norlab_container_tools.bash || exit 1
-EOF
 
-WORKDIR /dockerized-norlab
-RUN <<EOF
     (
         echo ""
         echo "# >>> dockerized-norlab dependencies core"
@@ -203,7 +196,6 @@ RUN <<EOF
 EOF
 
 FROM dependencies AS final
-WORKDIR /dockerized-norlab
 
 # ....TMP DEV introspection........................................................................
 ## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
@@ -215,5 +207,3 @@ WORKDIR /dockerized-norlab
 #    echo "${0}:not implemented error" && exit 1
 #EOF
 # ........................................................................TMP DEV introspection....
-
-CMD [ "bash" ]

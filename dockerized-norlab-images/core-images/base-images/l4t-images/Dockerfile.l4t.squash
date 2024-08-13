@@ -131,8 +131,9 @@ ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 SHELL ["/bin/bash", "-c"]
 
-# ....Make python 3 default........................................................................
-RUN apt-get update \
+RUN <<EOF
+    # ....Make python 3 default........................................................................
+    apt-get update \
     &&  apt-get install -y --no-install-recommends \
       gcc \
       python3-dev \
@@ -140,11 +141,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Update symlink to point to system python3 instead of system python2
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
+    # Update symlink to point to system python3 instead of system python2
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
     && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
-RUN python3 -m pip install --upgrade pip \
+    python3 -m pip install --upgrade pip \
     && pip3 install --upgrade --no-cache-dir \
         wheel \
         setuptools \
@@ -153,6 +154,7 @@ RUN python3 -m pip install --upgrade pip \
     && pip3 install --no-cache-dir  \
           wget \
           psutil
+EOF
 
 
 FROM --platform=linux/amd64 base-image-amd64 AS mimic-l4t-image
@@ -167,8 +169,9 @@ ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
-# ....Reinstall l4t image package in amd64 image...................................................
-RUN if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
+RUN <<EOF
+    # ....Reinstall l4t image package in amd64 image...............................................
+    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
         apt-get update  \
         && echo "..general install related........."  \
         && apt-get install -y --no-install-recommends \
@@ -200,45 +203,45 @@ RUN if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
             ninja ; \
     fi
 
-# ....Install l4t image ubuntu apt requirement.....................................................
-# Install pycuda related
-#   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
-#
-# Requirement for 'pycairo' which is required by 'pycuda'
-RUN apt-get update  \
+    # ....Install l4t image ubuntu apt requirement.................................................
+    # Install pycuda related
+    #   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
+    #
+    # Requirement for 'pycairo' which is required by 'pycuda'
+    apt-get update  \
     && apt-get install -y \
       libcairo2-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
 
-# ....Install l4t image python requirement from file...............................................
-# Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
-RUN pip3 install --no-cache-dir nvidia-pyindex
+    # ....Install l4t image python requirement from file...........................................
+    # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
+    pip3 install --no-cache-dir nvidia-pyindex
 
-RUN if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
+    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
         echo "Strip versions from requirement"  \
         && sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt  \
         && rm /requirements.l4t-base-image.txt.bak \
         && pip3 install -r /requirements.l4t-base-image.txt ; \
     fi
 
-# Explicit install step for torch2trt and tensorrt (ref task TASK)
-# Note: python import of either torch2trt and tensorrt whithout host cuda support will return an error
-# Ref
-#   - https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing
-#   - https://github.com/NVIDIA-AI-IOT/torch2trt
-#   - https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/torch2trt/Dockerfile
-#
+    # Explicit install step for torch2trt and tensorrt (ref task TASK)
+    # Note: python import of either torch2trt and tensorrt whithout host cuda support will return an error
+    # Ref
+    #   - https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing
+    #   - https://github.com/NVIDIA-AI-IOT/torch2trt
+    #   - https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/torch2trt/Dockerfile
+    #
 
-#RUN pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
-RUN if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
+    # pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
+    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
         cd /opt \
         && git clone https://github.com/NVIDIA-AI-IOT/torch2trt \
         && cd torch2trt \
         && python3 setup.py install ; \
     fi
-
+EOF
 
 FROM --platform=linux/arm64 base-image-arm64 AS final-arm64
 ARG TARGETPLATFORM

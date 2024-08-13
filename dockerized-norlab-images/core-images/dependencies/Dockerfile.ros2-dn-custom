@@ -3,16 +3,18 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-custom-install
 
-ARG IS_TEAMCITY_RUN
-ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
-
-SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
-
-ENV TZ=Etc/UTC
-ENV TERM=${TERM:-"xterm-256color"}
+# (CRITICAL) ToDo: on task NMO-584 end >> delete this line ←
+#ARG IS_TEAMCITY_RUN
+#ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+#
+#SHELL ["/bin/bash", "-c"]
+#ARG DEBIAN_FRONTEND=noninteractive
+#
+#ENV TZ=Etc/UTC
+#ENV TERM=${TERM:-"xterm-256color"}
 
 # ====Begin install================================================================================
+WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN <<EOF
     pip3 install --no-cache-dir  \
@@ -34,10 +36,8 @@ RUN <<EOF
 
     apt-get autoremove -y
     apt-get clean
-EOF
 
-# ....install ROS2 specific utilities..............................................................
-RUN <<EOF
+    # ....install ROS2 specific utilities..............................................................
     pip3 install --no-cache-dir \
           osrf-pycommon \
           rosbags \
@@ -71,8 +71,6 @@ EOF
 #    && rm -rf /var/lib/apt/lists/*
 
 # ====Build ROS2 workspace=========================================================================
-WORKDIR ${DN_DEV_WORKSPACE}
-
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN <<EOF
@@ -108,14 +106,12 @@ RUN <<EOF
        )
     echo -e "COLCON_FLAGS=( ${COLCON_FLAGS[*]} )"
     colcon build ${COLCON_FLAGS[@]}
-EOF
 
-# ===ROS sourcing logic for interactive and non-interactive shell==================================
-# (since .bashrc is not executed in non-interactive shell)
+    # ===ROS sourcing logic for interactive and non-interactive shell==============================
+    # (since .bashrc is not executed in non-interactive shell)
 
-# Note:
-#  - Environment variable formated such as "\$``{ENV_VAR}``" wont be substituted at build time.
-RUN <<EOF
+    # Note:
+    #  - Environment variable formated such as "\$``{ENV_VAR}``" wont be substituted at build time.
     (
         echo ""
         echo "# >>> dockerized-norlab dependencies ros2-dn-custom"
@@ -143,15 +139,14 @@ RUN <<EOF
         echo "# <<< dockerized-norlab dependencies ros2-dn-custom"
         echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
-EOF
 
-# (NICE TO HAVE) ToDo: DN_CONTAINER_NAME is being set with the build arg instead of the env at runtime
-#      echo ""; \
-#      echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
-#      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
-#      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
 
-RUN <<EOF
+    # (NICE TO HAVE) ToDo: DN_CONTAINER_NAME is being set with the build arg instead of the env at runtime
+    #      echo ""; \
+    #      echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
+    #      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
+    #      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
+
     echo "Add ROS2 specific aliases"
     (
         echo ""
@@ -216,7 +211,6 @@ EOF
 
 
 FROM ros2-custom-install AS final
-WORKDIR ${DN_DEV_WORKSPACE}
 
 # ....TMP DEV introspection........................................................................
 ## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
@@ -229,7 +223,7 @@ WORKDIR ${DN_DEV_WORKSPACE}
 #RUN echo "${0}:not implemented error" && exit 1
 # ........................................................................TMP DEV introspection....
 
-CMD [ "bash" ]
+
 
 
 

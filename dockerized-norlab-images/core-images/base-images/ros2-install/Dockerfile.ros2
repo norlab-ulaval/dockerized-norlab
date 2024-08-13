@@ -40,7 +40,9 @@ ENV PYTHONIOENCODING=utf-8
 # ....Install ROS2.................................................................................
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-RUN apt-get update \
+RUN <<EOF
+
+    apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
         software-properties-common \
@@ -51,13 +53,13 @@ RUN apt-get update \
     && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
-# RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-#       && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+    # update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
+    #   && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
-# Note: Reference ros-desktop vs cuda enabled opencv
-#   - Ref https://github.com/dusty-nv/jetson-containers/issues/158
-#   - Ref https://github.com/dusty-nv/jetson-containers/issues/89
-RUN if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(dpkg --get-selections | grep opencv) ]]; then \
+    # Note: Reference ros-desktop vs cuda enabled opencv
+    #   - Ref https://github.com/dusty-nv/jetson-containers/issues/158
+    #   - Ref https://github.com/dusty-nv/jetson-containers/issues/89
+    if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(dpkg --get-selections | grep opencv) ]]; then \
       CV_WARN=("Removing previously installed version of opencv as it conflict with ros-${ROS_DISTRO}-${ROS_PKG} install process which install its own version.") \
       && apt-get purge -y *opencv* \
       && CV_WARN+=("Be advised that the ros-${ROS_DISTRO}-${ROS_PKG} opencv version is not CUDA enable and may interfere with the one installed by Pytorch or TensorFlow.") \
@@ -66,16 +68,16 @@ RUN if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(dpkg --get-selections | grep o
     fi
 
 
-# Note:
-#   - ref cmake upgrade via pip:
-#        - upgrade cmake - https://stackoverflow.com/a/56690743
-#        - this is needed to build some of the ROS2 packages
-#        - use pip to upgrade cmake instead because of kitware's rotating GPG keys:
-#       Source https://github.com/dusty-nv/jetson-containers/issues/216
-#   - pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
-#   - pip 'flake8-blind-except' version
-#       ref https://github.com/ros2/examples/issues/325#issuecomment-936131710
-RUN apt-get update --fix-missing \
+    # Note:
+    #   - ref cmake upgrade via pip:
+    #        - upgrade cmake - https://stackoverflow.com/a/56690743
+    #        - this is needed to build some of the ROS2 packages
+    #        - use pip to upgrade cmake instead because of kitware's rotating GPG keys:
+    #       Source https://github.com/dusty-nv/jetson-containers/issues/216
+    #   - pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
+    #   - pip 'flake8-blind-except' version
+    #       ref https://github.com/ros2/examples/issues/325#issuecomment-936131710
+    apt-get update --fix-missing \
     && apt-get install --assume-yes --no-install-recommends \
         apt-utils \
         lsb-release \
@@ -102,8 +104,8 @@ RUN apt-get update --fix-missing \
     && pip3 install --upgrade --no-cache-dir  \
         cmake
 
-# Note: ROS2 doc recommend executing 'apt upgrade' just before installing ros
-RUN apt-get update --fix-missing \
+    # Note: ROS2 doc recommend executing 'apt upgrade' just before installing ros
+    apt-get update --fix-missing \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-${ROS_PKG} \
@@ -112,8 +114,8 @@ RUN apt-get update --fix-missing \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Note: pytest version is managed by 'colcon-common-extensions'
-RUN apt-get update --fix-missing \
+    # Note: pytest version is managed by 'colcon-common-extensions'
+    apt-get update --fix-missing \
     && apt-get install --assume-yes --no-install-recommends \
         python3-rosdep \
         python3-colcon-common-extensions \
@@ -145,7 +147,7 @@ RUN apt-get update --fix-missing \
         pytest-runner
 
 
-RUN apt-get update --fix-missing \
+    apt-get update --fix-missing \
     && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-rosbridge-server \
         ros-${ROS_DISTRO}-rqt-graph \
@@ -155,18 +157,20 @@ RUN apt-get update --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
 
-## ToDo: assessment >> maybe not usefull anymore (pining setuptools as been moved earlier)
-#RUN echo "Quick hack for building ros2 example under ROS foxy focal linux/amd64"  \
-#    && pip3 install setuptools==58.2.0 \
-#    && apt-get update --fix-missing \
-#    && apt-get install --assume-yes \
-#        python3-catkin-pkg \
-#        python3-catkin-pkg-modules \
-#    && apt-get clean \
-#    && rm -rf /var/lib/apt/lists/*
+    ## ToDo: assessment >> maybe not usefull anymore (pining setuptools as been moved earlier)
+    # echo "Quick hack for building ros2 example under ROS foxy focal linux/amd64"  \
+    # && pip3 install setuptools==58.2.0 \
+    # && apt-get update --fix-missing \
+    # && apt-get install --assume-yes \
+    #     python3-catkin-pkg \
+    #     python3-catkin-pkg-modules \
+    # && apt-get clean \
+    # && rm -rf /var/lib/apt/lists/*
+
+EOF
 
 # ====Build ROS2 workspace=========================================================================
-# Note: Next line is for creating the directories without using a RUN to keep number of layer small
+# Note: Next line is for creating the directories without using a     to keep number of layer small
 WORKDIR ${DN_DEV_WORKSPACE}/src
 
 # ....Quick start workspace with a minimal ROS package.............................................
@@ -188,7 +192,6 @@ WORKDIR ${DN_DEV_WORKSPACE}
 #RUN wget --show-progress  \
 #    --directory-prefix="src/examples" "https://raw.githubusercontent.com/ros2/examples/${ROS_DISTRO}/rclpy" \
 #    && cd src/examples/rclpy || exit 1
-
 
 RUN git clone --depth=1 https://github.com/ros2/examples src/ros2_examples -b ${ROS_DISTRO} \
     && cd src/ros2_examples \

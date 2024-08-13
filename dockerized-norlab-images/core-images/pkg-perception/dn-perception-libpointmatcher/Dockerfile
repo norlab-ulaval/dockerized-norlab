@@ -2,7 +2,9 @@
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS libpointmatcher-install
-ARG DEBIAN_FRONTEND=noninteractive
+
+# (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
+#ARG DEBIAN_FRONTEND=noninteractive
 
 ARG LIBPOINTMATCHER_VERSION=latest
 ENV LIBPOINTMATCHER_VERSION=${LIBPOINTMATCHER_VERSION}
@@ -52,7 +54,4 @@ WORKDIR ${PERCEP3D_LIB_PATH}/libpointmatcher
 RUN echo "skip test"
 
 FROM libpointmatcher-install AS final
-
-WORKDIR ${PERCEP3D_LIB_PATH}
-CMD [ "bash" ]
 
