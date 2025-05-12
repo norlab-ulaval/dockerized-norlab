@@ -32,11 +32,13 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && pip3 install --no-cache-dir --upgrade pip  \
     && echo ". . Vizualisation tools. . . . . . . . . . . . . . . . . . . . . . .." \
+#    && pip3 install --no-cache-dir --upgrade Cython \
+    && echo ">>> pip cython $( pip list | grep -i cython )" \
     && pip3 install --no-cache-dir  \
         pyvirtualdisplay \
         imageio-ffmpeg  \
-        PyOpenGL \
-        PyOpenGL_accelerate \
+#        PyOpenGL \
+#        PyOpenGL_accelerate \
     && echo ". . Gym depencies . . . . . . . . . . . . . . . . . . . . . . . . . ." \
     && pip3 install --no-cache-dir  \
         gym[classic_control,box2d]  \
