@@ -207,9 +207,9 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && apt-get update --fix-missing \
     && rosdep init \
-    && rosdep update
-
-    #    && rosdep fix-permissions
+    && rosdep update --rosdistro "${ROS_DISTRO}" \
+    && rosdep fix-permissions \
+    || exit 1
 
 RUN colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml  \
     && colcon mixin update  \
@@ -226,7 +226,8 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
             --from-path ./src  \
             --rosdistro ${ROS_DISTRO}  \
             -y \
-    && colcon version-check
+    && colcon version-check \
+    || exit 1
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -247,7 +248,8 @@ RUN COLCON_FLAGS=() \
     && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
     && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && colcon build ${COLCON_FLAGS[@]}
+    && colcon build ${COLCON_FLAGS[@]} \
+    || exit 1
 
 # ===Remove dustynv entrypoint from .bashrc. ======================================================
 # Note: Source ROS in the dn_entrypoint.init.bash instead"
@@ -276,7 +278,8 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
     && python -c "import rclpy" \
     && ros2 pkg list \
-    && colcon --log-level error test-result --all --verbose
+    && colcon --log-level error test-result --all --verbose \
+    || exit 1
 
 RUN if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(pip list | grep cv2) ]]; then \
       python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )" ; \

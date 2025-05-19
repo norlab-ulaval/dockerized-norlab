@@ -68,7 +68,7 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
     && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && apt-get update --fix-missing \
-    && rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
+    && rosdep update --rosdistro ${ROS_DISTRO} \
     && rosdep fix-permissions \
     && rosdep install  \
             --ignore-packages-from-source \
