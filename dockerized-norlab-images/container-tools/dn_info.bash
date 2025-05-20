@@ -65,6 +65,8 @@ function dn::show_container_runtime_information() {
   n2st::set_which_python3_version
   DN_PYTHON3_VERSION=${PYTHON3_VERSION?err}
 
+  # (Priority) ToDo: replace `DN_IMAGE_ARCHITECTURE` by `DN_HOST` wich is declare in DN-project
+  #    and set in docker compose files
   n2st::set_which_architecture_and_os
   DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err}
 
