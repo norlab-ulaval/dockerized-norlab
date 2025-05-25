@@ -11,3 +11,4 @@ cd "${DN_ROOT_DIR}"
 export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="config --dry-run"
 
 bash dockerized-norlab-scripts/build_script/dn_build_all.bash
+exit $?
