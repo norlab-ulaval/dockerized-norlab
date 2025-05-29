@@ -6,6 +6,9 @@
 # Usage:
 #   $ source dn_callback_execute_compose_pre.bash && callback_execute_compose_pre
 #
+# Notes:
+#   See utilities/tmp/README.md for details on role of `dockerized-norlab-project-mock`
+#
 # Globals:
 #   Read DN_PATH
 #
