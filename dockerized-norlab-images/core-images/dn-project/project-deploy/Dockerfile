@@ -3,10 +3,6 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS package-project-src-code
 
-# (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
-#ARG IS_TEAMCITY_RUN
-#ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
-
 ARG DN_PROJECT_DEPLOY_REPO_BRANCH
 ENV DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
 
@@ -57,6 +53,9 @@ RUN <<EOF
     # ....Debug information (pre-checkout).........................................................
     n2st::print_msg "Debug information (pre-checkout)"
     tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+    echo
+    tree -L 3 -aug "${DN_PROJECT_PATH}"
+    echo
     echo -e "\ncat ${DN_PROJECT_PATH}/.git"
     cat ${DN_PROJECT_PATH}/.git
     echo
@@ -106,7 +105,7 @@ RUN <<EOF
 
     # ....Debug information (post-checkout)........................................................
     n2st::print_msg "Debug information (post-checkout)"
-    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+    tree -L 2 -aug "${DN_PROJECT_PATH}"
 
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
         n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (post)."
