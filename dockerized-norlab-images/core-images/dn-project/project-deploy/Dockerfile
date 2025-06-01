@@ -50,15 +50,16 @@ WORKDIR ${DN_PROJECT_PATH}
 # - DN_PROJECT_PATH: /ros2_ws/src/dockerized-norlab-project-mock
 RUN <<EOF
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
-        # Development test to validate that the git checkout operation was succesfull (pre)
-        # mock_file.txt only exist on the dev branch
-        tree -L 2 -a "${DN_PROJECT_PATH}"
-        {
-            test "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" && \
-            test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" && \
-            test "$(git branch --show-current)" == "main" && \
-            test ! -f "src/mock_file.txt" ;
-        } || exit 1
+        n2st::print_msg "Development test to validate that the git checkout operation was succesfull (pre)."
+        test "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "${DN_PROJECT_GIT_NAME} != dockerized-norlab-project-mock"
+        test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" || n2st::print_msg_error_and_exit "${DN_PROJECT_DEPLOY_REPO_BRANCH} != dev"
+        test "$( basename $( git remote get-url origin ) .git )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git remote get-url origin' should point to  dockerized-norlab-project-mock but it point to $( git remote get-url origin )"
+        test "$( basename $( git rev-parse --show-toplevel ) )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git rev-parse --show-toplevel' should point to  dockerized-norlab-project-mock but it point to $( git rev-parse --show-toplevel )"
+        test "$(git branch --show-current)" == "main" || n2st::print_msg_error_and_exit "$(git branch --show-current) != main"
+        test ! -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should only exist on the dev branch"
+        echo
+        tree -L 2 -a -hug "${DN_PROJECT_PATH}"
+        echo
     fi
 EOF
 
@@ -92,11 +93,12 @@ EOF
 
 RUN <<EOF
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
-        # Development test to validate that the git checkout operation was succesfull (post)
-        {
-            test "$(git branch --show-current)" == "dev" && \
-            test -f "src/mock_file.txt" ;
-        } || exit 1
+        n2st::print_msg "Development test to validate that the git checkout operation was succesfull (post)"
+        test "$(git branch --show-current)" == "dev" || n2st::print_msg_error_and_exit "$(git branch --show-current) != dev"
+        test -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should exist on the dev branch"
+        echo
+        tree -L 2 -a -hug "${DN_PROJECT_PATH}"
+        echo
     fi
 
 EOF
