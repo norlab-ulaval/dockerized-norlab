@@ -51,6 +51,11 @@ WORKDIR ${DN_PROJECT_PATH}
 RUN <<EOF
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
         n2st::print_msg "Development test to validate that the git checkout operation was succesfull (pre)."
+
+        # (Priority) ToDo: on task end >> delete next bloc ↓↓
+        git status
+        git branch --list --allo
+
         test "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "${DN_PROJECT_GIT_NAME} != dockerized-norlab-project-mock"
         test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" || n2st::print_msg_error_and_exit "${DN_PROJECT_DEPLOY_REPO_BRANCH} != dev"
         test "$( basename $( git remote get-url origin ) .git )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git remote get-url origin' should point to  dockerized-norlab-project-mock but it point to $( git remote get-url origin )"
