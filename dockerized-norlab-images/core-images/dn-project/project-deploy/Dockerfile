@@ -51,15 +51,10 @@ WORKDIR ${DN_PROJECT_PATH}
 RUN <<EOF
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
         n2st::print_msg "Development test to validate that the git checkout operation was succesfull (pre)."
-
-        # (Priority) ToDo: on task end >> delete next bloc ↓↓
-        git status
-        git branch --list --allo
-
         test "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "${DN_PROJECT_GIT_NAME} != dockerized-norlab-project-mock"
         test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" || n2st::print_msg_error_and_exit "${DN_PROJECT_DEPLOY_REPO_BRANCH} != dev"
-        test "$( basename $( git remote get-url origin ) .git )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git remote get-url origin' should point to  dockerized-norlab-project-mock but it point to $( git remote get-url origin )"
-        test "$( basename $( git rev-parse --show-toplevel ) )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git rev-parse --show-toplevel' should point to  dockerized-norlab-project-mock but it point to $( git rev-parse --show-toplevel )"
+        test "$( basename $( git remote get-url origin ) .git )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git remote get-url origin' should point to  dockerized-norlab-project-mock but it point to '$( git remote get-url origin )'"
+        test "$( basename $( git rev-parse --show-toplevel ) )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git rev-parse --show-toplevel' should point to  dockerized-norlab-project-mock but it point to '$( git rev-parse --show-toplevel )'"
         test "$(git branch --show-current)" == "main" || n2st::print_msg_error_and_exit "$(git branch --show-current) != main"
         test ! -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should only exist on the dev branch"
         echo
@@ -77,16 +72,16 @@ RUN <<EOF
 
     # ....Checkout...........................................................................
     n2st::print_msg "git status"
-    git status
+    git status || exit 1
 
     n2st::print_msg "List repository branches local and remote"
-    git branch --list --all
+    git branch --list --all || exit 1
 
     n2st::print_msg "List repository tags"
-    git tag --list
+    git tag --list || exit 1
 
     n2st::print_msg "Checking out branch ${DN_PROJECT_DEPLOY_REPO_BRANCH}"
-    git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
+    git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}" || exit 1
 
     n2st::print_msg_warning "Note on git checkout faillure: If you experience problem checking out a tag, use prefix 'tags/<my-tags-name>'
     e.g.: DN_PROJECT_DEPLOY_REPO_BRANCH=\"tags/v0.0.1\" in your .dockerized_norlab_project/configuration/.env file"
