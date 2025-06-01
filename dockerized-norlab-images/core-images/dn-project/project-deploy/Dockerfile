@@ -50,13 +50,14 @@ COPY --chown="$(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER})" --from=co
 
 WORKDIR ${DN_PROJECT_PATH}
 
-# (CRITICAL) ToDo: assessment
-RUN git submodule init && git submodule update
-
 # Dev note:
 # - DN_DEV_WORKSPACE: /ros2_ws/src
 # - DN_PROJECT_PATH: /ros2_ws/src/dockerized-norlab-project-mock
 RUN <<EOF
+    # (CRITICAL) ToDo: assessment
+    git init ${DN_PROJECT_PATH}
+    git submodule init && git submodule update
+
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
         n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (pre)."
         test "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "${DN_PROJECT_GIT_NAME} != dockerized-norlab-project-mock"
