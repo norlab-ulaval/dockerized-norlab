@@ -41,8 +41,9 @@ ENV PYTHONUNBUFFERED=0
 # whether it's a personal computer, a robot or a CI server its safer and easier to manage to
 # delegate the responsibility of secret management to the user.
 WORKDIR "${DN_DEV_WORKSPACE}/src"
+COPY --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
 #COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
-COPY --chown="$(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER})" --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+#COPY --chown="$(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER})" --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
 
 WORKDIR ${DN_PROJECT_PATH}
 
@@ -52,14 +53,14 @@ WORKDIR ${DN_PROJECT_PATH}
 RUN <<EOF
     # ....Debug information (pre-checkout).........................................................
     n2st::print_msg "Debug information (pre-checkout)"
-    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+    tree -L 2 -a "${DN_DEV_WORKSPACE}/src"
     echo
-    tree -L 3 -aug "${DN_PROJECT_PATH}"
+    tree -L 3 -a "${DN_PROJECT_PATH}"
     echo
     echo -e "\ncat ${DN_PROJECT_PATH}/.git"
     cat ${DN_PROJECT_PATH}/.git
     echo
-    tree -L 2 -aug ${DN_PROJECT_PATH}/.git
+    tree -L 2 -a ${DN_PROJECT_PATH}/.git
 
     # (CRITICAL) ToDo: assessment
 #    git init ${DN_PROJECT_PATH}
