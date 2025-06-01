@@ -13,6 +13,7 @@ ENV DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argume
 ENV DN_PROJECT_SERVICE=project-deploy
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
 
+ARG BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
 ARG DN_DEV_TESTS=${DN_DEV_TESTS:-false}
 
 RUN <<EOF
@@ -25,6 +26,7 @@ RUN <<EOF
         test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
         test -d ${DN_PROJECT_PATH} && \
         test -n ${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'} && \
+        test -d ${DN_DEV_WORKSPACE} && \
         test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ;
@@ -43,7 +45,8 @@ ENV PYTHONUNBUFFERED=0
 # whether it's a personal computer, a robot or a CI server its safer and easier to manage to
 # delegate the responsibility of secret management to the user.
 WORKDIR "${DN_DEV_WORKSPACE}/src"
-COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+#COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+COPY --chown="$(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER})" --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
 WORKDIR ${DN_PROJECT_PATH}
 # Dev note:
 # - DN_DEV_WORKSPACE: /ros2_ws/src
@@ -67,7 +70,9 @@ RUN <<EOF
     # ....Debug information (pre-checkout)....................................................
     n2st::print_msg "Debug information (pre-checkout)"
     tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+    echo -e "\ncat ${DN_PROJECT_PATH}/.git"
     cat ${DN_PROJECT_PATH}/.git
+    echo
     tree -L 2 -aug ${DN_PROJECT_PATH}/.git
 
     # ....Checkout...........................................................................
