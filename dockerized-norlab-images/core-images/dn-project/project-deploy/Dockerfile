@@ -54,9 +54,17 @@ WORKDIR ${DN_PROJECT_PATH}
 # - DN_DEV_WORKSPACE: /ros2_ws/src
 # - DN_PROJECT_PATH: /ros2_ws/src/dockerized-norlab-project-mock
 RUN <<EOF
+    # ....Debug information (pre-checkout).........................................................
+    n2st::print_msg "Debug information (pre-checkout)"
+    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+    echo -e "\ncat ${DN_PROJECT_PATH}/.git"
+    cat ${DN_PROJECT_PATH}/.git
+    echo
+    tree -L 2 -aug ${DN_PROJECT_PATH}/.git
+
     # (CRITICAL) ToDo: assessment
-    git init ${DN_PROJECT_PATH}
-    git submodule init && git submodule update
+#    git init ${DN_PROJECT_PATH}
+#    git submodule init && git submodule update
 
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
         n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (pre)."
@@ -73,13 +81,6 @@ RUN <<EOF
         test "$( basename $( git rev-parse --show-toplevel ) )" == "${DN_PROJECT_GIT_NAME}" || n2st::print_msg_error_and_exit "'git rev-parse --show-toplevel' should point to  ${DN_PROJECT_GIT_NAME} but it point to '$( git rev-parse --show-toplevel )'"
     fi
 
-    # ....Debug information (pre-checkout).........................................................
-    n2st::print_msg "Debug information (pre-checkout)"
-    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
-    echo -e "\ncat ${DN_PROJECT_PATH}/.git"
-    cat ${DN_PROJECT_PATH}/.git
-    echo
-    tree -L 2 -aug ${DN_PROJECT_PATH}/.git
 EOF
 
 RUN <<EOF
