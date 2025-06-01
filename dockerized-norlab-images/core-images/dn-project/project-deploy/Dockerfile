@@ -47,35 +47,42 @@ ENV PYTHONUNBUFFERED=0
 WORKDIR "${DN_DEV_WORKSPACE}/src"
 #COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
 COPY --chown="$(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER})" --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+
 WORKDIR ${DN_PROJECT_PATH}
+
+# (CRITICAL) ToDo: assessment
+RUN git submodule init && git submodule update
+
 # Dev note:
 # - DN_DEV_WORKSPACE: /ros2_ws/src
 # - DN_PROJECT_PATH: /ros2_ws/src/dockerized-norlab-project-mock
 RUN <<EOF
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
-        n2st::print_msg "Development test to validate that the git checkout operation was succesfull (pre)."
+        n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (pre)."
         test "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "${DN_PROJECT_GIT_NAME} != dockerized-norlab-project-mock"
         test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" || n2st::print_msg_error_and_exit "${DN_PROJECT_DEPLOY_REPO_BRANCH} != dev"
-        test "$( basename $( git remote get-url origin ) .git )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git remote get-url origin' should point to  dockerized-norlab-project-mock but it point to '$( git remote get-url origin )'"
-        test "$( basename $( git rev-parse --show-toplevel ) )" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "'git rev-parse --show-toplevel' should point to  dockerized-norlab-project-mock but it point to '$( git rev-parse --show-toplevel )'"
         test "$(git branch --show-current)" == "main" || n2st::print_msg_error_and_exit "$(git branch --show-current) != main"
         test ! -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should only exist on the dev branch"
         echo
         tree -L 2 -a -hug "${DN_PROJECT_PATH}"
         echo
+    else
+        # ....Sanity check (pre)...................................................................
+        test "$( basename $( git remote get-url origin ) .git )" == "${DN_PROJECT_GIT_NAME}" || n2st::print_msg_error_and_exit "'git remote get-url origin' should point to  ${DN_PROJECT_GIT_NAME} but it point to '$( git remote get-url origin )'"
+        test "$( basename $( git rev-parse --show-toplevel ) )" == "${DN_PROJECT_GIT_NAME}" || n2st::print_msg_error_and_exit "'git rev-parse --show-toplevel' should point to  ${DN_PROJECT_GIT_NAME} but it point to '$( git rev-parse --show-toplevel )'"
     fi
-EOF
 
-RUN <<EOF
-    # ....Debug information (pre-checkout)....................................................
+    # ....Debug information (pre-checkout).........................................................
     n2st::print_msg "Debug information (pre-checkout)"
     tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
     echo -e "\ncat ${DN_PROJECT_PATH}/.git"
     cat ${DN_PROJECT_PATH}/.git
     echo
     tree -L 2 -aug ${DN_PROJECT_PATH}/.git
+EOF
 
-    # ....Checkout...........................................................................
+RUN <<EOF
+    # ....Checkout.................................................................................
     n2st::print_msg "git status"
     git status || exit 1
 
@@ -91,19 +98,24 @@ RUN <<EOF
     n2st::print_msg_warning "Note on git checkout faillure: If you experience problem checking out a tag, use prefix 'tags/<my-tags-name>'
     e.g.: DN_PROJECT_DEPLOY_REPO_BRANCH=\"tags/v0.0.1\" in your .dockerized_norlab_project/configuration/.env file"
 
-    # ....Debug information (post-checkout)....................................................
-    n2st::print_msg "Debug information (post-checkout)"
-    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
 EOF
 
 RUN <<EOF
+
+    # ....Debug information (post-checkout)........................................................
+    n2st::print_msg "Debug information (post-checkout)"
+    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
-        n2st::print_msg "Development test to validate that the git checkout operation was succesfull (post)"
+        n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (post)."
         test "$(git branch --show-current)" == "dev" || n2st::print_msg_error_and_exit "$(git branch --show-current) != dev"
         test -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should exist on the dev branch"
         echo
         tree -L 2 -a -hug "${DN_PROJECT_PATH}"
         echo
+    else
+        # ....Sanity check (post)..................................................................
+        test "$(git branch --show-current)" == "${DN_PROJECT_DEPLOY_REPO_BRANCH}" || n2st::print_msg_error_and_exit "$(git branch --show-current) != "${DN_PROJECT_DEPLOY_REPO_BRANCH}""
     fi
 
 EOF
