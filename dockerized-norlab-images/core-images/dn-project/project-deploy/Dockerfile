@@ -43,7 +43,6 @@ ENV PYTHONUNBUFFERED=0
 WORKDIR "${DN_DEV_WORKSPACE}/src"
 COPY --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
 #COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
-#COPY --chown="$(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER})" --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
 
 WORKDIR ${DN_PROJECT_PATH}
 
@@ -61,10 +60,6 @@ RUN <<EOF
     cat ${DN_PROJECT_PATH}/.git
     echo
     tree -L 2 -a ${DN_PROJECT_PATH}/.git
-
-    # (CRITICAL) ToDo: assessment
-#    git init ${DN_PROJECT_PATH}
-#    git submodule init && git submodule update
 
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
         n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (pre)."
