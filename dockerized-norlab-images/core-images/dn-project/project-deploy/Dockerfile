@@ -3,15 +3,14 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS package-project-src-code
 
-# (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
-#ARG IS_TEAMCITY_RUN
-#ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
-
 ARG DN_PROJECT_DEPLOY_REPO_BRANCH
 ENV DN_PROJECT_DEPLOY_REPO_BRANCH=${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Build argument needs to be set and non-empty.'}
 
 ENV DN_PROJECT_SERVICE=project-deploy
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
+
+ARG BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
+ARG DN_DEV_TESTS=${DN_DEV_TESTS:-false}
 
 RUN <<EOF
     n2st::print_msg "Pre-condition checks"
@@ -23,6 +22,7 @@ RUN <<EOF
         test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
         test -d ${DN_PROJECT_PATH} && \
         test -n ${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'} && \
+        test -d ${DN_DEV_WORKSPACE} && \
         test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ;
@@ -41,59 +41,84 @@ ENV PYTHONUNBUFFERED=0
 # whether it's a personal computer, a robot or a CI server its safer and easier to manage to
 # delegate the responsibility of secret management to the user.
 WORKDIR "${DN_DEV_WORKSPACE}/src"
-COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+COPY --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+#COPY --chown=${DN_PROJECT_USER} --from=context-dn-project-local-src-path . ${DN_PROJECT_GIT_NAME}
+
 WORKDIR ${DN_PROJECT_PATH}
+
 # Dev note:
 # - DN_DEV_WORKSPACE: /ros2_ws/src
 # - DN_PROJECT_PATH: /ros2_ws/src/dockerized-norlab-project-mock
 RUN <<EOF
-    if [[ "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" ]]; then
-        # Development test to validate that the git checkout operation was succesfull (pre)
-        {
-            test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" && \
-            test "$(git branch --show-current)" == "main" && \
-            test ! -f "src/mock_file.txt" ;
-        } || exit 1
+    # ....Debug information (pre-checkout).........................................................
+    n2st::print_msg "Debug information (pre-checkout)"
+    tree -L 2 -a "${DN_DEV_WORKSPACE}/src"
+    echo
+    tree -L 3 -a "${DN_PROJECT_PATH}"
+    echo
+    echo -e "\ncat ${DN_PROJECT_PATH}/.git"
+    cat ${DN_PROJECT_PATH}/.git
+    echo
+    tree -L 2 -a ${DN_PROJECT_PATH}/.git
+
+    if [[ "${DN_DEV_TESTS}" == "true" ]]; then
+        n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (pre)."
+        test "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "${DN_PROJECT_GIT_NAME} != dockerized-norlab-project-mock"
+        test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" || n2st::print_msg_error_and_exit "${DN_PROJECT_DEPLOY_REPO_BRANCH} != dev"
+        test "$(git branch --show-current)" == "main" || n2st::print_msg_error_and_exit "$(git branch --show-current) != main"
+        test ! -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should only exist on the dev branch"
+        echo
+        tree -L 2 -a -hug "${DN_PROJECT_PATH}"
+        echo
+    else
+        # ....Sanity check (pre)...................................................................
+        test "$( basename $( git remote get-url origin ) .git )" == "${DN_PROJECT_GIT_NAME}" || n2st::print_msg_error_and_exit "'git remote get-url origin' should point to  ${DN_PROJECT_GIT_NAME} but it point to '$( git remote get-url origin )'"
+        test "$( basename $( git rev-parse --show-toplevel ) )" == "${DN_PROJECT_GIT_NAME}" || n2st::print_msg_error_and_exit "'git rev-parse --show-toplevel' should point to  ${DN_PROJECT_GIT_NAME} but it point to '$( git rev-parse --show-toplevel )'"
     fi
 
-    # ....Debug information (pre-checkout)....................................................
-    n2st::print_msg "Debug information (pre-checkout)"
-    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
-    cat ${DN_PROJECT_PATH}/.git
-    tree -L 2 -aug ${DN_PROJECT_PATH}/.git
+EOF
 
-    # ....Checkout...........................................................................
+RUN <<EOF
+    # ....Checkout.................................................................................
     n2st::print_msg "git status"
-    git status
+    git status || exit 1
 
     n2st::print_msg "List repository branches local and remote"
-    git branch --list --all
+    git branch --list --all || exit 1
 
     n2st::print_msg "List repository tags"
-    git tag --list
+    git tag --list || exit 1
 
     n2st::print_msg "Checking out branch ${DN_PROJECT_DEPLOY_REPO_BRANCH}"
-    git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}"
+    git checkout "${DN_PROJECT_DEPLOY_REPO_BRANCH}" || exit 1
 
     n2st::print_msg_warning "Note on git checkout faillure: If you experience problem checking out a tag, use prefix 'tags/<my-tags-name>'
     e.g.: DN_PROJECT_DEPLOY_REPO_BRANCH=\"tags/v0.0.1\" in your .dockerized_norlab_project/configuration/.env file"
 
-    # ....Debug information (post-checkout)....................................................
-    n2st::print_msg "Debug information (post-checkout)"
-    tree -L 2 -aug "${DN_DEV_WORKSPACE}/src"
+EOF
 
-    if [[ "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" ]]; then
-        # Development test to validate that the git checkout operation was succesfull (post)
-        {
-            test "$(git branch --show-current)" == "dev" && \
-            test -f "src/mock_file.txt" ;
-        } || exit 1
+RUN <<EOF
+
+    # ....Debug information (post-checkout)........................................................
+    n2st::print_msg "Debug information (post-checkout)"
+    tree -L 2 -aug "${DN_PROJECT_PATH}"
+
+    if [[ "${DN_DEV_TESTS}" == "true" ]]; then
+        n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (post)."
+        test "$(git branch --show-current)" == "dev" || n2st::print_msg_error_and_exit "$(git branch --show-current) != dev"
+        test -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should exist on the dev branch"
+        echo
+        tree -L 2 -a -hug "${DN_PROJECT_PATH}"
+        echo
+    else
+        # ....Sanity check (post)..................................................................
+        test "$(git branch --show-current)" == "${DN_PROJECT_DEPLOY_REPO_BRANCH}" || n2st::print_msg_error_and_exit "$(git branch --show-current) != "${DN_PROJECT_DEPLOY_REPO_BRANCH}""
     fi
 
 EOF
 
 
-# ....Project spoecific ROS setup..................................................................
+# ....Project specific ROS setup..................................................................
 WORKDIR ${DN_DEV_WORKSPACE}
 RUN <<EOF
     rosdep update --rosdistro ${ROS_DISTRO}
@@ -111,11 +136,6 @@ WORKDIR ${DN_DEV_WORKSPACE}
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN <<EOF
-#    echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
-#    source ${DN_DEV_WORKSPACE}/install/setup.bash
-#    echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash"
-#    source /opt/ros/${ROS_DISTRO}/setup.bash
-
     COLCON_FLAGS=()
     if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
       n2st::print_msg "Builder is running in architecture virtualisation"
@@ -134,18 +154,19 @@ RUN <<EOF
     colcon build ${COLCON_FLAGS[@]}
 EOF
 
-# ....DN and DN-project entrypoints and utilities................................................
-
-# Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
-WORKDIR ${DN_PROJECT_SERVICE_DIR}
-COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash ./
-
 # ToDo: refactor project-develop/Dockerfile the project-specific-ros-setup stage as a standalone
 #script that can be executed by project-deploy (ref task NMO-558)
 
 # ToDo: Move project-develop/dn_ros2_rebuild_dev_workspace.bash and
 # project-develop/dn_fetch_ros_env_variables.bash to a dn-project wide dir so that its available on
 # all dn-project service (ref task NMO-558)
+
+# ....DN and DN-project entrypoints and utilities................................................
+
+# Note: Its easier and more robust to copy DN files to root and then symlink them in project user.
+WORKDIR ${DN_PROJECT_SERVICE_DIR}
+COPY dn_entrypoint.init.bash dn_entrypoint.attach.bash ./
+
 
 RUN chmod +x dn_entrypoint.init.bash && \
     chmod +x dn_entrypoint.attach.bash

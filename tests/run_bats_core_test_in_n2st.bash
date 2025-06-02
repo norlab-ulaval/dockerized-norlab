@@ -15,31 +15,25 @@
 # =================================================================================================
 PARAMS="$@"
 
+set -e            # exit on error
+set -o nounset    # exit on unbound variable
+set -o pipefail   # exit if errors within pipes
+
 if [[ -z $PARAMS ]]; then
   # Set to default bats tests directory if none specified
   PARAMS="tests/tests_bats/"
 fi
 
-function n2st::run_n2st_testsing_tools(){
-  pushd "$(pwd)" >/dev/null || exit 1
-
 # ....Project root logic.........................................................................
-  DN_ROOT=$(git rev-parse --show-toplevel)
+DN_ROOT=$(git rev-parse --show-toplevel)
 
-  # ....Load environment variables from file.......................................................
-  cd "${DN_ROOT}" || exit 1
-  set -o allexport
-  source .env.dockerized-norlab-project
-  source .env.dockerized-norlab-build-system
-  set +o allexport
+# ....Load environment variables from file.......................................................
+cd "${DN_ROOT}" || exit 1
+set -o allexport
+source .env.dockerized-norlab-project
+source .env.dockerized-norlab-build-system
+set +o allexport
 
-  # ....Execute N2ST run_bats_tests_in_docker.bash.................................................
-  # shellcheck disable=SC2086
-  bash "${N2ST_PATH:?err}/tests/bats_testing_tools/run_bats_tests_in_docker.bash" $PARAMS
-
-  # ....Teardown...................................................................................
-  popd >/dev/null || exit 1
-  }
-
-n2st::run_n2st_testsing_tools
-
+# ....Execute N2ST run_bats_tests_in_docker.bash.................................................
+bash "${N2ST_PATH:?err}/tests/bats_testing_tools/run_bats_tests_in_docker.bash" $PARAMS
+exit $?

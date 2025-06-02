@@ -3,8 +3,15 @@
 # ===============================================================================================
 # Post docker command execution callback
 #
+# Notes:
+#   - It is source and executed by dn_execute_compose.bash
+#   - Its required to be at the same level as its corresponding docker-compose.*.yaml
+#
 # Usage:
 #   $ source dn_callback_execute_compose_post.bash && dn::callback_execute_compose_post
+#
+# Notes:
+#   See utilities/tmp/README.md for details on role of `dockerized-norlab-project-mock`
 #
 # Globals:
 #   Read DN_PATH
