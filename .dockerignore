@@ -1,23 +1,40 @@
-# Portable Network Graphics
-*.png
 
-# Scalable Vector Graphics
-*.svg
-*.svgz
+# ====Dockerized-NorLab============================================================================
 
-# Portable Document Format
-*.pdf
-
-*.drawio
-drawio/*
-visual/*
-
-# Excluded directory
-/scratches/
-
-# Excluded files
-
-
-# Un-ignored files
+# ....Dev required.................................................................................
 !/dockerized-norlab-scripts/build_script/build_all.log
 !/utilities/tmp/dockerized-norlab-project-mock/
+
+
+# ====General======================================================================================
+# ....Repository related...........................................................................
+.github
+.releaserc.json
+CHANGELOG.md
+commit_msg_reference.md
+visual/
+
+# ....Graphic/image related........................................................................
+**/*.svg
+**/*.svgz
+**/*.drawio
+**/drawio/
+
+# ....Text related.................................................................................
+**/*.pdf
+
+# ....Python related...............................................................................
+**/.pytest_cache
+**/.benchmarks
+**/__pycache__
+**/*.pyc
+
+# ....Jetbrains....................................................................................
+/.run/
+/.idea/
+
+# ....General......................................................................................
+**/*.out
+**/.DS_Store
+
+/scratches/
