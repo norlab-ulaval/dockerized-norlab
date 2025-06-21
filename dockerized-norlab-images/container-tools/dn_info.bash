@@ -72,36 +72,37 @@ function dn::show_container_runtime_information() {
   PKG_VERSION=$(pip3 list --format freeze)
 
   # ====Show runtime in-container information======================================================
-  SP="    "
+  local _sp="    "
   echo
-  n2st::draw_horizontal_line_across_the_terminal_window '.'
+  local line_style="─"
+  n2st::draw_horizontal_line_across_the_terminal_window "${line_style}" "${MSG_DIMMED_FORMAT}"
   # (NICE TO HAVE) ToDo: refactor  using 'n2st::print_msg' fct
   echo -e "In-container informations:"
   echo -e "\033[1;37m
-  ${SP}DN service name:             ${DN_PROJECT_SERVICE}
-  ${SP}DN container name:           ${DN_CONTAINER_NAME}
-  ${SP}DN user:                     $(whoami)
-  ${SP}DN host name:                $(hostname)
-  ${SP}DN image architecture:       ${DN_IMAGE_ARCHITECTURE}
-  ${SP}DN activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
-  ${SP}
-  ${SP}DN target project repo:      https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
-  ${SP}DN project src path:         ${DN_PROJECT_PATH}  \033[0m"
+  ${_sp}DN service name:             ${DN_PROJECT_SERVICE}
+  ${_sp}DN container name:           ${DN_CONTAINER_NAME}
+  ${_sp}DN user:                     $(whoami)
+  ${_sp}DN host name:                $(hostname)
+  ${_sp}DN image architecture:       ${DN_IMAGE_ARCHITECTURE}
+  ${_sp}DN activate powerline promt: ${DN_ACTIVATE_POWERLINE_PROMT}
+  ${_sp}
+  ${_sp}DN target project repo:      https://github.com/${DN_PROJECT_GIT_DOMAIN}/${DN_PROJECT_GIT_NAME}.git
+  ${_sp}DN project src path:         ${DN_PROJECT_PATH}  \033[0m"
   if [[ -n ${ROS_DISTRO} ]]; then
     echo -e "\033[1;37m
-  ${SP}ROS distro:                  ${ROS_DISTRO}
-  ${SP}ROS package:                 ${ROS_PKG}
-  ${SP}ROS domain id:               ${ROS_DOMAIN_ID}
-  ${SP}ROS container workspace:     ${DN_DEV_WORKSPACE}
-  ${SP}RMW_IMPLEMENTATION:          ${RMW_IMPLEMENTATION}  \033[0m"
+  ${_sp}ROS distro:                  ${ROS_DISTRO}
+  ${_sp}ROS package:                 ${ROS_PKG}
+  ${_sp}ROS domain id:               ${ROS_DOMAIN_ID}
+  ${_sp}ROS container workspace:     ${DN_DEV_WORKSPACE}
+  ${_sp}RMW_IMPLEMENTATION:          ${RMW_IMPLEMENTATION}  \033[0m"
   fi
   echo -e "\033[1;37m
-  ${SP}python3 version:             ${DN_PYTHON3_VERSION}
-  ${SP}numpy version:               $(echo "${PKG_VERSION}" | grep numpy== | sed 's/numpy==//g')
-  ${SP}pyTorch version:             $(echo "${PKG_VERSION}" | grep -w torch | sed 's/torch==//g')
-  ${SP}torchvision version:         $(echo "${PKG_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
-  ${SP}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')
-  ${SP}LLVMlite version:            $(echo "${PKG_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')
+  ${_sp}python3 version:             ${DN_PYTHON3_VERSION}
+  ${_sp}numpy version:               $(echo "${PKG_VERSION}" | grep numpy== | sed 's/numpy==//g')
+  ${_sp}pyTorch version:             $(echo "${PKG_VERSION}" | grep -w torch | sed 's/torch==//g')
+  ${_sp}torchvision version:         $(echo "${PKG_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
+  ${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')
+  ${_sp}LLVMlite version:            $(echo "${PKG_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')
   \033[0m"
 
 
@@ -110,7 +111,7 @@ function dn::show_container_runtime_information() {
 \033[1;37m
 $(
 cd "${DN_PATH}"/dockerized-norlab-images/container-tools &&
-sed "s;alias dn_;${SP}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn_.*;;" | grep -e dn_
+sed "s;alias dn_;${_sp}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn_.*;;" | grep -e dn_
 )
 \033[0m"
 
@@ -118,9 +119,9 @@ sed "s;alias dn_;${SP}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\
   if [[ "${DN_PROJECT_SERVICE}" == "project-develop" ]]; then
   echo -e "IDE remote development workflow › to connect to the container internal ssh server:
   \033[1;37m
-  ${SP}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}')
-  ${SP}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}'):/target/dir/
-  ${SP}$ sftp -P ${DN_SSH_SERVER_PORT} openssh-$(hostname -I | awk '{print $1}')
+  ${_sp}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}')
+  ${_sp}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}'):/target/dir/
+  ${_sp}$ sftp -P ${DN_SSH_SERVER_PORT} openssh-$(hostname -I | awk '{print $1}')
   \033[0m"
   fi
 
@@ -129,31 +130,31 @@ sed "s;alias dn_;${SP}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\
   echo -e "Terminal prompt › The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m
   or\033[1;37m Powerline10k\033[0m be installed on the host terminal. To change to a minimal prompt,
   either set permanently the ENV variable in\033[1;37m docker-compose.project.run.<host-arch>.yaml\033[0m:
-  ${SP}
-  ${SP}services:
-  ${SP}  develop: # the service name
-  ${SP}\033[1;37m    environment:
-  ${SP}      - DN_ACTIVATE_POWERLINE_PROMT=false
+  ${_sp}
+  ${_sp}services:
+  ${_sp}  develop: # the service name
+  ${_sp}\033[1;37m    environment:
+  ${_sp}      - DN_ACTIVATE_POWERLINE_PROMT=false
   \033[0m
   or pass the following flag to \033[1;37mdn_attach\033[0m when connecting to a running container:
   \033[1;37m
-  ${SP}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-container-name>
+  ${_sp}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-container-name>
   \033[0m"
 
   # ....Remote python interpreter setup info.......................................................
   echo -e "If you're running a python interpreter in remote development mode, dont forget to add the python path
   pointing to the ROS package in your host machine IDE:
   \033[1;37m
-  ${SP} PYTHONPATH=${PYTHONPATH}
+  ${_sp} PYTHONPATH=${PYTHONPATH}
   \033[0m
   To fetch container environment variables and expose them to the host computer through a mounted
   volume \033[1;37m dockerized-norlab-tools/dn_container_env_variable/ \033[0m making them availbale to configure your IDE
   (e.g.: PyCharm run configuration using EnvFile plugin https://github.com/Ashald/EnvFile) execute:
   \033[1;37m
-  ${SP} $ dn_expose_container_env_variables
+  ${_sp} $ dn_expose_container_env_variables
   \033[0m "
 
-  n2st::draw_horizontal_line_across_the_terminal_window '.'
+  n2st::draw_horizontal_line_across_the_terminal_window "${line_style}" "${MSG_DIMMED_FORMAT}"
 
   return 0
 }

@@ -8,7 +8,7 @@ set -e  # exit script if any statement returns a non-true return value
 source /import_dockerized_norlab_container_tools.bash
 n2st::set_which_python3_version && test -n "${PYTHON3_VERSION}" || exit 1
 if [[ -z "${PYTHON3_VERSION}" ]]; then
-  echo -e "[\033[1;31mERROR\033[0m] $0 | Script import_dockerized_norlab_container_tools.bash failled" 1>&2
+  n2st::print_msg_error "$0 | Script import_dockerized_norlab_container_tools.bash failled"
 fi
 
 if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
@@ -17,7 +17,7 @@ fi
 
 # ....SSH daemon...................................................................................
 # Check if sshd is running
-n2st::print_msg "\nStarting container \033[1;37m internal ssh server for IDE remote development workflow on port ${DN_SSH_SERVER_PORT}\033[0m with \033[1;37m user ${DN_SSH_SERVER_USER}\033[0m (default pass: lasagne)"
+n2st::print_msg "Starting container internal ssh server for IDE remote development workflow on port ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_PORT}${MSG_END_FORMAT} with user ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_USER}${MSG_END_FORMAT}"
 
 #LAUNCH_SSN_DAEMON=( '/usr/sbin/sshd' '-D' '-e' '-f' '/etc/ssh/sshd_config_dockerized_norlab_openssh_server' )
 LAUNCH_SSN_DAEMON=( '/usr/sbin/sshd' '-e' '-f' '/etc/ssh/sshd_config_dockerized_norlab_openssh_server' )
@@ -28,7 +28,7 @@ LAUNCH_SSN_DAEMON=( '/usr/sbin/sshd' '-e' '-f' '/etc/ssh/sshd_config_dockerized_
 if [[ $(whoami) == "root" ]]; then
   "${LAUNCH_SSN_DAEMON[@]}"
 else
-  n2st::print_msg "Launch the ssh daemon in a subshell as root"
+  n2st::print_msg "Launching the ssh daemon in a subshell with sudo priviledge instead of the $(whoami) shell"
   sudo bash -c "${LAUNCH_SSN_DAEMON[*]}"
 fi
 
