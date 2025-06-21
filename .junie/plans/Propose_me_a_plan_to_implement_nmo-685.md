@@ -1,4 +1,6 @@
 ## Docker Secret Management Best-Practice Implementation Plan
+References:
+- NMO-685 fix: implement secret best-practice
 
 Based on my analysis of the SSH daemon implementation in your dockerized-norlab project, I've identified several security vulnerabilities in the current approach and propose a comprehensive plan to implement Docker secret management best practices.
 

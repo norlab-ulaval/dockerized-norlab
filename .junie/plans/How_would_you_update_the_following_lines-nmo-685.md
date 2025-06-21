@@ -1,4 +1,7 @@
 ## Updated Lines for Phase 1 Implementation
+References:
+- NMO-685 fix: implement secret best-practice
+- `.junie/plans/Propose_me_a_plan_to_implement_nmo-685.md`
 
 Here's how you should update those lines to implement Phase 1 of the Docker secret management best practices:
 
