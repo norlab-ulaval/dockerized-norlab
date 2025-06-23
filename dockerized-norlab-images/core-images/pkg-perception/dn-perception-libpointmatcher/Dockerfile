@@ -28,24 +28,19 @@ WORKDIR "${PERCEP3D_LIB_PATH}/libpointmatcher"
 
 RUN <<EOF
     # ....Install libpointmatcher dependencies.....................................................
+    export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
 
     # //// Temp solution //////////////////////////////////////////////////////////////////////////
-
     ## (Priority) ToDo: unmute when installer as the option to skip doc install (ref task NMO-605).
     ##
     #yes | bash libpointmatcher_dependencies_installer.bash || exit 1
     ##
     ## Use manual install step in the mean time
-
     set -o allexport && source .env.libpointmatcher && set +o allexport || exit 1
-    export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
-
     cd "${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu" || exit 1
     yes | source lpm_install_dependencies_general_ubuntu.bash || exit 1
-
     cd "${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu" || exit 1
     yes | source lpm_install_dependencies_libnabo_ubuntu.bash || exit 1
-
     # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ Temp solution \\\\
 
     # ....Check Libpointmatcher dependencies installed versions....................................
