@@ -25,11 +25,11 @@ ENV PERCEP3D_LIB_PATH=${PERCEP3D_LIB_PATH}
 WORKDIR ${PERCEP3D_LIB_PATH}
 
 RUN <<EOF
+    #!/bin/bash
     git clone --recurse-submodules https://github.com/norlab-ulaval/libpointmatcher.git
 
     # ....Install libnabo..........................................................................
     cd "${PERCEP3D_LIB_PATH}/libpointmatcher" || exit 1
-
 
     # //// Temp solution //////////////////////////////////////////////////////////////////////////
     ## (Priority) ToDo: unmute when installer as the option to skip doc install (ref task NMO-605).
@@ -46,6 +46,7 @@ RUN <<EOF
 
 
     # ....Check Libpointmatcher dependencies installed versions....................................
+    cd "${PERCEP3D_LIB_PATH}/libpointmatcher" || exit 1
     bash utest/listVersionsUbuntu.sh
 
     # ....Install libpointmatcher..................................................................
@@ -53,6 +54,7 @@ RUN <<EOF
     # (CRITICAL) ToDo: fix(LPM installer): `--build-system-CI-install` logic should be the default
     #   in LPM installer.
     #   Ref task NMO-602 fix(installer): set LPM user installer to skip repo clone step by default
+    cd "${PERCEP3D_LIB_PATH}/libpointmatcher" || exit 1
     bash libpointmatcher_installer.bash \
       --repository-version ${LIBPOINTMATCHER_VERSION} \
       --cmake-build-type ${LIBPOINTMATCHER_CMAKE_BUILD_TYPE} \
@@ -63,7 +65,11 @@ EOF
 
 FROM libpointmatcher-install AS test
 WORKDIR ${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu
-run bash lpm_execute_libpointmatcher_unittest.bash
+RUN <<EOF
+    #!/bin/bash
+    bash lpm_execute_libpointmatcher_unittest.bash
+EOF
+
 
 FROM libpointmatcher-install AS final
 

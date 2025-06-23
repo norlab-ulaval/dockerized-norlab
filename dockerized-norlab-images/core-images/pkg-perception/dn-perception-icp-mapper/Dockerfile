@@ -6,6 +6,9 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS icp-mapper-install
 # (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
 #ARG DEBIAN_FRONTEND=noninteractive
 
+ARG PERCEP3D_LIB_PATH=/opt/percep3d_libraries
+ENV PERCEP3D_LIB_PATH=${PERCEP3D_LIB_PATH}
+
 # ====Begin=======================================================================================
 # Reference: https://github.com/norlab-ulaval/Norlab_wiki/wiki/Tutorials:-3D-Mapping-(ros2)
 
@@ -20,7 +23,7 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS icp-mapper-install
 WORKDIR ${PERCEP3D_LIB_PATH:?'Error: env variable empty'}
 RUN git clone https://github.com/norlab-ulaval/norlab_icp_mapper.git \
     && mkdir -p norlab_icp_mapper/build && cd norlab_icp_mapper/build \
-    && cmake -DCMAKE_BUILD_TYPE=Release .. \
+    && cmake -DCMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=${PERCEP3D_LIB_PATH:?err} .. \
     && make -j $(nproc) \
     && make install
 

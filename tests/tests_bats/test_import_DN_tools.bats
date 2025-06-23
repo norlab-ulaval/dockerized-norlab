@@ -78,6 +78,42 @@ teardown() {
   assert_success
 }
 
+@test "assess \"source $TESTED_FILE\" exported env var › expect pass" {
+  assert_empty "${DN_IMPORTED}"
+
+  source "$TESTED_FILE"
+
+  assert_equal "${DN_IMPORTED}" "true"
+}
+
+
+@test "assess execute \"source ${TESTED_FILE}\" with DN_PATH already set › expect pass" {
+  # ....Pre-condition..............................................................................
+  assert_empty "${DN_PATH}"
+
+  # ....Import N2ST library........................................................................
+  export DN_PATH="/code/dockerized-norlab"
+  source "$TESTED_FILE"
+
+  # ....Tests......................................................................................
+  assert_equal "${DN_PATH}" "/code/dockerized-norlab"
+  assert_regex "${DN_VERSION}" [0-9]+\.[0-9]+\.[0-9]+
+  unset DN_PATH
+}
+
+
+@test "${TESTED_FILE} › validate return to original dir on script exit › expect pass" {
+  # ....Test setup.................................................................................
+  local ORIGINAL_CWD=$(pwd)
+
+  # ....Import DN library..........................................................................
+  source "${TESTED_FILE}"
+
+  # ....Tests......................................................................................
+  assert_equal "$(pwd)" "${ORIGINAL_CWD}"
+}
+
+
 @test "Test utilities › validate env var are not set between test run" {
   assert_empty "${DN_PATH}"
   assert_empty "${N2ST_PATH}"
@@ -108,10 +144,12 @@ teardown() {
   assert_equal "${DN_GIT_NAME}" "dockerized-norlab"
   assert_equal "${DN_SRC_NAME}" "dockerized-norlab"
   assert_equal "${DN_PATH}" "/code/dockerized-norlab"
+  assert_regex "${DN_VERSION}" [0-9]+\.[0-9]+\.[0-9]+
 
   assert_equal "${NBS_BUILD_MATRIX_CONFIG}" "/code/dockerized-norlab/build_matrix_config"
   assert_equal "${NBS_PATH}" "/code/dockerized-norlab/utilities/norlab-build-system"
   assert_equal "${N2ST_PATH}" "/code/dockerized-norlab/utilities/norlab-shell-script-tools"
+
 }
 
 @test "${TESTED_FILE} › check if .env.dockerized-norlab-project was properly sourced › expect pass" {

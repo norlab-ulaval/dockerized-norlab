@@ -14,36 +14,73 @@
 #   cd <my/superproject/root>/dockerized-norlab/dockerized-norlab-images/container-tools/
 #   source import_dockerized_norlab_container_tools.bash
 #
+# Globals:
+#   write DN_PATH
+#   write N2ST_PATH
+#   write DN_IMPORTED
+#
 # =================================================================================================
 pushd "$(pwd)" >/dev/null || exit 1
 
 function dn::source_lib() {
-  local _PATH_TO_SCRIPT
+  # ....Setup......................................................................................
+  local debug_log=false
+  local tmp_cwd
+  tmp_cwd=$(pwd)
+  local script_path
+  local target_path
 
-  # Note: can handle both sourcing cases
-  #   i.e. from within a script or from an interactive terminal session
-  _PATH_TO_SCRIPT="$(realpath "${BASH_SOURCE[0]:-'.'}")"
-  DN_PATH=$(realpath "$(dirname "${_PATH_TO_SCRIPT}")/../..")
+  # ....Find path to script........................................................................
+  if [[ -z ${DN_PATH} ]]; then
+    # Note: can handle both sourcing cases
+    #   i.e. from within a script or from an interactive terminal session
+    # Check if running interactively
+    if [[ $- == *i* ]]; then
+      # Case: running in an interactive session
+      target_path=$(realpath .)
+    else
+      # Case: running in an non-interactive session
+      script_path="$(realpath -q "${BASH_SOURCE[0]:-.}")"
+      target_path="$(dirname "${script_path}")"
+    fi
 
-  # ....Source DN dependencies.....................................................................
+    if [[ ${debug_log} == true ]]; then
+      echo "
+      BASH_SOURCE: ${BASH_SOURCE[*]}
+
+      tmp_cwd: ${tmp_cwd}
+      script_path: ${script_path}
+      target_path: ${target_path}
+
+      realpath: $(realpath .)
+      \$0: $0
+      "  >&3
+    fi
+
+    if [[ "$( basename "${target_path}" )" != "container-tools" ]]; then
+      echo -e "\n[\033[1;31mDN error\033[0m] Can't find directory 'container-tools'!" 1>&2
+    fi
+
+    DN_PATH=$(realpath "${target_path}/../..")
+  fi
+
+  DN_VERSION="$(cat "${DN_PATH}"/version.txt)"
+  export DN_VERSION
+
   N2ST_PATH=${DN_PATH}/utilities/norlab-shell-script-tools
 
-  cd "${N2ST_PATH}" || exit 1
-  source "import_norlab_shell_script_tools_lib.bash"
-
-  #  # ....Source DN functions.......................................................................
-  #  cd "${NBS_PATH}/src/function_library" || exit 1
-  #  for each_file in "$(pwd)"/*.bash ; do
-  #      source "${each_file}"
-  #  done
-
-  # ....Teardown...................................................................................
   export DN_PATH
   export N2ST_PATH
 
+  # ....Source DN dependencies.....................................................................
+  cd "${N2ST_PATH}" || return 1
+  source "import_norlab_shell_script_tools_lib.bash" || return 1
+
+  # ....Teardown...................................................................................
   # Set reference that the DN tools where imported with this script
   export DN_IMPORTED=true
 
+  cd "${tmp_cwd}" || { echo "Return to original dir error" 1>&2 && return 1; }
   return 0
 }
 
@@ -56,7 +93,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  dn::source_lib
+  dn::source_lib || exit 1
 fi
 
 # ====Teardown=====================================================================================

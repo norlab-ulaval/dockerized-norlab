@@ -4,7 +4,10 @@ ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS build-norlab-perception-ros-stack
 
 # (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
-#ARG DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
+
+ARG PERCEP3D_LIB_PATH=/opt/percep3d_libraries
+ENV PERCEP3D_LIB_PATH=${PERCEP3D_LIB_PATH}
 
 # ====Requirement==================================================================================
 WORKDIR ${DN_DEV_WORKSPACE:?'Variable not set'}/src/
@@ -57,40 +60,52 @@ RUN wget -O demo.zip "http://norlab.s3.valeria.science/demo.zip?AWSAccessKeyId=X
 RUN apt-get update --fix-missing \
     && apt-get install --assume-yes \
         ros-${ROS_DISTRO}-rosbag2 \
+        ros-dev-tools\
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # ToDo: validate install steps in here -> https://github.com/norlab-ulaval/Norlab_wiki/wiki/Tutorials:-3D-Mapping-(ros2)
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
+RUN <<EOF
+#!/bin/bash
+
+export CMAKE_PREFIX_PATH="${PERCEP3D_LIB_PATH:?err}:${CMAKE_PREFIX_PATH}"
+
+echo && n2st::print_msg "Run rosdep install" \
     && apt-get update --fix-missing \
-    && rosdep update --rosdistro ${ROS_DISTRO} \
+    && cd "${P3D_ROS_DEV_WORKSPACE}" \
+    && rosdep update --rosdistro "${ROS_DISTRO}" \
     && rosdep fix-permissions \
-    && rosdep install  \
-            --ignore-packages-from-source \
-            --from-path ./src  \
-            --rosdistro ${ROS_DISTRO}  \
-            -y \
+    && rosdep install \
+        --ignore-packages-from-source \
+        --from-path ./src  \
+        --rosdistro "${ROS_DISTRO}"  \
+        -y \
     && colcon version-check \
-    && COLCON_FLAGS=() \
-    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
-         echo -e "Builder is running in architecture virtualisation" \
-         && COLCON_FLAGS+=(--executor sequential) ; \
-      else \
-         echo -e "Builder is running on native architecture" \
-         && COLCON_FLAGS+=(--symlink-install) ; \
-      fi \
-    && COLCON_FLAGS+=( \
-          --cmake-clean-cache \
-          --cmake-args -DCMAKE_BUILD_TYPE=Release \
-          --event-handlers console_direct+ \
-       ) \
-    && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
-    && colcon build ${COLCON_FLAGS[@]}
+    || exit 1
+
+# Note: The colcon flag "--cmake-clean-cache" reset the python3 env
+COLCON_FLAGS=()
+if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
+    echo -e "Builder is running in architecture virtualisation"
+    COLCON_FLAGS+=(--executor sequential)
+else
+    echo -e "Builder is running on native architecture"
+    COLCON_FLAGS+=(--symlink-install)
+fi
+COLCON_FLAGS+=(
+      "--cmake-clean-cache"
+      "--cmake-args" "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
+      "--cmake-args" "-DCMAKE_BUILD_TYPE=Release"
+      "--event-handlers" "console_direct+"
+   )
+echo && n2st::print_msg "Run colcon build ${COLCON_FLAGS[*]}" \
+    && cd "${P3D_ROS_DEV_WORKSPACE}" \
+    && colcon build "${COLCON_FLAGS[@]}" \
+    || exit 1
+
+EOF
 
 #RUN echo "Check workspace directory installation" \
 #    && [[ -f ${HOME}/demo/config.rviz ]] \
