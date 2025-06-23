@@ -64,9 +64,6 @@ function dn::source_lib() {
     DN_PATH=$(realpath "${target_path}/../..")
   fi
 
-  DN_VERSION="$(cat "${DN_PATH}"/version.txt)"
-  export DN_VERSION
-
   N2ST_PATH=${DN_PATH}/utilities/norlab-shell-script-tools
 
   export DN_PATH

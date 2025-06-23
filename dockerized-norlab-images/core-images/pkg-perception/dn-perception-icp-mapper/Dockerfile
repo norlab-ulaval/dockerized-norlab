@@ -23,7 +23,7 @@ ENV PERCEP3D_LIB_PATH=${PERCEP3D_LIB_PATH}
 WORKDIR ${PERCEP3D_LIB_PATH:?'Error: env variable empty'}
 RUN git clone https://github.com/norlab-ulaval/norlab_icp_mapper.git \
     && mkdir -p norlab_icp_mapper/build && cd norlab_icp_mapper/build \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${PERCEP3D_LIB_PATH:?err} .. \
+    && cmake -DCMAKE_BUILD_TYPE=Release .. \
     && make -j $(nproc) \
     && make install
 

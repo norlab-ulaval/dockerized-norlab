@@ -68,9 +68,6 @@ function dn::source_lib() {
     return 1
   fi
 
-  DN_VERSION="$(cat version.txt)"
-  export DN_VERSION
-
   # ....Load environment variables from file.......................................................
   set -o allexport
   source .env.dockerized-norlab-project || return 1
