@@ -50,13 +50,6 @@ setup_file() {
 }
 
 setup() {
-#  cd "$TESTED_FILE_PATH" || exit 1
-
-#  NBS_PATH=${BATS_DOCKER_WORKDIR}/utilities/norlab-build-system
-#  cd "${NBS_PATH}"
-#  source "import_norlab_build_system_lib.bash" || exit 1
-
-#  cd "${DN_PATH:?err}"
   source "import_dockerized_norlab_tools.bash" || exit 1
 
   cd "${BATS_DOCKER_WORKDIR}" || exit 1
@@ -80,6 +73,8 @@ setup() {
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
 
+  assert_equal "${DN_IMPORTED}" "true"
+
   source ./build_script/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
                           --dockerized-norlab-version hot \
@@ -94,7 +89,7 @@ setup() {
 }
 
 @test "sourcing $TESTED_FILE from ok cwd › expect pass" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
@@ -112,7 +107,7 @@ setup() {
 }
 
 @test "missing docker-compose.yaml file mandatory argument › expect fail" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose
@@ -132,7 +127,7 @@ setup() {
 }
 
 @test "docker command are passed to show and execute docker" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="build --no-cache --push"
   mock_docker_command_config_services
@@ -151,7 +146,7 @@ setup() {
 }
 
 @test "docker-compose.global.yaml is merged to main compose file" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   COMPOSE_FILE_GLOBAL="dockerized-norlab-images/core-images/global/docker-compose.global.yaml"
 
@@ -173,7 +168,7 @@ setup() {
 }
 
 @test "docker exit code propagation on pass › expect pass" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="version"
   set +e
@@ -194,7 +189,7 @@ setup() {
 }
 
 @test "docker exit code propagation on faillure › expect pass" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="version"
   mock_docker_command_exit_error
@@ -215,7 +210,7 @@ setup() {
 }
 
 @test "Variable are exported to calling script › expect pass" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   assert_empty "$BUILDKIT_PROGRESS"
   assert_empty "$REPOSITORY_VERSION"
@@ -269,7 +264,7 @@ setup() {
 }
 
 @test "flags that set env variable" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
@@ -286,7 +281,7 @@ setup() {
 }
 
 @test "docker compose build conditional logic" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
@@ -304,7 +299,7 @@ setup() {
 }
 
 @test "flag --force-push" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
@@ -322,7 +317,7 @@ setup() {
 }
 
 @test "flag --help" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   source ./${TESTED_FILE_PATH}/$TESTED_FILE
   run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} --help
@@ -331,7 +326,7 @@ setup() {
 }
 
 @test "flag --buildx-bake" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
   mock_docker_command_config_services
@@ -352,7 +347,7 @@ setup() {
 # ....base image › l4t-images......................................................................
 
 @test "base image › l4t-images | dn_callback_execute_compose_post.bash › OK" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
+  assert_equal "${DN_IMPORTED}" "true"
 
   mock_docker_command_config_services
   source ./${TESTED_FILE_PATH}/$TESTED_FILE

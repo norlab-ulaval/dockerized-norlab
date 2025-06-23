@@ -40,7 +40,8 @@ cd "${DN_PATH:?'Variable not set'}" || exit 1
 source ".env.build_matrix.main"
 if [[ -n ${NBS_OVERRIDE_BUILD_MATRIX_MAIN} ]]; then
   # Note: Override values from .env.build_matrix.main
-  source "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
+  # shellcheck disable=SC1090
+  source "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}" || exit 1
 fi
 set +o allexport
 

@@ -1,14 +1,36 @@
-/scratches/
 
-# Mac
-.DS_Store
+# ====Dockerized-NorLab============================================================================
 
-# Jetbrains
-.idea/*
+# ....Dev required.................................................................................
+/utilities/tmp/dockerized-norlab-project-mock
 
-# Files and directories
-/dockerized-norlab-scripts/build_script/build_all.log
-/dockerized-norlab-tools/dn_container_env_variable/*
+# ....DNP common...................................................................................
+**/.dockerized_norlab_project/dn_container_env_variable/
+/dockerized-norlab-tools/dn_container_env_variable/
 !/dockerized-norlab-tools/dn_container_env_variable/README.md
 
-/utilities/tmp/dockerized-norlab-project-mock
+
+# ====General======================================================================================
+
+# ....Jetbrains....................................................................................
+/.idea/
+/.vagrant/
+/scratches/
+
+# ....AI...........................................................................................
+/.junie/scratch.md
+/.junie/iceboxed_plans
+
+# ....Python related...............................................................................
+**/.pytest_cache
+**/.benchmarks
+**/__pycache__
+**/*.pyc
+
+# ....Log..........................................................................................
+**/*.out
+**/*.log
+
+# ....General......................................................................................
+**/.DS_Store
+

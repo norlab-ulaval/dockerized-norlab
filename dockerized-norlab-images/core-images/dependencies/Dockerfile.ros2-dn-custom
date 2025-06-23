@@ -74,10 +74,6 @@ EOF
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN <<EOF
-#    echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash"
-#    source /opt/ros/${ROS_DISTRO}/setup.bash
-#    echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
-#    source ${DN_DEV_WORKSPACE}/install/setup.bash
 
     apt-get update --fix-missing
     rosdep update --rosdistro ${ROS_DISTRO}
@@ -116,12 +112,14 @@ RUN <<EOF
         echo ""
         echo "# >>> dockerized-norlab dependencies ros2-dn-custom"
         echo "# Source ROS2 environment"
+        echo "echo -e \"\\033[1;2m\" # MSG_DIMMED_FORMAT"
         echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash\""
         echo "source /opt/ros/${ROS_DISTRO}/setup.bash"
         echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"
         echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash\""
         echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"
         echo "fi"
+        echo "echo -e \"\\033[0m\" # MSG_END_FORMAT"
         echo "# <<< dockerized-norlab dependencies ros2-dn-custom"
         echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
@@ -130,16 +128,17 @@ RUN <<EOF
         echo ""
         echo "# >>> dockerized-norlab dependencies ros2-dn-custom"
         echo "# Source ROS2 environment"
+        echo "echo -e \"\\033[1;2m\" # MSG_DIMMED_FORMAT"
         echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash\""
         echo "source /opt/ros/${ROS_DISTRO}/setup.bash"
         echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"
         echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash\""
         echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"
         echo "fi"
+        echo "echo -e \"\\033[0m\" # MSG_END_FORMAT"
         echo "# <<< dockerized-norlab dependencies ros2-dn-custom"
         echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
-
 
     # (NICE TO HAVE) ToDo: DN_CONTAINER_NAME is being set with the build arg instead of the env at runtime
     #      echo ""; \
@@ -187,6 +186,13 @@ RUN <<EOF
         python -c "import rclpy" && \
         ros2 pkg list ;
     } || exit 1
+
+    echo -e "\nLog dn_bashrc.bash content\n"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+
+    echo -e "\nLog dn_bashrc_non_interactive.bash content\n"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+
 EOF
 
 # Note: ROS2 distro should be sourced automaticaly via our dn_bashrc_non_interactive.bash setup
