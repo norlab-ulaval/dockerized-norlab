@@ -62,7 +62,6 @@ cd "${PERCEP3D_LIB_PATH}"/libpointmatcher || exit 1
 chmod +x ./utest/listVersionsUbuntu.sh
 utest/listVersionsUbuntu.sh
 
-
 # ....Install libpointmatcher......................................................................
 
 # (CRITICAL) ToDo: fix(LPM installer): `--build-system-CI-install` logic should be the default
@@ -74,8 +73,8 @@ LPM_INSTALL_FLAG+=(--build-system-CI-install)
 LPM_INSTALL_FLAG+=(--compile-test)
 
 #export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
-cd "${PERCEP3D_LIB_PATH}"/libpointmatcher || exit 1
-source libpointmatcher_installer.bash \
+cd "${PERCEP3D_LIB_PATH}"/libpointmatcher/build_system/ubuntu || exit 1
+source lpm_install_libpointmatcher_ubuntu.bash \
   --repository-version "${LIBPOINTMATCHER_VERSION}" \
   --cmake-build-type "${LIBPOINTMATCHER_CMAKE_BUILD_TYPE}" \
   "${LPM_INSTALL_FLAG[@]}"  \
