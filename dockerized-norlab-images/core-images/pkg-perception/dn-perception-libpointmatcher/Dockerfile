@@ -31,14 +31,14 @@ WORKDIR "${PERCEP3D_LIB_PATH}/libpointmatcher"
 RUN <<EOF
 #!/bin/bash
 
-if [[ ${DISTRIB_RELEASE} == '20.04' ]]; then
-  # Quick-hack to get the proper get-pip.py version for focal
-  FILE_TO_CHANGE="${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu/lpm_install_dependencies_general_ubuntu.bash"
-  SEEK_STR="wget https://bootstrap.pypa.io/get-pip.py"
-  CHANGE_TO="wget https://bootstrap.pypa.io/pip/3.8/get-pip.py"
-  test -f "$FILE_TO_CHANGE" || exit 1
-  n2st::seek_and_modify_string_in_file "$SEEK_STR" "$CHANGE_TO" "$FILE_TO_CHANGE"
-fi
+#if [[ ${DISTRIB_RELEASE} == '20.04' ]]; then
+#  # Quick-hack to get the proper get-pip.py version for focal
+#  FILE_TO_CHANGE="${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu/lpm_install_dependencies_general_ubuntu.bash"
+#  SEEK_STR="wget https://bootstrap.pypa.io/get-pip.py"
+#  CHANGE_TO="wget https://bootstrap.pypa.io/pip/3.8/get-pip.py"
+#  test -f "$FILE_TO_CHANGE" || exit 1
+#  n2st::seek_and_modify_string_in_file "$SEEK_STR" "$CHANGE_TO" "$FILE_TO_CHANGE"
+#fi
 
 # ....Install libpointmatcher dependencies.........................................................
 export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
