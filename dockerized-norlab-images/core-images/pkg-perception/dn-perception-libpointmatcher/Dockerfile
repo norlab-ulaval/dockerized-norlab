@@ -6,6 +6,8 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS libpointmatcher-install
 # (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
 #ARG DEBIAN_FRONTEND=noninteractive
 
+# Options: master, develop, <feature>, tag ...
+ARG LPM_CHECKOUT=develop
 ARG LIBPOINTMATCHER_VERSION=latest
 ENV LIBPOINTMATCHER_VERSION=${LIBPOINTMATCHER_VERSION}
 
@@ -21,13 +23,14 @@ ARG CMAKE_INSTALL_PREFIX="-DCMAKE_INSTALL_PREFIX=${PERCEP3D_LIB_PATH:?err}"
 # ====Begin=======================================================================================
 WORKDIR ${PERCEP3D_LIB_PATH}
 
-RUN git clone --recurse-submodules https://github.com/norlab-ulaval/libpointmatcher.git
+RUN git clone --branch ${LPM_CHECKOUT} --recurse-submodules https://github.com/norlab-ulaval/libpointmatcher.git
 
 WORKDIR "${PERCEP3D_LIB_PATH}/libpointmatcher"
 
 
 RUN <<EOF
 #!/bin/bash
+
 if [[ ${DISTRIB_RELEASE} == '20.04' ]]; then
   # Quick-hack to get the proper get-pip.py version for focal
   FILE_TO_CHANGE="${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu/lpm_install_dependencies_general_ubuntu.bash"
@@ -57,6 +60,10 @@ yes | source lpm_install_dependencies_libnabo_ubuntu.bash || exit 1
 cd "${PERCEP3D_LIB_PATH}"/libpointmatcher || exit 1
 chmod +x ./utest/listVersionsUbuntu.sh
 utest/listVersionsUbuntu.sh
+
+python --version
+which python
+
 EOF
 
 RUN <<EOF
