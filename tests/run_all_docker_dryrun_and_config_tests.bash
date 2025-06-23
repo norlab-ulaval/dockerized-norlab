@@ -13,6 +13,6 @@ test_dir="${DN_PATH:?err}/tests/tests_docker_dryrun_and_config"
 
 # ....Begin........................................................................................
 source "${NBS_PATH:?err}/src/utility_scripts/nbs_run_all_test_and_dryrun_in_directory.bash" "${test_dir}"
-
+exit $?
 
 
