@@ -7,7 +7,7 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS libpointmatcher-install
 #ARG DEBIAN_FRONTEND=noninteractive
 
 # Options: master, develop, <feature>, tag ...
-ARG LPM_CHECKOUT=develop
+ARG LPM_CHECKOUT=master
 ARG LIBPOINTMATCHER_VERSION=latest
 ENV LIBPOINTMATCHER_VERSION=${LIBPOINTMATCHER_VERSION}
 
@@ -27,9 +27,11 @@ RUN git clone --branch ${LPM_CHECKOUT} --recurse-submodules https://github.com/n
 
 WORKDIR "${PERCEP3D_LIB_PATH}/libpointmatcher"
 
-
 RUN <<EOF
 #!/bin/bash
+
+python --version
+which python
 
 #if [[ ${DISTRIB_RELEASE} == '20.04' ]]; then
 #  # Quick-hack to get the proper get-pip.py version for focal
@@ -41,7 +43,7 @@ RUN <<EOF
 #fi
 
 # ....Install libpointmatcher dependencies.........................................................
-export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
+#export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
 
 # //// Temp solution ////////////////////////////////////\\\\//////////////////////////////////////
 ## (Priority) ToDo: unmute when installer as the option to skip doc install (ref task NMO-605).
@@ -49,11 +51,10 @@ export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
 #yes | bash libpointmatcher_dependencies_installer.bash || exit 1
 ##
 ## Use manual install step in the mean time
-set -o allexport && source .env.libpointmatcher && set +o allexport || exit 1
 cd "${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu" || exit 1
-yes | source lpm_install_dependencies_general_ubuntu.bash || exit 1
+source lpm_install_dependencies_general_ubuntu.bash || exit 1
 cd "${PERCEP3D_LIB_PATH}/libpointmatcher/build_system/ubuntu" || exit 1
-yes | source lpm_install_dependencies_libnabo_ubuntu.bash || exit 1
+source lpm_install_dependencies_libnabo_ubuntu.bash || exit 1
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ Temp solution \\\\
 
 # ....Check Libpointmatcher dependencies installed versions........................................
@@ -61,13 +62,7 @@ cd "${PERCEP3D_LIB_PATH}"/libpointmatcher || exit 1
 chmod +x ./utest/listVersionsUbuntu.sh
 utest/listVersionsUbuntu.sh
 
-python --version
-which python
 
-EOF
-
-RUN <<EOF
-#!/bin/bash
 # ....Install libpointmatcher......................................................................
 
 # (CRITICAL) ToDo: fix(LPM installer): `--build-system-CI-install` logic should be the default
@@ -78,8 +73,9 @@ declare -a LPM_INSTALL_FLAG=()
 LPM_INSTALL_FLAG+=(--build-system-CI-install)
 LPM_INSTALL_FLAG+=(--compile-test)
 
-export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
-bash libpointmatcher_installer.bash \
+#export APPEND_TO_CMAKE_FLAG=( "${CMAKE_INSTALL_PREFIX}" )
+cd "${PERCEP3D_LIB_PATH}"/libpointmatcher || exit 1
+source libpointmatcher_installer.bash \
   --repository-version "${LIBPOINTMATCHER_VERSION}" \
   --cmake-build-type "${LIBPOINTMATCHER_CMAKE_BUILD_TYPE}" \
   "${LPM_INSTALL_FLAG[@]}"  \
