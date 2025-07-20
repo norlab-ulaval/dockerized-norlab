@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="DN | run_all_docker_dryrun_and_config_tests.bash" type="ShConfigurationType" folderName="[DN] B | dry-run and config tests">
-    <option name="SCRIPT_TEXT" value="cd tests/ &amp;&amp; bash run_all_docker_dryrun_and_config_tests.bash" />
+  <configuration default="false" name="run › dn_build_all.bash LATEST --force-push (docker context)" type="ShConfigurationType" folderName="[DN] E | Build and push">
+    <option name="SCRIPT_TEXT" value="export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=&quot;build&quot; &amp;&amp; source dockerized-norlab-scripts/build_script/dn_build_all.bash --force-push --dockerized-norlab-version-build-matrix-override 'latest'" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-    <option name="SCRIPT_PATH" value="" />
+    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_build_all.bash" />
     <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
     <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />

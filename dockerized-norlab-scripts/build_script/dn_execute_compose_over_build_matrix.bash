@@ -33,7 +33,6 @@ STR_DOCKER_MANAGEMENT_COMMAND="compose"
 DOCKER_FORCE_PUSH=false
 DOCKER_EXIT_CODE=1
 
-
 MSG_ERROR_FORMAT="\033[1;31m"
 MSG_END_FORMAT="\033[0m"
 
@@ -229,6 +228,7 @@ while [ $# -gt 0 ]; do
     ;;
   --show-dn-debug-build-info)
     DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--show-dn-debug-build-info)
+    #_SHOW_DN_DEBUG_BUILD_INFO=true
     shift # Remove argument (--show-dn-debug-build-info)
     ;;
   --force-push)
@@ -361,6 +361,34 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
       for EACH_ROS_DISTRO in "${NBS_MATRIX_ROS_DISTRO[@]}" ; do
         dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_DISTRO}"
+
+        _SHOW_DN_DEBUG_BUILD_INFO=${_SHOW_DN_DEBUG_BUILD_INFO:-"false"}
+        if [[ ${EACH_ROS_DISTRO} != none ]]; then
+          # Ubuntu Focal and L4T 35.*.* <-> ROS2 distro combinaison supported by DN:
+          # - Ubunu (Jammy|Noble)/L4T 36.*.* <-> ROS2 (Humble|Jazzy|Kilted)
+          # - Ubunu focal/L4T 35.*.* <-> ROS2 galactic
+          # - Ubunu focal/L4T 35.*.* <-> ROS2 foxy (deprecated but stay in crawler for retro compatibility)
+          if [[ "${EACH_OS_VERSION}" == "focal" ]] || [[ "${EACH_OS_VERSION}" =~ "35.".* ]]; then
+            if [[ "${EACH_ROS_DISTRO}" != "galactic" ]] && [[ "${EACH_ROS_DISTRO}" != "foxy" ]]; then
+              if [[ "${_SHOW_DN_DEBUG_BUILD_INFO}" == "true" ]]; then
+                n2st::print_msg_warning "🔻 DEV >> OS version ${EACH_OS_VERSION} <-> ROS2 distro ${EACH_ROS_DISTRO} (SKIP)"
+              fi
+              continue
+            fi
+          elif [[ "${EACH_OS_VERSION}" == "jammy" ]] ||  [[ "${EACH_OS_VERSION}" == "noble" ]] || [[ "${EACH_OS_VERSION}" =~ "36.".* ]]; then
+            if [[ "${EACH_ROS_DISTRO}" != "humble" ]] && [[ "${EACH_ROS_DISTRO}" != "jazzy" ]] && [[ "${EACH_ROS_DISTRO}" != "kilted" ]]; then
+              if [[ "${_SHOW_DN_DEBUG_BUILD_INFO}" == "true" ]]; then
+                n2st::print_msg_warning "🔻 DEV >> OS version ${EACH_OS_VERSION} <-> ROS2 distro ${EACH_ROS_DISTRO} (SKIP)"
+              fi
+              continue
+            fi
+          fi
+
+          if [[ "${_SHOW_DN_DEBUG_BUILD_INFO}" == "true" ]]; then
+            n2st::print_msg_warning "✅ DEV >> OS version ${EACH_OS_VERSION} <-> ROS2 distro ${EACH_ROS_DISTRO} (DO IT)"
+          fi
+        fi
+
         for EACH_ROS_PKG in "${NBS_MATRIX_ROS_PKG[@]}" ; do
           dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_PKG}"
 
@@ -434,10 +462,10 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
               --dockerized-norlab-version "${EACH_DN_VERSION}" \
               --base-image "${EACH_BASE_IMAGE}" \
               --os-name "${EACH_OS_NAME}" \
-              ${BASE_IMAGE_TAG_PREFIX_FLAG[@]} \
+              "${BASE_IMAGE_TAG_PREFIX_FLAG[@]}" \
               --tag-os-version "${EACH_OS_VERSION}" \
-              ${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]} \
-              -- ${DOCKER_COMPOSE_CMD_ARGS[@]}
+              "${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]}" \
+              -- "${DOCKER_COMPOSE_CMD_ARGS[@]}"
 
             DOCKER_EXIT_CODE=$?
 

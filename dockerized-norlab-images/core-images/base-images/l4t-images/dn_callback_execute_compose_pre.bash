@@ -28,7 +28,9 @@ function dn::callback_execute_compose_pre() {
       n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
     fi
 
-    # ex: dustynv/pytorch:2.1-r35.2.1
+    # ex:
+    #   - dustynv/pytorch:2.1-r35.2.1
+    #   - dustynv/l4t-pytorch:r36.4.0
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
     docker pull --platform="linux/arm64" "${DOCKER_IMG}"
     FETCH_CUDA_VERSION_MAJOR_MINOR=$( docker run --privileged -it --rm "${DOCKER_IMG}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
@@ -53,7 +55,7 @@ function dn::callback_execute_compose_pre() {
     #   - base image 'nvcr.io/nvidia/tensorrt:20.12-py3'
     #   - ref https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorrt/tags
     export MIMIC_DEPENDENCIES_BASE_IMAGE="nvcr.io/nvidia/tensorrt"
-    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.12-py3"
+    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${UBUNTU_AGNOSTIC_PYTORCH_TAG}"
 
   fi
 

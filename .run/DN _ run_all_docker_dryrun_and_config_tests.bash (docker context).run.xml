@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run › dn_build_all.bash › dn-project › project-develop-*" type="ShConfigurationType" folderName="[DN] C | build (remark: select daemon via docker context)">
-    <option name="SCRIPT_TEXT" value="NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( 'prod/.env.build_matrix.dn-project' ) &amp;&amp; NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=&quot;build project-develop-main project-develop-test-ssh-user project-develop-test-project-user project-develop&quot; &amp;&amp; source dockerized-norlab-scripts/build_script/dn_build_all.bash" />
+  <configuration default="false" name="DN | run_all_docker_dryrun_and_config_tests.bash (docker context)" type="ShConfigurationType" folderName="[DN] B | dry-run and config tests">
+    <option name="SCRIPT_TEXT" value="cd tests/ &amp;&amp; bash run_all_docker_dryrun_and_config_tests.bash" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />
@@ -9,7 +9,7 @@
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
     <option name="INTERPRETER_PATH" value="/bin/zsh" />
     <option name="INTERPRETER_OPTIONS" value="" />
-    <option name="EXECUTE_IN_TERMINAL" value="true" />
+    <option name="EXECUTE_IN_TERMINAL" value="false" />
     <option name="EXECUTE_SCRIPT_FILE" value="false" />
     <envs />
     <method v="2" />

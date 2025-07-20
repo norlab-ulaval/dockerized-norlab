@@ -77,6 +77,8 @@ function dn::callback_execute_compose_pre() {
       export CONVERTED_TAG_OS_VERSION=20
     elif [[ ${TAG_OS_VERSION} =~ "r35".* ]]; then
       export CONVERTED_TAG_OS_VERSION=20
+    elif [[ ${TAG_OS_VERSION} =~ "r36".* ]]; then
+      export CONVERTED_TAG_OS_VERSION=22
     else
       n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
     fi
