@@ -95,8 +95,8 @@ setup_file() {
   assert_output --regexp .*"DN-v0.2.0-foxy-core-l4t-r33.3.3".*
 #  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
 
-  refute_output --regexp .*"DN-v0.3.0-foxy-core-r11.1.1".*
-#  refute_output --regexp .*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-r35.4.1".*
+#  refute_output --regexp .*"DN-v0.3.0-foxy-core-2.1-r35.4.1".*
 
 #  bats_print_run_env_variable
 }

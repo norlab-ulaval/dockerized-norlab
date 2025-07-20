@@ -141,7 +141,7 @@ setup() {
                                               -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS\=\(r11.1.1 r22.2.2\)".*
+  assert_output --regexp .*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS\=\(r35.4.1 r36.4.0\)".*
 #  bats_print_run_env_variable
 }
 
@@ -179,18 +179,18 @@ setup() {
                                           --ci-test-force-runing-docker-cmd \
                                           -- "$DOCKER_CMD"
   assert_success
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-2.1-r36.4.0".*
   assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-12-py3-focal".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-12-py3-jammy".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-12-py3-jammy".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-2.1-r36.4.0".*
   assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-12-py3-focal".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-12-py3-jammy".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-12-py3-jammy".*
 
 #  bats_print_run_env_variable
 }
@@ -208,14 +208,14 @@ setup() {
                                           -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-2.1-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-2.1-r36.4.0".*
 #  bats_print_run_env_variable
 }
 
@@ -233,14 +233,14 @@ setup() {
                                                 -- "$DOCKER_CMD"
 #  set -e
   assert_failure
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-humble-core-pytorch-2.1-r36.4.0".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-core-pytorch-2.1-r36.4.0".*
 }
 
 @test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
@@ -277,8 +277,8 @@ setup() {
   assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-l4t-r33.3.3".*
   assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
 
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
 }
 
 @test "--force-push 'latest' tag sanity check ok" {
