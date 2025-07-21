@@ -272,10 +272,10 @@ setup() {
                                       --ci-test-force-runing-docker-cmd \
                                       --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                                       --os-name-build-matrix-override 'l4t' \
-                                      --l4t-version-build-matrix-override 'r33.3.3'
+                                      --l4t-version-build-matrix-override 'r35.4.1'
   set -e
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-l4t-r33.3.3".*
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-pytorch-2.1-r35.4.1".*
 
   refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
   refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
@@ -293,7 +293,7 @@ setup() {
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                       --dockerized-norlab-version-build-matrix-override 'latest' \
                                       --os-name-build-matrix-override 'l4t' \
-                                      --l4t-version-build-matrix-override 'r33.3.3'
+                                      --l4t-version-build-matrix-override 'r35.4.1'
 #  set -e
   assert_output --regexp .*"\[".*"DN-build-system error".*"\]".*"The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
 }
@@ -310,7 +310,7 @@ setup() {
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                       --dockerized-norlab-version-build-matrix-override 'bleeding' \
                                       --os-name-build-matrix-override 'l4t' \
-                                      --l4t-version-build-matrix-override 'r33.3.3'
+                                      --l4t-version-build-matrix-override 'r35.4.1'
 #  set -e
   assert_output --regexp .*"\[".*"DN-build-system error".*"\]".*"The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
 }
@@ -371,7 +371,7 @@ setup() {
   run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}" \
                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                         --os-name-build-matrix-override 'l4t' \
-                        --l4t-version-build-matrix-override 'r33.3.3'
+                        --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"DN-build-system".*"\]".*"Repository curently checkout at".*
 
