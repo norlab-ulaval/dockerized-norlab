@@ -44,18 +44,18 @@ function dn::callback_execute_compose_pre() {
 
   # ....Reformat mimic of dustynv base image name and tag..........................................
   if [[ ${DEPENDENCIES_BASE_IMAGE} =~ "dustynv/".* ]]; then
-#    # "cuda runtime" as base for L4T image mimic
+#    # "cuda runtime" as a base image for L4T image mimic
 #    #  - base image 'nvidia/cuda:12.3.1-runtime-ubuntu20.04'
 #    #  - ref https://hub.docker.com/r/nvidia/cuda
 #    export MIMIC_DEPENDENCIES_BASE_IMAGE="nvidia/cuda"
 #    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${L4T_CUDA_VERSION}-runtime-ubuntu${CONVERTED_TAG_OS_VERSION}.04"
 
-    # "tensorrt" as base for L4T image mimic
+    # "tensorrt" as a base image for L4T image mimic
     #   - Comme with pycuda and tensorrt installed
     #   - base image 'nvcr.io/nvidia/tensorrt:20.12-py3'
     #   - ref https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorrt/tags
     export MIMIC_DEPENDENCIES_BASE_IMAGE="nvcr.io/nvidia/tensorrt"
-    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${UBUNTU_AGNOSTIC_PYTORCH_TAG}"
+    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${UBUNTU_AGNOSTIC_PYTORCH_TAG:?err}"
 
   fi
 

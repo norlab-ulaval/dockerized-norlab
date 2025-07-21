@@ -42,20 +42,49 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN <<EOF
 
+    # ....Distro compatibility check...............................................................
+    UBUNTU_DISTRO_NAME="$( source /etc/lsb-release && echo ${DISTRIB_CODENAME})"
+    UBUNTU_DISTRO_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
+    n2st::print_msg "Ubuntu version is ${UBUNTU_DISTRO_NAME}"
+    echo "TARGETPLATFORM: $TARGETPLATFORM"
+
+    if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]] && [[ "${ROS_DISTRO}" =~ ^(foxy|galactic)$ ]] ; then
+      :
+    elif [[ "${UBUNTU_DISTRO_RELEASE}" == "22.04" ]] && [[ "${ROS_DISTRO}"  =~ ^(humble|iron)$ ]] ; then
+      :
+    elif [[ "${UBUNTU_DISTRO_RELEASE}" == "24.04" ]] && [[ "${ROS_DISTRO}" =~ ^(jazzy|kilted)$ ]] ; then
+      :
+    else
+        n2st::print_msg_error_and_exit "Ubuntu distro ${UBUNTU_DISTRO_NAME} not compatible with ROS2 distro ${ROS_DISTRO}!"
+    fi
+    
+    # ....Installer requirements ..................................................................
+    # Note systemd and udev must be updated before installing ros2 humble
+    # Ref warning at https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html
     apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
         software-properties-common \
         curl \
+        systemd \
+        udev \
         python3-argcomplete \
     && rm -rf /var/lib/apt/lists/* \
-    && add-apt-repository universe \
-    && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
+    || exit 1
 
-    # update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-    #   && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+    # ....Setup Sources............................................................................
+    add-apt-repository universe
 
+    if [[ "${ROS_DISTRO:?err}" == "galactic" ]]; then
+        curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
+    else
+        export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
+        curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $UBUNTU_CODENAME)_all.deb"
+        dpkg -i /tmp/ros2-apt-source.deb
+    fi
+
+    # ....Install ROS2 Requirements................................................................
     # Note: Reference ros-desktop vs cuda enabled opencv
     #   - Ref https://github.com/dusty-nv/jetson-containers/issues/158
     #   - Ref https://github.com/dusty-nv/jetson-containers/issues/89
@@ -66,7 +95,6 @@ RUN <<EOF
       && echo "${CV_WARN[*]}" >> /dn_warning.log \
       && echo -e "[WARNING] ${CV_WARN[*]}" ; \
     fi
-
 
     # Note:
     #   - ref cmake upgrade via pip:
@@ -102,17 +130,25 @@ RUN <<EOF
         setuptools==58.2.0 \
         pyparsing==2.4.7 \
     && pip3 install --upgrade --no-cache-dir  \
-        cmake
+        cmake \
+    || exit 1
+EOF
 
+
+RUN <<EOF
+
+    # ....Install ROS2.............................................................................
     # Note: ROS2 doc recommend executing 'apt upgrade' just before installing ros
-    apt-get update --fix-missing \
+    apt-get update \
+    && apt-get update --fix-missing \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-${ROS_PKG} \
         ros-dev-tools \
     && dpkg --configure -a \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    || exit 1
 
     # Note: pytest version is managed by 'colcon-common-extensions'
     apt-get update --fix-missing \
@@ -145,7 +181,8 @@ RUN <<EOF
         pytest-mock \
         pytest-repeat \
         pytest-rerunfailures \
-        pytest-runner
+        pytest-runner \
+    || exit 1
 
 
     #apt-get update --fix-missing \

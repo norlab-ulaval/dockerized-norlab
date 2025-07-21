@@ -368,20 +368,22 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           # - Ubunu (Jammy|Noble)/L4T 36.*.* <-> ROS2 (Humble|Jazzy|Kilted)
           # - Ubunu focal/L4T 35.*.* <-> ROS2 galactic
           # - Ubunu focal/L4T 35.*.* <-> ROS2 foxy (deprecated but stay in crawler for retro compatibility)
-          if [[ "${EACH_OS_VERSION}" == "focal" ]] || [[ "${EACH_OS_VERSION}" =~ "35.".* ]]; then
+          if [[ "${EACH_OS_VERSION}" == "focal" ]] || [[ "${EACH_OS_VERSION}" =~ "r35.".* ]]; then
             if [[ "${EACH_ROS_DISTRO}" != "galactic" ]] && [[ "${EACH_ROS_DISTRO}" != "foxy" ]]; then
               if [[ "${_SHOW_DN_DEBUG_BUILD_INFO}" == "true" ]]; then
                 n2st::print_msg_warning "🔻 DEV >> OS version ${EACH_OS_VERSION} <-> ROS2 distro ${EACH_ROS_DISTRO} (SKIP)"
               fi
               continue
             fi
-          elif [[ "${EACH_OS_VERSION}" == "jammy" ]] ||  [[ "${EACH_OS_VERSION}" == "noble" ]] || [[ "${EACH_OS_VERSION}" =~ "36.".* ]]; then
+          elif [[ "${EACH_OS_VERSION}" =~ ^(jammy|noble)$ ]] || [[ "${EACH_OS_VERSION}" =~ "r36.".* ]]; then
             if [[ "${EACH_ROS_DISTRO}" != "humble" ]] && [[ "${EACH_ROS_DISTRO}" != "jazzy" ]] && [[ "${EACH_ROS_DISTRO}" != "kilted" ]]; then
               if [[ "${_SHOW_DN_DEBUG_BUILD_INFO}" == "true" ]]; then
                 n2st::print_msg_warning "🔻 DEV >> OS version ${EACH_OS_VERSION} <-> ROS2 distro ${EACH_ROS_DISTRO} (SKIP)"
               fi
               continue
             fi
+          else
+            n2st::print_msg_error_and_exit "Unsuported OS distro ${EACH_OS_VERSION}!"
           fi
 
           if [[ "${_SHOW_DN_DEBUG_BUILD_INFO}" == "true" ]]; then

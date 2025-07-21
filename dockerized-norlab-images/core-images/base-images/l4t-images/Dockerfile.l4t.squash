@@ -295,13 +295,19 @@ RUN echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set i
 
 # Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 #       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
-RUN echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}" \
-    && echo -e "DEV introspection\n\n \
-        Buildx env\n \
-          BUILDPLATFORM: ${BUILDPLATFORM}\n \
-          TARGETPLATFORM: ${TARGETPLATFORM}\n \
-        Real build target architecture: $(uname -m)\n" \
-    && if [[ "${TARGETPLATFORM}" =~ "linux/arm64".* ]] && [[ "$(uname --machine)" == "x86_64" ]]; then \
-          echo "[DN-build-system ERROR] Test stage architecture missmatch!" && exit 1 ; \
-       fi
+RUN <<EOF
+    n2st::print_msg "Ubuntu version is $( source /etc/lsb-release && echo ${DISTRIB_CODENAME})"
+
+    echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}"
+    echo -e "DEV introspection\n
+    Buildx env
+      BUILDPLATFORM: ${BUILDPLATFORM}
+      TARGETPLATFORM: ${TARGETPLATFORM}
+    Real build target architecture: $(uname -m)\n"
+
+    if [[ "${TARGETPLATFORM}" =~ "linux/arm64".* ]] && [[ "$(uname --machine)" == "x86_64" ]]; then
+        echo "[DN-build-system ERROR] Test stage architecture missmatch!"
+        exit 1
+    fi
+EOF
 
