@@ -123,6 +123,7 @@ RUN <<EOF
         libasio-dev \
         libtinyxml2-dev \
         libcunit1-dev \
+        tree \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && echo "Install python testing tools" \
@@ -152,7 +153,6 @@ RUN <<EOF
     #    ros-${ROS_DISTRO}-rosbridge-server \
     #    ros-${ROS_DISTRO}-rqt-graph \
     #    ros-${ROS_DISTRO}-rviz2 \
-    #    tree \
     #&& apt-get clean \
     #&& rm -rf /var/lib/apt/lists/*
 
