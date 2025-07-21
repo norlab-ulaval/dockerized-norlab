@@ -17,6 +17,40 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-custom-install
 WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN <<EOF
+    # Install dependencies
+    apt-get update --fix-missing
+    apt-get install --assume-yes \
+        ros-${ROS_DISTRO}-rosbridge-msgs \
+        python3-tornado \
+        python3-bson \
+        python3-pymongo
+
+    # Clone rosbridge_suite for rosbridge-server
+    git clone -b ros2 https://github.com/RobotWebTools/rosbridge_suite.git
+
+    # Clone rqt for rqt-graph
+    git clone -b humble https://github.com/ros-visualization/rqt.git
+    git clone -b humble https://github.com/ros-visualization/rqt_common_plugins.git
+
+    # Clone rviz for rviz2
+    git clone -b humble https://github.com/ros2/rviz.git
+
+    #cd /opt/ros_build_ws
+    #
+    ## Install dependencies
+    #rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y
+    #
+    ## Build packages
+    #colcon build --packages-select rosbridge_server rqt_graph rviz2
+    #
+    ## Source the built packages
+    #echo "source /opt/ros_build_ws/install/setup.bash" >> /etc/bash.bashrc
+
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
+RUN <<EOF
     pip3 install --no-cache-dir  \
         transforms3d
 
@@ -28,10 +62,8 @@ RUN <<EOF
     apt-get install -y ros-${ROS_DISTRO}-robot-state-publisher
 
     apt-get install -y \
-      ros-${ROS_DISTRO}-rviz2 \
       ros-${ROS_DISTRO}-rviz-visual-tools \
       ros-${ROS_DISTRO}-nav2-rviz-plugins \
-      ros-${ROS_DISTRO}-rqt-graph \
       libqt5svg5 \
       || exit 1
 
