@@ -132,7 +132,6 @@ RUN <<EOF
         --ignore-packages-from-source \
         --from-path ./src  \
         --rosdistro ${ROS_DISTRO} \
-        -r \
         -q \
         -y \
     || exit 1

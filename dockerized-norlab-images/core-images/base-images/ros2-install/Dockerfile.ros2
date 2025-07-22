@@ -133,14 +133,31 @@ RUN <<EOF
         msgpack \
     || exit 1
 
+    #if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]]; then
+    #    # Python 3.8 compatibility fixes for older Ubuntu
+    #    # Note: pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
+    #    pip3 install --upgrade --no-cache-dir \
+    #        setuptools==58.2.0 \
+    #        pyparsing==2.4.7 \
+    #        || exit 1
+    #fi
+
+    # Fix setuptools compatibility issues for colcon build
     if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]]; then
-        # Python 3.8 compatibility fixes for older Ubuntu
-        # Note: pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
-        pip3 install --upgrade --no-cache-dir \
-            setuptools==58.2.0 \
-            pyparsing==2.4.7 \
-            || exit 1
+        # Python 3.8 - Use older setuptools that works with colcon
+        pip3 install --no-cache-dir \
+            "setuptools>=58.0.0,<59.0.0" \
+            "pyparsing==2.4.7"
+    elif [[ "${UBUNTU_DISTRO_RELEASE}" == "22.04" ]]; then
+        # Python 3.10 - Use compatible setuptools version
+        pip3 install --no-cache-dir \
+            "setuptools>=65.0.0,<67.0.0"
+    else
+        # Python 3.12+ (Ubuntu 24.04) - Use newer setuptools
+        pip3 install --no-cache-dir \
+            "setuptools>=69.0.0"
     fi
+
 
     # Note: ref cmake upgrade via pip:
     #  - upgrade cmake - https://stackoverflow.com/a/56690743
