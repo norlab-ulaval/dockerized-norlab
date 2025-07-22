@@ -134,7 +134,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN <<EOF
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
-    if [[ "${UBUNTU_VERSION_MAJOR}.04" == "${IMG_RELEASE}" ]]; then
+    if [[ "${UBUNTU_VERSION_MAJOR}.04" != "${IMG_RELEASE}" ]]; then
       n2st::print_msg_error_and_exit "Expected Ubuntu distro release ${UBUNTU_VERSION_MAJOR}.04 but image distro is ${IMG_RELEASE}!"
     fi
 

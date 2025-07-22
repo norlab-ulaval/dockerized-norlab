@@ -1,6 +1,8 @@
 #!/bin/bash
 
 declare -x UBUNTU_VERSION_MAJOR
+declare -x MIMIC_DEPENDENCIES_BASE_IMAGE
+declare -x MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
 
 # ===============================================================================================
 # Pre docker command execution callback
