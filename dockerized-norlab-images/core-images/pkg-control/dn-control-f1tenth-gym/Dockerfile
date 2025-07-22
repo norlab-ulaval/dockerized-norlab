@@ -76,8 +76,8 @@ RUN <<EOF
 
     # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
     # See known issues comment https://github.com/f1tenth/f1tenth_gym
-    pip3 install --no-cache-dir --upgrade  \
-    'pyglet<1.5.11'
+    pip3 install --no-cache-dir --upgrade 'pyglet<1.5.11'
+    #pip3 install --no-cache-dir --upgrade 'pyglet!=1.5.11'
 EOF
 
 

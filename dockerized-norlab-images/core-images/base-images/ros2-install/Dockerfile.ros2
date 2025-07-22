@@ -68,7 +68,7 @@ RUN <<EOF
         curl \
         systemd \
         udev \
-        python3-argcomplete \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/* \
     || exit 1
 
@@ -96,15 +96,6 @@ RUN <<EOF
       && echo -e "[WARNING] ${CV_WARN[*]}" ; \
     fi
 
-    # Note:
-    #   - ref cmake upgrade via pip:
-    #        - upgrade cmake - https://stackoverflow.com/a/56690743
-    #        - this is needed to build some of the ROS2 packages
-    #        - use pip to upgrade cmake instead because of kitware's rotating GPG keys:
-    #       Source https://github.com/dusty-nv/jetson-containers/issues/216
-    #   - pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
-    #   - pip 'flake8-blind-except' version
-    #       ref https://github.com/ros2/examples/issues/325#issuecomment-936131710
     apt-get update --fix-missing \
     && apt-get install --assume-yes --no-install-recommends \
         apt-utils \
@@ -112,26 +103,38 @@ RUN <<EOF
         build-essential \
         clang \
         gdb \
+        python3-argcomplete \
+        python3-distutils \
+        python3-dev \
         libbullet-dev \
         libpython3-dev \
         python3-vcstools \
         python3-setuptools \
         python3-pycodestyle \
         python3-pygments \
-        python3-flake8 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && python3 -m pip install --upgrade pip \
+    || exit 1
+
+    python3 -m pip install --upgrade pip \
     && pip3 install --no-cache-dir  \
         scikit-build \
         six \
         msgpack \
-    && pip3 install --upgrade --no-cache-dir \
-        setuptools==58.2.0 \
-        pyparsing==2.4.7 \
-    && pip3 install --upgrade --no-cache-dir  \
-        cmake \
     || exit 1
+
+    # Note: pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
+    #pip3 install --upgrade --no-cache-dir \
+    #     setuptools==58.2.0 \
+    #     pyparsing==2.4.7 \
+
+    # Note: ref cmake upgrade via pip:
+    #  - upgrade cmake - https://stackoverflow.com/a/56690743
+    #  - this is needed to build some of the ROS2 packages
+    #  - use pip to upgrade cmake instead because of kitware's rotating GPG keys:
+    # Source https://github.com/dusty-nv/jetson-containers/issues/216
+    pip3 install --upgrade --no-cache-dir cmake || exit 1
+
 EOF
 
 
@@ -162,8 +165,12 @@ RUN <<EOF
         tree \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && echo "Install python testing tools" \
-    && pip3 install --upgrade --no-cache-dir \
+    || exit 1
+
+    echo "Install python testing tools"
+    # Note: pip 'flake8-blind-except' version
+    #       ref https://github.com/ros2/examples/issues/325#issuecomment-936131710
+    pip3 install --upgrade --no-cache-dir \
         flake8-blind-except==0.1.1 \
         flake8-builtins \
         flake8-class-newline \
@@ -185,13 +192,13 @@ RUN <<EOF
     || exit 1
 
 
-    #apt-get update --fix-missing \
-    #&& apt-get install --assume-yes --no-install-recommends \
-    #    ros-${ROS_DISTRO}-rosbridge-server \
-    #    ros-${ROS_DISTRO}-rqt-graph \
-    #    ros-${ROS_DISTRO}-rviz2 \
-    #&& apt-get clean \
-    #&& rm -rf /var/lib/apt/lists/*
+    apt-get update --fix-missing \
+    && apt-get install --assume-yes --no-install-recommends \
+        ros-${ROS_DISTRO}-rosbridge-server \
+        ros-${ROS_DISTRO}-rqt-graph \
+        ros-${ROS_DISTRO}-rviz2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 
     ## ToDo: assessment >> maybe not usefull anymore (pining setuptools as been moved earlier)
@@ -236,57 +243,66 @@ RUN git clone --depth=1 https://github.com/ros2/examples src/ros2_examples -b ${
     && cd rclpy/topics/minimal_publisher || exit 1 \
     && cd - && cd rclpy/topics/minimal_subscriber || exit 1
 
+RUN <<EOF
+    # Note: For some reason, building ros2 example under ROS foxy focal linux/amd64 fail when
+    #       "rosdep update" use those flags:
+    #          $ rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros
 
-# Note: For some reason, building ros2 example under ROS foxy focal linux/amd64 fail when \
-#       "rosdep update" use those flags:
-#        $ rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros \
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && apt-get update --fix-missing \
-    && rosdep init \
-    && rosdep update --rosdistro "${ROS_DISTRO}" \
-    && rosdep fix-permissions \
-    || exit 1
+    source /opt/ros/${ROS_DISTRO}/setup.bash
 
-RUN colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml  \
-    && colcon mixin update  \
-    && colcon metadata add default https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml  \
-    && colcon metadata update
+    apt-get update --fix-missing
+
+    rosdep init \
+      && rosdep update --rosdistro "${ROS_DISTRO}" \
+      && rosdep fix-permissions \
+      || exit 1
+
+    colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml \
+      && colcon mixin update \
+      && colcon metadata add default https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml \
+      && colcon metadata update
+EOF
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && tree src/ros2_examples \
-    && rosdep install  \
+RUN <<EOF
+    source /opt/ros/${ROS_DISTRO}/setup.bash
+
+    tree src/ros2_examples
+    rosdep install  \
             --ignore-packages-from-source \
             --from-path ./src  \
             --rosdistro ${ROS_DISTRO}  \
             -y \
     && colcon version-check \
     || exit 1
+EOF
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 # Note: The colcon flag "--cmake-clean-cache" reset the python3 env
-RUN COLCON_FLAGS=() \
-    && if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then \
-         echo -e "Builder is running in architecture virtualisation" \
-         && COLCON_FLAGS+=(--executor sequential) ; \
-      else \
-         echo -e "Builder is running on native architecture" \
-         && COLCON_FLAGS+=(--symlink-install) ; \
-      fi \
-    && COLCON_FLAGS+=( \
-          --cmake-clean-cache \
-          --cmake-args -DCMAKE_BUILD_TYPE=Release \
-          --event-handlers console_direct+ \
-       ) \
-    && echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")" \
-    && echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && colcon build ${COLCON_FLAGS[@]} \
-    || exit 1
+RUN <<EOF
+    COLCON_FLAGS=()
+    if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
+         echo -e "Builder is running in architecture virtualisation"
+         COLCON_FLAGS+=(--executor sequential)
+    else
+         echo -e "Builder is running on native architecture"
+         COLCON_FLAGS+=(--symlink-install)
+    fi
+
+    COLCON_FLAGS+=(
+          --cmake-clean-cache
+          --cmake-args -DCMAKE_BUILD_TYPE=Release
+          --event-handlers console_direct+
+       )
+    echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
+
+    source /opt/ros/${ROS_DISTRO}/setup.bash
+
+    colcon build ${COLCON_FLAGS[@]} || exit 1
+
+EOF
 
 # ===Remove dustynv entrypoint from .bashrc. ======================================================
 # Note: Source ROS in the dn_entrypoint.init.bash instead"

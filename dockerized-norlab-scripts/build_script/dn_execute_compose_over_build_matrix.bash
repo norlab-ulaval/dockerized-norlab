@@ -360,7 +360,6 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
       fi
 
       for EACH_ROS_DISTRO in "${NBS_MATRIX_ROS_DISTRO[@]}" ; do
-        dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_DISTRO}"
 
         _SHOW_DN_DEBUG_BUILD_INFO=${_SHOW_DN_DEBUG_BUILD_INFO:-"false"}
         if [[ ${EACH_ROS_DISTRO} != none ]]; then
@@ -391,6 +390,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           fi
         fi
 
+        dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_DISTRO}"
         for EACH_ROS_PKG in "${NBS_MATRIX_ROS_PKG[@]}" ; do
           dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_PKG}"
 

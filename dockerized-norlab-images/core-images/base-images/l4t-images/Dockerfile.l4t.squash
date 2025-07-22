@@ -94,6 +94,13 @@ ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 ARG TORCH_HOME
 ENV TORCH_HOME=${TORCH_HOME}
 
+# The following pytorch related appeared in dustynv/cuda:12.2-r36.*
+# Ref https://github.com/dusty-nv/jetson-containers/blob/master/packages/cuda/cuda/Dockerfile
+ARG TORCH_NVCC_FLAGS
+ARG TORCH_CUDA_ARCH_LIST
+ENV TORCH_NVCC_FLAGS=${BASE_IMG_ENV_TORCH_NVCC_FLAGS}
+ENV TORCH_CUDA_ARCH_LIST=${BASE_IMG_ENV_TORCH_CUDA_ARCH_LIST}
+
 ## Env var added by jetson-container tensorflow related base images
 #ARG PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
 #ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
@@ -101,6 +108,25 @@ ENV TORCH_HOME=${TORCH_HOME}
 # Env var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
+
+# The following cuda related appeared in dustynv/cuda:12.2-r36.*
+# Ref https://github.com/dusty-nv/jetson-containers/blob/master/packages/cuda/cuda/Dockerfile
+ARG CMAKE_CUDA_COMPILER
+ARG CUDA_BIN_PATH
+ARG CUDAARCHS
+ARG CUDACXX
+ARG CUDA_TOOLKIT_ROOT_DIR
+ARG NVCC_PATH
+ARG CUDA_NVCC_EXECUTABLE
+ARG CUDA_ARCHITECTURES
+ENV CMAKE_CUDA_COMPILER=${BASE_IMG_ENV_CMAKE_CUDA_COMPILER}
+ENV CUDA_BIN_PATH=${BASE_IMG_ENV_CUDA_BIN_PATH}
+ENV CUDAARCHS=${BASE_IMG_ENV_CUDAARCHS}
+ENV CUDACXX=${BASE_IMG_ENV_CUDACXX}
+ENV CUDA_TOOLKIT_ROOT_DIR=${BASE_IMG_ENV_CUDA_TOOLKIT_ROOT_DIR}
+ENV NVCC_PATH=${BASE_IMG_ENV_NVCC_PATH}
+ENV CUDA_NVCC_EXECUTABLE=${BASE_IMG_ENV_CUDA_NVCC_EXECUTABLE}
+ENV CUDA_ARCHITECTURES=${BASE_IMG_ENV_CUDA_ARCHITECTURES}
 
 # ....copy ALL artifact from base-image............................................................
 COPY --from=base-image / /
@@ -281,6 +307,19 @@ RUN echo -e "Current python version: $(python --version)" \
         && echo -e "Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict" \
         && exit 1 ; \
     fi
+
+RUN <<EOF
+  if [[ ${TARGETPLATFORM} =~ "linux/arm64".* ]]; then
+      printenv
+      {
+        test -n ${CUDA_HOME:?'Environment variable was not passed from base-image build stage'} && \
+        test -n ${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage'} && \
+        test -n ${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'} && \
+        test -n ${PATH:?'Environment variable was not passed from base-image build stage'} && \
+        test -n ${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'} ;
+      } || { echo "Missing required environment variables!" ; exit 1 ; }
+  fi
+EOF
 
 RUN echo "Check CUDA installed version" \
     && nvcc --version | grep "release" | awk '{print $6}' | cut -c2-

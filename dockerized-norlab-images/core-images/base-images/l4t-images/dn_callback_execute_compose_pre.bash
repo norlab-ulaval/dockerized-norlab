@@ -1,8 +1,8 @@
 #!/bin/bash
 
-declare -x UBUNTU_VERSION_MAJOR
 declare -x MIMIC_DEPENDENCIES_BASE_IMAGE
 declare -x MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
+declare -x UBUNTU_VERSION_MAJOR
 
 # ===============================================================================================
 # Pre docker command execution callback
@@ -110,6 +110,16 @@ function dn::callback_execute_compose_pre() {
         | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
         | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
         | sed 's;^TORCH_HOME;BASE_IMG_ENV_TORCH_HOME;' \
+        | sed 's;^TORCH_NVCC_FLAGS;BASE_IMG_ENV_TORCH_NVCC_FLAGS;' \
+        | sed 's;^TORCH_CUDA_ARCH_LIST;BASE_IMG_ENV_TORCH_CUDA_ARCH_LIST;' \
+        | sed 's;^CMAKE_CUDA_COMPILER;BASE_IMG_ENV_CMAKE_CUDA_COMPILER;' \
+        | sed 's;^CUDA_BIN_PATH;BASE_IMG_ENV_CUDA_BIN_PATH;' \
+        | sed 's;^CUDAARCHS;BASE_IMG_ENV_CUDAARCHS;' \
+        | sed 's;^CUDACXX;BASE_IMG_ENV_CUDACXX;' \
+        | sed 's;^CUDA_TOOLKIT_ROOT_DIR;BASE_IMG_ENV_CUDA_TOOLKIT_ROOT_DIR;' \
+        | sed 's;^NVCC_PATH;BASE_IMG_ENV_NVCC_PATH;' \
+        | sed 's;^CUDA_NVCC_EXECUTABLE;BASE_IMG_ENV_CUDA_NVCC_EXECUTABLE;' \
+        | sed 's;^CUDA_ARCHITECTURES;BASE_IMG_ENV_CUDA_ARCHITECTURES;' \
        )
 
     n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:
