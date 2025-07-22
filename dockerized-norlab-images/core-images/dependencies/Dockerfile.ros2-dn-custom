@@ -18,7 +18,7 @@ WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN <<EOF
     # Install dependencies
-    apt-get update --ignore-missing
+    apt-get update
     apt-get install --assume-yes \
         ros-${ROS_DISTRO}-rosbridge-msgs \
         python3-tornado \
@@ -32,7 +32,7 @@ RUN <<EOF
         transforms3d
 
     apt-get update
-    apt-get update --ignore-missing
+    #apt-get update --ignore-missing
     apt-get upgrade -y
 
     # Quickhack: reinstall 'robot-state-publisher' to solved the 'process has died' error"
@@ -55,7 +55,7 @@ RUN <<EOF
           rosbag-tools[plot] \
           || exit 1
 
-    apt-get update --ignore-missing
+    apt-get update
     apt-get install --assume-yes \
         ros-${ROS_DISTRO:?err}-ackermann-msgs \
         ros-${ROS_DISTRO}-rosbridge-msgs \
@@ -76,7 +76,7 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN <<EOF
 
-    apt-get update --ignore-missing
+    apt-get update
     rosdep update --rosdistro ${ROS_DISTRO}
     rosdep fix-permissions
     rosdep install \

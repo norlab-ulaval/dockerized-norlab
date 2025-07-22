@@ -46,7 +46,6 @@ RUN <<EOF
     UBUNTU_DISTRO_NAME="$( source /etc/lsb-release && echo ${DISTRIB_CODENAME})"
     UBUNTU_DISTRO_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
     n2st::print_msg "Ubuntu version is ${UBUNTU_DISTRO_NAME}"
-    echo "TARGETPLATFORM: $TARGETPLATFORM"
 
     if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]] && [[ "${ROS_DISTRO}" =~ ^(foxy|galactic)$ ]] ; then
       :
@@ -55,27 +54,38 @@ RUN <<EOF
     elif [[ "${UBUNTU_DISTRO_RELEASE}" == "24.04" ]] && [[ "${ROS_DISTRO}" =~ ^(jazzy|kilted)$ ]] ; then
       :
     else
-        n2st::print_msg_error_and_exit "Ubuntu distro ${UBUNTU_DISTRO_NAME} not compatible with ROS2 distro ${ROS_DISTRO}!"
+        n2st::print_msg_error "Ubuntu distro ${UBUNTU_DISTRO_NAME} not compatible with ROS2 distro ${ROS_DISTRO}!"
+        echo "Compatible configurations are:"
+        echo "- Ubuntu 20.04 -> ROS2 Foxy or Galactic"
+        echo "- Ubuntu 22.04 -> ROS2 Humble or Iron"
+        echo "- Ubuntu 24.04 -> ROS2 Jazzy or Kilted"
+        exit 1
     fi
     
     # ....Installer requirements ..................................................................
-    # Note systemd and udev must be updated before installing ros2 humble
-    # Ref warning at https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html
     apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
         software-properties-common \
         curl \
-        systemd \
-        udev \
         pkg-config \
-    && rm -rf /var/lib/apt/lists/* \
     || exit 1
+
+    if [[ "${UBUNTU_DISTRO_RELEASE}" == "22.04" ]]; then
+        # Note systemd and udev must be updated before installing ros2 humble
+        # Ref warning at https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html
+        apt-get install --assume-yes --only-upgrade \
+            systemd \
+            udev \
+        || exit 1
+    fi
+
+    rm -rf /var/lib/apt/lists/*
 
     # ....Setup Sources............................................................................
     add-apt-repository universe
 
-    if [[ "${ROS_DISTRO:?err}" == "galactic" ]]; then
+    if [[ "${ROS_DISTRO:?err}" =~ ^(foxy|galactic)$ ]]; then
         curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
     else
@@ -123,10 +133,14 @@ RUN <<EOF
         msgpack \
     || exit 1
 
-    # Note: pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
-    #pip3 install --upgrade --no-cache-dir \
-    #     setuptools==58.2.0 \
-    #     pyparsing==2.4.7 \
+    if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]]; then
+        # Python 3.8 compatibility fixes for older Ubuntu
+        # Note: pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
+        pip3 install --upgrade --no-cache-dir \
+            setuptools==58.2.0 \
+            pyparsing==2.4.7 \
+            || exit 1
+    fi
 
     # Note: ref cmake upgrade via pip:
     #  - upgrade cmake - https://stackoverflow.com/a/56690743
@@ -143,7 +157,6 @@ RUN <<EOF
     # ....Install ROS2.............................................................................
     # Note: ROS2 doc recommend executing 'apt upgrade' just before installing ros
     apt-get update \
-    && apt-get update --ignore-missing \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-${ROS_PKG} \
@@ -252,10 +265,9 @@ RUN <<EOF
 
     apt-get update
 
-    rosdep init \
-      && rosdep update --rosdistro "${ROS_DISTRO}" \
-      && rosdep fix-permissions \
-      || exit 1
+    rosdep init || echo "rosdep already initialized"
+    rosdep update --rosdistro "${ROS_DISTRO}"
+    rosdep fix-permissions
 
     colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml \
       && colcon mixin update \

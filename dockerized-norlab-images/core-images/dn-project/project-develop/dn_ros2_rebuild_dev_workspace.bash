@@ -40,8 +40,8 @@ source "/opt/ros/${ROS_DISTRO}/setup.bash"
 source "${DN_DEV_WORKSPACE}/install/setup.bash"
 
 # Install dependencies
-n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}apt-get update --ignore-missing${MSG_END_FORMAT}\n"
-sudo apt-get update --ignore-missing
+n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}apt-get update${MSG_END_FORMAT}\n"
+sudo apt-get update
 echo
 n2st::draw_horizontal_line_across_the_terminal_window "."
 

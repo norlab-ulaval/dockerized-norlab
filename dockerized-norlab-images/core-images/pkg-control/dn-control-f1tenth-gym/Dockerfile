@@ -26,7 +26,7 @@ ENV LIBGL_ALWAYS_INDIRECT=1
 #    # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 
 RUN <<EOF
-  apt-get update --ignore-missing \
+  apt-get update \
     && apt-get install --assume-yes \
             libgl1-mesa-dev \
             libglu1-mesa-dev \
