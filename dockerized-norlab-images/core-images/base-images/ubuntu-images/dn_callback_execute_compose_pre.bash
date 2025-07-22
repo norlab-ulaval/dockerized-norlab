@@ -1,11 +1,11 @@
 #!/bin/bash
 
-declare -x CONVERTED_TAG_OS_VERSION
+declare -x UBUNTU_VERSION_MAJOR
 
 function dn::cuda_squash_image_logic() {
   if [[ $(basename "${COMPOSE_FILE:?err}") == "docker-compose.cuda-squash.build.yaml" ]]; then
 
-    # ex: dustynv/pytorch:2.1-r35.2.1
+    # e.g., dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
     n2st::print_msg "Pulling DOCKER_IMG=${DOCKER_IMG}"
 
@@ -72,28 +72,28 @@ function dn::callback_execute_compose_pre() {
   # ....OS version convertion......................................................................
   if [[ ${OS_NAME:?err} == ubuntu ]]; then
     if [[ ${TAG_OS_VERSION} == jammy ]]; then
-      export CONVERTED_TAG_OS_VERSION=22
+      export UBUNTU_VERSION_MAJOR=22
     elif [[ ${TAG_OS_VERSION} == focal ]]; then
-      export CONVERTED_TAG_OS_VERSION=20
+      export UBUNTU_VERSION_MAJOR=20
     elif [[ ${TAG_OS_VERSION} =~ "r35".* ]]; then
-      export CONVERTED_TAG_OS_VERSION=20
+      export UBUNTU_VERSION_MAJOR=20
     elif [[ ${TAG_OS_VERSION} =~ "r36".* ]]; then
-      export CONVERTED_TAG_OS_VERSION=22
+      export UBUNTU_VERSION_MAJOR=22
     else
       n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
     fi
   elif [[ ${OS_NAME} == l4t ]]; then
     if [[ ${TAG_OS_VERSION} =~ "r35".* ]]; then
-      export CONVERTED_TAG_OS_VERSION=20
+      export UBUNTU_VERSION_MAJOR=20
       export L4T_CUDA_VERSION=11.4.3
     elif [[ ${TAG_OS_VERSION} =~ "r36".* ]]; then
-      export CONVERTED_TAG_OS_VERSION=22
+      export UBUNTU_VERSION_MAJOR=22
       export L4T_CUDA_VERSION=12.2.2
     else
       n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
     fi
 
-    # ex: dustynv/pytorch:2.1-r35.2.1
+    # e.g., dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
     FETCH_CUDA_VERSION_MAJOR_MINOR=$( docker pull "${DOCKER_IMG}" && docker run --privileged -it --rm "${DOCKER_IMG}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
     if [[ ${FETCH_CUDA_VERSION_MAJOR_MINOR} =~ ${L4T_CUDA_VERSION} ]]; then
@@ -106,18 +106,18 @@ function dn::callback_execute_compose_pre() {
   if [[ ${DEPENDENCIES_BASE_IMAGE} =~ "dustynv/".* ]]; then
     # Note: L4T mimic base image 'nvidia/cuda:12.3.1-runtime-ubuntu20.04' (ref https://hub.docker.com/r/nvidia/cuda),
     export MIMIC_DEPENDENCIES_BASE_IMAGE="nvidia/cuda"
-    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${L4T_CUDA_VERSION}-runtime-ubuntu${CONVERTED_TAG_OS_VERSION}.04"
+    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${L4T_CUDA_VERSION}-runtime-ubuntu${UBUNTU_VERSION_MAJOR}.04"
 
   fi
 
   # ....Reformat nvidia/pytorch base image tag.....................................................
   if [[ ${DEPENDENCIES_BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]]; then
-    export DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${BASE_IMG_TAG_PREFIX}"
+    export DEPENDENCIES_BASE_IMAGE_TAG="${UBUNTU_VERSION_MAJOR}.${BASE_IMG_TAG_PREFIX}"
   fi
 
   # ....Reformat nvidia/cuda base image tag........................................................
   if [[ ${DEPENDENCIES_BASE_IMAGE} == "nvidia/cuda" ]]; then
-    export DEPENDENCIES_BASE_IMAGE_TAG="${BASE_IMG_TAG_PREFIX}${CONVERTED_TAG_OS_VERSION}.04"
+    export DEPENDENCIES_BASE_IMAGE_TAG="${BASE_IMG_TAG_PREFIX}${UBUNTU_VERSION_MAJOR}.04"
   fi
 
   # ....Export image tag for squashed base image use...............................................

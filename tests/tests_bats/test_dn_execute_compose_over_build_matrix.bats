@@ -183,14 +183,14 @@ setup() {
   assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
   assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-l4t-r36.4.0".*
   assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-2.1-r36.4.0".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-12-py3-focal".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-12-py3-jammy".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-23.12-py3-focal".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-23.12-py3-jammy".*
   assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r35.4.1".*
   assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r35.4.1".*
   assert_output --regexp .*"Pass".*"DN-hot-humble-core-l4t-r36.4.0".*
   assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-2.1-r36.4.0".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-12-py3-focal".*
-  assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-12-py3-jammy".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-23.12-py3-focal".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-23.12-py3-jammy".*
 
 #  bats_print_run_env_variable
 }

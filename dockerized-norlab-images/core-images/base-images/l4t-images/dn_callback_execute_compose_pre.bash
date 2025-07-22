@@ -1,6 +1,6 @@
 #!/bin/bash
 
-declare -x CONVERTED_TAG_OS_VERSION
+declare -x UBUNTU_VERSION_MAJOR
 
 # ===============================================================================================
 # Pre docker command execution callback
@@ -19,16 +19,16 @@ function dn::callback_execute_compose_pre() {
   # ....OS version convertion......................................................................
   if [[ ${OS_NAME} == l4t ]]; then
     if [[ ${TAG_OS_VERSION} =~ "r35".* ]]; then
-      export CONVERTED_TAG_OS_VERSION=20
+      export UBUNTU_VERSION_MAJOR=20
       export L4T_CUDA_VERSION=11.4.3
     elif [[ ${TAG_OS_VERSION} =~ "r36".* ]]; then
-      export CONVERTED_TAG_OS_VERSION=22
+      export UBUNTU_VERSION_MAJOR=22
       export L4T_CUDA_VERSION=12.2.2
     else
       n2st::print_msg_error_and_exit "TAG_OS_VERSION=${TAG_OS_VERSION} not suported yet by base image callback"
     fi
 
-    # ex:
+    # e.g.,
     #   - dustynv/pytorch:2.1-r35.2.1
     #   - dustynv/l4t-pytorch:r36.4.0
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
@@ -44,18 +44,30 @@ function dn::callback_execute_compose_pre() {
 
   # ....Reformat mimic of dustynv base image name and tag..........................................
   if [[ ${DEPENDENCIES_BASE_IMAGE} =~ "dustynv/".* ]]; then
-#    # "cuda runtime" as a base image for L4T image mimic
-#    #  - base image 'nvidia/cuda:12.3.1-runtime-ubuntu20.04'
-#    #  - ref https://hub.docker.com/r/nvidia/cuda
-#    export MIMIC_DEPENDENCIES_BASE_IMAGE="nvidia/cuda"
-#    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${L4T_CUDA_VERSION}-runtime-ubuntu${CONVERTED_TAG_OS_VERSION}.04"
+    ## "cuda runtime" as a base image for L4T image mimic
+    ##  - base image 'nvidia/cuda:12.3.1-runtime-ubuntu20.04'
+    ##  - ref https://hub.docker.com/r/nvidia/cuda
+    #export MIMIC_DEPENDENCIES_BASE_IMAGE="nvidia/cuda"
+    #export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${L4T_CUDA_VERSION}-runtime-ubuntu${UBUNTU_VERSION_MAJOR}.04"
 
     # "tensorrt" as a base image for L4T image mimic
     #   - Comme with pycuda and tensorrt installed
     #   - base image 'nvcr.io/nvidia/tensorrt:20.12-py3'
     #   - ref https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorrt/tags
+    if [[ "${UBUNTU_VERSION_MAJOR}" == "20" ]]; then
+      # TensorRT Release 23.04 -> last Ubuntu 20.04 release -> python 3.8
+      #   https://docs.nvidia.com/deeplearning/frameworks/container-release-notes/index.html#rel-23-04
+      TENSORRT_RELEASE=23.04
+    elif [[ "${UBUNTU_VERSION_MAJOR}" == "22" ]]; then
+      # TensorRT Release 24.10 -> last Ubuntu 22.04 release -> python 3.10
+      #   https://docs.nvidia.com/deeplearning/frameworks/container-release-notes/index.html#rel-24-10)
+      TENSORRT_RELEASE=24.10
+    elif [[ "${UBUNTU_VERSION_MAJOR}" == "24" ]]; then
+      # Latest available at the time
+      TENSORRT_RELEASE=25.06
+    fi
     export MIMIC_DEPENDENCIES_BASE_IMAGE="nvcr.io/nvidia/tensorrt"
-    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${CONVERTED_TAG_OS_VERSION}.${UBUNTU_AGNOSTIC_PYTORCH_TAG:?err}"
+    export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${TENSORRT_RELEASE}-py3"
 
   fi
 
@@ -70,7 +82,7 @@ function dn::callback_execute_compose_pre() {
   # ....Execute cuda squash base image logic.......................................................
   if [[ ${DEPENDENCIES_BASE_IMAGE} == "dustynv/l4t-pytorch" ]]; then
 
-    # ex: dustynv/pytorch:2.1-r35.2.1
+    # e.g., dustynv/pytorch:2.1-r35.2.1
     DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
     n2st::print_msg "Pulling DOCKER_IMG=${DOCKER_IMG}"
 
