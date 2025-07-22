@@ -96,7 +96,7 @@ RUN <<EOF
       && echo -e "[WARNING] ${CV_WARN[*]}" ; \
     fi
 
-    apt-get update --fix-missing \
+    apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         apt-utils \
         lsb-release \
@@ -143,20 +143,20 @@ RUN <<EOF
     # ....Install ROS2.............................................................................
     # Note: ROS2 doc recommend executing 'apt upgrade' just before installing ros
     apt-get update \
-    && apt-get update --fix-missing \
+    && apt-get update --ignore-missing \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-${ROS_PKG} \
-        ros-dev-tools \
+        python3-rosdep \
     && dpkg --configure -a \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     || exit 1
 
     # Note: pytest version is managed by 'colcon-common-extensions'
-    apt-get update --fix-missing \
+    apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
-        python3-rosdep \
+        ros-dev-tools \
         python3-colcon-common-extensions \
         python3-colcon-mixin \
         libasio-dev \
@@ -192,7 +192,7 @@ RUN <<EOF
     || exit 1
 
 
-    apt-get update --fix-missing \
+    apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-rosbridge-server \
         ros-${ROS_DISTRO}-rqt-graph \
@@ -204,7 +204,7 @@ RUN <<EOF
     ## ToDo: assessment >> maybe not usefull anymore (pining setuptools as been moved earlier)
     # echo "Quick hack for building ros2 example under ROS foxy focal linux/amd64"  \
     # && pip3 install setuptools==58.2.0 \
-    # && apt-get update --fix-missing \
+    # && apt-get update \
     # && apt-get install --assume-yes \
     #     python3-catkin-pkg \
     #     python3-catkin-pkg-modules \
@@ -224,7 +224,7 @@ WORKDIR ${DN_DEV_WORKSPACE}
 
 ## Note: both ros-${ROS_DISTRO}-demo-nodes-py and ros-${ROS_DISTRO}-demo-nodes-cpp are convenient \
 ##       package from https://github.com/ros2/examples
-#RUN apt-get update --fix-missing \
+#RUN apt-get update \
 #    && apt-get install --assume-yes --no-install-recommends \
 #        ros-${ROS_DISTRO}-demo-nodes-py \
 #        ros-${ROS_DISTRO}-demo-nodes-cpp \
@@ -250,7 +250,7 @@ RUN <<EOF
 
     source /opt/ros/${ROS_DISTRO}/setup.bash
 
-    apt-get update --fix-missing
+    apt-get update
 
     rosdep init \
       && rosdep update --rosdistro "${ROS_DISTRO}" \

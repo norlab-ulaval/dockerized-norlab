@@ -18,36 +18,13 @@ WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN <<EOF
     # Install dependencies
-    apt-get update --fix-missing
+    apt-get update --ignore-missing
     apt-get install --assume-yes \
         ros-${ROS_DISTRO}-rosbridge-msgs \
         python3-tornado \
         python3-bson \
         python3-pymongo
 
-#    # Clone rosbridge_suite for rosbridge-server
-#    git clone -b ros2 https://github.com/RobotWebTools/rosbridge_suite.git
-#
-#    # Clone rqt for rqt-graph
-#    git clone -b humble https://github.com/ros-visualization/rqt.git
-#    git clone -b humble https://github.com/ros-visualization/rqt_common_plugins.git
-#
-#    # Clone rviz for rviz2
-#    git clone -b humble https://github.com/ros2/rviz.git
-#
-#    #cd /opt/ros_build_ws
-#    #
-#    ## Install dependencies
-#    #rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y
-#    #
-#    ## Build packages
-#    #colcon build --packages-select rosbridge_server rqt_graph rviz2
-#    #
-#    ## Source the built packages
-#    #echo "source /opt/ros_build_ws/install/setup.bash" >> /etc/bash.bashrc
-#
-#    apt-get clean
-#    rm -rf /var/lib/apt/lists/*
 EOF
 
 RUN <<EOF
@@ -55,7 +32,7 @@ RUN <<EOF
         transforms3d
 
     apt-get update
-    apt-get update --fix-missing
+    apt-get update --ignore-missing
     apt-get upgrade -y
 
     # Quickhack: reinstall 'robot-state-publisher' to solved the 'process has died' error"
@@ -78,7 +55,7 @@ RUN <<EOF
           rosbag-tools[plot] \
           || exit 1
 
-    apt-get update --fix-missing
+    apt-get update --ignore-missing
     apt-get install --assume-yes \
         ros-${ROS_DISTRO:?err}-ackermann-msgs \
         ros-${ROS_DISTRO}-rosbridge-msgs \
@@ -94,23 +71,12 @@ EOF
 # # Require python >= 3.10
 # ros2-numpy
 
-## . . ros2_jetson_stats. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#WORKDIR ${DN_DEV_WORKSPACE}/src
-#RUN git clone --branch ${ROS_DISTRO} https://github.com/NVIDIA-AI-IOT/ros2_jetson_stats.git
-#
-#WORKDIR ${DN_DEV_WORKSPACE}
-#RUN apt-get update \
-#    && /bin/bash -c "pip install --upgrade jetson-stats" \
-#    && /bin/bash -c "source ${DN_DEV_WORKSPACE}/install/setup.bash" \
-#    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --default-yes --os=ubuntu:jammy \
-#    && rm -rf /var/lib/apt/lists/*
-
 # ====Build ROS2 workspace=========================================================================
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN <<EOF
 
-    apt-get update --fix-missing
+    apt-get update --ignore-missing
     rosdep update --rosdistro ${ROS_DISTRO}
     rosdep fix-permissions
     rosdep install \
