@@ -120,24 +120,27 @@ EOF
 
 # ....Project specific ROS setup..................................................................
 WORKDIR ${DN_DEV_WORKSPACE}
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
 RUN <<EOF
-    rosdep update --rosdistro ${ROS_DISTRO}
+    apt-get update
+    rosdep update --rosdistro ${ROS_DISTRO} || exit 1
     rosdep fix-permissions
+
     rosdep install \
         --ignore-packages-from-source \
         --from-path ./src  \
         --rosdistro ${ROS_DISTRO} \
-        -y
+        -r \
+        -q \
+        -y \
+    || exit 1
+
     rm -rf /var/lib/apt/lists/*
-EOF
 
-
-WORKDIR ${DN_DEV_WORKSPACE}
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-RUN <<EOF
     COLCON_FLAGS=()
-    if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
+    if [[ "${TARGETPLATFORM:?err}" != "${BUILDPLATFORM:?err}" ]]; then
       n2st::print_msg "Builder is running in architecture virtualisation"
       COLCON_FLAGS+=("--executor" "sequential")
     else
