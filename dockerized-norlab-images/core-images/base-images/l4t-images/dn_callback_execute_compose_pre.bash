@@ -71,6 +71,8 @@ function dn::callback_execute_compose_pre() {
     export MIMIC_DEPENDENCIES_BASE_IMAGE="nvcr.io/nvidia/tensorrt"
     export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${TENSORRT_RELEASE}-py3"
 
+    # Quick-hack: Pre-pull tensorrt to prevent unauthorized access error
+    docker pull --platform=linux/amd64 "${MIMIC_DEPENDENCIES_BASE_IMAGE}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG}"
   fi
 
   # ....Export image tag for squashed base image use...............................................

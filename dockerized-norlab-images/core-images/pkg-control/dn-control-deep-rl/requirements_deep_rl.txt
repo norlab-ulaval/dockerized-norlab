@@ -37,15 +37,6 @@ ray[tune,serve,rllib]
 #stable-baselines3
 #opencv-python-headless
 
-
-# ====Torch related================================================================================
-# Torch related utilities
-torchinfo
-
-# TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics
-# https://lightning.ai/docs/torchmetrics/stable/
-torchmetrics
-
 # ====Simulation===================================================================================
 ## deepmind control suite
 # dm_control

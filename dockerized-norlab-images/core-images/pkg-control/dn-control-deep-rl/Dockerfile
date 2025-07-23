@@ -19,9 +19,7 @@ RUN <<EOF
         #  - https://github.com/pytorch-labs/tensordict
         pip install torchrl
     elif [[ "${DISTRIB_CODENAME}" == "focal"  ]]; then
-        #echo "Skipping TorchRL install as TensorDict is not available on Ubuntu Focal"
 
-        cd "${DN_DEV_WORKSPACE}/src"
         # python 3.8 compatible tensordict repo tags:
         #   - 0.0.1
         #   - v0.1.2
@@ -35,9 +33,14 @@ RUN <<EOF
         PYTHON38_COMPAT_VS=v0.4.0
         echo "Installing TorchRL and TensorDict version ${PYTHON38_COMPAT_VS} -> best compatible version for python 3.8"
 
-        git clone --branch "${PYTHON38_COMPAT_VS}" https://github.com/pytorch/tensordict
-        cd tensordict
-        python -m pip install .
+        # Note: don't clone to "${DN_DEV_WORKSPACE}/src" (i.e., /ros2_src/src) as it break colcon build.
+        cd "/opt"
+
+        if ! pip show tensordict -qq; then
+            git clone --branch "${PYTHON38_COMPAT_VS}" https://github.com/pytorch/tensordict
+            cd tensordict
+            python -m pip install .
+        fi
 
         cd ..
         git clone --branch "${PYTHON38_COMPAT_VS}" https://github.com/pytorch/rl
@@ -51,16 +54,15 @@ FROM main AS test
 
 RUN <<EOF
     echo "Sanity check"
+
     python -c "import torch" \
       && python -c "from ray import train, tune" \
       && python -c "from ray.tune.search.hyperopt import HyperOptSearch" \
       || exit 1
 
-    if [[ "$( source /etc/lsb-release && echo ${DISTRIB_CODENAME})" != "focal"  ]]; then
-      python -c "import torchrl" \
-        && python -c "from tensordict.tensordict import TensorDict" \
-        || exit 1
-    fi
+    python -c "import torchrl" \
+      && python -c "from tensordict.tensordict import TensorDict" \
+      || exit 1
 EOF
 
 FROM main AS final
