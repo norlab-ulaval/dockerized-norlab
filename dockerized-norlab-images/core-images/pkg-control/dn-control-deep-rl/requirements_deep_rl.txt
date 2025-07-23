@@ -7,12 +7,6 @@
 
 # ====RL/Control library===========================================================================
 
-# ....torch-RL.....................................................................................
-# Ref:
-#  - https://docs.pytorch.org/rl/stable/index.html#installation
-#  - https://github.com/pytorch-labs/tensordict
-torchrl
-
 # ....ray..........................................................................................
 # Ref:
 #  - rllib: https://docs.ray.io/en/latest/rllib/index.html
