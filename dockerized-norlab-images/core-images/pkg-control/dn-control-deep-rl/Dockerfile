@@ -11,14 +11,38 @@ RUN <<EOF
     pip3 install --no-cache-dir -r /requirements_deep_rl.txt || exit 1
     rm -rf /requirements_deep_rl.txt
 
-    if [[ "$( source /etc/lsb-release && echo ${DISTRIB_CODENAME})" != "focal"  ]]; then
+    source /etc/lsb-release
+    if [[ "${DISTRIB_CODENAME}" != "focal"  ]]; then
         # ....torch-RL.............................................................................
         # Ref:
         #  - https://docs.pytorch.org/rl/stable/index.html#installation
         #  - https://github.com/pytorch-labs/tensordict
         pip install torchrl
-    else
-      echo "Skipping TorchRL install as TensorDict is not available on Ubuntu Focal"
+    elif [[ "${DISTRIB_CODENAME}" == "focal"  ]]; then
+        #echo "Skipping TorchRL install as TensorDict is not available on Ubuntu Focal"
+
+        cd "${DN_DEV_WORKSPACE}/src"
+        # python 3.8 compatible tensordict repo tags:
+        #   - 0.0.1
+        #   - v0.1.2
+        #   - v0.4.0 <- is the last compatible one (considering external dependencies)
+        #   - ! v0.5.0
+        # Ref
+        # - https://github.com/pytorch/tensordict/tree/v0.4.0
+        #   https://github.com/pytorch/tensordict/blob/v0.4.0/setup.py
+        # - https://github.com/pytorch/rl/tree/v0.4.0
+        #   https://github.com/pytorch/rl/blob/v0.4.0/setup.py
+        PYTHON38_COMPAT_VS=v0.4.0
+        echo "Installing TorchRL and TensorDict version ${PYTHON38_COMPAT_VS} -> best compatible version for python 3.8"
+
+        git clone --branch "${PYTHON38_COMPAT_VS}" https://github.com/pytorch/tensordict
+        cd tensordict
+        python -m pip install .
+
+        cd ..
+        git clone --branch "${PYTHON38_COMPAT_VS}" https://github.com/pytorch/rl
+        cd rl
+        python -m pip install .
     fi
 
 EOF
