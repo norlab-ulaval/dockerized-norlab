@@ -10,11 +10,11 @@
 #   - [<optional flag>]   Any optional flag from 'dn_execute_compose_over_build_matrix.bash'
 #
 # Global
-#   - Read NBS_OVERRIDE_BUILD_MATRIX_MAIN          Use to quickly change the .env.build_matrix.main file
+#   - Read NBS_OVERRIDE_BUILD_MATRIX_MAIN                  Use to quickly override values from .env.build_matrix.main
 #   - Read NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG            Use to quickly add docker flag at runtime
 #             e.g.: $ NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="build --push --dry-run" && source dn_build_all.bash
 #             Note accept string of flags or array of flags eg "build --push" or ("build" "--push)
-#   - Read NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY  Use to quickly override the build matrix list
+#   - Read NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY          Use to quickly override value from the build matrix list
 #             e.g.: $ NBS_OVERRIDE_DOTENV_BUILD_MATRIX_ARRAY=( '.env.build_matrix.dev' ) && source dn_build_all.bash
 #   - Read STR_BUILD_MATRIX_SERVICES_AND_TAGS from build_all.log
 #
@@ -89,8 +89,8 @@ ${MSG_END_FORMAT}"
                         "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/$EACH_BUILD_MATRIX" \
                         "$@" -- "${DOCKER_COMMAND_W_FLAGS[@]}"
 
-    dn::fetch_build_log
-    dn::agregate_build_logs
+  dn::fetch_build_log
+  dn::agregate_build_logs
 done
 
 # ....show build matrix feedback...................................................................

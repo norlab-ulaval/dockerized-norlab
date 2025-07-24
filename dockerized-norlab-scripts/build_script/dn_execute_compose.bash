@@ -340,6 +340,7 @@ function dn::execute_compose() {
   if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ ${DOCKER_FORCE_PUSH} == true ]]; then
 
     local STR_BUILT_SERVICES
+    # shellcheck disable=SC2207
     declare -a STR_BUILT_SERVICES=( $( docker compose -f "${COMPOSE_FILE}" "${COMPOSE_FILE_OVERRIDE_FLAG[@]}" config --services --no-interpolate --dry-run) )
     for each_service in "${STR_BUILT_SERVICES[@]}"; do
       echo
@@ -351,47 +352,47 @@ function dn::execute_compose() {
         n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
         n2st::print_msg "Execute docker build for service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} and push if image is defined"
         # ...Execute docker command for each service...............................................
-        n2st::teamcity_service_msg_blockOpened "Build ${each_service}"
-        n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST"
+        n2st::teamcity_service_msg_blockOpened_v2 "Build ${each_service}"
+        n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST" false
         if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
           # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
           MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
           unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
         fi
-        n2st::teamcity_service_msg_blockClosed "Build ${each_service}"
+        n2st::teamcity_service_msg_blockClosed_v2 "Build ${each_service}"
 
         # ...Execute PUSH for each service.........................................................
-          if [[ "${each_service}" =~ .*'-main' ]] || [[ "${each_service}" =~ .*'-tester' ]]; then
-            n2st::print_msg "Skip pushing ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
-          else
-            # ...Force pushing docker images to registry...........................................
-            # Note: this is the best workaround when building multi-architecture images across multi-stage
-            #       and multi-compose-file as multi-aarch image can't be loaded in the local registry and the
-            #       docker compose build --push command is not reliable in buildx builder docker-container driver
-            n2st::teamcity_service_msg_blockOpened "Force push ${each_service} image to docker registry"
-            export COMPOSE_ANSI=always
-            n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST"
-            if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
-              # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
-              MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
-              unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
-            fi
-            n2st::teamcity_service_msg_blockClosed "Force push ${each_service} image to docker registry"
+        if [[ "${each_service}" =~ .*'-main' ]] || [[ "${each_service}" =~ .*'-tester' ]]; then
+          n2st::print_msg "Skip pushing ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
+        else
+          # ...Force pushing docker images to registry...........................................
+          # Note: this is the best workaround when building multi-architecture images across multi-stage
+          #       and multi-compose-file as multi-aarch image can't be loaded in the local registry and the
+          #       docker compose build --push command is not reliable in buildx builder docker-container driver
+          n2st::teamcity_service_msg_blockOpened_v2 "Force push ${each_service} image to docker registry"
+          export COMPOSE_ANSI=always
+          n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST" false
+          if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
+            # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
+            MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+            unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
           fi
+          n2st::teamcity_service_msg_blockClosed_v2 "Force push ${each_service} image to docker registry"
         fi
+      fi
     done
   else
     # ....Execute docker command on ALL............................................................
     n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
     STR_TC_SERVICE_MSG="${DOCKER_COMPOSE_CMD_ARGS[0]}ing $( basename "${COMPOSE_FILE}")"
-    n2st::teamcity_service_msg_blockOpened "${STR_TC_SERVICE_MSG}"
-    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST"
+    n2st::teamcity_service_msg_blockOpened_v2 "${STR_TC_SERVICE_MSG}"
+    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST" false
     if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
       # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
       MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
       unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
     fi
-    n2st::teamcity_service_msg_blockClosed "${STR_TC_SERVICE_MSG}"
+    n2st::teamcity_service_msg_blockClosed_v2 "${STR_TC_SERVICE_MSG}"
   fi
 
   n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"

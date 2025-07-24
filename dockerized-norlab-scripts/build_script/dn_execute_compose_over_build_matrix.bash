@@ -24,7 +24,7 @@
 #set -x
 
 # ....Default......................................................................................
-_BUILD_STATUS_PASS=0
+_BUILD_STATUS_CODE=0
 
 declare -a DOCKER_COMPOSE_CMD_ARGS=( build )
 declare -a DN_EXECUTE_COMPOSE_SCRIPT_FLAGS=()
@@ -161,21 +161,6 @@ function print_help_in_terminal() {
 "
 }
 
-# ToDo: refactor out to 'norlab-shell-script-tools' (ref task NMO-582)
-function dn::teamcity_service_msg_blockOpened_custom() {
-  local THE_MSG=$1
-  if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-    echo -e "##teamcity[blockOpened name='${MSG_BASE_TEAMCITY} ${THE_MSG}']"
-  fi
-}
-
-# ToDo: refactor out to 'norlab-shell-script-tools' (ref task NMO-582)
-function dn::teamcity_service_msg_blockClosed_custom() {
-  local THE_MSG=$1
-  if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-    echo -e "##teamcity[blockClosed name='${MSG_BASE_TEAMCITY} ${THE_MSG}']"
-  fi
-}
 
 # ====Begin=========================================================================================
 n2st::norlab_splash "${NBS_SPLASH_NAME}" "${PROJECT_GIT_REMOTE_URL}"
@@ -317,7 +302,7 @@ dn::print_env_var_build_matrix "set for ${STR_DOCKER_MANAGEMENT_COMMAND}"
 # ====Crawl build matrix===========================================================================
 # Note: EACH_DN_VERSION is used for container labeling and to fetch the repo at release tag
 for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
-  dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_DN_VERSION}"
+  n2st::teamcity_service_msg_blockOpened_v2 "Bloc=${EACH_DN_VERSION}"
 
   if [[ -z ${NBS_MATRIX_REPOSITORY_VERSIONS[*]} ]] || [[ ! ${NBS_MATRIX_REPOSITORY_VERSIONS} ]]; then
     echo "NBS_MATRIX_REPOSITORY_VERSIONS=${NBS_MATRIX_REPOSITORY_VERSIONS[*]}"
@@ -326,7 +311,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
 
   for EACH_OS_NAME in "${NBS_MATRIX_SUPPORTED_OS[@]}"; do
-    dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_NAME}"
+    n2st::teamcity_service_msg_blockOpened_v2 "Bloc=${EACH_OS_NAME}"
 
     unset CRAWL_OS_VERSIONS
     unset CRAWL_BASE_IMAGES
@@ -351,7 +336,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
 
     for EACH_OS_VERSION in "${CRAWL_OS_VERSIONS[@]}"; do
-      dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_OS_VERSION}"
+      n2st::teamcity_service_msg_blockOpened_v2 "Bloc=${EACH_OS_VERSION}"
 
       if [[ -z ${NBS_MATRIX_ROS_DISTRO[*]} ]]; then
         n2st::print_msg_error_and_exit "Can't crawl NBS_MATRIX_ROS_DISTRO array because it's empty! Write 'none' if you want to skip ros."
@@ -390,9 +375,9 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
           fi
         fi
 
-        dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_DISTRO}"
+        n2st::teamcity_service_msg_blockOpened_v2 "Bloc=${EACH_ROS_DISTRO}"
         for EACH_ROS_PKG in "${NBS_MATRIX_ROS_PKG[@]}" ; do
-          dn::teamcity_service_msg_blockOpened_custom "Bloc=${EACH_ROS_PKG}"
+          n2st::teamcity_service_msg_blockOpened_v2 "Bloc=${EACH_ROS_PKG}"
 
           if [[ ${EACH_ROS_DISTRO} == none ]]; then
             DN_EXECUTE_COMPOSE_SCRIPT_FLAGS+=(--ros2 "none")
@@ -457,20 +442,36 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             n2st::print_msg "Repository curently checkout at › $(git symbolic-ref -q --short HEAD || git describe --all --exact-match)"
 
             # ....Execute docker command...............................................................
+            if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+              BUILD_RETRY=${DN_TEAMCITY_BUILD_RETRY:?err}
+            else
+              # No build retry in local build
+              BUILD_RETRY=0
+            fi
+            n2st::print_msg "Max build retry on faillure: ${BUILD_RETRY}"
 
-            # shellcheck disable=SC2086
-            dn::execute_compose \
-              ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE} \
-              --dockerized-norlab-version "${EACH_DN_VERSION}" \
-              --base-image "${EACH_BASE_IMAGE}" \
-              --os-name "${EACH_OS_NAME}" \
-              "${BASE_IMAGE_TAG_PREFIX_FLAG[@]}" \
-              --tag-os-version "${EACH_OS_VERSION}" \
-              "${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]}" \
-              -- "${DOCKER_COMPOSE_CMD_ARGS[@]}"
+            for (( i = 0; i <= BUILD_RETRY; i++ )); do
 
-            DOCKER_EXIT_CODE=$?
+              dn::execute_compose \
+                "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" \
+                --dockerized-norlab-version "${EACH_DN_VERSION}" \
+                --base-image "${EACH_BASE_IMAGE}" \
+                --os-name "${EACH_OS_NAME}" \
+                "${BASE_IMAGE_TAG_PREFIX_FLAG[@]}" \
+                --tag-os-version "${EACH_OS_VERSION}" \
+                "${DN_EXECUTE_COMPOSE_SCRIPT_FLAGS[@]}" \
+                -- "${DOCKER_COMPOSE_CMD_ARGS[@]}"
 
+              DOCKER_EXIT_CODE=$?
+
+              if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
+                # Exit build retry loop
+                continue
+              elif [[ ${DOCKER_EXIT_CODE} != 0 ]] && [[ i -lt ${BUILD_RETRY} ]]; then
+                echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} build ${i}/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Retrying build' status='FAILURE']"
+              fi
+
+            done
 
             # ....Collect image tags exported by dn_execute_compose.bash...............................
             if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
@@ -479,11 +480,11 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             else
               MSG_STATUS="${MSG_ERROR_FORMAT}Fail ${MSG_DIMMED_FORMAT}›"
               MSG_STATUS_TC_TAG="Fail ›"
-              _BUILD_STATUS_PASS=$DOCKER_EXIT_CODE
+              _BUILD_STATUS_CODE=$DOCKER_EXIT_CODE
 
               if [[ ${IS_TEAMCITY_RUN} == true ]]; then
                 # Fail the build › Will appear on the TeamCity Build Results page
-                echo -e "##teamcity[buildProblem description='BUILD FAIL with docker exit code: ${_BUILD_STATUS_PASS}']"
+                echo -e "##teamcity[buildProblem description='BUILD FAIL with docker exit code: ${_BUILD_STATUS_CODE}']"
               fi
             fi
 
@@ -498,15 +499,15 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
             fi
 
           done
-          dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_ROS_PKG}"
+          n2st::teamcity_service_msg_blockClosed_v2 "Bloc=${EACH_ROS_PKG}"
         done
-        dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_ROS_DISTRO}"
+        n2st::teamcity_service_msg_blockClosed_v2 "Bloc=${EACH_ROS_DISTRO}"
       done
-      dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_VERSION}"
+      n2st::teamcity_service_msg_blockClosed_v2 "Bloc=${EACH_OS_VERSION}"
     done
-    dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_OS_NAME}"
+    n2st::teamcity_service_msg_blockClosed_v2 "Bloc=${EACH_OS_NAME}"
   done
-  dn::teamcity_service_msg_blockClosed_custom "Bloc=${EACH_DN_VERSION}"
+  n2st::teamcity_service_msg_blockClosed_v2 "Bloc=${EACH_DN_VERSION}"
 done
 
 # ====Show feedback================================================================================
@@ -556,4 +557,4 @@ fi
 cd "${DN_PATH}"
 
 # shellcheck disable=SC2086
-exit ${_BUILD_STATUS_PASS}
+exit ${_BUILD_STATUS_CODE}

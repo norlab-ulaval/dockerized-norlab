@@ -84,7 +84,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
             qv4l2 \
         && apt-get autoremove -y \
         && apt-get clean \
-        && n2st::teamcity_service_msg_blockClosed "Install opencv apt requirement" \
+        && n2st::teamcity_service_msg_blockClosed_v2 "Install opencv apt requirement" \
         && n2st::teamcity_service_msg_blockOpened "Download opencv" \
         && echo "------------------------------------" \
         && echo "** Download opencv "${OPENCV_VERSION}" (2/4)" \
@@ -95,7 +95,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && unzip opencv-${OPENCV_VERSION}.zip \
         && unzip opencv_contrib-${OPENCV_VERSION}.zip \
         && rm -f opencv-${OPENCV_VERSION}.zip opencv_contrib-${OPENCV_VERSION}.zip \
-        && n2st::teamcity_service_msg_blockClosed "Download opencv" ; \
+        && n2st::teamcity_service_msg_blockClosed_v2 "Download opencv" ; \
       fi
 
 FROM opencv-requirements AS opencv-build
@@ -144,7 +144,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
                   -D CMAKE_INSTALL_PREFIX=/usr/local  \
                   .. \
         && make -j $(nproc)  \
-        && n2st::teamcity_service_msg_blockClosed "Build opencv" ; \
+        && n2st::teamcity_service_msg_blockClosed_v2 "Build opencv" ; \
        fi
 
     ## Note: Will compile for all compute capabilities if arch not specified
@@ -180,7 +180,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && echo 'export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
         && echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
         && source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
-        && n2st::teamcity_service_msg_blockClosed "Install opencv with cuda support" ; \
+        && n2st::teamcity_service_msg_blockClosed_v2 "Install opencv with cuda support" ; \
        else \
         echo -e "Builder is targeting non Jetson device. Assume there's no CUDA support" \
         && n2st::teamcity_service_msg_blockOpened "Install opencv NO cuda" \
@@ -189,7 +189,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && echo "------------------------------------" \
         && pip3 install --no-cache-dir opencv-contrib-python \
         && python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )"  \
-        && n2st::teamcity_service_msg_blockClosed "Install opencv NO cuda" ; \
+        && n2st::teamcity_service_msg_blockClosed_v2 "Install opencv NO cuda" ; \
        fi \
     && echo "** Install opencv "${OPENCV_VERSION}" successfully" \
     && echo "** Bye :)"
