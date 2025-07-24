@@ -18,13 +18,13 @@ COPY --from=context-dn-container-tools ./dn_test/try_gym.py /dockerized-norlab/d
 RUN <<EOF
 
     apt-get update \
-        && apt-get install --assume-yes \
+        && apt-get install --assume-yes  --no-install-recommends \
             swig \
             mesa-utils \
             ffmpeg
 
     echo "pyvirtualdisplay dependencies and backends on Ubuntu 20.04"
-    apt-get install --assume-yes \
+    apt-get install --assume-yes  --no-install-recommends \
             xvfb \
             python3-opengl \
             xserver-xephyr \
