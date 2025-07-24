@@ -446,7 +446,7 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
               BUILD_RETRY=${DN_TEAMCITY_BUILD_RETRY:?err}
             else
               # No build retry in local build
-              BUILD_RETRY=0
+              BUILD_RETRY=${DN_LOCAL_BUILD_RETRY:?err}
             fi
             n2st::print_msg "Max build retry on faillure: ${BUILD_RETRY}"
 
@@ -468,7 +468,17 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
                 # Exit build retry loop
                 continue
               elif [[ ${DOCKER_EXIT_CODE} != 0 ]] && [[ i -lt ${BUILD_RETRY} ]]; then
-                echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} build ${i}/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Retrying build' status='FAILURE']"
+                if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+                  echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Build ${i}/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Retrying build now.' status='FAILURE']"
+                else
+                  n2st::print_msg_warning "Build ${i}/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Retrying build now."
+                fi
+              elif [[ ${DOCKER_EXIT_CODE} != 0 ]]; then
+                if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+                  echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Build ${i}/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Exhausted build retry.' status='ERROR']"
+                else
+                  n2st::print_msg_error "Build ${i}/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Exhausted build retry."
+                fi
               fi
 
             done

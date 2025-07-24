@@ -155,33 +155,7 @@ RUN python3 -m pip install --upgrade pip \
           psutil
 
 
-## (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-#ARG TARGETPLATFORM
-#ARG TARGETARCH
-#RUN echo "DEV test bloc" \
-#    && echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
-#    && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
-#    && echo -e "                  PATH: $(echo $PATH)" \
-#    && echo -e "              pip list: $(pip list)" \
-#    && echo -e "Current python version: $(python --version)" \
-#    && echo -e "   Current pip version: $(pip --version)" \
-#    && echo -e "        which python's: $(which python python3)" \
-#    && echo -e "        whereis python: $(whereis python)" \
-#    && echo -e "           which pip's: $(which pip pip3)" \
-#    && echo -e "           whereis pip: $(whereis pip)" \
-#    && if [[ ! $(python --version) =~ "Python 3.".* ]]; then \
-#      echo "Need python 3" && exit 1 ; \
-#    fi &&  \
-#    if [[ $(which python) != "/usr/bin/python" ]] || [[ $(which python) == "/opt/conda/bin/python" ]]; then \
-#        echo -e "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" \
-#        && echo -e "Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict" \
-#        && exit 1 ; \
-#    fi
-
-
-#FROM --platform="linux/amd64" ros2-python-compatible AS linux-amd64-mimic-l4t-images
 FROM --platform="linux/amd64" ros2-python-compatible AS final-amd64
-#FROM ros2-python-compatible AS final-amd64
 
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
@@ -321,57 +295,10 @@ RUN echo "Quickhack for the 'DeprecationWarning: pkg_resources is deprecated as 
 #   - https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/torch2trt/Dockerfile
 
 
-## (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-#ARG TARGETPLATFORM
-#ARG TARGETARCH
-#RUN echo "DEV test bloc" \
-#    && echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
-#    && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
-#    && echo -e "                  PATH: $(echo $PATH)" \
-#    && echo -e "              pip list: $(pip list)" \
-#    && echo -e "Current python version: $(python --version)" \
-#    && echo -e "   Current pip version: $(pip --version)" \
-#    && echo -e "        which python's: $(which python python3)" \
-#    && echo -e "        whereis python: $(whereis python)" \
-#    && echo -e "           which pip's: $(which pip pip3)" \
-#    && echo -e "           whereis pip: $(whereis pip)" \
-##    && pip3 show pycuda \
-##    && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
-#    && pip3 show torch \
-#    && python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
-
-
 FROM --platform="linux/arm64" ros2-python-compatible AS final-arm64
 
-
-## (CRITICAL) ToDo: on task end >> delete next bloc ↓↓
-#ARG TARGETPLATFORM
-#ARG TARGETARCH
-#RUN echo "DEV test bloc" \
-#    && echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
-#    && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
-#    && echo -e "                  PATH: $(echo $PATH)" \
-#    && echo -e "              pip list: $(pip list)" \
-#    && echo -e "Current python version: $(python --version)" \
-#    && echo -e "   Current pip version: $(pip --version)" \
-#    && echo -e "        which python's: $(which python python3)" \
-#    && echo -e "        whereis python: $(whereis python)" \
-#    && echo -e "           which pip's: $(which pip pip3)" \
-#    && echo -e "           whereis pip: $(whereis pip)" \
-##    && pip3 show pycuda \
-##    && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
-#    && pip3 show torch \
-#    && python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
-
-
-#FROM --platform="linux/amd64" linux-amd64-mimic-l4t-images AS final-amd64
-
-#FROM ros2-python-compatible AS final-arm64
-#FROM linux-amd64-mimic-l4t-images AS final-amd64
-
 FROM --platform=${TARGETPLATFORM} final-${TARGETARCH} AS test
-#FROM final-${TARGETARCH} AS test
-#FROM final-${TARGETARCH} AS test
+
 ARG TARGETPLATFORM
 ARG TARGETARCH
 

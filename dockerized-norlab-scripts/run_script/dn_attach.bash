@@ -125,12 +125,6 @@ for arg in "$@"; do
   shift
 done
 
-## todo:on task end >> delete next bloc ↓↓
-#echo "
-#${0}:
-#  USER_ARG >> ${USER_ARG}
-#  THE_CONTAINER_NAME >> ${THE_CONTAINER_NAME}
-#"
 
 # ....Display and xhost............................................................................
 # (CRITICAL) ToDo: Check the Dusty-nv implementation for X11 forwarding (ref task NMO-183 Fix GUI display issue)
