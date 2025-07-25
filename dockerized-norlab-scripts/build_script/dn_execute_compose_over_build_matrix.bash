@@ -449,7 +449,17 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
               BUILD_RETRY=${DN_LOCAL_BUILD_RETRY:?err}
             fi
 
-            for (( i = 0; i < $(( BUILD_RETRY + 1)); i++ )); do
+            _idx=0
+            DOCKER_EXIT_CODE=-1
+            while [[ ${_idx} -le ${BUILD_RETRY} ]] && [[ ${DOCKER_EXIT_CODE} != 0 ]]; do
+
+              #n2st::print_msg_warning "(CRITICAL) ToDo: on DEV task end >> delete next bloc ↓↓
+              #DN_IMAGE_TAG=DN-hot-l4t-pytorch-r36.2.0
+              #if [[ _idx -eq 0 ]]; then
+              #  DOCKER_EXIT_CODE=1
+              #else
+              #  DOCKER_EXIT_CODE=0
+              #fi
 
               dn::execute_compose \
                 "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" \
@@ -463,30 +473,44 @@ for EACH_DN_VERSION in "${NBS_MATRIX_REPOSITORY_VERSIONS[@]}"; do
 
               DOCKER_EXIT_CODE=$?
 
-              if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
-                # Exit build retry loop
-                continue
-              elif [[ ${DOCKER_EXIT_CODE} != 0 ]] && [[ BUILD_RETRY -gt 0 ]] && [[ i -lt $(( BUILD_RETRY - 1 )) ]]; then
-                if [[ $i == 0 ]]; then
-                  n2st::print_msg "Max build retry on faillure: ${BUILD_RETRY}"
-                fi
+              _counter_msg="$(( _idx + 1))/$(( BUILD_RETRY + 1 ))"
+              if [[ DOCKER_EXIT_CODE -ne 0 ]] && [[ _idx -lt BUILD_RETRY ]]; then
                 if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-                  echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Build $(( i + 1))/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Retrying build now.' status='WARNING']"
+                  echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Build ${_counter_msg} failed with exit code ${DOCKER_EXIT_CODE}! Retrying build now.' status='WARNING']"
+                else
+                  n2st::print_msg_warning "Build ${_counter_msg} failed with exit code ${DOCKER_EXIT_CODE}! Retrying build now."
                 fi
-                n2st::print_msg_warning "Build $(( i + 1))/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Retrying build now."
-              elif [[ ${DOCKER_EXIT_CODE} != 0 ]] && [[ BUILD_RETRY -gt 0 ]] ; then
+              elif [[ DOCKER_EXIT_CODE -eq 0 ]] && [[ _idx -gt 0 ]] ; then
                 if [[ ${IS_TEAMCITY_RUN} == true ]]; then
-                  echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Build $(( i + 1))/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Exhausted build retry.' status='ERROR']"
+                  echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} At last, build ${_counter_msg} suceeded.' status='NORMAL']"
+                else
+                  n2st::print_msg_done "At last, build ${_counter_msg} suceeded."
                 fi
-                n2st::print_msg_error "Build $(( i + 1))/${BUILD_RETRY} failed with exit code ${DOCKER_EXIT_CODE}. Exhausted build retry."
+              elif [[ DOCKER_EXIT_CODE -ne 0 ]] && [[ _idx -eq BUILD_RETRY ]] ; then
+                if [[ BUILD_RETRY -eq 0 ]] ; then
+                  if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+                    echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Build failed with exit code ${DOCKER_EXIT_CODE}!' status='ERROR']"
+                  else
+                    n2st::print_msg_error "Build ${_counter_msg} failed with exit code ${DOCKER_EXIT_CODE}!"
+                  fi
+                else
+                  if [[ ${IS_TEAMCITY_RUN} == true ]]; then
+                    echo -e "##teamcity[message text='${MSG_BASE_TEAMCITY} Build ${_counter_msg} failed with exit code ${DOCKER_EXIT_CODE}! Exhausted build retry.' status='ERROR']"
+                  else
+                    n2st::print_msg_error "Build ${_counter_msg} failed with exit code ${DOCKER_EXIT_CODE}! Exhausted build retry."
+                  fi
+                fi
               fi
+
+              (( _idx++ ))
 
             done
 
             # ....Collect image tags exported by dn_execute_compose.bash...............................
-            if [[ ${DOCKER_EXIT_CODE} == 0 ]]; then
+            if [[ DOCKER_EXIT_CODE -eq 0 ]]; then
               MSG_STATUS="${MSG_DONE_FORMAT}Pass ${MSG_DIMMED_FORMAT}›"
               MSG_STATUS_TC_TAG="Pass ›"
+              _BUILD_STATUS_CODE=0
             else
               MSG_STATUS="${MSG_ERROR_FORMAT}Fail ${MSG_DIMMED_FORMAT}›"
               MSG_STATUS_TC_TAG="Fail ›"

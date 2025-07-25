@@ -13,18 +13,18 @@ function dn::cuda_squash_image_logic() {
     docker pull "${DOCKER_IMG}" \
       && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DOCKER_IMG}" \
         | grep \
-          -e CUDA_HOME= \
-          -e NVIDIA_ \
-          -e LD_LIBRARY_PATH= \
-          -e PATH= \
-          -e ROS_ \
-          -e RMW_IMPLEMENTATION= \
-          -e LD_PRELOAD= \
-          -e OPENBLAS_CORETYPE= \
-          -e PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION= \
-          -e TORCH_HOME= \
-          -e TENSORBOARD_PORT= \
-          -e JUPYTER_PORT= \
+          -e ^CUDA \
+          -e ^NVIDIA \
+          -e ^ROS \
+          -e ^TORCH \
+          -e ^LD_LIBRARY_PATH= \
+          -e ^PATH= \
+          -e ^RMW_IMPLEMENTATION= \
+          -e ^LD_PRELOAD= \
+          -e ^OPENBLAS_CORETYPE= \
+          -e ^PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION= \
+          -e ^TENSORBOARD_PORT= \
+          -e ^JUPYTER_PORT= \
         | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
         | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
         | sed 's;^PATH;BASE_IMG_ENV_PATH;' \

@@ -353,7 +353,7 @@ function dn::execute_compose() {
         n2st::print_msg "Execute docker build for service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} and push if image is defined"
         # ...Execute docker command for each service...............................................
         n2st::teamcity_service_msg_blockOpened_v2 "Build ${each_service}"
-        n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST" false
+        n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST" "false"
         if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
           # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
           MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
@@ -371,7 +371,7 @@ function dn::execute_compose() {
           #       docker compose build --push command is not reliable in buildx builder docker-container driver
           n2st::teamcity_service_msg_blockOpened_v2 "Force push ${each_service} image to docker registry"
           export COMPOSE_ANSI=always
-          n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST" false
+          n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST" "false"
           if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
             # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
             MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
@@ -386,12 +386,9 @@ function dn::execute_compose() {
     n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
     STR_TC_SERVICE_MSG="${DOCKER_COMPOSE_CMD_ARGS[0]}ing $( basename "${COMPOSE_FILE}")"
     n2st::teamcity_service_msg_blockOpened_v2 "${STR_TC_SERVICE_MSG}"
-    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST" false
-    if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
-      # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
-      MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
-      unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
-    fi
+    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST" "false"
+    MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+    unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
     n2st::teamcity_service_msg_blockClosed_v2 "${STR_TC_SERVICE_MSG}"
   fi
 
@@ -415,10 +412,8 @@ function dn::execute_compose() {
   ${MSG_DIMMED_FORMAT}    ROS_PKG=${ROS_PKG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    DN_IMAGE_TAG=${DN_IMAGE_TAG} ${MSG_END_FORMAT}
   ${MSG_DIMMED_FORMAT}    PROJECT_TAG=${PROJECT_TAG} ${MSG_END_FORMAT}
+  ${MSG_DIMMED_FORMAT}    MAIN_DOCKER_EXIT_CODE=${MAIN_DOCKER_EXIT_CODE} ${MSG_END_FORMAT}
   "
-
-# (NICE TO HAVE) ToDo: assessment >> next bloc ↓↓
-#  n2st::print_msg "Targeted device ›$(dn::fetch_target_device)"
 
   n2st::print_formated_script_footer 'dn_execute_compose.bash' "${MSG_LINE_CHAR_BUILDER_LVL2}"
 

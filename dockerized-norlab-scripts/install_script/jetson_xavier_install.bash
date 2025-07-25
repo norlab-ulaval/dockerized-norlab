@@ -74,7 +74,7 @@ fi
 # ....Install utilities.............................................................................
 sudo apt-get update &&
   sudo apt-get upgrade --assume-yes &&
-  sudo apt-get install --assume-yes \
+  sudo apt-get install --assume-yes --no-install-recommends \
     tmux \
     htop \
     curl \
@@ -136,7 +136,7 @@ echo \
 # (Priority) ToDo: refactor using norlab-shell-script-tools
 sudo apt-get update &&
   sudo apt-get upgrade &&
-  sudo apt-get install --assume-yes \
+  sudo apt-get install --assume-yes --no-install-recommends \
    docker-compose-plugin \
    docker-buildx-plugin
 

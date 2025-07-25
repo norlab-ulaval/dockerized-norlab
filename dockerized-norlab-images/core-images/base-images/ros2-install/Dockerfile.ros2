@@ -1,8 +1,9 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-install
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
@@ -38,8 +39,6 @@ ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
 
 # ....Install ROS2.................................................................................
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 RUN <<EOF
 
     # ....Distro compatibility check...............................................................
@@ -80,8 +79,6 @@ RUN <<EOF
         || exit 1
     fi
 
-    rm -rf /var/lib/apt/lists/*
-
     # ....Setup Sources............................................................................
     add-apt-repository universe
 
@@ -106,8 +103,8 @@ RUN <<EOF
       && echo -e "[WARNING] ${CV_WARN[*]}" ; \
     fi
 
-    apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
+    apt-get update
+    apt-get install --assume-yes --no-install-recommends \
         apt-utils \
         lsb-release \
         build-essential \
@@ -122,9 +119,11 @@ RUN <<EOF
         python3-setuptools \
         python3-pycodestyle \
         python3-pygments \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    || exit 1
+      || exit 1
+
+    apt-get autoremove -y
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
     python3 -m pip install --upgrade pip \
     && pip3 install --no-cache-dir  \
@@ -132,15 +131,6 @@ RUN <<EOF
         six \
         msgpack \
     || exit 1
-
-    #if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]]; then
-    #    # Python 3.8 compatibility fixes for older Ubuntu
-    #    # Note: pinning 'setuptools' is a quick hack for building ros2 example under ROS foxy focal amd64
-    #    pip3 install --upgrade --no-cache-dir \
-    #        setuptools==58.2.0 \
-    #        pyparsing==2.4.7 \
-    #        || exit 1
-    #fi
 
     # Fix setuptools compatibility issues for colcon build
     if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]]; then
@@ -157,7 +147,6 @@ RUN <<EOF
         pip3 install --no-cache-dir \
             "setuptools>=69.0.0"
     fi
-
 
     # Note: ref cmake upgrade via pip:
     #  - upgrade cmake - https://stackoverflow.com/a/56690743
@@ -178,10 +167,8 @@ RUN <<EOF
     && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-${ROS_PKG} \
         python3-rosdep \
-    && dpkg --configure -a \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
     || exit 1
+    # && dpkg --configure -a \
 
     # Note: pytest version is managed by 'colcon-common-extensions'
     apt-get update \
@@ -193,8 +180,6 @@ RUN <<EOF
         libtinyxml2-dev \
         libcunit1-dev \
         tree \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
     || exit 1
 
     echo "Install python testing tools"
@@ -221,26 +206,26 @@ RUN <<EOF
         pytest-runner \
     || exit 1
 
-
     apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-rosbridge-server \
         ros-${ROS_DISTRO}-rqt-graph \
         ros-${ROS_DISTRO}-rviz2 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
+    || exit 1
 
     ## ToDo: assessment >> maybe not usefull anymore (pining setuptools as been moved earlier)
     # echo "Quick hack for building ros2 example under ROS foxy focal linux/amd64"  \
     # && pip3 install setuptools==58.2.0 \
     # && apt-get update \
-    # && apt-get install --assume-yes \
+    # && apt-get install --assume-yes --no-install-recommends \
     #     python3-catkin-pkg \
     #     python3-catkin-pkg-modules \
     # && apt-get clean \
     # && rm -rf /var/lib/apt/lists/*
 
+    apt-get autoremove -y
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 EOF
 
 # ====Build ROS2 workspace=========================================================================
@@ -307,8 +292,6 @@ RUN <<EOF
     || exit 1
 EOF
 
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 # Note: The colcon flag "--cmake-clean-cache" reset the python3 env
 RUN <<EOF
     COLCON_FLAGS=()

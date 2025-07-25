@@ -23,8 +23,8 @@ ARG BUILDPLATFORM
 
 
 RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get install -y \
+    && apt-get upgrade --assume-yes \
+    && apt-get install --assume-yes --no-install-recommends \
       "ros-${ROS_DISTRO:?err}-rosbridge-server" \
       "ros-${ROS_DISTRO}-slam-toolbox" \
     && apt-get autoremove -y \
@@ -62,7 +62,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && echo "** Install requirement (1/4)" \
         && echo "------------------------------------" \
         && apt-get update \
-        && apt-get install -y \
+        && apt-get install --assume-yes --no-install-recommends \
             make \
             libgtk2.0-dev \
             pkg-config \
@@ -215,7 +215,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
     && echo \
     && echo "Procedure at https://github.com/f1tenth/range_libc/blob/foxy-devel/pywrapper/compile_with_cuda.sh" \
     && apt-get update \
-    && apt-get install -y \
+    && apt-get install --assume-yes --no-install-recommends \
         gcc-8 \
         g++-8 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 \
@@ -231,7 +231,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && bash ./compile.sh ; \
        fi \
     && apt-get update \
-    && apt-get install -y \
+    && apt-get install --assume-yes --no-install-recommends \
       "ros-${ROS_DISTRO}-laser-filters" \
     && apt-get autoremove -y \
     && apt-get clean

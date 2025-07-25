@@ -15,9 +15,10 @@ ENV PATH="/usr/local/cuda/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
 RUN apt-get update \
-    && apt-get install -y software-properties-common \
+    && apt-get install --assume-yes --no-install-recommends \
+      software-properties-common \
     && ldconfig \
-    && apt-get install -y --no-install-recommends \
+    && apt-get install --assume-yes --no-install-recommends \
             libopenblas-base \
             libopenblas-dev \
             libomp-dev \
@@ -75,7 +76,7 @@ ARG PYTORCH_L4T_WHL=torch-2.0.0a0+ec3941ad.nv23.2-cp38-cp38-linux_aarch64.whl
 
 # Torchvision related build requirement
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install --assume-yes --no-install-recommends \
         git \
         build-essential \
         ninja-build \

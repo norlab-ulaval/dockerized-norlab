@@ -27,7 +27,7 @@ ENV LIBGL_ALWAYS_INDIRECT=1
 
 RUN <<EOF
   apt-get update \
-    && apt-get install --assume-yes \
+    && apt-get install --assume-yes --no-install-recommends \
             libgl1-mesa-dev \
             libglu1-mesa-dev \
             fontconfig \
