@@ -3,6 +3,8 @@
 declare -x MIMIC_DEPENDENCIES_BASE_IMAGE
 declare -x MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
 declare -x UBUNTU_VERSION_MAJOR
+declare -x L4T_CUDA_VERSION
+declare -x DN_IMAGE_TAG_NO_ROS
 
 # ===============================================================================================
 # Pre docker command execution callback
@@ -11,12 +13,29 @@ declare -x UBUNTU_VERSION_MAJOR
 #   $ source dn_callback_execute_compose_pre.bash && callback_execute_compose_pre
 #
 # Globals:
-#   Read COMPOSE_FILE
+#   Read OS_NAME
+#   Read TAG_OS_VERSION
+#   Read REPOSITORY_VERSION
+#   Read DN_IMAGE_TAG_END
+#   Read DN_IMAGE_TAG
+#   Read NBS_COMPOSE_DIR
 #   Read DEPENDENCIES_BASE_IMAGE
 #   Read DEPENDENCIES_BASE_IMAGE_TAG
 #
 # =================================================================================================
 function dn::callback_execute_compose_pre() {
+
+    n2st::print_msg "Pre-condition checks"
+    {
+        test -n "${OS_NAME:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${TAG_OS_VERSION:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${REPOSITORY_VERSION:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DN_IMAGE_TAG_END:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DN_IMAGE_TAG:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${NBS_COMPOSE_DIR:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DEPENDENCIES_BASE_IMAGE:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DEPENDENCIES_BASE_IMAGE_TAG:?'Env variable need to be set and non-empty.'}" ;
+    } || return 1
 
   # ....OS version convertion......................................................................
   if [[ ${OS_NAME} == l4t ]]; then
@@ -33,12 +52,13 @@ function dn::callback_execute_compose_pre() {
     # e.g.,
     #   - dustynv/pytorch:2.1-r35.2.1
     #   - dustynv/l4t-pytorch:r36.4.0
-    DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
-    n2st::print_msg "Pulling DOCKER_IMG=${DOCKER_IMG}..."
-    docker pull --platform="linux/arm64" "${DOCKER_IMG}"
+    local docker_img="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
+    n2st::print_msg "Pulling docker_img=${docker_img}..."
+    docker pull --platform="linux/arm64" "${docker_img}"
 
-    FETCH_CUDA_VERSION_MAJOR_MINOR=$( docker run --privileged -it --rm "${DOCKER_IMG}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
-    if [[ ${FETCH_CUDA_VERSION_MAJOR_MINOR} =~ ${L4T_CUDA_VERSION} ]]; then
+    local fetch_cuda_version_major_minor
+    fetch_cuda_version_major_minor=$( docker run --privileged -it --rm "${docker_img}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
+    if [[ ${fetch_cuda_version_major_minor} =~ ${L4T_CUDA_VERSION} ]]; then
         n2st::print_msg_error_and_exit "Cuda version for multiaarch l4t mimic image do not match!"
     fi
 
@@ -54,23 +74,24 @@ function dn::callback_execute_compose_pre() {
       #   - Comme with pycuda and tensorrt installed
       #   - base image 'nvcr.io/nvidia/tensorrt:20.12-py3'
       #   - ref https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorrt/tags
+      local tensorrt_release
       if [[ "${UBUNTU_VERSION_MAJOR}" == "20" ]]; then
         # TensorRT Release 23.04 -> last Ubuntu 20.04 release -> python 3.8
         #   https://docs.nvidia.com/deeplearning/frameworks/container-release-notes/index.html#rel-23-04
-        TENSORRT_RELEASE=23.04
+        tensorrt_release=23.04
       elif [[ "${UBUNTU_VERSION_MAJOR}" == "22" ]]; then
         # TensorRT Release 24.10 -> last Ubuntu 22.04 release -> python 3.10
         #   https://docs.nvidia.com/deeplearning/frameworks/container-release-notes/index.html#rel-24-10)
-        TENSORRT_RELEASE=24.10
+        tensorrt_release=24.10
       elif [[ "${UBUNTU_VERSION_MAJOR}" == "24" ]]; then
         # Latest available at the time
-        TENSORRT_RELEASE=25.06
+        tensorrt_release=25.06
       fi
 
       # 💎 Run 'dockerized-norlab-scripts/build_script/dn_push_tensorrt_to_norlab_dockerhub.bash'
       # manualy to fetch tensorrt images from nvidia and push them to norlab dockerhub domain.
       export MIMIC_DEPENDENCIES_BASE_IMAGE="norlabulaval/nvidia-tensorrt"
-      export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${TENSORRT_RELEASE}-py3"
+      export MIMIC_DEPENDENCIES_BASE_IMAGE_TAG="${tensorrt_release}-py3"
 
       # Quick-hack: Pre-pull tensorrt to prevent unauthorized access error
       #docker pull --platform=linux/amd64 "${MIMIC_DEPENDENCIES_BASE_IMAGE}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG}"
@@ -86,22 +107,27 @@ function dn::callback_execute_compose_pre() {
 
     # ....Execute cuda squash base image logic.....................................................
     if [[ ${DEPENDENCIES_BASE_IMAGE} == "dustynv/l4t-pytorch" ]]; then
-      # e.g., dustynv/pytorch:2.1-r35.2.1
+      # e.g.,
+      #   - dustynv/pytorch:2.1-r35.2.1
+      #   - dustynv/l4t-pytorch:r36.4.0
+      # $ docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "dustynv/l4t-pytorch:r36.4.0"
 
-      # shellcheck disable=SC2046
-      export $( docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DOCKER_IMG}" \
+      local img_env_var=()
+      while IFS='' read -r line; do
+        img_env_var+=("$line")
+      done < <( docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${docker_img}" \
           | grep \
-            -e ^NVIDIA \
-            -e ^CUDA \
-            -e ^CMAKE_CUDA_COMPILER= \
-            -e ^NVCC \
-            -e ^TORCH \
-            -e ^ROS \
-            -e ^LD_LIBRARY_PATH= \
-            -e ^PATH= \
-            -e ^RMW_IMPLEMENTATION= \
-            -e ^LD_PRELOAD= \
-            -e ^OPENBLAS_CORETYPE= \
+            -e '^NVIDIA_' \
+            -e '^CUDA_' \
+            -e '^CMAKE_CUDA_COMPILER=' \
+            -e '^NVCC_' \
+            -e '^TORCH_' \
+            -e '^ROS_' \
+            -e '^LD_LIBRARY_PATH=' \
+            -e '^PATH=' \
+            -e '^RMW_IMPLEMENTATION=' \
+            -e '^LD_PRELOAD=' \
+            -e '^OPENBLAS_CORETYPE=' \
           | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
           | sed 's;^NVIDIA;BASE_IMG_ENV_NVIDIA;' \
           | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
@@ -111,17 +137,26 @@ function dn::callback_execute_compose_pre() {
           | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
           | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
           | sed 's;^TORCH_HOME;BASE_IMG_ENV_TORCH_HOME;' \
-          | sed 's;^TORCH_NVCC_FLAGS;BASE_IMG_ENV_TORCH_NVCC_FLAGS;' \
+          | sed 's;^TORCH_NVCC_FLAGS=\(.*\);BASE_IMG_ENV_TORCH_NVCC_FLAGS="\1";' \
           | sed 's;^TORCH_CUDA_ARCH_LIST;BASE_IMG_ENV_TORCH_CUDA_ARCH_LIST;' \
           | sed 's;^NVCC_PATH;BASE_IMG_ENV_NVCC_PATH;' \
-          | sed 's;^CMAKE_CUDA_COMPILER;BASE_IMG_ENV_CMAKE_CUDA_COMPILER;' \
           | sed 's;^CUDA_BIN_PATH;BASE_IMG_ENV_CUDA_BIN_PATH;' \
+          | sed 's;^CMAKE_CUDA_COMPILER;BASE_IMG_ENV_CMAKE_CUDA_COMPILER;' \
           | sed 's;^CUDAARCHS;BASE_IMG_ENV_CUDAARCHS;' \
           | sed 's;^CUDACXX;BASE_IMG_ENV_CUDACXX;' \
           | sed 's;^CUDA_TOOLKIT_ROOT_DIR;BASE_IMG_ENV_CUDA_TOOLKIT_ROOT_DIR;' \
           | sed 's;^CUDA_NVCC_EXECUTABLE;BASE_IMG_ENV_CUDA_NVCC_EXECUTABLE;' \
           | sed 's;^CUDA_ARCHITECTURES;BASE_IMG_ENV_CUDA_ARCHITECTURES;' \
          )
+
+      local img_env_var_size=${#img_env_var[@]}
+      echo -e "Exporting ${img_env_var_size} environment variables from ${docker_img}..."
+      if [[ img_env_var_size -eq 1 ]]; then
+        n2st::print_msg_error "Problem while fetching env var from dustynv/l4t-pytorch"
+        return 1
+      else
+        export "${img_env_var[@]}"
+      fi
 
       n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:
         ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
@@ -143,5 +178,7 @@ function dn::callback_execute_compose_pre() {
   else
     n2st::print_msg_error_and_exit "OS_NAME=${OS_NAME} not suported yet by base image callback"
   fi
+
+  return 0
 }
 

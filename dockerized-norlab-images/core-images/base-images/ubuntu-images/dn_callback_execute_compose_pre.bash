@@ -3,28 +3,32 @@
 declare -x UBUNTU_VERSION_MAJOR
 
 function dn::cuda_squash_image_logic() {
+
   if [[ $(basename "${COMPOSE_FILE:?err}") == "docker-compose.cuda-squash.build.yaml" ]]; then
 
     # e.g., dustynv/pytorch:2.1-r35.2.1
-    DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
-    n2st::print_msg "Pulling DOCKER_IMG=${DOCKER_IMG}"
+    local docker_img="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
+    n2st::print_msg "Pulling docker_img=${docker_img}..."
 
-    # shellcheck disable=SC2046
-    docker pull "${DOCKER_IMG}" \
-      && export $(docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${DOCKER_IMG}" \
+    docker pull "${docker_img}"
+
+    local img_env_var=()
+    while IFS='' read -r line; do
+      img_env_var+=("$line")
+    done < <( docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "${docker_img}" \
         | grep \
-          -e ^CUDA \
-          -e ^NVIDIA \
-          -e ^ROS \
-          -e ^TORCH \
-          -e ^LD_LIBRARY_PATH= \
-          -e ^PATH= \
-          -e ^RMW_IMPLEMENTATION= \
-          -e ^LD_PRELOAD= \
-          -e ^OPENBLAS_CORETYPE= \
-          -e ^PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION= \
-          -e ^TENSORBOARD_PORT= \
-          -e ^JUPYTER_PORT= \
+          -e '^CUDA' \
+          -e '^NVIDIA' \
+          -e '^ROS' \
+          -e '^TORCH' \
+          -e '^LD_LIBRARY_PATH=' \
+          -e '^PATH=' \
+          -e '^RMW_IMPLEMENTATION=' \
+          -e '^LD_PRELOAD=' \
+          -e '^OPENBLAS_CORETYPE=' \
+          -e '^PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=' \
+          -e '^TENSORBOARD_PORT=' \
+          -e '^JUPYTER_PORT=' \
         | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
         | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
         | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
@@ -39,6 +43,15 @@ function dn::cuda_squash_image_logic() {
         | sed 's;^JUPYTER_PORT;BASE_IMG_ENV_JUPYTER_PORT;' \
        )
 
+      local img_env_var_size=${#img_env_var[@]}
+      echo -e "Exporting ${img_env_var_size} environment variables from ${docker_img}..."
+      if [[ img_env_var_size -eq 1 ]]; then
+        n2st::print_msg_error "Problem while fetching env var from dustynv/l4t-pytorch"
+        return 1
+      else
+        export "${img_env_var[@]}"
+      fi
+
     # ....Special step for handling nvidia/pytorch container conda install.........................
     if [[ ${DEPENDENCIES_BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]] || [[ ${DEPENDENCIES_BASE_IMAGE} == "nvidia/cuda" ]]; then
       export BASE_IMG_ENV_CUDA_HOME="/usr/local/cuda"
@@ -52,6 +65,8 @@ function dn::cuda_squash_image_logic() {
   else
     n2st::print_msg "Skiping base image environment variable fetching"
   fi
+
+  return 0
 }
 
 
@@ -68,6 +83,15 @@ function dn::cuda_squash_image_logic() {
 #
 # =================================================================================================
 function dn::callback_execute_compose_pre() {
+
+  n2st::print_msg "Pre-condition checks"
+  {
+      test -n "${COMPOSE_FILE:?'Env variable need to be set and non-empty.'}" && \
+      test -n "${OS_NAME:?'Env variable need to be set and non-empty.'}" && \
+      test -n "${TAG_OS_VERSION:?'Env variable need to be set and non-empty.'}" && \
+      test -n "${DEPENDENCIES_BASE_IMAGE:?'Env variable need to be set and non-empty.'}" && \
+      test -n "${DEPENDENCIES_BASE_IMAGE_TAG:?'Env variable need to be set and non-empty.'}" ;
+  } || return 1
 
   # ....OS version convertion......................................................................
   if [[ ${OS_NAME:?err} == ubuntu ]]; then
@@ -94,9 +118,10 @@ function dn::callback_execute_compose_pre() {
     fi
 
     # e.g., dustynv/pytorch:2.1-r35.2.1
-    DOCKER_IMG="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
-    FETCH_CUDA_VERSION_MAJOR_MINOR=$( docker pull "${DOCKER_IMG}" && docker run --privileged -it --rm "${DOCKER_IMG}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
-    if [[ ${FETCH_CUDA_VERSION_MAJOR_MINOR} =~ ${L4T_CUDA_VERSION} ]]; then
+    local docker_img="${DEPENDENCIES_BASE_IMAGE:?err}:${DEPENDENCIES_BASE_IMAGE_TAG:?err}"
+    local fetch_cuda_version_major_minor
+    fetch_cuda_version_major_minor=$( docker pull "${docker_img}" && docker run --privileged -it --rm "${docker_img}" nvcc --version | grep "release" | awk '{print $5}' | sed 's/,//')
+    if [[ ${fetch_cuda_version_major_minor} =~ ${L4T_CUDA_VERSION} ]]; then
         n2st::print_msg_error_and_exit "Cuda version for multiaarch l4t mimic image do not match!"
     fi
 
@@ -134,5 +159,7 @@ function dn::callback_execute_compose_pre() {
   n2st::print_msg_warning "DEPENDENCIES_BASE_IMAGE=${DEPENDENCIES_BASE_IMAGE}"
   n2st::print_msg_warning "DEPENDENCIES_BASE_IMAGE_TAG=${DEPENDENCIES_BASE_IMAGE_TAG}"
   n2st::print_msg_warning "DN_IMAGE_TAG_NO_ROS=${DN_IMAGE_TAG_NO_ROS}"
+
+  return 0
 }
 

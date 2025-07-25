@@ -279,7 +279,7 @@ function dn::execute_compose() {
   if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_pre.bash" ]]; then
     n2st::print_msg "Source and execute ${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
     source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash"
-    dn::callback_execute_compose_pre
+    dn::callback_execute_compose_pre || { n2st::print_msg_error "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_pre.bash" ; return 1 ; }
   fi
 
   # ...............................................................................................
@@ -354,10 +354,12 @@ function dn::execute_compose() {
         # ...Execute docker command for each service...............................................
         n2st::teamcity_service_msg_blockOpened_v2 "Build ${each_service}"
         n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST" "false"
+        DOCKER_EXIT_CODE=$?
         if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
           # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
-          MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
-          unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
+          MAIN_DOCKER_EXIT_CODE=${DOCKER_EXIT_CODE}
+          #MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+          #unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
         fi
         n2st::teamcity_service_msg_blockClosed_v2 "Build ${each_service}"
 
@@ -372,10 +374,12 @@ function dn::execute_compose() {
           n2st::teamcity_service_msg_blockOpened_v2 "Force push ${each_service} image to docker registry"
           export COMPOSE_ANSI=always
           n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST" "false"
+          DOCKER_EXIT_CODE=$?
           if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
             # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
-            MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
-            unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
+            MAIN_DOCKER_EXIT_CODE=${DOCKER_EXIT_CODE}
+            #MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+            #unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
           fi
           n2st::teamcity_service_msg_blockClosed_v2 "Force push ${each_service} image to docker registry"
         fi
@@ -387,8 +391,9 @@ function dn::execute_compose() {
     STR_TC_SERVICE_MSG="${DOCKER_COMPOSE_CMD_ARGS[0]}ing $( basename "${COMPOSE_FILE}")"
     n2st::teamcity_service_msg_blockOpened_v2 "${STR_TC_SERVICE_MSG}"
     n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST" "false"
-    MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
-    unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
+    MAIN_DOCKER_EXIT_CODE=$?
+    #MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
+    #unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
     n2st::teamcity_service_msg_blockClosed_v2 "${STR_TC_SERVICE_MSG}"
   fi
 
@@ -399,7 +404,7 @@ function dn::execute_compose() {
   if [[ -f "${NBS_COMPOSE_DIR:?err}/dn_callback_execute_compose_post.bash" ]]; then
     n2st::print_msg "Source and execute ${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash"
     source "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash"
-    dn::callback_execute_compose_post
+    dn::callback_execute_compose_post || { n2st::print_msg_error "${NBS_COMPOSE_DIR}/dn_callback_execute_compose_post.bash" ; return 1 ; }
   fi
 
   # ....Show feedback..............................................................................

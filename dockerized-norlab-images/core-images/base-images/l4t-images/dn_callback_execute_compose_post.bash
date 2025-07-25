@@ -15,11 +15,10 @@ function dn::callback_execute_compose_post() {
 
     if [[ ${MAIN_DOCKER_EXIT_CODE} != 0 ]]; then
       n2st::print_msg_warning "Docker exited with ${MAIN_DOCKER_EXIT_CODE} -> skip dn::callback_execute_compose_post"
-      return
+      return 1
     fi
 
     if [[ ${DOCKER_COMPOSE_CMD_ARGS[0]:?err} == build ]] && [[ "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*"--push".* ]] && [[ ! "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*"--dry-run".* ]]; then
-
 
       n2st::teamcity_service_msg_blockOpened_v2 "Preparing docker manifeste for multiarch image"
 
@@ -41,4 +40,5 @@ function dn::callback_execute_compose_post() {
       n2st::print_msg_warning "Skip pushing dockerized-norlab-base-image multi-arch image"
     fi
 
+    return 0
 }
