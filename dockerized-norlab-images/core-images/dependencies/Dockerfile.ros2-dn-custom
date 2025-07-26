@@ -1,18 +1,21 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
+ARG DEBIAN_FRONTEND=noninteractive
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-custom-install
+ARG DEBIAN_FRONTEND
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-ARG DEBIAN_FRONTEND=noninteractive
 
 # ====Begin install================================================================================
 WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN <<EOF
     # Install dependencies
-    apt-get update
-    apt-get upgrade --assume-yes
+    {
+      apt-get update && \
+      apt-get upgrade --assume-yes
+    } || exit 1
 
     apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-rosbridge-msgs \
@@ -51,9 +54,8 @@ RUN <<EOF
         ros-${ROS_DISTRO}-urg-node-msgs \
         || exit 1
 
-    apt-get autoremove -y
-    apt-get clean
     rm -rf /var/lib/apt/lists/*
+    apt-get clean
 EOF
 
 # # https://pypi.org/project/ros2-numpy/
@@ -64,9 +66,10 @@ EOF
 # ====Build ROS2 workspace=========================================================================
 RUN <<EOF
 
-    apt-get update
-    rosdep update --rosdistro ${ROS_DISTRO}
+    apt-get update || exit 1
+    rosdep update --rosdistro ${ROS_DISTRO} || exit 1
     rosdep fix-permissions
+
     rosdep install \
         --ignore-packages-from-source \
         --from-path ./src  \
@@ -91,7 +94,7 @@ RUN <<EOF
           "--event-handlers" "console_direct+"
        )
     echo -e "COLCON_FLAGS=( ${COLCON_FLAGS[*]} )"
-    colcon build ${COLCON_FLAGS[@]}
+    colcon build ${COLCON_FLAGS[@]} || exit 1
 
     # ===ROS sourcing logic for interactive and non-interactive shell==============================
     # (since .bashrc is not executed in non-interactive shell)
@@ -158,6 +161,7 @@ EOF
 
 
 FROM ros2-custom-install AS test
+ARG DEBIAN_FRONTEND
 
 # Note: ROS2 distro should be sourced automaticaly via our dn_bashrc_non_interactive.bash setup
 RUN <<EOF
@@ -167,10 +171,10 @@ RUN <<EOF
         test -n ${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} && \
         test -n ${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} && \
         test -n ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
-    #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
         test -n ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
         test -n ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} ;
     } || exit 1
+    #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
 
     {
         python -c "import rclpy" && \
@@ -194,10 +198,10 @@ RUN <<EOF
         test -n ${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} && \
         test -n ${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} && \
         test -n ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
-        #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
         test -n ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
         test -n ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} ;
     } || exit 1
+        #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
 
     {
         python -c "import rclpy" && \
@@ -207,6 +211,7 @@ EOF
 
 
 FROM ros2-custom-install AS final
+ARG DEBIAN_FRONTEND
 
 # ....TMP DEV introspection........................................................................
 ## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓

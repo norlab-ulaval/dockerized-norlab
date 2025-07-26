@@ -161,7 +161,8 @@ SHELL ["/bin/bash", "-c"]
 RUN <<EOF
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
     if [[ "${UBUNTU_VERSION_MAJOR}.04" != "${IMG_RELEASE}" ]]; then
-      n2st::print_msg_error_and_exit "Expected Ubuntu distro release ${UBUNTU_VERSION_MAJOR}.04 but image distro is ${IMG_RELEASE}!"
+      echo -e "Expected Ubuntu distro release ${UBUNTU_VERSION_MAJOR}.04 but image distro is ${IMG_RELEASE}!" 1>&2
+      exit 1
     fi
 
     # ....Make python 3 default........................................................................
@@ -202,16 +203,19 @@ ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
 RUN <<EOF
+    apt-get update || exit 1
+
     # ....Reinstall l4t image package in amd64 image...............................................
-    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
-        apt-get update  \
-        && echo "..general install related........."  \
-        && apt-get install --assume-yes --no-install-recommends \
-            build-essential \
+    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+
+        echo "..general install related........."
+        apt-get install --assume-yes --no-install-recommends \
             software-properties-common \
             apt-transport-https \
+            apt-utils \
             ca-certificates \
             lsb-release \
+            build-essential \
             pkg-config \
             gnupg \
             git \
@@ -220,19 +224,23 @@ RUN <<EOF
             nano \
             zip \
             unzip \
-        && echo "..pytorch install related........."  \
-        && apt-get install --assume-yes --no-install-recommends \
+            || exit 1
+
+        echo "..pytorch install related........."
+        apt-get install --assume-yes --no-install-recommends \
             libopenblas-dev \
             libopenmpi-dev \
             openmpi-bin \
             openmpi-common \
             gfortran \
             libomp-dev \
-        && rm -rf /var/lib/apt/lists/* \
-        && apt-get clean \
-        && pip3 install --no-cache-dir \
+            || exit 1
+
+        pip3 install --no-cache-dir \
             scikit-build  \
-            ninja ; \
+            ninja \
+           || exit 1
+
     fi
 
     # ....Install l4t image ubuntu apt requirement.................................................
@@ -240,22 +248,21 @@ RUN <<EOF
     #   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
     #
     # Requirement for 'pycairo' which is required by 'pycuda'
-    apt-get update  \
-    && apt-get install --assume-yes --no-install-recommends \
+    apt-get install --assume-yes --no-install-recommends \
       libcairo2-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
-
+      || exit 1
 
     # ....Install l4t image python requirement from file...........................................
     # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
     pip3 install --no-cache-dir nvidia-pyindex
 
-    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
-        echo "Strip versions from requirement"  \
-        && sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt  \
-        && rm /requirements.l4t-base-image.txt.bak \
-        && pip3 install -r /requirements.l4t-base-image.txt ; \
+    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+        echo "Strip versions from requirement"
+        sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt
+        pip3 install -r /requirements.l4t-base-image.txt || exit 1
+
+        # Clean up sed tmp file
+        rm /requirements.l4t-base-image.txt.bak
     fi
 
     # Explicit install step for torch2trt and tensorrt (ref task TASK)
@@ -267,12 +274,15 @@ RUN <<EOF
     #
 
     # pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
-    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
-        cd /opt \
-        && git clone https://github.com/NVIDIA-AI-IOT/torch2trt \
-        && cd torch2trt \
-        && python3 setup.py install ; \
+    if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+        cd /opt
+        git clone https://github.com/NVIDIA-AI-IOT/torch2trt
+        cd torch2trt
+        python3 setup.py install || exit 1
     fi
+
+    rm -rf /var/lib/apt/lists/*
+    apt-get clean
 EOF
 
 FROM --platform=linux/arm64 base-image-arm64 AS final-arm64
@@ -318,7 +328,7 @@ RUN <<EOF
         test -n ${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'} && \
         test -n ${PATH:?'Environment variable was not passed from base-image build stage'} && \
         test -n ${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'} ;
-      } || { echo "Missing required environment variables!" ; exit 1 ; }
+      } || { echo "Missing required environment variables!" 1>&2 ; exit 1 ; }
   fi
 EOF
 
@@ -342,7 +352,7 @@ RUN echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set i
 # Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 #       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
 RUN <<EOF
-    n2st::print_msg "Ubuntu version is $( source /etc/lsb-release && echo ${DISTRIB_CODENAME})"
+    echo -e "Ubuntu version is $( source /etc/lsb-release && echo ${DISTRIB_CODENAME})"
 
     echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}"
     echo -e "DEV introspection\n
@@ -352,7 +362,7 @@ RUN <<EOF
     Real build target architecture: $(uname -m)\n"
 
     if [[ "${TARGETPLATFORM}" =~ "linux/arm64".* ]] && [[ "$(uname --machine)" == "x86_64" ]]; then
-        echo "[DN-build-system ERROR] Test stage architecture missmatch!"
+        echo "[DN-build-system ERROR] Test stage architecture missmatch!" 1>&2
         exit 1
     fi
 EOF

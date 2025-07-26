@@ -1,7 +1,9 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
+ARG DEBIAN_FRONTEND=noninteractive
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+ARG DEBIAN_FRONTEND
 
 RUN touch /requirements.l4t-base-image.txt \
     && pip3 list --format freeze --not-required  \
@@ -20,6 +22,7 @@ RUN rm --recursive --force /ros_deep_learning \
 
 ## (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
 FROM scratch AS squash-base-image
+ARG DEBIAN_FRONTEND
 #FROM nvcr.io/nvidia/l4t-jetpack:${TAG_OS_VERSION:?err} AS squash-base-image
 #FROM nvcr.io/nvidia/l4t-base:${TAG_OS_VERSION:?err} AS squash-base-image # ToDo: validate using l4t-base instead of l4t-jetson
 #FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
@@ -108,6 +111,7 @@ ENV JUPYTER_PORT=${JUPYTER_PORT}
 
 
 FROM squash-base-image AS ros2-python-compatible
+ARG DEBIAN_FRONTEND
 #FROM squash-base-image AS final-arm64
 
 ## Note on anaconda cases:
@@ -156,6 +160,7 @@ RUN python3 -m pip install --upgrade pip \
 
 
 FROM --platform="linux/amd64" ros2-python-compatible AS final-amd64
+ARG DEBIAN_FRONTEND
 
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
@@ -298,7 +303,7 @@ RUN echo "Quickhack for the 'DeprecationWarning: pkg_resources is deprecated as 
 FROM --platform="linux/arm64" ros2-python-compatible AS final-arm64
 
 FROM --platform=${TARGETPLATFORM} final-${TARGETARCH} AS test
-
+ARG DEBIAN_FRONTEND
 ARG TARGETPLATFORM
 ARG TARGETARCH
 

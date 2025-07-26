@@ -26,14 +26,16 @@ ENV LIBGL_ALWAYS_INDIRECT=1
 #    # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 
 RUN <<EOF
-  apt-get update \
+  {
+    apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
             libgl1-mesa-dev \
             libglu1-mesa-dev \
             fontconfig \
             libfreetype6-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean ;
+  } || exit 1
 
 
 ## ....F1TENTH install.............................................................................
@@ -56,7 +58,8 @@ RUN <<EOF
     pip3 install --upgrade \
         'pip<24.1' \
         'wheel==0.38.4' \
-        'setuptools==65.5.1'
+        'setuptools==65.5.1' \
+        || exit 1
 
     ## (Priority) ToDo: temporary hack >> delete next line ← when solved
     # rm -f -r /opt/f1tenth_gym
@@ -68,16 +71,17 @@ RUN <<EOF
 #   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools
 #   - f110_gym need to be installed in editable mode because there is curently no MANIFESTE.in file
 #       which prevent some required assets (e.g. maps/) to be included in the install path
-    cd /opt \
-    && git clone https://github.com/f1tenth/f1tenth_gym.git \
-    && cd ./f1tenth_gym  \
-    && pip3 install -e . --config-settings editable_mode=compat
+    cd /opt
+    git clone https://github.com/f1tenth/f1tenth_gym.git
+    cd ./f1tenth_gym
+    pip3 install -e . --config-settings editable_mode=compat || exit 1
 
 
     # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
     # See known issues comment https://github.com/f1tenth/f1tenth_gym
     pip3 install --no-cache-dir --upgrade 'pyglet<1.5.11'
     #pip3 install --no-cache-dir --upgrade 'pyglet!=1.5.11'
+
 EOF
 
 

@@ -27,7 +27,6 @@ RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
       "ros-${ROS_DISTRO:?err}-rosbridge-server" \
       "ros-${ROS_DISTRO}-slam-toolbox" \
-    && apt-get autoremove -y \
     && apt-get clean
 
 #      cifs-utils \
@@ -82,7 +81,6 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
             libv4l-dev \
             v4l-utils \
             qv4l2 \
-        && apt-get autoremove -y \
         && apt-get clean \
         && n2st::teamcity_service_msg_blockClosed_v2 "Install opencv apt requirement" \
         && n2st::teamcity_service_msg_blockOpened "Download opencv" \
@@ -233,7 +231,6 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
       "ros-${ROS_DISTRO}-laser-filters" \
-    && apt-get autoremove -y \
     && apt-get clean
 
 #
