@@ -3,8 +3,8 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
-ARG UBUNTU_VERSION_MAJOR
 FROM --platform=linux/arm64 ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+ARG UBUNTU_VERSION_MAJOR
 
 # ....Fetch pip installed packages list............................................................
 RUN touch /requirements.l4t-base-image.txt \
@@ -158,9 +158,10 @@ ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 SHELL ["/bin/bash", "-c"]
 
+ARG UBUNTU_VERSION_MAJOR
 RUN <<EOF
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
-    if [[ "${UBUNTU_VERSION_MAJOR}.04" != "${IMG_RELEASE}" ]]; then
+    if [[ "${UBUNTU_VERSION_MAJOR:?err}.04" != "${IMG_RELEASE}" ]]; then
       echo -e "Expected Ubuntu distro release ${UBUNTU_VERSION_MAJOR}.04 but image distro is ${IMG_RELEASE}!" 1>&2
       exit 1
     fi
