@@ -44,7 +44,7 @@ RUN <<EOF
     #     powerline-status
     #
     #apt-get update \
-    #    && apt-get install -y --no-install-recommends  \
+    #    && apt-get install --assume-yes --no-install-recommends  \
     #      fonts-powerline \
     #    && rm -rf /var/lib/apt/lists/*
 

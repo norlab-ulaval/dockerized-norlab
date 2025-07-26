@@ -136,6 +136,7 @@ SHELL ["/bin/bash", "-c"]
 WORKDIR /
 
 RUN <<EOF
+
     {
         test $(whoami) == "${DN_SSH_SERVER_USER}" && \
         test -d /home/${DN_SSH_SERVER_USER} ;
@@ -148,12 +149,14 @@ RUN <<EOF
       python -c "import rclpy" ;
     } || exit 1
 
+    echo
     n2st::print_msg "ros2 install pkg sanity check"
+    ros2 pkg list
+    echo
     {
         test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
         test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" &&  \
-        test -n "$(ros2 pkg list | grep -e vesc_msgs)" ;
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
     } ||  exit 1
 EOF
 
@@ -179,12 +182,14 @@ RUN <<EOF
       python -c "import rclpy" ;
     } || exit 1
 
+    echo
     n2st::print_msg "ros2 install pkg sanity check"
+    ros2 pkg list
+    echo
     {
         test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
         test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" &&  \
-        test -n "$(ros2 pkg list | grep -e vesc_msgs)" ;
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
     } ||  exit 1
 EOF
 

@@ -2,54 +2,56 @@
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-custom-install
-
-# (CRITICAL) ToDo: on task NMO-584 end >> delete this line ←
-#ARG IS_TEAMCITY_RUN
-#ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
-#
-#SHELL ["/bin/bash", "-c"]
-#ARG DEBIAN_FRONTEND=noninteractive
-#
-#ENV TZ=Etc/UTC
-#ENV TERM=${TERM:-"xterm-256color"}
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG DEBIAN_FRONTEND=noninteractive
 
 # ====Begin install================================================================================
 WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN <<EOF
-    pip3 install --no-cache-dir  \
-        transforms3d
-
+    # Install dependencies
     apt-get update
-    apt-get update --fix-missing
-    apt-get upgrade -y
+    apt-get upgrade --assume-yes
+
+    apt-get install --assume-yes --no-install-recommends \
+        ros-${ROS_DISTRO}-rosbridge-msgs \
+        python3-tornado \
+        python3-bson \
+        python3-pymongo \
+        || exit 1
+
+    pip3 install --no-cache-dir  \
+        transforms3d \
+        || exit 1
 
     # Quickhack: reinstall 'robot-state-publisher' to solved the 'process has died' error"
-    apt-get install -y ros-${ROS_DISTRO}-robot-state-publisher
+    apt-get install --assume-yes --no-install-recommends \
+        ros-${ROS_DISTRO}-robot-state-publisher \
+        || exit 1
 
-    apt-get install -y \
-      ros-${ROS_DISTRO}-rviz2 \
-      ros-${ROS_DISTRO}-rviz-visual-tools \
-      ros-${ROS_DISTRO}-nav2-rviz-plugins \
-      ros-${ROS_DISTRO}-rqt-graph \
-      libqt5svg5
+    apt-get install --assume-yes --no-install-recommends \
+        ros-${ROS_DISTRO}-rviz-visual-tools \
+        ros-${ROS_DISTRO}-nav2-rviz-plugins \
+        libqt5svg5 \
+        || exit 1
 
-    apt-get autoremove -y
-    apt-get clean
 
     # ....install ROS2 specific utilities..............................................................
     pip3 install --no-cache-dir \
-          osrf-pycommon \
-          rosbags \
-          rosbags-dataframe \
-          rosbag-tools[plot]
+        osrf-pycommon \
+        rosbags \
+        rosbags-dataframe \
+        rosbag-tools[plot] \
+        || exit 1
 
-    apt-get update --fix-missing
-    apt-get install --assume-yes \
+    apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO:?err}-ackermann-msgs \
-        ros-${ROS_DISTRO}-vesc-msgs \
         ros-${ROS_DISTRO}-rosbridge-msgs \
-        ros-${ROS_DISTRO}-urg-node-msgs
+        ros-${ROS_DISTRO}-urg-node-msgs \
+        || exit 1
+
+    apt-get autoremove -y
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
@@ -59,30 +61,18 @@ EOF
 # # Require python >= 3.10
 # ros2-numpy
 
-## . . ros2_jetson_stats. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#WORKDIR ${DN_DEV_WORKSPACE}/src
-#RUN git clone --branch ${ROS_DISTRO} https://github.com/NVIDIA-AI-IOT/ros2_jetson_stats.git
-#
-#WORKDIR ${DN_DEV_WORKSPACE}
-#RUN apt-get update \
-#    && /bin/bash -c "pip install --upgrade jetson-stats" \
-#    && /bin/bash -c "source ${DN_DEV_WORKSPACE}/install/setup.bash" \
-#    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --default-yes --os=ubuntu:jammy \
-#    && rm -rf /var/lib/apt/lists/*
-
 # ====Build ROS2 workspace=========================================================================
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 RUN <<EOF
 
-    apt-get update --fix-missing
+    apt-get update
     rosdep update --rosdistro ${ROS_DISTRO}
     rosdep fix-permissions
     rosdep install \
         --ignore-packages-from-source \
         --from-path ./src  \
         --rosdistro ${ROS_DISTRO}  \
-        -y
+        -y \
+        || exit 1
 
     colcon version-check
 

@@ -39,6 +39,7 @@ TESTED_FILE_PATH="dockerized-norlab-scripts/build_script"
 
 TEST_DOCKER_COMPOSE_FILE_PATH=dockerized-norlab-images/core-images/base-images/l4t-images
 TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.l4t-squash.build.yaml"
+#TEST_DOCKER_COMPOSE_FILE_PATH=dockerized-norlab-images/core-images/base-images/ros2-install
 #TEST_DOCKER_COMPOSE_FILE="${TEST_DOCKER_COMPOSE_FILE_PATH}/docker-compose.ros2.build.yaml"
 
 setup_file() {
@@ -51,6 +52,11 @@ setup_file() {
 
 setup() {
   source "import_dockerized_norlab_tools.bash" || exit 1
+
+  set +o allexport
+  source "${BATS_DOCKER_WORKDIR}/build_matrix_config/test/.env.build_matrix.main.mock"
+  source "${BATS_DOCKER_WORKDIR}/build_matrix_config/test/.env.build_matrix.mock"
+  set -o allexport
 
   cd "${BATS_DOCKER_WORKDIR}" || exit 1
 }

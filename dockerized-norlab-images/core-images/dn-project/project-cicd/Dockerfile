@@ -16,13 +16,18 @@ RUN echo "Pre-condition checks" && { \
 
 # ===install teamcity & CI/CD utilities============================================================
 
-RUN pip3 install --no-cache-dir  --upgrade pip
-RUN pip3 install --no-cache-dir teamcity-messages
+RUN <<EOF
+    pip3 install --no-cache-dir  --upgrade pip
+    pip3 install --no-cache-dir teamcity-messages
 
-RUN ( \
-  echo "Configure Matplotlib to use a non-interactive backends for TeamCity run"; \
-  echo "backend : Agg" >> /etc/matplotlibrc; \
-)
+    if [[ -f "/etc/matplotlibrc" ]]; then
+        if grep -q 'backend : Agg' "/etc/matplotlibrc" 2>/dev/null; then
+            echo "Configure Matplotlib to use a non-interactive backends for TeamCity run"
+            echo "backend : Agg" >> /etc/matplotlibrc
+        fi
+    fi
+EOF
+
 
 # ====Execute tests================================================================================
 FROM norlab-teamcity-cicd-setup AS execute-tests

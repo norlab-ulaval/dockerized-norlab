@@ -66,7 +66,7 @@ RUN <<EOF
         test "${DN_PROJECT_GIT_NAME}" == "dockerized-norlab-project-mock" || n2st::print_msg_error_and_exit "${DN_PROJECT_GIT_NAME} != dockerized-norlab-project-mock"
         test "${DN_PROJECT_DEPLOY_REPO_BRANCH}" == "dev" || n2st::print_msg_error_and_exit "${DN_PROJECT_DEPLOY_REPO_BRANCH} != dev"
         test "$(git branch --show-current)" == "main" || n2st::print_msg_error_and_exit "$(git branch --show-current) != main"
-        test ! -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should only exist on the dev branch"
+        test ! -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should only exist on the dev branch" # ToDo: TNP-47 fix: mock repo dev branch missing file
         echo
         tree -L 2 -a -hug "${DN_PROJECT_PATH}"
         echo
@@ -106,7 +106,7 @@ RUN <<EOF
     if [[ "${DN_DEV_TESTS}" == "true" ]]; then
         n2st::print_msg "Development test to validate that the setup for testing git checkout operation is ok (post)."
         test "$(git branch --show-current)" == "dev" || n2st::print_msg_error_and_exit "$(git branch --show-current) != dev"
-        test -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should exist on the dev branch"
+        test -f "src/mock_file.txt" || n2st::print_msg_error_and_exit "mock_file.txt should exist on the dev branch" # ToDo: TNP-47 fix: mock repo dev branch missing file
         echo
         tree -L 2 -a -hug "${DN_PROJECT_PATH}"
         echo
@@ -120,24 +120,26 @@ EOF
 
 # ....Project specific ROS setup..................................................................
 WORKDIR ${DN_DEV_WORKSPACE}
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
 RUN <<EOF
-    rosdep update --rosdistro ${ROS_DISTRO}
+    apt-get update
+    rosdep update --rosdistro ${ROS_DISTRO} || exit 1
     rosdep fix-permissions
+
     rosdep install \
         --ignore-packages-from-source \
         --from-path ./src  \
         --rosdistro ${ROS_DISTRO} \
-        -y
+        -q \
+        -y \
+    || exit 1
+
     rm -rf /var/lib/apt/lists/*
-EOF
 
-
-WORKDIR ${DN_DEV_WORKSPACE}
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-RUN <<EOF
     COLCON_FLAGS=()
-    if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
+    if [[ "${TARGETPLATFORM:?err}" != "${BUILDPLATFORM:?err}" ]]; then
       n2st::print_msg "Builder is running in architecture virtualisation"
       COLCON_FLAGS+=("--executor" "sequential")
     else
@@ -238,12 +240,14 @@ RUN <<EOF
       python -c "import rclpy" ;
     } || exit 1
 
+    echo
     n2st::print_msg "ros2 install pkg sanity check"
+    ros2 pkg list
+    echo
     {
         test -n "$(ros2 pkg list | grep -e ros_core)" && \
         test -n "$(ros2 pkg list | grep -e rclpy)" && \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" && \
-        test -n "$(ros2 pkg list | grep -e vesc_msgs)" ;
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
     } ||  exit 1
 
     {

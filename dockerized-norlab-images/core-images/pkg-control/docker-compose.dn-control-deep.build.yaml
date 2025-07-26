@@ -10,6 +10,7 @@ services:
     extends:
       file: "../global/docker-compose.global.yaml"
       service: global-service-builder-config
+    pull_policy: build
     build:
       context: dn-control-deep-learning
       args:
@@ -97,15 +98,3 @@ services:
     depends_on:
       - dn-control-deep-rl-f1tenth-gym-tester
 
-
-
-#  dn-control-torchrl:
-#    extends:
-#      service: dn-control-deep-rl-openai-gym
-#    build:
-#      context: dn-control-torchrl
-#      args:
-#        BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl
-#    image: ${DN_HUB:?err}/dockerized-norlab-control-torchrl:${DN_IMAGE_TAG:?err}
-#    depends_on:
-#      - dn-control-deep-rl

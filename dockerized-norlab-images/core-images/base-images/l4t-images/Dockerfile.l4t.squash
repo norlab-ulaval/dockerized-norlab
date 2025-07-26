@@ -3,6 +3,7 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
+ARG UBUNTU_VERSION_MAJOR
 FROM --platform=linux/arm64 ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
 
 # ....Fetch pip installed packages list............................................................
@@ -93,6 +94,13 @@ ENV OPENBLAS_CORETYPE=${OPENBLAS_CORETYPE}
 ARG TORCH_HOME
 ENV TORCH_HOME=${TORCH_HOME}
 
+# The following pytorch related appeared in dustynv/cuda:12.2-r36.*
+# Ref https://github.com/dusty-nv/jetson-containers/blob/master/packages/cuda/cuda/Dockerfile
+ARG TORCH_NVCC_FLAGS
+ARG TORCH_CUDA_ARCH_LIST
+ENV TORCH_NVCC_FLAGS=${TORCH_NVCC_FLAGS}
+ENV TORCH_CUDA_ARCH_LIST=${TORCH_CUDA_ARCH_LIST}
+
 ## Env var added by jetson-container tensorflow related base images
 #ARG PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
 #ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=${PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION}
@@ -100,6 +108,25 @@ ENV TORCH_HOME=${TORCH_HOME}
 # Env var added by jetson-container 'dustynv/ros' base images
 ARG LD_PRELOAD
 ENV LD_PRELOAD=${LD_PRELOAD}
+
+# The following cuda related appeared in dustynv/cuda:12.2-r36.*
+# Ref https://github.com/dusty-nv/jetson-containers/blob/master/packages/cuda/cuda/Dockerfile
+ARG CMAKE_CUDA_COMPILER
+ARG CUDA_BIN_PATH
+ARG CUDAARCHS
+ARG CUDACXX
+ARG CUDA_TOOLKIT_ROOT_DIR
+ARG NVCC_PATH
+ARG CUDA_NVCC_EXECUTABLE
+ARG CUDA_ARCHITECTURES
+ENV CMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+ENV CUDA_BIN_PATH=${CUDA_BIN_PATH}
+ENV CUDAARCHS=${CUDAARCHS}
+ENV CUDACXX=${CUDACXX}
+ENV CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+ENV NVCC_PATH=${NVCC_PATH}
+ENV CUDA_NVCC_EXECUTABLE=${CUDA_NVCC_EXECUTABLE}
+ENV CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
 
 # ....copy ALL artifact from base-image............................................................
 COPY --from=base-image / /
@@ -132,9 +159,14 @@ ENV TERM=${TERM:-"xterm-256color"}
 SHELL ["/bin/bash", "-c"]
 
 RUN <<EOF
+    IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
+    if [[ "${UBUNTU_VERSION_MAJOR}.04" != "${IMG_RELEASE}" ]]; then
+      n2st::print_msg_error_and_exit "Expected Ubuntu distro release ${UBUNTU_VERSION_MAJOR}.04 but image distro is ${IMG_RELEASE}!"
+    fi
+
     # ....Make python 3 default........................................................................
     apt-get update \
-    &&  apt-get install -y --no-install-recommends \
+    && apt-get install --assume-yes --no-install-recommends \
       gcc \
       python3-dev \
       python3-pip \
@@ -174,7 +206,7 @@ RUN <<EOF
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then \
         apt-get update  \
         && echo "..general install related........."  \
-        && apt-get install -y --no-install-recommends \
+        && apt-get install --assume-yes --no-install-recommends \
             build-essential \
             software-properties-common \
             apt-transport-https \
@@ -189,7 +221,7 @@ RUN <<EOF
             zip \
             unzip \
         && echo "..pytorch install related........."  \
-        && apt-get install -y --no-install-recommends \
+        && apt-get install --assume-yes --no-install-recommends \
             libopenblas-dev \
             libopenmpi-dev \
             openmpi-bin \
@@ -209,7 +241,7 @@ RUN <<EOF
     #
     # Requirement for 'pycairo' which is required by 'pycuda'
     apt-get update  \
-    && apt-get install -y \
+    && apt-get install --assume-yes --no-install-recommends \
       libcairo2-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
@@ -257,6 +289,7 @@ ARG BUILDPLATFORM
 
 CMD [ "bash" ]
 
+
 FROM --platform=${TARGETPLATFORM} final-${TARGETARCH} AS test
 ARG TARGETPLATFORM
 ARG TARGETARCH
@@ -275,6 +308,19 @@ RUN echo -e "Current python version: $(python --version)" \
         && echo -e "Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict" \
         && exit 1 ; \
     fi
+
+RUN <<EOF
+  if [[ ${TARGETPLATFORM} =~ "linux/arm64".* ]]; then
+      printenv
+      {
+        test -n ${CUDA_HOME:?'Environment variable was not passed from base-image build stage'} && \
+        test -n ${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage'} && \
+        test -n ${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'} && \
+        test -n ${PATH:?'Environment variable was not passed from base-image build stage'} && \
+        test -n ${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'} ;
+      } || { echo "Missing required environment variables!" ; exit 1 ; }
+  fi
+EOF
 
 RUN echo "Check CUDA installed version" \
     && nvcc --version | grep "release" | awk '{print $6}' | cut -c2-
@@ -295,13 +341,18 @@ RUN echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set i
 
 # Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 #       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
-RUN echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}" \
-    && echo -e "DEV introspection\n\n \
-        Buildx env\n \
-          BUILDPLATFORM: ${BUILDPLATFORM}\n \
-          TARGETPLATFORM: ${TARGETPLATFORM}\n \
-        Real build target architecture: $(uname -m)\n" \
-    && if [[ "${TARGETPLATFORM}" =~ "linux/arm64".* ]] && [[ "$(uname --machine)" == "x86_64" ]]; then \
-          echo "[DN-build-system ERROR] Test stage architecture missmatch!" && exit 1 ; \
-       fi
+RUN <<EOF
+    n2st::print_msg "Ubuntu version is $( source /etc/lsb-release && echo ${DISTRIB_CODENAME})"
 
+    echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}"
+    echo -e "DEV introspection\n
+    Buildx env
+      BUILDPLATFORM: ${BUILDPLATFORM}
+      TARGETPLATFORM: ${TARGETPLATFORM}
+    Real build target architecture: $(uname -m)\n"
+
+    if [[ "${TARGETPLATFORM}" =~ "linux/arm64".* ]] && [[ "$(uname --machine)" == "x86_64" ]]; then
+        echo "[DN-build-system ERROR] Test stage architecture missmatch!"
+        exit 1
+    fi
+EOF

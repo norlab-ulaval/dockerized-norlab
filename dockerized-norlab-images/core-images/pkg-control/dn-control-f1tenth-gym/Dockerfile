@@ -26,8 +26,8 @@ ENV LIBGL_ALWAYS_INDIRECT=1
 #    # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 
 RUN <<EOF
-  apt-get update --fix-missing \
-    && apt-get install --assume-yes \
+  apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
             libgl1-mesa-dev \
             libglu1-mesa-dev \
             fontconfig \
@@ -76,8 +76,8 @@ RUN <<EOF
 
     # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
     # See known issues comment https://github.com/f1tenth/f1tenth_gym
-    pip3 install --no-cache-dir --upgrade  \
-    'pyglet<1.5.11'
+    pip3 install --no-cache-dir --upgrade 'pyglet<1.5.11'
+    #pip3 install --no-cache-dir --upgrade 'pyglet!=1.5.11'
 EOF
 
 

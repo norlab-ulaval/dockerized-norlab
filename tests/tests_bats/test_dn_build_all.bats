@@ -121,7 +121,7 @@ teardown() {
   assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main".*"\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}".*"\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
 
 
-  assert_output --regexp "\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=".*"v0.3.0 hot".*"NBS_MATRIX_SUPPORTED_OS=".*"l4t".*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS=".*"r11.1.1 r22.2.2".*"NBS_MATRIX_L4T_BASE_IMAGES=".*"dustynv/l4t: dustynv/pytorch:2.1".*
+  assert_output --regexp "\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=".*"v0.3.0 hot".*"NBS_MATRIX_SUPPORTED_OS=".*"l4t".*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS=".*"r35.4.1 r36.4.0".*"NBS_MATRIX_L4T_BASE_IMAGES=".*"dustynv/l4t: dustynv/pytorch:2.1".*
 
   assert_output --regexp "Starting".*"dn_execute_compose.bash".*"\[DN-build-system\]".*"Environment variables set for compose:".*"REPOSITORY_VERSION=v0.3.0"
 #
@@ -135,16 +135,16 @@ teardown() {
                             --ci-test-force-runing-docker-cmd \
                             --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                             --os-name-build-matrix-override 'l4t' \
-                            --l4t-version-build-matrix-override 'r33.3.3'
+                            --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_success
   assert_output --regexp .*"docker compose -f".*"build".*
 
-  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
-#  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-2.1-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-r35.4.1".*
+#  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-2.1-r35.4.1".*
 
-  refute_output --regexp .*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
-#  refute_output --regexp .*"DN-v0.3.0-foxy-core-pytorch-2.1-2.1-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
+#  refute_output --regexp .*"DN-v0.3.0-foxy-core-pytorch-2.1-2.1-r35.4.1".*
 
 }
 
@@ -156,7 +156,7 @@ teardown() {
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
                          --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                          --os-name-build-matrix-override 'l4t' \
-                         --l4t-version-build-matrix-override 'r33.3.3'
+                         --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
 
@@ -164,7 +164,7 @@ teardown() {
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
                          --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                          --os-name-build-matrix-override 'l4t' \
-                         --l4t-version-build-matrix-override 'r33.3.3'
+                         --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
 
@@ -179,7 +179,7 @@ teardown() {
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
                          --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                          --os-name-build-matrix-override 'l4t' \
-                         --l4t-version-build-matrix-override 'r33.3.3'
+                         --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
 
@@ -191,7 +191,7 @@ teardown() {
   run source ./${TESTED_FILE_PATH}/$TESTED_FILE \
                          --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                          --os-name-build-matrix-override 'l4t' \
-                         --l4t-version-build-matrix-override 'r33.3.3'
+                         --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_output --regexp "FINAL › Build matrix completed with command".*"docker compose -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
 
@@ -206,7 +206,7 @@ teardown() {
                         --buildx-bake \
                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                         --os-name-build-matrix-override 'l4t' \
-                        --l4t-version-build-matrix-override 'r33.3.3'
+                        --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_output --regexp "FINAL › Build matrix completed with command".*"docker buildx bake -f dockerized-norlab-images/core-images/dependencies/docker-compose.dn-dependencies.build.yaml ${NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG}".*"Service crawled"
 

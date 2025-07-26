@@ -12,7 +12,8 @@ RUN <<EOF
         pandas \
         Cython \
         numpy\
-        numba
+        numba \
+    || exit 1
 
     ## ...Configure Matplotlib to use a non-interactive backends for TeamCity run..................
     ## Procedure to fix NLSAR-343 ﹅→ `ModuleNotFoundError` when using pyplot & `couldn't connect to display`
@@ -31,8 +32,12 @@ RUN <<EOF
     # Hack to install matplotlib on arm64 and it's required module tkinter
     apt-get update
     apt-get install --assume-yes --no-install-recommends \
-          python3-matplotlib \
-          python3-tk
+        python3-matplotlib \
+        python3-tk \
+      || exit 1
+
+    apt-get autoremove -y
+    apt-get clean
     rm -rf /var/lib/apt/lists/*
 
 EOF

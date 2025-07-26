@@ -134,7 +134,7 @@ function dn::show_debug_build_information() {
   echo "_PATH_TO_SCRIPT=$(printenv _PATH_TO_SCRIPT)"
   echo -e "\n============================================================================Debug breakpoint==="
   echo -e "===============================================================================================\n"
-  n2st::teamcity_service_msg_blockClosed "DN show_debug_build_information"
+  n2st::teamcity_service_msg_blockClosed_v2 "DN show_debug_build_information"
 
   if [[ ${BREAKPOINT_BEAVIOUR} == true ]]; then
     n2st::print_msg_error_and_exit "debug breakpoint"

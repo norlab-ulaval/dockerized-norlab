@@ -9,8 +9,8 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS build-norlab-perception-ros-st
 # ====Requirement==================================================================================
 WORKDIR ${DN_DEV_WORKSPACE:?'Variable not set'}/src/
 
-RUN apt-get update --fix-missing \
-    && apt-get install --assume-yes \
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
           ros-${ROS_DISTRO:?err}-geometry2 \
           ros-${ROS_DISTRO}-tf2 \
           ros-${ROS_DISTRO}-tf2-ros \
@@ -54,8 +54,8 @@ RUN wget -O demo.zip "http://norlab.s3.valeria.science/demo.zip?AWSAccessKeyId=X
 
 
 # (Priority) ToDo: assess moving rosbag install earlier
-RUN apt-get update --fix-missing \
-    && apt-get install --assume-yes \
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-rosbag2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -67,7 +67,7 @@ RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
     && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
     && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-    && apt-get update --fix-missing \
+    && apt-get update \
     && rosdep update --rosdistro ${ROS_DISTRO} \
     && rosdep fix-permissions \
     && rosdep install  \

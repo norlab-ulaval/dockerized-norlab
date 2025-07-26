@@ -10,10 +10,8 @@
 ##      rllib: https://docs.ray.io/en/latest/rllib/index.html
 ##      tune:  https://docs.ray.io/en/latest/tune/index.html
 ##      installation: https://docs.ray.io/en/latest/ray-overview/installation.html#
-##  - tensordict › https://github.com/pytorch-labs/tensordict
 
-ray
-tensordict
+ray[tune,serve]
 
 # ====Visualization and MLops======================================================================================
 ## Doc:
@@ -27,3 +25,10 @@ omegaconf
 hydra-core
 hydra-submitit-launcher
 
+# ====Torch related================================================================================
+# Torch related utilities
+torchinfo
+
+# TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics
+# https://lightning.ai/docs/torchmetrics/stable/
+torchmetrics

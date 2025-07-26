@@ -15,45 +15,55 @@ COPY --from=context-dn-container-tools ./dn_test/try_gym.py /dockerized-norlab/d
 #           ↳ |  require xvfb and python-opengl
 #   gym VideoRecorder dependency: ffmpeg and imageio-ffmpeg
 
-#    && apt-get install --assume-yes --no-install-recommends \
-RUN apt-get update \
-    && apt-get install --assume-yes \
-        swig \
-        mesa-utils \
-        ffmpeg \
-    && echo ". .pyvirtualdisplay dependencies and backends on Ubuntu 20.04 . . ." \
-    && apt-get install --assume-yes \
-        xvfb \
-        python-opengl \
-        xserver-xephyr \
-        tigervnc-standalone-server \
-        x11-utils \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir --upgrade pip  \
-    && echo ". . Vizualisation tools. . . . . . . . . . . . . . . . . . . . . . .." \
-#    && pip3 install --no-cache-dir --upgrade Cython \
-    && echo ">>> pip cython $( pip list | grep -i cython )" \
-    && pip3 install --no-cache-dir  \
+RUN <<EOF
+
+    apt-get update \
+        && apt-get install --assume-yes  --no-install-recommends \
+            swig \
+            mesa-utils \
+            ffmpeg
+
+    echo "pyvirtualdisplay dependencies and backends on Ubuntu 20.04"
+    apt-get install --assume-yes  --no-install-recommends \
+            xvfb \
+            python3-opengl \
+            xserver-xephyr \
+            tigervnc-standalone-server \
+            x11-utils \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
+
+    pip3 install --no-cache-dir --upgrade pip
+
+    echo "Vizualisation tools"
+
+    #    && pip3 install --no-cache-dir --upgrade Cython \
+    echo ">>> pip cython $( pip list | grep -i cython )"
+    pip3 install --no-cache-dir  \
         pyvirtualdisplay \
-        imageio-ffmpeg  \
-#        PyOpenGL \
-#        PyOpenGL_accelerate \
-    && echo ". . Gym depencies . . . . . . . . . . . . . . . . . . . . . . . . . ." \
-    && pip3 install --no-cache-dir  \
+        imageio-ffmpeg
+
+        #PyOpenGL \
+        #PyOpenGL_accelerate
+
+    echo "Gym depencies"
+    pip3 install --no-cache-dir  \
         gym[classic_control,box2d]  \
         pyglet \
-        box2d-py \
-    && echo ". . Jupyter + gym related . . . . . . . . . . . . . . . . . . . . . ." \
-    && pip3 install --no-cache-dir  \
+        box2d-py
+
+    echo "Jupyter + gym related"
+
+    pip3 install --no-cache-dir  \
         jupyterlab \
         notebook \
-        gym-notebook-wrapper \
-    && echo \
-    && echo ". . Sanity check . . . . . . . . . . . . . . . . . . . . . . . . . .." \
-    && python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py \
-    && echo \
-    && ( \
-        echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
-        ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+        gym-notebook-wrapper
 
+    echo "Sanity check"
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py
+
+    ( \
+      echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+
+EOF

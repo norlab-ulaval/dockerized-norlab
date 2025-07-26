@@ -80,16 +80,16 @@ setup_file() {
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${TEST_DOTENV_BUILD_MATRIX_MAIN:?err}" \
                                               --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                                               --os-name-build-matrix-override 'l4t' \
-                                              --l4t-version-build-matrix-override 'r33.3.3'
+                                              --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_success
   assert_output --regexp .*"docker compose -f".*"push".*
 
-  assert_output --regexp .*"DN-v0.2.0-foxy-core-l4t-r33.3.3".*
-#  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
+  assert_output --regexp .*"DN-v0.2.0-foxy-core-l4t-r35.4.1".*
+#  assert_output --regexp .*"DN-v0.2.0-foxy-core-pytorch-2.1-r35.4.1".*
 
-  refute_output --regexp .*"DN-v0.3.0-foxy-core-r11.1.1".*
-#  refute_output --regexp .*"DN-v0.3.0-foxy-core-2.1-r11.1.1".*
+  refute_output --regexp .*"DN-v0.3.0-foxy-core-r35.4.1".*
+#  refute_output --regexp .*"DN-v0.3.0-foxy-core-2.1-r35.4.1".*
 
 #  bats_print_run_env_variable
 }

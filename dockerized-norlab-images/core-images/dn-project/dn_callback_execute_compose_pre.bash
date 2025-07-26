@@ -39,4 +39,6 @@ function dn::callback_execute_compose_pre() {
     }
 
   n2st::print_formated_script_footer "dn_callback_execute_compose_pre.bash" "${MSG_LINE_CHAR_UTIL}"
+
+  return 0
 }

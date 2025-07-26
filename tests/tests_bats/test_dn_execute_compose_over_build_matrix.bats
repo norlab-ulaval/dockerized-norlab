@@ -141,7 +141,7 @@ setup() {
                                               -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS\=\(r11.1.1 r22.2.2\)".*
+  assert_output --regexp .*"NBS_MATRIX_L4T_SUPPORTED_VERSIONS\=\(r35.4.1 r36.4.0\)".*
 #  bats_print_run_env_variable
 }
 
@@ -179,18 +179,18 @@ setup() {
                                           --ci-test-force-runing-docker-cmd \
                                           -- "$DOCKER_CMD"
   assert_success
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-12-py3-focal".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-12-py3-jammy".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-12-py3-focal".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-12-py3-jammy".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-2.1-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-23.12-py3-focal".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-23.12-py3-jammy".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-2.1-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-23.12-py3-focal".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-23.12-py3-jammy".*
 
 #  bats_print_run_env_variable
 }
@@ -208,14 +208,14 @@ setup() {
                                           -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-hot-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-hot-humble-core-pytorch-2.1-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.3.0-humble-core-pytorch-2.1-r36.4.0".*
 #  bats_print_run_env_variable
 }
 
@@ -233,14 +233,14 @@ setup() {
                                                 -- "$DOCKER_CMD"
 #  set -e
   assert_failure
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-pytorch-2.1-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-l4t-r22.2.2".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
-  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-pytorch-2.1-r22.2.2".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Fail".*"DN-hot-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Fail".*"DN-hot-humble-core-pytorch-2.1-r36.4.0".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-core-l4t-r36.4.0".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
+  assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-core-pytorch-2.1-r36.4.0".*
 }
 
 @test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
@@ -272,13 +272,13 @@ setup() {
                                       --ci-test-force-runing-docker-cmd \
                                       --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                                       --os-name-build-matrix-override 'l4t' \
-                                      --l4t-version-build-matrix-override 'r33.3.3'
+                                      --l4t-version-build-matrix-override 'r35.4.1'
   set -e
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-l4t-r33.3.3".*
-  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-pytorch-2.1-r33.3.3".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-l4t-r35.4.1".*
+  assert_output --regexp .*"Pass".*"DN-v0.2.0-foxy-core-pytorch-2.1-r35.4.1".*
 
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r11.1.1".*
-  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r11.1.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-l4t-r35.4.1".*
+  refute_output --regexp .*"Pass".*"DN-v0.3.0-foxy-core-pytorch-2.1-r35.4.1".*
 }
 
 @test "--force-push 'latest' tag sanity check ok" {
@@ -293,7 +293,7 @@ setup() {
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                       --dockerized-norlab-version-build-matrix-override 'latest' \
                                       --os-name-build-matrix-override 'l4t' \
-                                      --l4t-version-build-matrix-override 'r33.3.3'
+                                      --l4t-version-build-matrix-override 'r35.4.1'
 #  set -e
   assert_output --regexp .*"\[".*"DN-build-system error".*"\]".*"The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
 }
@@ -310,7 +310,7 @@ setup() {
   run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
                                       --dockerized-norlab-version-build-matrix-override 'bleeding' \
                                       --os-name-build-matrix-override 'l4t' \
-                                      --l4t-version-build-matrix-override 'r33.3.3'
+                                      --l4t-version-build-matrix-override 'r35.4.1'
 #  set -e
   assert_output --regexp .*"\[".*"DN-build-system error".*"\]".*"The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
 }
@@ -371,7 +371,7 @@ setup() {
   run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}" \
                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                         --os-name-build-matrix-override 'l4t' \
-                        --l4t-version-build-matrix-override 'r33.3.3'
+                        --l4t-version-build-matrix-override 'r35.4.1'
 
   assert_output --regexp .*"\[".*"DN-build-system".*"\]".*"Git fetch tag list".*"v0.2.0".*"v0.3.0".*"\[".*"DN-build-system".*"\]".*"\[".*"DN-build-system warning".*"\]".*"Bats test run › skip \"Execute git checkout\"".*"\[".*"DN-build-system".*"\]".*"Repository curently checkout at".*
 

@@ -34,7 +34,7 @@
 
 **Containerized development workflow for NorLab perception or control projects
 <br>
-leveraging [_docker_](https://www.docker.com) and [_nvidia-docker_](https://github.com/NVIDIA/nvidia-docker)
+leveraging [_docker_](https://www.docker.com) and [_nvidia-docker_](https://github.com/NVIDIA/nvidia-container-toolkit)
 technology.**
 <br>
 <br>

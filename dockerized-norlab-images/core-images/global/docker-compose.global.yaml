@@ -83,6 +83,8 @@ services:
         norlab.dockerized-norlab.project: "dockerized-norlab"
         norlab.tools.norlab-shell-script-tools: "${N2ST_VERSION:?err}"
         norlab.tools.norlab-build-system: "${NBS_VERSION:?err}"
+    # environment:
+    #   TERM: dumb
     init: true  # Propagate exit code (See remark in task NMO-266)
     security_opt: # options needed for gdb debugging
       - seccomp=unconfined
@@ -99,7 +101,7 @@ services:
 #    build:
 #      platforms: !reset []
 
-  # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build
+  # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build <--
   global-service-builder-config:
     extends:
       service: global-service-builder-config-base-images
