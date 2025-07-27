@@ -168,8 +168,8 @@ EOF
 
 RUN <<EOF
     # ....Install ROS2.............................................................................
+    echo "Install ROS2 ${ROS_DISTRO:?err} ${ROS_PKG:?err}..."
 
-    echo "Install ROS2 ${ROS_DISTRO} ${ROS_PKG}..."
     # Note:
     #   - ROS2 doc recommend executing 'apt upgrade' just before installing ros
     #     Ref warning at https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html
@@ -182,7 +182,6 @@ RUN <<EOF
             ros-${ROS_DISTRO}-${ROS_PKG} \
             python3-rosdep ;
      } || exit 1
-    # && dpkg --configure -a \
 
     echo "Manualy installed recommendation from '$ apt-get install ros-${ROS_DISTRO}-${ROS_PKG}'..."
     # (CRITICAL) ToDo: validate it does not produce error in RLRP >> next bloc ↓↓
@@ -282,13 +281,14 @@ WORKDIR ${DN_DEV_WORKSPACE}
 #    --directory-prefix="src/examples" "https://raw.githubusercontent.com/ros2/examples/${ROS_DISTRO}/rclpy" \
 #    && cd src/examples/rclpy || exit 1
 
+## ....Install colcon mixin.....................................................................
+#RUN echo "Install colcon mixin..." \
+#  && colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml \
+#  && colcon mixin update \
+#  && colcon metadata add default https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml \
+#  && colcon metadata update
+
 RUN <<EOF
-    # ....Install colcon mixin.....................................................................
-    echo "Install colcon mixin..."
-    colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml \
-      && colcon mixin update \
-      && colcon metadata add default https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml \
-      && colcon metadata update
 
     # ....Clone ros2 examples......................................................................
     echo "Clone ros2 examples (python only) ..."
@@ -296,8 +296,9 @@ RUN <<EOF
         git clone --depth=1 https://github.com/ros2/examples src/ros2_examples -b ${ROS_DISTRO} && \
         cd src/ros2_examples && \
         git sparse-checkout set --no-cone rclpy/topics/minimal_publisher rclpy/topics/minimal_subscriber && \
-        test -d "rclpy/topics/minimal_publisher" && \
-        test -d "rclpy/topics/minimal_subscriber" ;
+        test -d "./rclpy/topics/minimal_publisher" && \
+        test -d "./rclpy/topics/minimal_subscriber" && \
+        cd "${DN_DEV_WORKSPACE}";
     } || exit 1
 
     # ....Install ros2 examples....................................................................
@@ -314,8 +315,9 @@ RUN <<EOF
     rosdep update --rosdistro "${ROS_DISTRO}" || exit 1
     rosdep fix-permissions
 
-    tree src/ros2_examples
+    tree "${DN_DEV_WORKSPACE}/src/ros2_examples"
 
+    cd "${DN_DEV_WORKSPACE}"
     rosdep install  \
             --ignore-packages-from-source \
             --from-path ./src  \
@@ -361,29 +363,10 @@ ARG BUILDPLATFORM
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
-#RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-#    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-#    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-#    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-#    && echo "Sanity check" \
-#    && echo ROS_VERSION=${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
-#    && echo ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} \
-#    && echo ROS_DISTRO=${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} \
-#    && echo PATH=${PATH} \
-#    && echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
-#    && echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-#    && echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-#    && python -c "import rclpy" \
-#    && ros2 pkg list \
-#    && colcon --log-level error test-result --all --verbose \
-#    || exit 1
-
-    #    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-
 RUN <<EOF
-    echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash"
+    echo "sourcing /opt/ros/${ROS_DISTRO:?err}/setup.bash"
     source /opt/ros/${ROS_DISTRO}/setup.bash
-    echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
+    echo "sourcing ${DN_DEV_WORKSPACE:?err}/install/setup.bash"
     source ${DN_DEV_WORKSPACE}/install/setup.bash
 
     echo "ROS2 install Sanity check"
@@ -395,6 +378,8 @@ RUN <<EOF
     echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'}
     echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}
     echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}
+
+    #echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}
 
     python -c "import rclpy" || exit 1
 
