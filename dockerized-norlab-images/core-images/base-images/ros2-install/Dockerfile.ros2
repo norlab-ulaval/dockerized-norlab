@@ -191,7 +191,6 @@ RUN <<EOF
         fonts-liberation \
         manpages \
         manpages-dev \
-        libc-devtools \
         libgts-bin \
         javascript-common \
         python3-pil \
@@ -199,6 +198,13 @@ RUN <<EOF
         python3-html5lib \
         pyflakes3 \
       || exit 1
+
+    UBUNTU_DISTRO_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
+    if [[ "${UBUNTU_DISTRO_RELEASE}" != "20.04" ]]; then
+        apt-get install --assume-yes --no-install-recommends \
+            libc-devtools \
+        || exit 1
+    fi
 
     echo "Install dev utilities..."
     # Note: pytest version is managed by 'colcon-common-extensions'
