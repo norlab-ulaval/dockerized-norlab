@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="[DEV] run › dn_build_all.bash (terminal window | multiarch builder)" type="ShConfigurationType" folderName="[DN] C | build (remark: select daemon via docker context)">
-    <option name="SCRIPT_TEXT" value="clear &amp;&amp; export NBS_OVERRIDE_BUILD_MATRIX_MAIN=.env.build_matrix.main.dev_subset &amp;&amp; source dockerized-norlab-scripts/build_script/dn_build_all.bash --fail-fast --show-dn-debug-build-info" />
+  <configuration default="false" name="run › dn_build_over_single_build_matrix.bash (dev build --push --with-dependencies | local-builder-multiarch-virtual)" type="ShConfigurationType" folderName="[DN] development ( build over single build matrix .env.build_matrix.dev )">
+    <option name="SCRIPT_TEXT" value="echo &amp;&amp; clear &amp;&amp; NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG=&quot;build --push --with-dependencies&quot; &amp;&amp; bash dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash build_matrix_config/dev/.env.build_matrix.main.dev" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_build_all.bash" />
+    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash" />
     <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
     <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />

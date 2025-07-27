@@ -91,12 +91,11 @@ if [[ ${INPUT} == "Y" ]] || [[ ${INPUT} == "y" ]]; then
 
   # ..................................................................................................
   docker buildx create \
-    --name multi-arch-builder \
+    --name local-builder-multiarch-virtual \
     --driver docker-container \
     --node local \
     --platform linux/amd64,linux/arm64 \
-    --bootstrap \
-    --use
+    --bootstrap
 
 #  # ..................................................................................................
 #  # Note: flag pattern: --docker "host=ssh://username@host:port"
