@@ -240,9 +240,11 @@ EOF
 ENTRYPOINT [ "" ]
 
 FROM dockerized-norlab-project-internal AS final
-
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
+
+# Unset DEBIAN_FRONTEND (which is set globaly in base DN images) before run stage.
+ENV DEBIAN_FRONTEND=""
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}

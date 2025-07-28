@@ -3,10 +3,8 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
 
-## (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
-#ARG DEBIAN_FRONTEND=noninteractive
-#ARG TARGETPLATFORM
-#ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
 # ====Begin=============================================================================================
 # See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile

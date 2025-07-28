@@ -1,9 +1,9 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-ARG DEBIAN_FRONTEND=noninteractive
+
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-custom-install
-ARG DEBIAN_FRONTEND
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -161,7 +161,7 @@ EOF
 
 
 FROM ros2-custom-install AS test
-ARG DEBIAN_FRONTEND
+
 
 # Note: ROS2 distro should be sourced automaticaly via our dn_bashrc_non_interactive.bash setup
 RUN <<EOF
@@ -211,7 +211,7 @@ EOF
 
 
 FROM ros2-custom-install AS final
-ARG DEBIAN_FRONTEND
+
 
 # ....TMP DEV introspection........................................................................
 ## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓

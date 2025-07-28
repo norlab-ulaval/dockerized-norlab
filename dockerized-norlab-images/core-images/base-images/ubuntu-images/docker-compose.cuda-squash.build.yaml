@@ -29,6 +29,7 @@ services:
         BASE_IMAGE: ${DEPENDENCIES_BASE_IMAGE:?err}
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         TAG_OS_VERSION: ${TAG_OS_VERSION:?err}
+        UBUNTU_VERSION_MAJOR: ${UBUNTU_VERSION_MAJOR:?err}
         # Base image env var transfer ('nvcr.io/nvidia/l4t-jetpack' specific)
         CUDA_HOME: ${BASE_IMG_ENV_CUDA_HOME:?err}
         NVIDIA_VISIBLE_DEVICES: ${BASE_IMG_ENV_NVIDIA_VISIBLE_DEVICES:?err}

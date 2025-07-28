@@ -1,9 +1,9 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-ARG DEBIAN_FRONTEND=noninteractive
+
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-install
-ARG DEBIAN_FRONTEND
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -27,14 +27,26 @@ ENV DN_DEV_WORKSPACE="${HOME}/${DN_DEV_WORKSPACE_DIR:-ros2_ws}"
 
 # ====Begin Dockerized-NorLab======================================================================
 
-# ....Setup timezone and localization..............................................................
-# change the locale from POSIX to UTF-8
-RUN apt-get update && \
-    apt-get install --assume-yes --no-install-recommends \
-        locales \
-    && rm -rf /var/lib/apt/lists/* \
-    && locale-gen en_US en_US.UTF-8 \
-    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+RUN <<EOF
+    # ....Check pre-conditions.....................................................................
+    {
+        test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+    } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
+
+    # ....Setup timezone and localization..........................................................
+    # change the locale from POSIX to UTF-8
+    apt-get update
+    apt-get install --assume-yes --no-install-recommends locales
+
+    locale-gen en_US en_US.UTF-8
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+    rm -rf /var/lib/apt/lists/*
+    apt-get clean
+EOF
 
 ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
@@ -363,7 +375,7 @@ RUN sed --in-place "s;source /ros_entrypoint.sh;;" "$HOME/.bashrc" \
 
 
 FROM ros2-install AS test
-ARG DEBIAN_FRONTEND
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -414,7 +426,7 @@ RUN echo "Check workspace directory installation"  \
     || exit 1
 
 FROM ros2-install AS final
-ARG DEBIAN_FRONTEND
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 

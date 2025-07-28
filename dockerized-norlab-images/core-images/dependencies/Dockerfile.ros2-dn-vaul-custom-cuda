@@ -9,7 +9,7 @@ ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
 SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
+
 
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
@@ -34,7 +34,7 @@ RUN apt-get update \
 
 FROM ros2-vaul-custom-install AS opencv-requirements
 ARG IS_TEAMCITY_RUN
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -98,7 +98,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
 
 FROM opencv-requirements AS opencv-build
 ARG IS_TEAMCITY_RUN
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG OPENCV_VERSION="4.6.0"
@@ -155,7 +155,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
 
 FROM opencv-build AS opencv-install
 ARG IS_TEAMCITY_RUN
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG OPENCV_VERSION="4.6.0"
@@ -196,7 +196,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
 
 FROM opencv-install AS vaul-dependencies-final
 ARG IS_TEAMCITY_RUN
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 

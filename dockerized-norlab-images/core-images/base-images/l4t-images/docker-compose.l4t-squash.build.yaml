@@ -30,7 +30,6 @@ services:
         BASE_IMAGE_TAG: ${DEPENDENCIES_BASE_IMAGE_TAG:?err}
         MIMIC_DEPENDENCIES_BASE_IMAGE: ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}
         MIMIC_DEPENDENCIES_BASE_IMAGE_TAG: ${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err}
-        UBUNTU_VERSION_MAJOR: ${UBUNTU_VERSION_MAJOR:?err}
       platforms:
         - linux/arm64
 
@@ -75,6 +74,8 @@ services:
       service: l4t-base-image-main
     build:
       target: base-image-amd64
+      args:
+        UBUNTU_VERSION_MAJOR: ${UBUNTU_VERSION_MAJOR:?err}
       platforms: !override
         - linux/amd64
     depends_on:
@@ -88,7 +89,6 @@ services:
     build:
       target: mimic-l4t-image
     depends_on:
-      - l4t-base-image-main
       - l4t-base-image-amd64
 
   # ....final......................................................................................
@@ -99,7 +99,6 @@ services:
     build:
       target: final-arm64
     depends_on:
-      - l4t-base-image-main
       - l4t-base-image-arm64
 
   l4t-base-image-amd64-final:
@@ -109,8 +108,6 @@ services:
     build:
       target: final-amd64
     depends_on:
-      - l4t-base-image-main
-      - l4t-base-image-amd64
       - l4t-base-image-mimic-l4t-image
 
   # ....tests......................................................................................
@@ -120,8 +117,6 @@ services:
     build:
       target: test
     depends_on:
-      - l4t-base-image-main
-      - l4t-base-image-arm64
       - l4t-base-image-arm64-final
 
   l4t-base-image-amd64-tester:
@@ -130,8 +125,5 @@ services:
     build:
       target: test
     depends_on:
-      - l4t-base-image-main
-      - l4t-base-image-amd64
-      - l4t-base-image-mimic-l4t-image
       - l4t-base-image-amd64-final
 

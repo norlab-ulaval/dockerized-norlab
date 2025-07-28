@@ -64,6 +64,15 @@ services:
     depends_on:
       - dn-control-deep-rl
 
+  dn-control-deep-rl-openai-gym-tester:
+    extends:
+      service: dn-control-deep-rl-openai-gym
+    build:
+      target: test
+    depends_on:
+      - dn-control-deep-rl-openai-gym
+
+
   # ....dn-control-deep-rl-f1tenth-gym.............................................................
   dn-control-deep-rl-f1tenth-gym-main:
     extends:

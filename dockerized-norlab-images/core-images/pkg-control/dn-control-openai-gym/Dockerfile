@@ -59,11 +59,21 @@ RUN <<EOF
         notebook \
         gym-notebook-wrapper
 
-    echo "Sanity check"
-    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py
 
     ( \
       echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 
+EOF
+
+
+# (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
+FROM base-image AS test
+
+RUN <<EOF
+    echo "Sanity check..."
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py
+
+    echo -e "\nContainer build time environment variables\n"
+    printenv
 EOF

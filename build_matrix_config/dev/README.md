@@ -40,7 +40,16 @@ bash dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.ba
     build_matrix_config/dev/.env.build_matrix.main.dev
 ```
 
-### See run configuration for more
+### Execution options
 
-- `[DN] development ( build .env.build_matrix.main.dev_subset )`
-- `[DN] development ( build .env.build_matrix.main.dev )`
+#### Via run configuration + shell script config
+
+- Run config › _[DN] development ( build over single build matrix .env.build_matrix.dev )_ → _run › run_config_buidl_over_single_build_matrix.bash (dev)_
+- Configuration file: `run_config_buidl_over_single_build_matrix.bash`
+
+#### Via run configuration
+
+Check the following run configurations
+- _[DN] development ( build .env.build_matrix.main.dev_subset )_
+- _[DN] development ( build .env.build_matrix.main.dev )_
+

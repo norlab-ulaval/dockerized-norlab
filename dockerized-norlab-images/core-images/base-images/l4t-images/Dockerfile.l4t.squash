@@ -4,35 +4,54 @@ ARG BASE_IMAGE_TAG
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE
 ARG MIMIC_DEPENDENCIES_BASE_IMAGE_TAG
 FROM --platform=linux/arm64 ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
-ARG UBUNTU_VERSION_MAJOR
-
-# ....Fetch pip installed packages list............................................................
-RUN touch /requirements.l4t-base-image.txt \
-    && ( \
-          pip3 list --format freeze \
-              --exclude onnx  \
-              --exclude torchaudio  \
-              --exclude tensorrt \
-              --exclude torch2trt  \
-              --exclude pycuda ; \
-      ) > /requirements.l4t-base-image.txt
-
-# ....Builder sanity check........................................................................
-ARG BUILDPLATFORM
 ARG TARGETPLATFORM
-RUN echo -e "DEV introspection\n\n \
-    Buildx env\n \
-      BUILDPLATFORM: ${BUILDPLATFORM}\n \
-      TARGETPLATFORM: ${TARGETPLATFORM}\n \
-    Real build target architecture: $(uname -m)\n" \
-    && more /requirements.l4t-base-image.txt \
-    && if [[ ${TARGETPLATFORM} != $(uname -m) ]]; then \
-         echo "[DN-build-system ERROR] L4T base images should be pulled as platform linux/arm64. Something is wrong!" && exit 1 ; \
-       fi
+ARG BUILDPLATFORM
+SHELL ["/bin/bash", "-c"]
 
-# ....Remove Jetson-container unused component to save time and space during squashing.............
-RUN rm --recursive --force /ros_deep_learning \
-  && rm --recursive --force /jetson-inference
+# ★ Note: is reset on the project-develop, project-deploy last stage
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN <<EOF
+
+    # ....Check pre-conditions.......................................................................
+    {
+        test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+    } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
+
+    # ....Fetch pip installed packages list........................................................
+    touch /requirements.l4t-base-image.txt
+    ( \
+      pip3 list --format freeze \
+          --exclude onnx  \
+          --exclude torchaudio  \
+          --exclude tensorrt \
+          --exclude torch2trt  \
+          --exclude pycuda ; \
+    ) > /requirements.l4t-base-image.txt
+
+    # ....Builder sanity check.....................................................................
+    #echo "Show requirements.l4t-base-image.txt..."
+    #more /requirements.l4t-base-image.txt
+    #echo
+    #echo -e "DEV introspection\n
+    #Buildx env
+    #  BUILDPLATFORM: ${BUILDPLATFORM}
+    #  TARGETPLATFORM: ${TARGETPLATFORM}
+    #Real build target architecture: $(uname -m)\n"
+
+    if [[ "$(uname -m)" != "aarch64" ]]; then
+        echo "[DN-build-system ERROR] L4T base images should be pulled as aarch64 platform. Something is wrong!" 1>&2
+        exit 1
+    fi
+
+    # ....Remove Jetson-container unused component to save time and space during squashing.........
+    rm --recursive --force /ros_deep_learning
+    rm --recursive --force /jetson-inference
+
+EOF
 
 ## (CRITICAL) ToDo: on DEV task end >> mute next line ↓↓
 #FROM --platform=linux/arm64 base-image AS base-image-arm64
@@ -61,14 +80,37 @@ FROM --platform=linux/arm64 scratch AS base-image-arm64
 ARG TARGETPLATFORM
 ARG TARGETARCH
 
+# ★ Note: is reset on the project-develop, project-deploy last stage
+ENV DEBIAN_FRONTEND=noninteractive
+
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
 SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
 
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
+
+# ....copy ALL artifact from base-image............................................................
+COPY --from=base-image / /
+
+## ....copy artifact from base-image...............................................................
+## Note: copying ROS ressources is relatively easy, however copying ressources installed
+##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
+##       Work around for minimizing maintenance: copy everything
+#COPY --from=base-image /lib /lib
+#COPY --from=base-image /etc /etc
+#COPY --from=base-image /usr /usr
+#COPY --from=base-image /bin /bin
+#COPY --from=base-image /var /var
+#COPY --from=base-image /opt /opt
+#COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
+
+# Update symlink to point to system python3 instead of system python2
+RUN <<EOF
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 || exit 1
+    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 || exit 1
+EOF
 
 # ....Transfer environment variable from base-images...............................................
 # Env var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
@@ -128,30 +170,26 @@ ENV NVCC_PATH=${NVCC_PATH}
 ENV CUDA_NVCC_EXECUTABLE=${CUDA_NVCC_EXECUTABLE}
 ENV CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
 
-# ....copy ALL artifact from base-image............................................................
-COPY --from=base-image / /
+RUN <<EOF
+  apt-get update
+  apt-get install --assume-yes --no-install-recommends \
+            software-properties-common
 
-## ....copy artifact from base-image...............................................................
-## Note: copying ROS ressources is relatively easy, however copying ressources installed
-##       via pip vs apt-get or via source installed or pytorch related is a nightmare.
-##       Work around for minimizing maintenance: copy everything
-#COPY --from=base-image /lib /lib
-#COPY --from=base-image /etc /etc
-#COPY --from=base-image /usr /usr
-#COPY --from=base-image /bin /bin
-#COPY --from=base-image /var /var
-#COPY --from=base-image /opt /opt
-#COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
+  echo "Build time environment variable..."
+  printenv
 
-# Update symlink to point to system python3 instead of system python2
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
-    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+  rm -rf /var/lib/apt/lists/*
+  apt-get clean
+EOF
 
 
 FROM --platform=linux/amd64 ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
 ARG TARGETPLATFORM
 ARG TARGETARCH
-ARG DEBIAN_FRONTEND=noninteractive
+
+# ★ Note: is reset on the project-develop, project-deploy last stage
+ENV DEBIAN_FRONTEND=noninteractive
+
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 ENV TZ=Etc/UTC
@@ -159,7 +197,16 @@ ENV TERM=${TERM:-"xterm-256color"}
 SHELL ["/bin/bash", "-c"]
 
 ARG UBUNTU_VERSION_MAJOR
+
 RUN <<EOF
+    # ....Check pre-conditions.......................................................................
+    {
+        test -n "${UBUNTU_VERSION_MAJOR:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+    } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
+
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
     if [[ "${UBUNTU_VERSION_MAJOR:?err}.04" != "${IMG_RELEASE}" ]]; then
       echo -e "Expected Ubuntu distro release ${UBUNTU_VERSION_MAJOR}.04 but image distro is ${IMG_RELEASE}!" 1>&2
@@ -188,25 +235,32 @@ RUN <<EOF
     && pip3 install --no-cache-dir  \
           wget \
           psutil
+
 EOF
 
 
 FROM --platform=linux/amd64 base-image-amd64 AS mimic-l4t-image
 ARG TARGETPLATFORM
 ARG TARGETARCH
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
-
-## ToDo: validate that its not required anymore >> pycuda install related
-#ARG CUDA_ROOT=${CUDA_HOME:-"/usr/local/cuda"}
 
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
 RUN <<EOF
-    apt-get update || exit 1
+    # ....Check pre-conditions.....................................................................
+    {
+        test -n "${UBUNTU_VERSION_MAJOR:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${TARGETARCH:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+    } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Reinstall l4t image package in amd64 image...............................................
+    apt-get update || exit 1
+
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
 
         echo "..general install related........."
@@ -306,59 +360,71 @@ ARG TARGETPLATFORM
 ARG TARGETARCH
 ARG BUILDPLATFORM
 
-RUN echo -e "Current python version: $(python --version)" \
-    && echo -e "          which python: $(which python)" \
-    && echo -e "        whereis python: $(whereis python)" \
-    && echo -e "             which pip: $(which pip)" \
-    && echo -e "           whereis pip: $(whereis pip)" \
-    && if [[ ! $(python --version) =~ "Python 3.".* ]]; then \
-      echo "Need python 3" && exit 1 ; \
-    fi &&  \
-    if [[ $(which python) != "/usr/bin/python" ]] || [[ $(which python) == "/opt/conda/bin/python" ]]; then \
-        echo -e "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment" \
-        && echo -e "Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict" \
-        && exit 1 ; \
+RUN <<EOF
+    # ....Check pre-conditions.......................................................................
+    {
+        test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+    } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
+
+
+    echo -e "Current python version: $(python --version)
+          which python: $(which python)
+        whereis python: $(whereis python)
+             which pip: $(which pip)
+           whereis pip: $(whereis pip)"
+
+    if [[ ! $(python --version) =~ "Python 3.".* ]]; then
+      echo "Need python 3" && exit 1
     fi
 
-RUN <<EOF
-  if [[ ${TARGETPLATFORM} =~ "linux/arm64".* ]]; then
-      printenv
+    if [[ $(which python) != "/usr/bin/python" ]] || [[ $(which python) == "/opt/conda/bin/python" ]]; then
+        echo -e "ROS2 does not behave well with conda python environment, make sure the default python is either the system python or a virtual environment"
+        echo -e "Ref https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html#anaconda-python-conflict"
+        exit 1
+    fi
+
+    printenv
+
+    if [[ ${TARGETPLATFORM} =~ "linux/arm64".* ]]; then
       {
-        test -n ${CUDA_HOME:?'Environment variable was not passed from base-image build stage'} && \
-        test -n ${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage'} && \
-        test -n ${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage'} && \
-        test -n ${PATH:?'Environment variable was not passed from base-image build stage'} && \
-        test -n ${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage'} ;
+        test -n ${CUDA_HOME:?'Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${PATH:?'Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage to test stage'} ;
       } || { echo "Missing required environment variables!" 1>&2 ; exit 1 ; }
-  fi
-EOF
+    fi
 
-RUN echo "Check CUDA installed version" \
-    && nvcc --version | grep "release" | awk '{print $6}' | cut -c2-
+    echo "Check CUDA installed version"
+    nvcc --version | grep "release" | awk '{print $6}' | cut -c2-
 
-RUN echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})" \
-    && echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})" \
-    && echo -e "                  PATH: $(echo $PATH)" \
-    && echo -e "\n----------------------------------------------------------\n" \
-    && echo -e "           which pip's: $(which pip pip3)" \
-    && echo -e "              pip list: $(pip list)" \
-    && echo -e "\n----------------------------------------------------------\n" \
-    && pip3 show pycuda \
-    && python3 -c "import pycuda; print( pycuda.VERSION_TEXT )" \
-    && echo -e "\n----------------------------------------------------------\n" \
-    && pip3 show torch \
-    && python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )" \
-    && echo -e "\n----------------------------------------------------------\n"
+    echo -e "\n----------------------------------------------------------\n"
+    echo -e "        TARGETPLATFORM: $(echo ${TARGETPLATFORM:?'Env var not set in container'})"
+    echo -e "            TARGETARCH: $(echo ${TARGETARCH:?'Env var not set in container'})"
+    echo -e "                  PATH: $(echo $PATH)"
+    echo -e "\n----------------------------------------------------------\n"
+    echo -e "           which pip's: $(which pip pip3)"
+    echo -e "              pip list: $(pip list)"
+    echo -e "\n----------------------------------------------------------\n"
+    pip3 show pycuda
+    python3 -c "import pycuda; print( pycuda.VERSION_TEXT )"
+    echo -e "\n----------------------------------------------------------\n"
+    pip3 show torch
+    python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
+    echo -e "\n----------------------------------------------------------\n"
 
-# Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
-#       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
-RUN <<EOF
+    # Note: see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+    #       for docker buildx environment variables available inside the container: i.e. [TARGET|BUILD]PLATFORM
+
     echo -e "Ubuntu version is $( source /etc/lsb-release && echo ${DISTRIB_CODENAME})"
 
     echo "Dockerized-NorLab build system › image for target device: ${TARGETPLATFORM:?'Buildx environment variables not available in container'}"
     echo -e "DEV introspection\n
     Buildx env
-      BUILDPLATFORM: ${BUILDPLATFORM}
+      BUILDPLATFORM: ${BUILDPLATFORM:?err}
       TARGETPLATFORM: ${TARGETPLATFORM}
     Real build target architecture: $(uname -m)\n"
 
