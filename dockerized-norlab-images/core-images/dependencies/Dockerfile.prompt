@@ -17,16 +17,22 @@ WORKDIR /dockerized-norlab
 # Install Powerline requirement
 # Be advise, dont install `xrandr` it's not compatible with the Jetson kernel.
 RUN <<EOF
+    echo "(deb) Install powerline-status dependencies..."
     apt-get update
+
     apt-get install --assume-yes --no-install-recommends \
         socat \
-        fonts-powerline
+        fonts-powerline \
+      || exit 1
+
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 
+    echo "(pip) Install powerline-status..."
     pip3 install --no-cache-dir \
         psutil \
-        powerline-status
+        powerline-status \
+      || exit 1
 
     # pip3 install --no-cache-dir  pygit2  # Not required by Powerline if Git is installed
 
@@ -57,10 +63,13 @@ RUN <<EOF
     #  - How to use combination of ARG and ENV in Dockerfile to prevent unsupported modifier in substitution?: https://stackoverflow.com/questions/68935923/how-to-use-combination-of-arg-and-env-in-dockerfile-to-prevent-unsupported-modif
     #  - https://docs.docker.com/engine/reference/builder/#using-arg-variables
 
+    echo "Setup bashrc configuration..."
+
     cd /dockerized-norlab/dockerized-norlab-images/container-tools
     source import_dockerized_norlab_container_tools.bash
     n2st::set_which_python3_version
-    export POWERLINE_DIR=/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline
+    export POWERLINE_DIR="/usr/local/lib/python${PYTHON3_VERSION:?err}/dist-packages/powerline"
+
     (
         ## Note: powerline-daemon and powerline10k are OS specific app.
         echo ""
@@ -74,7 +83,7 @@ RUN <<EOF
         echo "  POWERLINE_BASH_CONTINUATION=1"
         echo "  POWERLINE_BASH_SELECT=1"
         echo "  # Invoke binding script"
-        echo "  . ${POWERLINE_DIR}/bindings/bash/powerline.sh"
+        echo "  . ${POWERLINE_DIR:?err}/bindings/bash/powerline.sh"
         echo "else "
         echo "  # Skip or stop Powerline prompt configuration"
         echo "  powerline-daemon --quiet --kill"
@@ -91,6 +100,9 @@ RUN <<EOF
         echo "# <<< dockerized-norlab prompt "
         echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+
+    echo "Setup bashrc configuration done"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 EOF
 
 
@@ -103,18 +115,23 @@ COPY prompt/config_files/colorschemes/shell/dockerized_snow.json config_files/co
 
 #WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 RUN <<EOF
+    echo "Setup powerline-status ressources..."
+
     cd /dockerized-norlab/dockerized-norlab-images/container-tools
     source import_dockerized_norlab_container_tools.bash
     n2st::set_which_python3_version
-    export POWERLINE_DIR="/usr/local/lib/python${PYTHON3_VERSION}/dist-packages/powerline"
+    export POWERLINE_DIR="/usr/local/lib/python${PYTHON3_VERSION:?err}/dist-packages/powerline"
 
-    cd "${POWERLINE_TMP}"
+    cd "${POWERLINE_TMP:?err}"
     mkdir -p "${POWERLINE_DIR}/config_files/"
     mkdir -p "${POWERLINE_DIR}/config_files/themes/shell/"
     mkdir -p "${POWERLINE_DIR}/config_files/colorschemes/shell/"
     mv "${POWERLINE_TMP}/config_files/config.json" "${POWERLINE_DIR}/config_files/"
     mv "${POWERLINE_TMP}/config_files/themes/shell/dockerized_snow.json" "${POWERLINE_DIR}/config_files/themes/shell/"
     mv "${POWERLINE_TMP}/config_files/colorschemes/shell/dockerized_snow.json" "${POWERLINE_DIR}/config_files/colorschemes/shell/"
+
+    echo "Setup powerline-status ressources done"
+    tree -aL 1 "${POWERLINE_DIR}/config_files"
 EOF
 
 # ....Set Prompt logo..............................................................................
