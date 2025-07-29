@@ -39,7 +39,10 @@ cd "${DN_DEV_WORKSPACE}" || exit 1
 
 # shellcheck disable=SC1090
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
-source "${DN_DEV_WORKSPACE}/install/setup.bash"
+if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
+  echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
+  source "${DN_DEV_WORKSPACE}/install/setup.bash"
+fi
 
 # Install dependencies
 n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}apt-get update${MSG_END_FORMAT}...\n"
