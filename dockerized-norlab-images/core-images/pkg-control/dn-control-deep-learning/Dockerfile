@@ -15,7 +15,8 @@ RUN <<EOF
     rm -rf /requirements_deep_learning.txt
 
     {
-      echo "alias dn_python3_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch.py'";
+      echo "alias dn_pytorch_cuda_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch.py'";
+      echo "alias dn_pytorch_cpu_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py'";
     } >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 
     # ....TensorDict distro conditional install....................................................

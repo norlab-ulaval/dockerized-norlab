@@ -6,13 +6,14 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
 COPY --from=context-dn-container-tools ./dn_test/try_gym.py /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/
 
 RUN <<EOF
-    # Dependencies
+    # ....Dependencies notes.......................................................................
     #   - box2d-py dependency: swig
     #   - gym VideoRecorder dependency: ffmpeg and imageio-ffmpeg
     #   - gym headless server rendering require a virtual X server like xvfb
     #       pyvirtualdisplay is a python wraper for xvfb › https://github.com/ponty/pyvirtualdisplay/tree/3.0
     #       gym-notebook-wrapper is wrapper for running gym and recording movie on Jupyter notebook
     #           ↳ |  require xvfb and python-opengl
+    # .............................................................................................
 
     # ....Deb install..............................................................................
     apt-get update
@@ -21,17 +22,20 @@ RUN <<EOF
     apt-get install --assume-yes  --no-install-recommends \
             swig \
             mesa-utils \
-            ffmpeg
+            ffmpeg \
+        || exit 1
 
     echo "Install pyvirtualdisplay dependencies and backends on Ubuntu 20.04..."
+    # Note:
+    #   Do NOT install opengl using deb i.e., 'python3-opengl' ⚠️
+    #   Use pip install PyOpenGL instead.
     apt-get install --assume-yes  --no-install-recommends \
             xvfb \
             xserver-xephyr \
             tigervnc-standalone-server \
             x11-utils \
-            gnumeric
-
-#            python3-opengl \
+            gnumeric \
+        || exit 1
 
     rm -rf /var/lib/apt/lists/*
     apt-get clean
@@ -50,10 +54,12 @@ RUN <<EOF
         PyOpenGL_accelerate
 
     echo "(pip) Install OpenAI gym dependencies..."
+    # Note: OpenAI gym is not compatible with numpy 2.0, so pin to earlier version ⚠️
     pip3 install --no-cache-dir  \
         gym[classic_control,box2d]  \
         pyglet \
-        box2d-py
+        box2d-py \
+        "numpy<2.0.0"
 
     echo "Install Jupyter + gym related..."
     pip3 install --no-cache-dir  \
@@ -73,13 +79,22 @@ EOF
 FROM main AS test
 
 RUN <<EOF
-    echo "Container build time environment variables"
-    echo
+    echo -e "\n----------------------------------------------------------"
+    echo -e "Container build time environment variables\n"
     printenv
-    echo
+    echo -e "\n----------------------------------------------------------\n"
     cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
-    echo
-
-    echo "Sanity check..."
-    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py
+    echo -e "\n----------------------------------------------------------\n"
+    echo -e "           which pip's: $(which pip pip3)"
+    echo -e "              pip list: $(pip list)"
+    echo -e "\n----------------------------------------------------------\n"
+    pip3 show pycuda
+    python3 -c "import pycuda; print( pycuda.VERSION_TEXT )"
+    echo -e "\n----------------------------------------------------------\n"
+    pip3 show torch
+    python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
+    echo -e "\n----------------------------------------------------------"
+    echo -e "Sanity check...\n"
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py || exit 1
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py || exit 1
 EOF

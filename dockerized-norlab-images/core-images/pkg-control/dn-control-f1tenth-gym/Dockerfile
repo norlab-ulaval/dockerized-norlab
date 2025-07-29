@@ -24,19 +24,23 @@ ENV LIBGL_ALWAYS_INDIRECT=1
 #    # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 
 RUN <<EOF
-  {
-    apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
+
+    # ....Deb install..............................................................................
+    apt-get update
+
+    echo "(deb) Install F110-gym dependencies..."
+    apt-get install --assume-yes --no-install-recommends \
             libgl1-mesa-dev \
             libglu1-mesa-dev \
             fontconfig \
             libfreetype6-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean ;
-  } || exit 1
+      || exit 1
 
+    rm -rf /var/lib/apt/lists/*
+    apt-get clean
 
-## ....F1TENTH install.............................................................................
+    # ....Pip install.............................................................................
+    echo "(pip) Install F110-gym dependencies..."
 
 #    # Fix for gym <-> F1TENTH TypeError:
 #    # >>> obs, step_reward, done, info = env.reset(np.array([[conf.sx, conf.sy, conf.stheta]]))
@@ -59,16 +63,16 @@ RUN <<EOF
         'setuptools==65.5.1' \
         || exit 1
 
-    ## (Priority) ToDo: temporary hack >> delete next line ← when solved
-    # rm -f -r /opt/f1tenth_gym
+    # ....F1TENTH install.............................................................................
     if [[ -d /opt/f1tenth_gym ]]; then \
-     tree -L 1 -a && echo "/opt/f1tenth_gym alredy exist!" && exit 1 ; \
+     tree -L 1 -a && echo "/opt/f1tenth_gym already exist!" && exit 1 ; \
     fi
 
-# Notes › f110_gym:
-#   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools
-#   - f110_gym need to be installed in editable mode because there is curently no MANIFESTE.in file
-#       which prevent some required assets (e.g. maps/) to be included in the install path
+    echo "Install F110-gym..."
+    # Notes › f110_gym:
+    #   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools
+    #   - f110_gym need to be installed in editable mode because there is curently no MANIFESTE.in file
+    #       which prevent some required assets (e.g. maps/) to be included in the install path
     cd /opt
     git clone https://github.com/f1tenth/f1tenth_gym.git
     cd ./f1tenth_gym
@@ -85,12 +89,31 @@ EOF
 
 FROM main AS test
 
-RUN echo "Sanity-check" \
-    && pip3 show f110_gym \
-    && echo \
-    && python3 -c "import f110_gym" \
-    && python3 -c "from f110_gym.envs import F110Env" \
-    && python3 -c "import gym; env = gym.make('f110_gym:f110-v0', num_agents=1, timestep=0.01, ego_idx=0)"
+RUN <<EOF
+    echo -e "\n----------------------------------------------------------"
+    echo -e "Container build time environment variables\n"
+    printenv
+    echo -e "\n----------------------------------------------------------\n"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+    echo -e "\n----------------------------------------------------------\n"
+    echo -e "           which pip's: $(which pip pip3)"
+    echo -e "              pip list: $(pip list)"
+    echo -e "\n----------------------------------------------------------\n"
+    pip3 show pycuda
+    python3 -c "import pycuda; print( pycuda.VERSION_TEXT )"
+    echo -e "\n----------------------------------------------------------\n"
+    pip3 show torch
+    python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
+    echo -e "\n----------------------------------------------------------\n"
+    pip3 show f110_gym
+    echo -e "\n----------------------------------------------------------"
+    echo -e "Sanity check...\n"
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py || exit 1
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py || exit 1
+    python3 -c "import f110_gym" || exit 1
+    python3 -c "from f110_gym.envs import F110Env" || exit 1
+    python3 -c "import gym; env = gym.make('f110_gym:f110-v0', num_agents=1, timestep=0.01, ego_idx=0)" || exit 1
+EOF
 
 FROM main AS final
 

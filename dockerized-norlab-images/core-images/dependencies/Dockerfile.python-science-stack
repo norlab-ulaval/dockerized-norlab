@@ -11,7 +11,7 @@ RUN <<EOF
         scipy \
         pandas \
         Cython \
-        numpy\
+        numpy \
         numba \
     || exit 1
 
