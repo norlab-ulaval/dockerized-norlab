@@ -50,8 +50,9 @@ RUN <<EOF
     pip3 install --no-cache-dir  \
         pyvirtualdisplay \
         imageio-ffmpeg \
-        PyOpenGL \
-        PyOpenGL_accelerate
+        PyOpenGL
+
+        #PyOpenGL_accelerate # Might only provides optional performance optimizations
 
     echo "(pip) Install OpenAI gym dependencies..."
     # Note: OpenAI gym is not compatible with numpy 2.0, so pin to earlier version ⚠️
