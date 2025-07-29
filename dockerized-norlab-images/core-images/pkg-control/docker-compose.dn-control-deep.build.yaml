@@ -57,6 +57,7 @@ services:
     pull_policy: build
     build:
       context: dn-control-openai-gym
+      target: main
       args:
         BASE_IMAGE: ${DN_HUB:?err}/dockerized-norlab-control-deep-rl
         BASE_IMAGE_TAG: ${DN_IMAGE_TAG:?err}
@@ -71,7 +72,6 @@ services:
       target: test
     depends_on:
       - dn-control-deep-rl-openai-gym
-
 
   # ....dn-control-deep-rl-f1tenth-gym.............................................................
   dn-control-deep-rl-f1tenth-gym-main:
