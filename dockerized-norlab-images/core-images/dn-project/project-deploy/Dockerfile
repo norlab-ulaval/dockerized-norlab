@@ -25,8 +25,10 @@ RUN <<EOF
         test -d ${DN_DEV_WORKSPACE} && \
         test -n ${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
-        test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} ;
-    } || exit 1
+        test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+    } || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
 EOF
 
 
@@ -125,7 +127,8 @@ ARG BUILDPLATFORM
 
 RUN <<EOF
     apt-get update
-    rosdep update --rosdistro ${ROS_DISTRO} || exit 1
+
+    rosdep update --rosdistro ${ROS_DISTRO} || n2st::print_msg_error_and_exit "Failed rosdep update!"
     rosdep fix-permissions
 
     rosdep install \
@@ -134,9 +137,8 @@ RUN <<EOF
         --rosdistro ${ROS_DISTRO} \
         -q \
         -y \
-    || exit 1
+    || n2st::print_msg_error_and_exit "Failed rosdep install!"
 
-    rm -rf /var/lib/apt/lists/*
 
     COLCON_FLAGS=()
     if [[ "${TARGETPLATFORM:?err}" != "${BUILDPLATFORM:?err}" ]]; then
@@ -153,7 +155,10 @@ RUN <<EOF
         "--event-handlers" "console_direct+"
     )
     n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
-    colcon build ${COLCON_FLAGS[@]}
+    colcon build ${COLCON_FLAGS[@]} || n2st::print_msg_error_and_exit "Failed colcon build!"
+
+    rm -rf /var/lib/apt/lists/*
+    apt-get clean
 EOF
 
 # ToDo: refactor project-develop/Dockerfile the project-specific-ros-setup stage as a standalone

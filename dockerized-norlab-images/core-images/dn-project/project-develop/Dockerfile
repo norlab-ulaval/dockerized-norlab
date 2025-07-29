@@ -18,8 +18,10 @@ RUN <<EOF
         test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
         test -d ${DN_PROJECT_USER_HOME} && \
         test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
-        test -d ${DN_PROJECT_PATH} ;
-    } || exit 1
+        test -d ${DN_PROJECT_PATH} && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+    } || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
 EOF
 
 # Set python to print stdin/sderr in real-time for dev/debug

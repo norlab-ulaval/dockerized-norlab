@@ -32,7 +32,7 @@ function dn::initialize_dockerized_norlab_project() {
     test -n "${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'}" && \
     test -n "${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'}" && \
     test -n "${DN_PROJECT_GIT_NAME:?'Env variable need to be set and non-empty.'}" ;
-  } || n2st::print_msg_error_and_return "Failed pre-condition check!"
+  } || n2st::print_msg_error_and_exit "Failed pre-condition check!"
 
   # ....Create new user and home...................................................................
   # Inspired from https://roboticseabass.com/2023/07/09/updated-guide-docker-and-ros2/
@@ -48,7 +48,7 @@ function dn::initialize_dockerized_norlab_project() {
     # (not a problem on norlab-og but mandatory on Jetson device)
     # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
     usermod -a -G video,sudo "${DN_PROJECT_USER}"
-  } || n2st::print_msg_error_and_return "Failed new user ${DN_PROJECT_USER} setup!"
+  } || n2st::print_msg_error_and_exit "Failed new user ${DN_PROJECT_USER} setup!"
 
   # ....Setup project dev workspace................................................................
   {
