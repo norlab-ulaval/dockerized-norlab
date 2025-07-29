@@ -128,9 +128,11 @@ ARG BUILDPLATFORM
 RUN <<EOF
     apt-get update
 
+    n2st::print_msg "Execute rosdep update..."
     rosdep update --rosdistro ${ROS_DISTRO} || n2st::print_msg_error_and_exit "Failed rosdep update!"
     rosdep fix-permissions
 
+    n2st::print_msg "Execute rosdep install..."
     rosdep install \
         --ignore-packages-from-source \
         --from-path ./src  \
@@ -155,6 +157,7 @@ RUN <<EOF
         "--event-handlers" "console_direct+"
     )
     n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
+    n2st::print_msg "Execute colcon build..."
     colcon build ${COLCON_FLAGS[@]} || n2st::print_msg_error_and_exit "Failed colcon build!"
 
     rm -rf /var/lib/apt/lists/*
