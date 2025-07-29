@@ -133,11 +133,12 @@ RUN <<EOF
         libbullet-dev \
         libpython3-dev \
         python3-vcstools \
-        python3-setuptools \
         python3-pycodestyle \
         python3-pygments ;
     } || exit 1
 
+    # (Priority) ToDo: validate removing deb installed setuptools >> this line ↓
+    #    python3-setuptools \
 
     {
       python3 -m pip install --upgrade pip && \

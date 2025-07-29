@@ -40,7 +40,6 @@ cd "${DN_DEV_WORKSPACE}" || exit 1
 # shellcheck disable=SC1090
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
-  echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash"
   source "${DN_DEV_WORKSPACE}/install/setup.bash"
 fi
 
@@ -102,6 +101,12 @@ COLCON_FLAGS+=(
   "--event-handlers" "console_direct+"
 )
 n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}colcon build ${COLCON_FLAGS[*]}${MSG_END_FORMAT}...\n"
+
+source "/opt/ros/${ROS_DISTRO}/setup.bash"
+if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
+  source "${DN_DEV_WORKSPACE}/install/setup.bash"
+fi
+
 colcon build "${COLCON_FLAGS[@]}" || n2st::print_msg_error_and_exit "Failed colcon build!"
 n2st::draw_horizontal_line_across_the_terminal_window "."
 

@@ -157,6 +157,12 @@ RUN <<EOF
         "--event-handlers" "console_direct+"
     )
     n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
+
+    source "/opt/ros/${ROS_DISTRO}/setup.bash"
+    if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
+      source "${DN_DEV_WORKSPACE}/install/setup.bash"
+    fi
+
     n2st::print_msg "Execute colcon build..."
     colcon build ${COLCON_FLAGS[@]} || n2st::print_msg_error_and_exit "Failed colcon build!"
 
