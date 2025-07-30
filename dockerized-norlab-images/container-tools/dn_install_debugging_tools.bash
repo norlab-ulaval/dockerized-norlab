@@ -43,16 +43,20 @@ function dn::setup_debugging_tools() {
     test -n "${DN_SSH_SERVER_USER:?'Env variable needs to be set and non-empty.'}" && \
     test -n "${DN_SSH_SERVER_USER_PASSWORD:?'Env variable needs to be set and non-empty.'}" && \
     test -n "${DN_PROJECT_GID:?'Env variable needs to be set and non-empty.'}" && \
-    test -n "${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}" ;
-  } || exit 1
+    test -n "${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}" && \
+    test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+    { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || n2st::print_msg_error "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; } ;
+  } || n2st::print_msg_error_and_exit "Failed dn::setup_debugging_tools pre-condition check!"
 
   # ===Service: ssh server===========================================================================
+  n2st::print_msg "Installing openssh-server..."
   apt-get update
   apt-get install --assume-yes --no-install-recommends openssh-server
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 
   # ....Setup ssh daemon.............................................................................
+  n2st::print_msg "Setup ssh daemon..."
 
   # (CRITICAL) ToDo: (ref task NMO-348 validate that DN_SSH_SERVER_PORT var in 'sshd_config_dockerized_norlab_openssh_server' can be changed at runtime via compose ENV)
   # Inspired from:
@@ -66,7 +70,7 @@ function dn::setup_debugging_tools() {
     echo "Port ${DN_SSH_SERVER_PORT}"; \
     echo "Subsystem sftp /usr/lib/openssh/sftp-server"; \
   ) > /etc/ssh/sshd_config_dockerized_norlab_openssh_server \
-  && mkdir /run/sshd
+  && mkdir -p /run/sshd
 
   #  echo "PermitUserEnvironment yes"; \
 

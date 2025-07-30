@@ -30,7 +30,7 @@ PARAM_ARCH=${1:-"native"}
   test -n "${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'}" && \
   test -n "${ROS_DISTRO:?'Env variable need to be set and non-empty.'}" && \
   test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-  [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+  { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || n2st::print_msg_error "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; } ;
 } || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
 
 # ====Begin========================================================================================

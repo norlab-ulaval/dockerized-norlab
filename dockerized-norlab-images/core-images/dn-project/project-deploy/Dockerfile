@@ -27,7 +27,7 @@ RUN <<EOF
         test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || n2st::print_msg_error "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; } ;
     } || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
 EOF
 

@@ -18,7 +18,7 @@ RUN <<EOF
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Fetch pip installed packages list........................................................
@@ -205,7 +205,7 @@ RUN <<EOF
         test -n "${UBUNTU_VERSION_MAJOR:?'Env variable need to be set and non-empty.'}" && \
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
@@ -259,7 +259,7 @@ RUN <<EOF
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${TARGETARCH:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Reinstall l4t image package in amd64 image...............................................
@@ -373,7 +373,7 @@ RUN <<EOF
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] ;
+        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
 
