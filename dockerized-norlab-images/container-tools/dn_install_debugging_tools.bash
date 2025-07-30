@@ -47,11 +47,10 @@ function dn::setup_debugging_tools() {
   } || exit 1
 
   # ===Service: ssh server===========================================================================
-  apt-get update \
-      && apt-get install --assume-yes --no-install-recommends \
-          openssh-server \
-      && apt-get clean \
-      && rm -rf /var/lib/apt/lists/*
+  apt-get update
+  apt-get install --assume-yes --no-install-recommends openssh-server
+  apt-get clean
+  rm -rf /var/lib/apt/lists/*
 
   # ....Setup ssh daemon.............................................................................
 
@@ -150,7 +149,7 @@ function dn::setup_debugging_tools() {
   ## Ref
   ##  - https://github.com/sea-bass/pyrobosim/pull/162
   ##  - https://github.com/ros2/launch/issues/765
-  RUN pip3 install 'pytest!=8.1.1'
+  pip3 install 'pytest!=8.1.1'
 
   n2st::print_msg_warning "Be advised, the ssh daemon still need to be started.
   Curently its done by 'dn_entrypoint.global.init.callback.bash'.

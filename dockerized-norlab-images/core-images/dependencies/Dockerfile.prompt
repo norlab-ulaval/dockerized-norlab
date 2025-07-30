@@ -25,6 +25,7 @@ RUN <<EOF
         fonts-powerline \
       || exit 1
 
+    apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 

@@ -36,8 +36,9 @@ RUN <<EOF
             libfreetype6-dev \
       || exit 1
 
-    rm -rf /var/lib/apt/lists/*
+    apt-get autoremove --assume-yes
     apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
     # ....Pip install.............................................................................
     echo "(pip) Install F110-gym dependencies..."

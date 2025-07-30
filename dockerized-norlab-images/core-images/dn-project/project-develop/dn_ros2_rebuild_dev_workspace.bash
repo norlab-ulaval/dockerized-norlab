@@ -63,12 +63,6 @@ n2st::draw_horizontal_line_across_the_terminal_window "."
 
 # Note on rosdep install: looks at all the packages in the src directory and tries to find
 # and install their dependencies on your platform.
-#rosdep install \
-#  --ignore-packages-from-source \
-#  --from-paths ./src \
-#  --rosdistro "${ROS_DISTRO}" \
-#  --default-yes
-
 ROSDEP_FLAGS=("--ignore-packages-from-source")
 ROSDEP_FLAGS+=("--from-paths" "./src")
 ROSDEP_FLAGS+=("--rosdistro" "${ROS_DISTRO}")

@@ -37,8 +37,9 @@ RUN <<EOF
             gnumeric \
         || exit 1
 
-    rm -rf /var/lib/apt/lists/*
+    apt-get autoremove --assume-yes
     apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
     # ....Pip install..............................................................................
     pip3 install --no-cache-dir --upgrade pip

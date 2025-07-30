@@ -166,8 +166,9 @@ RUN <<EOF
     n2st::print_msg "Execute colcon build..."
     colcon build ${COLCON_FLAGS[@]} || n2st::print_msg_error_and_exit "Failed colcon build!"
 
-    rm -rf /var/lib/apt/lists/*
+    apt-get autoremove --assume-yes
     apt-get clean
+    rm -rf /var/lib/apt/lists/*
 EOF
 
 # ToDo: refactor project-develop/Dockerfile the project-specific-ros-setup stage as a standalone
