@@ -144,7 +144,7 @@ FROM squash-base-image AS ros2-python-compatible
 ##
 ## Prepend the system python path to PATH so that the system python can be reached first
 ## (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "dn_bashrc_non_interactive.bash"
-#ARG PATH="/usr/bin:${BASE_IMG_ENV_PATH:?err}"
+#ARG PATH="/usr/bin:${UBUNTU__BASE_IMG_ENV_PATH:?err}"
 #ENV PATH=${PATH}
 
 # (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "dn_bashrc_non_interactive.bash"

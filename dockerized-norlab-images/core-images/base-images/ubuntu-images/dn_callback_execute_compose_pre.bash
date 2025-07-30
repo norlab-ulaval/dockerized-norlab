@@ -29,18 +29,18 @@ function dn::cuda_squash_image_logic() {
           -e '^PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=' \
           -e '^TENSORBOARD_PORT=' \
           -e '^JUPYTER_PORT=' \
-        | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
-        | sed 's;^NVIDIA_;BASE_IMG_ENV_NVIDIA_;' \
-        | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
-        | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
-        | sed 's;^ROS_;BASE_IMG_ENV_ROS_;' \
-        | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
-        | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
-        | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
-        | sed 's;^PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION;BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION;' \
-        | sed 's;^TORCH_HOME;BASE_IMG_ENV_TORCH_HOME;' \
-        | sed 's;^TENSORBOARD_PORT;BASE_IMG_ENV_TENSORBOARD_PORT;' \
-        | sed 's;^JUPYTER_PORT;BASE_IMG_ENV_JUPYTER_PORT;' \
+        | sed 's;^CUDA_HOME;UBUNTU__BASE_IMG_ENV_CUDA_HOME;' \
+        | sed 's;^NVIDIA_;UBUNTU__BASE_IMG_ENV_NVIDIA_;' \
+        | sed 's;^PATH;UBUNTU__BASE_IMG_ENV_PATH;' \
+        | sed 's;^LD_LIBRARY_PATH;UBUNTU__BASE_IMG_ENV_LD_LIBRARY_PATH;' \
+        | sed 's;^ROS_;UBUNTU__BASE_IMG_ENV_ROS_;' \
+        | sed 's;^RMW_IMPLEMENTATION;UBUNTU__BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
+        | sed 's;^LD_PRELOAD;UBUNTU__BASE_IMG_ENV_LD_PRELOAD;' \
+        | sed 's;^OPENBLAS_CORETYPE;UBUNTU__BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
+        | sed 's;^PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION;UBUNTU__BASE_IMG_ENV_PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION;' \
+        | sed 's;^TORCH_HOME;UBUNTU__BASE_IMG_ENV_TORCH_HOME;' \
+        | sed 's;^TENSORBOARD_PORT;UBUNTU__BASE_IMG_ENV_TENSORBOARD_PORT;' \
+        | sed 's;^JUPYTER_PORT;UBUNTU__BASE_IMG_ENV_JUPYTER_PORT;' \
        )
 
       local img_env_var_size=${#img_env_var[@]}
@@ -54,13 +54,13 @@ function dn::cuda_squash_image_logic() {
 
     # ....Special step for handling nvidia/pytorch container conda install.........................
     if [[ ${DEPENDENCIES_BASE_IMAGE} == "nvcr.io/nvidia/pytorch" ]] || [[ ${DEPENDENCIES_BASE_IMAGE} == "nvidia/cuda" ]]; then
-      export BASE_IMG_ENV_CUDA_HOME="/usr/local/cuda"
+      export UBUNTU__BASE_IMG_ENV_CUDA_HOME="/usr/local/cuda"
       # (CRITICAL) ToDo: assessment >> next line ↓↓
-      export BASE_IMG_ENV_PATH="/usr/bin:${BASE_IMG_ENV_PATH:?err}"
+      export UBUNTU__BASE_IMG_ENV_PATH="/usr/bin:${UBUNTU__BASE_IMG_ENV_PATH:?err}"
     fi
 
     n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:
-      ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
+      ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e UBUNTU__BASE_IMG_ENV_ | sed 's;UBUNTU__BASE_IMG_ENV_;    ;')
       ${MSG_END_FORMAT}"
   else
     n2st::print_msg "Skiping base image environment variable fetching"

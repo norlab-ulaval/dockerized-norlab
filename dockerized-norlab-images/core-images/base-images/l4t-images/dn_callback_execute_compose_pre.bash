@@ -128,25 +128,25 @@ function dn::callback_execute_compose_pre() {
             -e '^RMW_IMPLEMENTATION=' \
             -e '^LD_PRELOAD=' \
             -e '^OPENBLAS_CORETYPE=' \
-          | sed 's;^CUDA_HOME;BASE_IMG_ENV_CUDA_HOME;' \
-          | sed 's;^NVIDIA;BASE_IMG_ENV_NVIDIA;' \
-          | sed 's;^PATH;BASE_IMG_ENV_PATH;' \
-          | sed 's;^LD_LIBRARY_PATH;BASE_IMG_ENV_LD_LIBRARY_PATH;' \
-          | sed 's;^ROS;BASE_IMG_ENV_ROS;' \
-          | sed 's;^RMW_IMPLEMENTATION;BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
-          | sed 's;^LD_PRELOAD;BASE_IMG_ENV_LD_PRELOAD;' \
-          | sed 's;^OPENBLAS_CORETYPE;BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
-          | sed 's;^TORCH_HOME;BASE_IMG_ENV_TORCH_HOME;' \
-          | sed 's;^TORCH_NVCC_FLAGS=\(.*\);BASE_IMG_ENV_TORCH_NVCC_FLAGS="\1";' \
-          | sed 's;^TORCH_CUDA_ARCH_LIST;BASE_IMG_ENV_TORCH_CUDA_ARCH_LIST;' \
-          | sed 's;^NVCC_PATH;BASE_IMG_ENV_NVCC_PATH;' \
-          | sed 's;^CUDA_BIN_PATH;BASE_IMG_ENV_CUDA_BIN_PATH;' \
-          | sed 's;^CMAKE_CUDA_COMPILER;BASE_IMG_ENV_CMAKE_CUDA_COMPILER;' \
-          | sed 's;^CUDAARCHS;BASE_IMG_ENV_CUDAARCHS;' \
-          | sed 's;^CUDACXX;BASE_IMG_ENV_CUDACXX;' \
-          | sed 's;^CUDA_TOOLKIT_ROOT_DIR;BASE_IMG_ENV_CUDA_TOOLKIT_ROOT_DIR;' \
-          | sed 's;^CUDA_NVCC_EXECUTABLE;BASE_IMG_ENV_CUDA_NVCC_EXECUTABLE;' \
-          | sed 's;^CUDA_ARCHITECTURES;BASE_IMG_ENV_CUDA_ARCHITECTURES;' \
+          | sed 's;^CUDA_HOME;L4T_BASE_IMG_ENV_CUDA_HOME;' \
+          | sed 's;^NVIDIA;L4T_BASE_IMG_ENV_NVIDIA;' \
+          | sed 's;^PATH;L4T_BASE_IMG_ENV_PATH;' \
+          | sed 's;^LD_LIBRARY_PATH;L4T_BASE_IMG_ENV_LD_LIBRARY_PATH;' \
+          | sed 's;^ROS;L4T_BASE_IMG_ENV_ROS;' \
+          | sed 's;^RMW_IMPLEMENTATION;L4T_BASE_IMG_ENV_RMW_IMPLEMENTATION;' \
+          | sed 's;^LD_PRELOAD;L4T_BASE_IMG_ENV_LD_PRELOAD;' \
+          | sed 's;^OPENBLAS_CORETYPE;L4T_BASE_IMG_ENV_OPENBLAS_CORETYPE;' \
+          | sed 's;^TORCH_HOME;L4T_BASE_IMG_ENV_TORCH_HOME;' \
+          | sed 's;^TORCH_NVCC_FLAGS=\(.*\);L4T_BASE_IMG_ENV_TORCH_NVCC_FLAGS="\1";' \
+          | sed 's;^TORCH_CUDA_ARCH_LIST;L4T_BASE_IMG_ENV_TORCH_CUDA_ARCH_LIST;' \
+          | sed 's;^NVCC_PATH;L4T_BASE_IMG_ENV_NVCC_PATH;' \
+          | sed 's;^CUDA_BIN_PATH;L4T_BASE_IMG_ENV_CUDA_BIN_PATH;' \
+          | sed 's;^CMAKE_CUDA_COMPILER;L4T_BASE_IMG_ENV_CMAKE_CUDA_COMPILER;' \
+          | sed 's;^CUDAARCHS;L4T_BASE_IMG_ENV_CUDAARCHS;' \
+          | sed 's;^CUDACXX;L4T_BASE_IMG_ENV_CUDACXX;' \
+          | sed 's;^CUDA_TOOLKIT_ROOT_DIR;L4T_BASE_IMG_ENV_CUDA_TOOLKIT_ROOT_DIR;' \
+          | sed 's;^CUDA_NVCC_EXECUTABLE;L4T_BASE_IMG_ENV_CUDA_NVCC_EXECUTABLE;' \
+          | sed 's;^CUDA_ARCHITECTURES;L4T_BASE_IMG_ENV_CUDA_ARCHITECTURES;' \
          )
 
       local img_env_var_size=${#img_env_var[@]}
@@ -159,7 +159,7 @@ function dn::callback_execute_compose_pre() {
       fi
 
       n2st::print_msg "Passing the following environment variable from ${MSG_DIMMED_FORMAT}${DEPENDENCIES_BASE_IMAGE}:${DEPENDENCIES_BASE_IMAGE_TAG}${MSG_END_FORMAT} to ${MSG_DIMMED_FORMAT}${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}${MSG_END_FORMAT}:
-        ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e BASE_IMG_ENV_ | sed 's;BASE_IMG_ENV_;    ;')
+        ${MSG_DIMMED_FORMAT}\n$(printenv | grep -e L4T_BASE_IMG_ENV_ | sed 's;L4T_BASE_IMG_ENV_;    ;')
         ${MSG_END_FORMAT}"
     else
       n2st::print_msg "Skiping base image environment variable fetching"
