@@ -19,6 +19,7 @@
 #
 # =================================================================================================
 
+declare -x DN_IMPORTED
 
 function dn::source_lib() {
 
@@ -110,5 +111,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  dn::source_lib || exit 1
+  if [[ -z ${DN_IMPORTED} ]]; then
+    dn::source_lib || exit 1
+  fi
 fi

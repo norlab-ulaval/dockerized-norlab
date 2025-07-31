@@ -7,14 +7,22 @@
 #
 # =================================================================================================
 
-# ....Load Dockerized-NorLab container-tools libraries.............................................
+# Skip if explicitly disabled
+if [[ "${DN_DISABLE_AUTO_LOAD:-}" == "true" ]]; then
+   exit 0
+fi
 
 # Only load if not already loaded (prevent double-loading)
-if [[ -z "${DN_CONTAINER_TOOLS_LOADED:-}" ]]; then
-  pushd "$(pwd)" >/dev/null || exit 1
-  cd /dockerized-norlab/dockerized-norlab-images/container-tools || exit 1
-  source import_dockerized_norlab_container_tools.bash
-  popd >/dev/null || exit 1
+if [[ -n "${DN_CONTAINER_TOOLS_LOADED:-}" ]]; then
+    exit 0
+fi
+
+# ....Load Dockerized-NorLab container-tools libraries.............................................
+if pushd "$(pwd)" >/dev/null 2>&1; then
+  if cd /dockerized-norlab/dockerized-norlab-images/container-tools 2>/dev/null; then
+    source import_dockerized_norlab_container_tools.bash
+  fi
+  popd >/dev/null 2>&1 || true
 fi
 
 # ====Build-time appended instructions=============================================================
