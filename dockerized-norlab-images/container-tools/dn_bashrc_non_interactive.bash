@@ -20,9 +20,11 @@
 
 # Skip loading if we're in a system process that might conflict
 # Check for common package management processes
-if [[ "${0}" =~ (dpkg|apt-get|apt|aptitude|debconf) ]] ||
-   [[ "${PPID_CMD:-}" =~ (dpkg|apt-get|apt|aptitude|debconf) ]] ||
-   [[ -n "${DEBIAN_FRONTEND:-}" && "${DEBIAN_FRONTEND}" != "noninteractive" ]]; then
+echo "Caller: ${0}"
+echo "PPID_CMD: ${PPID_CMD}"
+if [[ "${0}" =~ (rosdep|colcon|dpkg|apt-get|apt|aptitude|debconf) ]] ||
+   [[ "${PPID_CMD:-}" =~ (rosdep|colcon|dpkg|apt-get|apt|aptitude|debconf) ]] ||
+   [[ "${DEBIAN_FRONTEND:-}" != "noninteractive" ]]; then
    exit 0
 fi
 
