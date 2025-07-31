@@ -51,9 +51,12 @@ function dn::setup_debugging_tools() {
   # ===Service: ssh server===========================================================================
   n2st::print_msg "Installing openssh-server..."
   apt-get update
-  apt-get install --assume-yes --no-install-recommends openssh-server
-  apt-get clean
-  rm -rf /var/lib/apt/lists/*
+
+  apt-get install --assume-yes --no-install-recommends \
+      openssh-server \
+      ncurses-term \
+      xauth \
+      ssh-import-id
 
   # ....Setup ssh daemon.............................................................................
   n2st::print_msg "Setup ssh daemon..."
@@ -63,20 +66,44 @@ function dn::setup_debugging_tools() {
   # - https://austinmorlan.com/posts/docker_clion_development/
   # - https://www.allaban.me/posts/2020/08/ros2-setup-ide-docker/
   # - https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
-  ( \
-    echo "LogLevel DEBUG2"; \
-    echo "PermitRootLogin yes"; \
-    echo "PasswordAuthentication yes"; \
-    echo "Port ${DN_SSH_SERVER_PORT}"; \
-    echo "Subsystem sftp /usr/lib/openssh/sftp-server"; \
-  ) > /etc/ssh/sshd_config_dockerized_norlab_openssh_server \
-  && mkdir -p /run/sshd
+  (
+    echo
+    echo "# Security settings"
+    echo "PermitRootLogin yes"
+    echo "PasswordAuthentication yes"                     # Allow password-based authentication
+#    echo "X11Forwarding no"                               # Disable X11 forwarding unless needed
+#    echo "AllowTcpForwarding no"                          # Disable TCP forwarding unless needed
+#    echo "PermitEmptyPasswords no"                        # Never allow empty passwords
+#    echo "PermitUserEnvironment yes"
+    echo
+    echo "# Connection settings"
+    echo "Port ${DN_SSH_SERVER_PORT}"                     # Default SSH port
+    echo "MaxAuthTries 3"                                 # Limit authentication attempts
+    echo
+#    echo "# User restrictions"
+#    echo "AllowUsers ${DN_PROJECT_USER},${_SETUP_DEBUGGER_USER}" # Restrict which users can connect
+#    echo "DenyUsers root"                                 # Explicitly deny root access
+    echo
+    echo "# Logging"
+    echo "LogLevel DEBUG2"
+    echo
+    echo "# Subsystem"
+    echo "Subsystem sftp /usr/lib/openssh/sftp-server"
+    echo
+  ) > /etc/ssh/sshd_config_dockerized_norlab_openssh_server
 
-  #  echo "PermitUserEnvironment yes"; \
+  mkdir -p /run/sshd
 
   # SSH login fix. Otherwise user is kicked off after login
   # Ref https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
   sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+  echo "Introspect 'sshd_config_dockerized_norlab_openssh_server'..."
+  cat /etc/ssh/sshd_config_dockerized_norlab_openssh_server
+  echo
+  echo "Introspect '/etc/pam.d/sshd'..."
+  cat /etc/pam.d/sshd
+  echo
 
   # ....Set password for users.......................................................................
   # user:newpassword
@@ -115,13 +142,13 @@ function dn::setup_debugging_tools() {
     #       and result in not sourcing ros from .bashrc
 
     ## Option 1: source the root .bashrc in the debugger user
-    #( \
-    #  echo ""; \
-    #  echo "# >>> dockerized-norlab dn-project-debugging-tools "; \
-    #  echo "# Step to ensure that ROS related sourcing step are performed in the debugging user "; \
-    #  echo "source /root/.bashrc"; \
-    #  echo "# <<< dockerized-norlab dn-project-debugging-tools "; \
-    #  echo ""; \
+    #(
+    #  echo
+    #  echo "# >>> dockerized-norlab dn-project-debugging-tools "
+    #  echo "# Step to ensure that ROS related sourcing step are performed in the debugging user "
+    #  echo "source /root/.bashrc"
+    #  echo "# <<< dockerized-norlab dn-project-debugging-tools "
+    #  echo
     #) >> /home/"${DN_SSH_SERVER_USER}"/.bashrc
 
     ## Option 2: hardlink the root .bashrc to the debugger user .bashrc
@@ -159,6 +186,10 @@ function dn::setup_debugging_tools() {
   Curently its done by 'dn_entrypoint.global.init.callback.bash'.
   Ref 'dockerized-norlab-images/core-images/dn-project/project-core/project_entrypoints'.
   "
+
+  # ....Teardown...................................................................................
+  apt-get clean
+  rm -rf /var/lib/apt/lists/*
 
   return 0
 }
