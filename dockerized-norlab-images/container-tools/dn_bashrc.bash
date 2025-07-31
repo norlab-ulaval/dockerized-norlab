@@ -9,12 +9,12 @@
 
 # Skip if explicitly disabled
 if [[ "${DN_DISABLE_AUTO_LOAD:-}" == "true" ]]; then
-   exit 0
+   return 0 2>/dev/null || exit 0
 fi
 
 # Only load if not already loaded (prevent double-loading)
 if [[ -n "${DN_CONTAINER_TOOLS_LOADED:-}" ]]; then
-    exit 0
+    return 0 2>/dev/null || exit 0
 fi
 
 # ....Load Dockerized-NorLab container-tools libraries.............................................

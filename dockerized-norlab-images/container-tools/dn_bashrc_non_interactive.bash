@@ -23,17 +23,17 @@ _DN_DEBUG_LOG=true
 # Skip if explicitly disabled
 if [[ "${DN_DISABLE_AUTO_LOAD:-}" == "true" ]]; then
     if [[ ${_DN_DEBUG_LOG} == true ]]; then
-      echo "DN_DISABLE_AUTO_LOAD: ${DN_DISABLE_AUTO_LOAD}. Skip dn_bashrc_non_interactive.bash"
+      echo "[DN] DN_DISABLE_AUTO_LOAD: ${DN_DISABLE_AUTO_LOAD}. Skip dn_bashrc_non_interactive.bash"
     fi
-   exit 0
+   return 0 2>/dev/null || exit 0
 fi
 
 # Only load if not already loaded (prevent double-loading)
 if [[ -n "${DN_CONTAINER_TOOLS_LOADED:-}" ]]; then
     if [[ ${_DN_DEBUG_LOG} == true ]]; then
-      echo "DN_CONTAINER_TOOLS_LOADED: ${DN_CONTAINER_TOOLS_LOADED} -> already loaded. Skip dn_bashrc_non_interactive.bash"
+      echo "[DN] DN_CONTAINER_TOOLS_LOADED: ${DN_CONTAINER_TOOLS_LOADED} -> already loaded. Skip dn_bashrc_non_interactive.bash"
     fi
-    exit 0
+    return 0 2>/dev/null || exit 0
 fi
 
 
@@ -44,9 +44,9 @@ fi
 # Docker RUN instructions typically have SHLVL=1, while nested calls have higher values
 if [[ "${SHLVL:-1}" -gt 2 ]]; then
     if [[ ${_DN_DEBUG_LOG} == true ]]; then
-      echo "SHLVL: ${SHLVL} > 1 -> assume executed by a dockerfile RUN instruction. Skip dn_bashrc_non_interactive.bash"
+      echo "[DN] SHLVL: ${SHLVL} > 1 -> assume executed by a dockerfile RUN instruction. Skip dn_bashrc_non_interactive.bash"
     fi
-    exit 0
+    return 0 2>/dev/null || exit 0
 fi
 
 # Method 2: Check process ancestry for known problematic commands
@@ -58,9 +58,9 @@ if command -v ps >/dev/null 2>&1; then
         case "$process" in
             colcon|cmake|rosdep|apt-get|dpkg|debconf|aptitude|pip|pip3|python*|make)
                 if [[ ${_DN_DEBUG_LOG} == true ]]; then
-                  echo "process: ${process} in colcon|cmake|rosdep|apt-get|dpkg|debconf|aptitude|pip|pip3|python*|make -> assume executed by a problematic command. Skip dn_bashrc_non_interactive.bash"
+                  echo "[DN] process: ${process} in colcon|cmake|rosdep|apt-get|dpkg|debconf|aptitude|pip|pip3|python*|make -> assume executed by a problematic command. Skip dn_bashrc_non_interactive.bash"
                 fi
-                exit 0
+                return 0 2>/dev/null || exit 0
                 ;;
         esac
     done
@@ -73,14 +73,14 @@ if [[ -n "${COLCON_LOG_PATH:-}" ]] ||
    [[ -n "${_ROSDEP_RUNNING:-}" ]] ||
    [[ -n "${PIP_RUNNING:-}" ]]; then
      if [[ ${_DN_DEBUG_LOG} == true ]]; then
-       echo "Specific environment markers is set
+       echo "[DN] Specific environment markers is set
   COLCON_LOG_PATH: ${COLCON_LOG_PATH}
   CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}
   _ROSDEP_RUNNING: ${_ROSDEP_RUNNING}
   PIP_RUNNING: ${PIP_RUNNING}
  -> assume executed by a problematic command. Skip dn_bashrc_non_interactive.bash"
      fi
-     exit 0
+     return 0 2>/dev/null || exit 0
 fi
 
 # ....Load Dockerized-NorLab container-tools libraries.............................................
