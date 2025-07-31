@@ -29,7 +29,7 @@ RUN <<EOF
     #export MPLBACKEND="Agg"
     #python3 -m pytest tests/
 
-    # Hack to install matplotlib on arm64 and it's required module tkinter
+    # Hack to install matplotlib on arm64 and its required module tkinter
     apt-get update
     apt-get install --assume-yes --no-install-recommends \
         python3-matplotlib \

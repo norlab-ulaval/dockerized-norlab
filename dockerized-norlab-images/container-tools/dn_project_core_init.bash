@@ -19,6 +19,9 @@
 set -e
 pushd "$(pwd)" >/dev/null || exit 1
 
+# (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
+source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+
 # (CRITICAL) ToDo: unit-test (ref task NMO-548 and RLRP-213)
 
 function dn::initialize_dockerized_norlab_project() {

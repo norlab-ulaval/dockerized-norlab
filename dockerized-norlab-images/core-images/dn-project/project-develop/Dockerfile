@@ -11,6 +11,9 @@ ENV DN_PROJECT_SERVICE=project-develop
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
 
 RUN <<EOF
+    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
+    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+
     n2st::print_msg "Pre-condition checks"
     {
         test $(whoami) == "root" &&  \
@@ -48,6 +51,7 @@ ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 # ....install debugging tools......................................................................
 WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
+
 RUN source ./dn_install_debugging_tools.bash \
     && rm -f ./dn_install_debugging_tools.bash \
     && test -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server || exit 1
@@ -79,6 +83,9 @@ RUN chmod +x dn_entrypoint.init.bash && \
 WORKDIR /dn_container_env_variable/
 
 RUN <<EOF
+    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
+    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+
     n2st::print_msg "Create soft link in the home dir"
     ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
     ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash
@@ -138,6 +145,8 @@ SHELL ["/bin/bash", "-c"]
 WORKDIR /
 
 RUN <<EOF
+    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
+    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
 
     {
         test $(whoami) == "${DN_SSH_SERVER_USER}" && \
@@ -177,6 +186,9 @@ RUN <<EOF
 EOF
 
 RUN <<EOF
+    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
+    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+
     n2st::print_msg "Check that ROS source is available via the ssh daemon user"
     printenv
     {
@@ -197,6 +209,9 @@ EOF
 
 WORKDIR ${DN_PROJECT_USER_HOME}
 RUN <<EOF
+    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
+    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+
     {
         test -x "${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash" && \
         bash dn_expose_container_env_variables.bash && \
