@@ -12,7 +12,7 @@ ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
 
 RUN <<EOF
     # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+    # source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
 
     n2st::print_msg "Pre-condition checks"
     {
@@ -84,7 +84,7 @@ WORKDIR /dn_container_env_variable/
 
 RUN <<EOF
     # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+    # source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
 
     n2st::print_msg "Create soft link in the home dir"
     ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
@@ -146,7 +146,7 @@ WORKDIR /
 
 RUN <<EOF
     # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+    # source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
 
     {
         test $(whoami) == "${DN_SSH_SERVER_USER}" && \
@@ -187,7 +187,7 @@ EOF
 
 RUN <<EOF
     # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+    # source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
 
     n2st::print_msg "Check that ROS source is available via the ssh daemon user"
     printenv
@@ -210,7 +210,7 @@ EOF
 WORKDIR ${DN_PROJECT_USER_HOME}
 RUN <<EOF
     # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+    # source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
 
     {
         test -x "${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash" && \

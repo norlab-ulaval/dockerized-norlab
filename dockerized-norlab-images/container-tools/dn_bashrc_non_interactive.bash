@@ -18,10 +18,27 @@
 #
 # =================================================================================================
 
+# Skip loading if we're in a system process that might conflict
+# Check for common package management processes
+if [[ "${0}" =~ (dpkg|apt-get|apt|aptitude|debconf) ]] ||
+   [[ "${PPID_CMD:-}" =~ (dpkg|apt-get|apt|aptitude|debconf) ]] ||
+   [[ -n "${DEBIAN_FRONTEND:-}" && "${DEBIAN_FRONTEND}" != "noninteractive" ]]; then
+   exit 0
+fi
+
+# Skip if explicitly disabled
+if [[ "${DN_DISABLE_AUTO_LOAD:-}" == "true" ]]; then
+   exit 0
+fi
+
 # ....Load Dockerized-NorLab container-tools libraries.............................................
-pushd "$(pwd)" >/dev/null || exit 1
-cd /dockerized-norlab/dockerized-norlab-images/container-tools || exit 1
-source import_dockerized_norlab_container_tools.bash
-popd >/dev/null || exit 1
+
+# Only load if not already loaded (prevent double-loading)
+if [[ -z "${DN_CONTAINER_TOOLS_LOADED:-}" ]]; then
+  pushd "$(pwd)" >/dev/null || exit 1
+  cd /dockerized-norlab/dockerized-norlab-images/container-tools || exit 1
+  source import_dockerized_norlab_container_tools.bash
+  popd >/dev/null || exit 1
+fi
 
 # ====Build-time appended instructions=============================================================

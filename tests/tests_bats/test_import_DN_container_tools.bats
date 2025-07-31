@@ -77,14 +77,14 @@ teardown() {
 @test "Test utilities › validate env var are not set between test run" {
   assert_empty "${DN_PATH}"
   assert_empty "${N2ST_PATH}"
-  assert_empty "${DN_IMPORTED}"
+  assert_empty "${DN_CONTAINER_TOOLS_LOADED}"
 }
 
 @test "${TESTED_FILE} › check if env variable where properly exported › expect pass" {
   # ....Pre-condition..............................................................................
   assert_empty ${DN_PATH}
   assert_empty ${N2ST_PATH}
-  assert_empty ${DN_IMPORTED}
+  assert_empty ${DN_CONTAINER_TOOLS_LOADED}
 
   assert_empty ${N2ST_PROMPT_NAME}
   assert_empty ${N2ST_GIT_REMOTE_URL}
@@ -97,7 +97,7 @@ teardown() {
   # ....Tests......................................................................................
   assert_equal "${DN_PATH}" "/code/dockerized-norlab"
   assert_equal "${N2ST_PATH}" "/code/dockerized-norlab/utilities/norlab-shell-script-tools"
-  assert_equal "${DN_IMPORTED}" "true"
+  assert_equal "${DN_CONTAINER_TOOLS_LOADED}" "true"
 
   assert_equal "${N2ST_PROMPT_NAME}" "N2ST"
   assert_regex "${N2ST_GIT_REMOTE_URL}" "https://github.com/norlab-ulaval/norlab-shell-script-tools"'(".git")?'

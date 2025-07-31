@@ -17,7 +17,7 @@
 # Globals:
 #   write DN_PATH
 #   write N2ST_PATH
-#   write DN_IMPORTED
+#   write DN_CONTAINER_TOOLS_LOADED
 #
 # =================================================================================================
 pushd "$(pwd)" >/dev/null || exit 1
@@ -75,7 +75,7 @@ function dn::source_lib() {
 
   # ....Teardown...................................................................................
   # Set reference that the DN tools where imported with this script
-  export DN_IMPORTED=true
+  export DN_CONTAINER_TOOLS_LOADED=true
 
   cd "${tmp_cwd}" || { echo "Return to original dir error" 1>&2 && return 1; }
   return 0

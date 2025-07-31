@@ -8,9 +8,13 @@
 # =================================================================================================
 
 # ....Load Dockerized-NorLab container-tools libraries.............................................
-pushd "$(pwd)" >/dev/null || exit 1
-cd /dockerized-norlab/dockerized-norlab-images/container-tools || exit 1
-source import_dockerized_norlab_container_tools.bash
-popd >/dev/null || exit 1
+
+# Only load if not already loaded (prevent double-loading)
+if [[ -z "${DN_CONTAINER_TOOLS_LOADED:-}" ]]; then
+  pushd "$(pwd)" >/dev/null || exit 1
+  cd /dockerized-norlab/dockerized-norlab-images/container-tools || exit 1
+  source import_dockerized_norlab_container_tools.bash
+  popd >/dev/null || exit 1
+fi
 
 # ====Build-time appended instructions=============================================================
