@@ -136,10 +136,10 @@ RUN <<EOF
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
 
     # (NICE TO HAVE) ToDo: DN_CONTAINER_NAME is being set with the build arg instead of the env at runtime
-    #      echo ""; \
-    #      echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
-    #      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
-    #      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
+    #      echo ""
+    #      echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"
+    #      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"
+    #      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"
 
     echo "Add ROS2 specific aliases"
     (

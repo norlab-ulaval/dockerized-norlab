@@ -23,13 +23,13 @@ RUN <<EOF
 
     # ....Fetch pip installed packages list........................................................
     touch /requirements.l4t-base-image.txt
-    ( \
+    (
       pip3 list --format freeze \
           --exclude onnx  \
           --exclude torchaudio  \
           --exclude tensorrt \
           --exclude torch2trt  \
-          --exclude pycuda ; \
+          --exclude pycuda
     ) > /requirements.l4t-base-image.txt
 
     # ....Builder sanity check.....................................................................

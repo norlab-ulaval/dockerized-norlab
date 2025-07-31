@@ -70,8 +70,8 @@ RUN <<EOF
         gym-notebook-wrapper
 
     # ....Add gym dn_test module...................................................................
-    ( \
-      echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
+    (
+      echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 
 EOF

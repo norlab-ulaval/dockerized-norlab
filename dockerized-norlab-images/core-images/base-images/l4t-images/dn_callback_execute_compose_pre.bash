@@ -107,9 +107,14 @@ function dn::callback_execute_compose_pre() {
 
     # ....Execute cuda squash base image logic.....................................................
     if [[ ${DEPENDENCIES_BASE_IMAGE} == "dustynv/l4t-pytorch" ]]; then
-      # e.g.,
+      # Fetch env var, from a base image, to be passed to a scratch image in order to buld a mimic
+      # of the base image but in a different architecture.
+      #
+      # Base image e.g.,
       #   - dustynv/pytorch:2.1-r35.2.1
       #   - dustynv/l4t-pytorch:r36.4.0
+      #
+      # Introspection
       # $ docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' "dustynv/l4t-pytorch:r36.4.0"
 
       local img_env_var=()

@@ -564,10 +564,10 @@ with tag:
 ${STR_IMAGE_TAG_CRAWLED}"
 
 # Quick hack to export build matrix log to parent script when called via bash sinc we can't source it whitout breacking docker command
-( \
-  echo ""; \
-  echo "STR_BUILD_MATRIX_SERVICES_AND_TAGS=\"$STR_BUILD_MATRIX_SERVICES_AND_TAGS\""; \
-  echo ""; \
+(
+  echo ""
+  echo "STR_BUILD_MATRIX_SERVICES_AND_TAGS=\"$STR_BUILD_MATRIX_SERVICES_AND_TAGS\""
+  echo ""
 ) > ./dockerized-norlab-scripts/build_script/build_all.log
 
 
