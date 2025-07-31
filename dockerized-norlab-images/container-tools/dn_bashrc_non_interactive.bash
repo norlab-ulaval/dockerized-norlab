@@ -22,11 +22,17 @@ _DN_DEBUG_LOG=true
 
 # Skip if explicitly disabled
 if [[ "${DN_DISABLE_AUTO_LOAD:-}" == "true" ]]; then
+    if [[ ${_DN_DEBUG_LOG} == true ]]; then
+      echo "DN_DISABLE_AUTO_LOAD: ${DN_DISABLE_AUTO_LOAD}. Skip dn_bashrc_non_interactive.bash"
+    fi
    exit 0
 fi
 
 # Only load if not already loaded (prevent double-loading)
 if [[ -n "${DN_CONTAINER_TOOLS_LOADED:-}" ]]; then
+    if [[ ${_DN_DEBUG_LOG} == true ]]; then
+      echo "DN_CONTAINER_TOOLS_LOADED: ${DN_CONTAINER_TOOLS_LOADED} -> already loaded. Skip dn_bashrc_non_interactive.bash"
+    fi
     exit 0
 fi
 
