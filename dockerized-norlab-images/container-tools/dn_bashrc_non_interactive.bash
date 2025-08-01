@@ -20,6 +20,10 @@
 
 _DN_DEBUG_LOG=true
 
+# (CRITICAL) ToDo: assess adding this line (ref task NMO-768) ↓
+unset BASH_ENV
+
+
 # Skip if explicitly disabled
 if [[ "${DN_DISABLE_AUTO_LOAD:-}" == "true" ]]; then
     if [[ ${_DN_DEBUG_LOG} == true ]]; then
