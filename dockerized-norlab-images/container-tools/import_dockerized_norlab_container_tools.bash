@@ -24,6 +24,12 @@
 declare -x DN_CONTAINER_TOOLS_LOADED
 
 function dn::source_lib() {
+
+  if [[ -z "${DN_CONTAINER_TOOLS_LOADED}" ]]; then
+    n2st::print_msg "Dockerized-NorLab container tools are already loaded. Skip import."
+    return 0
+  fi
+
   # ....Setup......................................................................................
   local debug_log=false
   local tmp_cwd
@@ -91,7 +97,5 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  if [[ -z "${DN_CONTAINER_TOOLS_LOADED}" ]]; then
-    dn::source_lib || exit 1
-  fi
+  dn::source_lib || exit 1
 fi

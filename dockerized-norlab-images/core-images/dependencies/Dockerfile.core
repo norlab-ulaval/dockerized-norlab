@@ -20,13 +20,22 @@ SHELL ["/bin/bash", "-c"]
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
+
+ENV PYTHONIOENCODING=utf-8
+
 # ====Begin Dockerized-NorLab======================================================================
 
 # ....Setup timezone and localization..............................................................
+
+ENV LANGUAGE=en_US:en \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
+
 # change the locale from POSIX to UTF-8
 RUN <<EOF
     apt-get update
     apt-get install --assume-yes --no-install-recommends locales
+
     locale-gen en_US en_US.UTF-8
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
@@ -35,8 +44,6 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ENV LANG=en_US.UTF-8
-ENV PYTHONIOENCODING=utf-8
 
 # ....install development utilities................................................................
 RUN <<EOF

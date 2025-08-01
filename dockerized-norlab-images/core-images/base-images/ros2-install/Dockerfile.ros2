@@ -25,6 +25,12 @@ ENV TERM=${TERM:-"xterm-256color"}
 ARG DN_DEV_WORKSPACE_DIR
 ENV DN_DEV_WORKSPACE="${HOME}/${DN_DEV_WORKSPACE_DIR:-ros2_ws}"
 
+ENV LANGUAGE=en_US:en \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
+
+ENV PYTHONIOENCODING=utf-8
+
 # ====Begin Dockerized-NorLab======================================================================
 
 RUN <<EOF
@@ -49,8 +55,6 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ENV LANG=en_US.UTF-8
-ENV PYTHONIOENCODING=utf-8
 
 # ....Install ROS2.................................................................................
 RUN <<EOF

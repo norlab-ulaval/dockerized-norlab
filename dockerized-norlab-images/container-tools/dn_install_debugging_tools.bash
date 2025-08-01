@@ -29,8 +29,8 @@ pushd "$(pwd)" >/dev/null || exit 1
 # (CRITICAL) ToDo: unit-test (ref task TASK)
 
 # ....Optional settings............................................................................
-_SETUP_DEBUGGER_USER=true
-_SETUP_DEBUG_PROJECT_TMP_DIR=false
+_SETUP_DEBUGGER_USER=${1:-true}
+_SETUP_DEBUG_PROJECT_TMP_DIR=${2:-false}
 
 # ....Source project shell-scripts dependencies....................................................
 # (CRITICAL) ToDo: assess adding this line (ref task NMO-768) ↓

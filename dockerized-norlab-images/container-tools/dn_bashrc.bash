@@ -7,16 +7,6 @@
 #
 # =================================================================================================
 
-# Skip if explicitly disabled
-if [[ "${DN_DISABLE_AUTO_LOAD:-}" == "true" ]]; then
-   return 0 2>/dev/null || exit 0
-fi
-
-# Only load if not already loaded (prevent double-loading)
-if [[ -n "${DN_CONTAINER_TOOLS_LOADED:-}" ]]; then
-    return 0 2>/dev/null || exit 0
-fi
-
 # ....Load Dockerized-NorLab container-tools libraries.............................................
 if pushd "$(pwd)" >/dev/null 2>&1; then
   if cd /dockerized-norlab/dockerized-norlab-images/container-tools 2>/dev/null; then
