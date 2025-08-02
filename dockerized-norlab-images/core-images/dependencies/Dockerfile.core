@@ -1,8 +1,6 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-
-
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS dependencies
 
 ARG IS_TEAMCITY_RUN
@@ -19,7 +17,6 @@ SHELL ["/bin/bash", "-c"]
 
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
-
 
 ENV PYTHONIOENCODING=utf-8
 
@@ -39,14 +36,7 @@ RUN <<EOF
     locale-gen en_US en_US.UTF-8
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
-    apt-get autoremove --assume-yes
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-EOF
-
-
-# ....install development utilities................................................................
-RUN <<EOF
+    # ....install development utilities............................................................
     apt-get update || exit 1
     apt-get install --assume-yes --no-install-recommends \
         apt-utils \
@@ -131,17 +121,17 @@ RUN <<EOF
     #       To test X11 forwarding with OpenGL, run in the container
     #         $ glxgears
     #       The animated gears should be displayed on your local computer in macOS XQuartz app.
-
     apt-get install --assume-yes --no-install-recommends \
         x11-apps \
       || exit 1
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
 
-# ===Setup submodule===============================================================================
+# ====Setup submodule and DN container-tools=======================================================
 WORKDIR /dockerized-norlab
 COPY --from=context-dn-root ./.git ./.git
 
@@ -152,40 +142,42 @@ COPY --from=context-dn-submodules ./norlab-shell-script-tools/ ./utilities/norla
 COPY --from=context-dn-container-tools . ./dockerized-norlab-images/container-tools
 
 RUN <<EOF
-    echo "Create soft link in the root dir"
+    echo "Create soft link in the root dir..."
     ln -s /dockerized-norlab/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash
     test -f /import_dockerized_norlab_container_tools.bash || exit 1
 
+    echo "Setup ${HOME} interactive shell..."
+    # Which should be ROOT
     (
-        echo ""
+        echo
         echo "# >>> dockerized-norlab dependencies core"
-        echo "# Dockerized-norlab aliases"
-        echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash"
+        echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn"
         echo "# <<< dockerized-norlab dependencies core"
-        echo ""
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
-
-    (
-        echo ""
-        echo "# >>> dockerized-norlab dependencies core"
-        echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash"
-        echo "# <<< dockerized-norlab dependencies core"
-    echo ""
+        echo
     ) >> ${HOME}/.bashrc
 EOF
 
-# Source ROS in non-interactive non-login shell
-# Note:
-#   - Unset BASH_ENV to disable non-interactive execution
-#   - Value of the PATH variable is not used to search for the file name
-ENV BASH_ENV=/dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+# ....Setup bash wrapper...........................................................................
+COPY --from=context-dn-container-tools ./bash_wrapper/bash-dn-buildtime /usr/local/bin/bash-dn-buildtime
+COPY --from=context-dn-container-tools ./bash_wrapper/bash-dn-ssh-user /usr/local/bin/bash-dn-ssh-user
+
+RUN <<EOF
+    echo "Configure bash wrappers..."
+    chmod +x /usr/local/bin/bash-dn-buildtime
+    chmod +x /usr/local/bin/bash-dn-ssh-user
+
+    echo
+    echo "Activate DN build time non-interactive shell: /bin/bash -> /usr/local/bin/bash-dn-buildtime ..."
+EOF
+SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
 
 
 FROM dependencies AS test
 
-# Note: DN container-tools library should be sourced automaticaly via our dn_bashrc_non_interactive.bash setup
+# ....Build time tests.............................................................................
+# Note: DN container-tools library should be sourced automaticaly via our .bashrc.dn_non_interactive setup
 RUN <<EOF
-    echo "(dn-container tools) Non-interactive shell sanity check. Validate dn_bashrc_non_interactive.bash logic"
+    echo "(dn-container tools) Non-interactive shell sanity check. Validate .bashrc.dn_non_interactive logic"
     {
         # Check if import_dockerized_norlab_container_tools.bash was executed
         test "$(type -t n2st::set_which_python3_version)" == "function" && \
@@ -195,16 +187,17 @@ RUN <<EOF
 
     echo "(container-tools directory copy) Sanity check"
     {
-        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash && \
-        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash && \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn && \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash ;
     } || exit 1
 EOF
 
-# Note: DN container-tools library should be sourced automaticaly via our dn_bashrc.bash setup
+# ....Run time tests...............................................................................
+# Note: DN container-tools library should be sourced automaticaly via our .bashrc.dn setup
 SHELL ["/bin/bash", "-i", "-c"]
 RUN <<EOF
-    echo "(dn-container tools) Interactive shell sanity check. Validate dn_bashrc.bash logic"
+    echo "(dn-container tools) Interactive shell sanity check. Validate .bashrc.dn logic"
     {
         # Check if import_dockerized_norlab_container_tools.bash was executed
         test "$(type -t n2st::set_which_python3_version)" == "function" && \
@@ -215,13 +208,3 @@ EOF
 
 FROM dependencies AS final
 
-# ....TMP DEV introspection........................................................................
-## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-#RUN <<EOF
-#    # TMP DEV introspection
-#    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
-#    echo
-#    #cat ${HOME}/.bashrc
-#    echo "${0}:not implemented error" && exit 1
-#EOF
-# ........................................................................TMP DEV introspection....

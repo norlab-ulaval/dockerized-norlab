@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# (CRITICAL) ToDo: assess using this line (ref task NMO-770) ↓
+#export BASH_ENV=/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_ssh_server_user
+# instead of sourcing this one ↓
+source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_ssh_server_user
+
+exec bash "$@"

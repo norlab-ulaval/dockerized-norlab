@@ -22,6 +22,11 @@
 set -e
 pushd "$(pwd)" >/dev/null || exit 1
 
+# (Priority) ToDo: implement an help menu
+# (Priority) ToDo: refactor optional argument virtualization|native as flags
+# (NICE TO HAVE) ToDo: consider merging script with DNA dn_project_core.build.aarch_aware_build_ros.bash
+# (Priority) ToDo: move script to container-tools directory
+
 # ....Set argument.................................................................................
 PARAM_ARCH=${1:-"native"}
 
@@ -30,7 +35,7 @@ PARAM_ARCH=${1:-"native"}
   test -n "${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'}" && \
   test -n "${ROS_DISTRO:?'Env variable need to be set and non-empty.'}" && \
   test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-  { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || n2st::print_msg_error "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; } ;
+  [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
 } || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
 
 # ====Begin========================================================================================

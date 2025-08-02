@@ -50,7 +50,7 @@ function dn::setup_debugging_tools() {
     test -n "${DN_PROJECT_GID:?'Env variable needs to be set and non-empty.'}" && \
     test -n "${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}" && \
     test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-    { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || n2st::print_msg_error "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; } ;
+    [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
   } || n2st::print_msg_error_and_exit "Failed dn::setup_debugging_tools pre-condition check!"
 
   # ===Service: ssh server===========================================================================
@@ -141,19 +141,13 @@ function dn::setup_debugging_tools() {
 
   # ....add the ros distro source steps to debugger user.............................................
   if [[ ${_SETUP_DEBUGGER_USER} == true ]]; then
-    usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
+    # (CRITICAL) ToDo: validate shell wrapper behaviour ⬇︎ (ref task NMO-770)
+    usermod --shell /usr/local/bin/bash-dn-ssh-user "${DN_SSH_SERVER_USER}"
     # Note: Required for ssh in pycharm-debugger, otherwise it use .sh instead of .bash
     #       and result in not sourcing ros from .bashrc
 
-    ## Option 1: source the root .bashrc in the debugger user
-    #(
-    #  echo
-    #  echo "# >>> dockerized-norlab dn-project-debugging-tools "
-    #  echo "# Step to ensure that ROS related sourcing step are performed in the debugging user "
-    #  echo "source /root/.bashrc"
-    #  echo "# <<< dockerized-norlab dn-project-debugging-tools "
-    #  echo
-    #) >> /home/"${DN_SSH_SERVER_USER}"/.bashrc
+    ## Option 1 (CURRENT): source a bash wrapper in the debugger user
+    # In effect: $ /usr/local/bin/bash-dn-ssh-user -c COMMAND
 
     ## Option 2: hardlink the root .bashrc to the debugger user .bashrc
     #sudo ln -fv /root/.bashrc "/home/${DN_SSH_SERVER_USER}/.bashrc"
@@ -164,8 +158,7 @@ function dn::setup_debugging_tools() {
     ##       e.g. in dockerfile
     ##       SHELL ["/bin/bash", "-i", "-c"]
 
-    ## Option 3 (CURRENT): rely on BASH_ENV env varibale for non-interactive shell
-    ## Note: this logic is currently implemented via "dn_bashrc_non_interactive.bash"
+    ## Option 3: rely on BASH_ENV env variable for non-interactive shell
   fi
 
   # ====Jetbrains IDE================================================================================
@@ -208,7 +201,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  dn::setup_debugging_tools
+  dn::setup_debugging_tools || n2st::print_msg_error_and_exit "dn::setup_debugging_tools failed!"
 fi
 
 # ====Teardown=====================================================================================

@@ -18,16 +18,13 @@ WORKDIR /dockerized-norlab
 # Be advise, dont install `xrandr` it's not compatible with the Jetson kernel.
 RUN <<EOF
     echo "(deb) Install powerline-status dependencies..."
+
     apt-get update
 
     apt-get install --assume-yes --no-install-recommends \
         socat \
         fonts-powerline \
       || exit 1
-
-    apt-get autoremove --assume-yes
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
 
     echo "(pip) Install powerline-status..."
     pip3 install --no-cache-dir \
@@ -100,10 +97,18 @@ RUN <<EOF
         echo "fi"
         echo "# <<< dockerized-norlab prompt "
         echo ""
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
 
     echo "Setup bashrc configuration done"
-    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+
+    # ....Instrospection...............................................................................
+    echo -e "\nLog .bashrc.dn state\n"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
+
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 EOF
 
 
@@ -137,12 +142,12 @@ EOF
 
 # ....Set Prompt logo..............................................................................
 ## Dockerized-Norlab (legacy code)
-#RUN echo DS_LOGO=$'\u22EF𝐒\u22EF' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
-#RUN export DS_LOGO=$'\uf2dc' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash  #            nf-fa-snowflake_o
+#RUN echo DS_LOGO=$'\u22EF𝐒\u22EF' >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
+#RUN export DS_LOGO=$'\uf2dc' >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn  #            nf-fa-snowflake_o
 ## Dockerized-snow (legacy code)
 #RUN export DS_LOGO=$'\U22EF\U1D412\U22EF'  # ⋯𝐒⋯        mathematical bold capital s (U+1D412)
-#RUN export DS_LOGO=$'\U1D516' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash # 𝔖         mathematical fraktur capital s U+1D516
-#RUN export DS_LOGO=$'\U1D57E' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash # 𝕾         mathematical bold fraktur capital s U+1D57E
+#RUN export DS_LOGO=$'\U1D516' >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn # 𝔖         mathematical fraktur capital s U+1D516
+#RUN export DS_LOGO=$'\U1D57E' >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn # 𝕾         mathematical bold fraktur capital s U+1D57E
 
 
 

@@ -115,6 +115,15 @@ teardown() {
   assert_output --regexp "\[N2ST done\]".*"Test N2ST import"
 }
 
+@test "${TESTED_FILE} › validate DN import › expect pass" {
+
+  source $TESTED_FILE
+  run dn::source_ros2_underlay_only
+
+  assert_success
+  assert_output --regexp "sourcing underlay \/opt\/ros".*"setup.bash from dn_source_ros2.bash"
+}
+
 @test "${TESTED_FILE} › validate teardown › expect pass" {
 
   assert_equal "$(pwd)" "$( realpath "/code/dockerized-norlab/${TESTED_FILE_PATH}" )"

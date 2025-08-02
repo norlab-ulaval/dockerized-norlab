@@ -21,21 +21,26 @@
 #
 # =================================================================================================
 
-declare -x DN_CONTAINER_TOOLS_LOADED
 
 function dn::source_lib() {
-
-  if [[ -z "${DN_CONTAINER_TOOLS_LOADED}" ]]; then
-    n2st::print_msg "Dockerized-NorLab container tools are already loaded. Skip import."
-    return 0
-  fi
-
   # ....Setup......................................................................................
   local debug_log=false
   local tmp_cwd
   tmp_cwd=$(pwd)
   local script_path
   local target_path
+
+  if [[ "${DN_CONTAINER_TOOLS_LOADED:-}" == true ]]; then
+    if [[ ${debug_log} == true ]]; then
+      n2st::print_msg "Dockerized-NorLab container tools are already loaded. Skip import."
+    fi
+    return 0
+  else
+    if [[ ${debug_log} == true ]]; then
+      echo "Import Dockerized-NorLab container tools..."
+    fi
+  fi
+
 
   # ....Find path to script........................................................................
   if [[ -z ${DN_PATH} ]]; then
@@ -61,11 +66,11 @@ function dn::source_lib() {
 
       realpath: $(realpath .)
       \$0: $0
-      "  >&3
+      "
     fi
 
     if [[ "$( basename "${target_path}" )" != "container-tools" ]]; then
-      echo -e "\n[\033[1;31mDN error\033[0m] Can't find directory 'container-tools'!" 1>&2
+      echo -e "\n[\033[1;31mDN error\033[0m] Can't find directory 'container-tools' at ${target_path}!" 1>&2 && return 1
     fi
 
     DN_PATH=$(realpath "${target_path}/../..")
@@ -79,6 +84,16 @@ function dn::source_lib() {
   # ....Source DN dependencies.....................................................................
   cd "${N2ST_PATH}" || return 1
   source "import_norlab_shell_script_tools_lib.bash" || return 1
+
+  # ....Source DN container-tools..................................................................
+  cd "${DN_PATH}/dockerized-norlab-images/container-tools" || return 1
+  source dn_source_ros2.bash
+
+  # ....Export loaded functions....................................................................
+  for func in $(compgen -A function | grep -e n2st:: -e dn::); do
+    # shellcheck disable=SC2163
+    export -f "${func}"
+  done
 
   # ....Teardown...................................................................................
   # Set reference that the DN tools where imported with this script

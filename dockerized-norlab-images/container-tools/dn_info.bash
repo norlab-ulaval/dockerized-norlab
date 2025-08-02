@@ -100,7 +100,7 @@ function dn::show_container_runtime_information() {
   ${_sp}python3 version:             ${DN_PYTHON3_VERSION}
   ${_sp}numpy version:               $(echo "${PKG_VERSION}" | grep numpy== | sed 's/numpy==//g')
   ${_sp}pyTorch version:             $(echo "${PKG_VERSION}" | grep -w torch | sed 's/torch==//g')
-  ${_sp}torchvision version:         $(echo "${PKG_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
+#  ${_sp}torchvision version:         $(echo "${PKG_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
   ${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')
   ${_sp}LLVMlite version:            $(echo "${PKG_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')
   \033[0m"
@@ -112,6 +112,7 @@ function dn::show_container_runtime_information() {
 $(
 cd "${DN_PATH}"/dockerized-norlab-images/container-tools &&
 sed "s;alias dn_;${_sp}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn_.*;;" | grep -e dn_
+sed "s;alias dn-;${_sp}  $ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn-.*;;" | grep -e dn-
 )
 \033[0m"
 
@@ -129,16 +130,14 @@ sed "s;alias dn_;${_sp}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;
   # (NICE TO HAVE) ToDo: Add >> procedure for configuring .env file
   echo -e "Terminal prompt › The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m
   or\033[1;37m Powerline10k\033[0m be installed on the host terminal. To change to a minimal prompt,
-  either set permanently the ENV variable in\033[1;37m docker-compose.project.run.<host-arch>.yaml\033[0m:
+  either set permanently the ENV variable in\033[1;37m .env.dna\033[0m:
   ${_sp}
-  ${_sp}services:
-  ${_sp}  develop: # the service name
-  ${_sp}\033[1;37m    environment:
-  ${_sp}      - DN_ACTIVATE_POWERLINE_PROMT=false
+  ${_sp}path: .dockerized_norlab/configuration/.env.dna:
+  ${_sp}Set environment variable DN_ACTIVATE_POWERLINE_PROMT to false
   \033[0m
-  or pass the following flag to \033[1;37mdn_attach\033[0m when connecting to a running container:
+  or pass the following flag to \033[1;dna up\033[0m or \033[1;dna exec\033[0m when connecting to a running container:
   \033[1;37m
-  ${_sp}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-container-name>
+  ${_sp}$ dna [up|exec] --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" -- bash
   \033[0m"
 
   # ....Remote python interpreter setup info.......................................................

@@ -71,13 +71,11 @@ RUN <<EOF
 
     # ....Add gym dn_test module...................................................................
     (
-      echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+      echo "alias dn-gym-check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 
 EOF
 
-
-# ToDo: on task end >> mute next bloc ↓↓
 FROM main AS test
 
 RUN <<EOF
@@ -85,7 +83,8 @@ RUN <<EOF
     echo -e "Container build time environment variables\n"
     printenv
     echo -e "\n----------------------------------------------------------\n"
-    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+    echo -e "Log dn_bash_alias.bash state\n"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
     echo -e "\n----------------------------------------------------------\n"
     echo -e "           which pip's: $(which pip pip3)"
     echo -e "              pip list: $(pip list)"

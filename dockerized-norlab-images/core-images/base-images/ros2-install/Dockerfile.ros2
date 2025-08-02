@@ -39,7 +39,7 @@ RUN <<EOF
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Setup timezone and localization..........................................................
@@ -50,6 +50,7 @@ RUN <<EOF
     locale-gen en_US en_US.UTF-8
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -179,6 +180,7 @@ RUN <<EOF
     # Source https://github.com/dusty-nv/jetson-containers/issues/216
     pip3 install --upgrade --no-cache-dir cmake || exit 1
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -278,6 +280,7 @@ RUN <<EOF
     # && apt-get clean \
     # && rm -rf /var/lib/apt/lists/*
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -374,6 +377,7 @@ RUN <<EOF
 
     colcon build ${COLCON_FLAGS[@]} || exit 1
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -393,6 +397,7 @@ ARG BUILDPLATFORM
 WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN <<EOF
+    # (NICE TO HAVE) ToDo: assess replacing the ros2 source logic by dn_source_ros2.bash instead
     echo "sourcing /opt/ros/${ROS_DISTRO:?err}/setup.bash"
     source /opt/ros/${ROS_DISTRO}/setup.bash
     echo "sourcing ${DN_DEV_WORKSPACE:?err}/install/setup.bash"

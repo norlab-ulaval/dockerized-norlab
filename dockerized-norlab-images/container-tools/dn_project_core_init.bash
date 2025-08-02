@@ -20,7 +20,7 @@ set -e
 pushd "$(pwd)" >/dev/null || exit 1
 
 # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-# source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
+# source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
 
 # (CRITICAL) ToDo: unit-test (ref task NMO-548 and RLRP-213)
 
@@ -51,6 +51,7 @@ function dn::initialize_dockerized_norlab_project() {
     # (not a problem on norlab-og but mandatory on Jetson device)
     # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
     usermod -a -G video,sudo "${DN_PROJECT_USER}"
+#    usermod --shell /bin/bash -a -G video,sudo "${DN_PROJECT_USER}"
   } || n2st::print_msg_error_and_exit "Failed new user ${DN_PROJECT_USER} setup!"
 
   # ....Setup project dev workspace................................................................
@@ -80,10 +81,11 @@ function dn::initialize_dockerized_norlab_project() {
   } || exit 1
 
   # ....Add all dockerized-norlab accumulated bashrc instruction to project user bashrc............
+  echo "Setup ${DN_PROJECT_USER_HOME} interactive shell..."
   (
     echo ""
     echo "# >>> dockerized-norlab bashrc"
-    echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash"
+    echo "source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn"
     echo ""
   ) >>"${DN_PROJECT_USER_HOME}/.bashrc"
 

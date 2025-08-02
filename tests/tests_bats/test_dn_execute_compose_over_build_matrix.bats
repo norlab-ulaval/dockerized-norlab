@@ -45,21 +45,21 @@ setup_file() {
   export NBS_OVERRIDE_BUILD_MATRIX_MAIN=build_matrix_config/test/.env.build_matrix.main.mock
   export BUILD_MATRIX_CONFIG_FILE=build_matrix_config/test/.env.build_matrix.mock
 
+
 #  pwd >&3 && tree -L 2 -a -hug >&3
 #  printenv >&3
 }
 
 setup() {
-#  cd "${DN_PATH:?err}"
   source "import_dockerized_norlab_tools.bash" || exit 1
-
   cd "$BATS_DOCKER_WORKDIR" || exit
 }
 
 # ====Teardown======================================================================================
 
 #teardown() {
-#  bats_print_run_env_variable_on_error
+#  unset DN_IMPORTED
+##  bats_print_run_env_variable_on_error
 ##  bats_print_run_env_variable
 #}
 
@@ -72,9 +72,10 @@ setup() {
 
 @test "executing $TESTED_FILE from bad cwd › expect fail" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
-  run bash ./build_script/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}
+  run bash ./build_script/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}"
 
   assert_failure 1
   assert_output --partial "'$TESTED_FILE' script must be executed from the project root"
@@ -83,12 +84,13 @@ setup() {
 
 @test "executing $TESTED_FILE from ok cwd › expect pass" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   cd "${BATS_DOCKER_WORKDIR}"
   local _CI_TEST=true
   mock_docker_command_config_services_base_image_squash
-#  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}"
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+#  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}""
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                   --ci-test-force-runing-docker-cmd
   assert_success
   refute_output  --partial "No such file or directory"
@@ -97,6 +99,7 @@ setup() {
 
 @test "missing dotenv build matrix file mandatory argument› expect pass" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   cd "${BATS_DOCKER_WORKDIR}"
   local _CI_TEST=true
@@ -113,11 +116,12 @@ setup() {
 
 @test "docker command are passed to show_and_execute_docker" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="config --dry-run"
   local _CI_TEST=true
   mock_docker_command_config_services_base_image_squash
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --ci-test-force-runing-docker-cmd -- ${DOCKER_CMD}
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" --ci-test-force-runing-docker-cmd -- ${DOCKER_CMD}
   assert_success
 #  assert_output --regexp .*"Skipping the execution of Docker command".*
 #  assert_output --regexp .*"docker compose -f ".*"${DOCKER_CMD}".*
@@ -127,16 +131,17 @@ setup() {
 
 @test "dotenv build matrix file argument › ok" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.dockerized-norlab-build-system
-  assert_file_exist "${BUILD_MATRIX_CONFIG_FILE}"
+  assert_file_exist ""${BUILD_MATRIX_CONFIG_FILE}""
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
   set +e
   mock_docker_command_config_services_base_image_squash
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                               --ci-test-force-runing-docker-cmd \
                                               -- "$DOCKER_CMD"
   set -e
@@ -147,35 +152,37 @@ setup() {
 
 @test "dotenv build matrix source ordering › ok" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   assert_equal "$(basename $(pwd))" "dockerized-norlab"
   assert_file_exist .env.dockerized-norlab-build-system
   assert_file_exist .env.build_matrix.main
   assert_file_exist "${NBS_OVERRIDE_BUILD_MATRIX_MAIN}"
-  assert_file_exist "${BUILD_MATRIX_CONFIG_FILE}"
+  assert_file_exist ""${BUILD_MATRIX_CONFIG_FILE}""
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
   set +e
   mock_docker_command_config_services_base_image_squash
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                               --ci-test-force-runing-docker-cmd \
                                               -- "$DOCKER_CMD"
   set -e
   assert_success
-  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main".*"\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}".*"\[DN-build-system\]".*"Loading build matrix".*"${BUILD_MATRIX_CONFIG_FILE}"
+  assert_output --regexp "\[DN-build-system\]".*"Loading main build matrix".*".env.build_matrix.main".*"\[DN-build-system\]".*"Loading main build matrix override".*"${NBS_OVERRIDE_BUILD_MATRIX_MAIN}".*"\[DN-build-system\]".*"Loading build matrix".*""${BUILD_MATRIX_CONFIG_FILE}""
 
 #  bats_print_run_env_variable
 }
 
 @test "multi OS build › expect pass" {
 ##  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
 
   mock_docker_command_config_services_base_image_squash
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                           --ci-test-force-runing-docker-cmd \
                                           -- "$DOCKER_CMD"
   assert_success
@@ -197,13 +204,14 @@ setup() {
 
 @test "docker exit code propagation on pass › expect pass" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
   set +e
 
   mock_docker_command_config_services_base_image_squash
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                           --ci-test-force-runing-docker-cmd \
                                           -- "$DOCKER_CMD"
   set -e
@@ -219,8 +227,9 @@ setup() {
 #  bats_print_run_env_variable
 }
 
-@test "docker exit code propagation on faillure › expect pass" {
+@test "docker exit code propagation on faillure › expect fail" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -228,7 +237,7 @@ setup() {
 #  set +e
 
   mock_docker_command_config_services_base_image_squash_exit_error
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                               --ci-test-force-runing-docker-cmd \
                                                 -- "$DOCKER_CMD"
 #  set -e
@@ -243,8 +252,9 @@ setup() {
   assert_output --regexp .*"Fail".*"DN-v0.3.0-humble-core-pytorch-2.1-r36.4.0".*
 }
 
-@test "docker exit code propagation on faillure › expect pass (TeamCity casses)" {
+@test "docker exit code propagation on faillure › expect fail (TeamCity casses)" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -252,7 +262,7 @@ setup() {
   set +e
 
   mock_docker_command_config_services_base_image_squash_exit_error
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                         --ci-test-force-runing-docker-cmd \
                                         -- "$DOCKER_CMD"
   set -e
@@ -264,11 +274,12 @@ setup() {
 
 @test "flags that set env variable" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   set +e
   local _CI_TEST=true
   mock_docker_command_config_services_base_image_squash
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                       --ci-test-force-runing-docker-cmd \
                                       --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                                       --os-name-build-matrix-override 'l4t' \
@@ -283,6 +294,9 @@ setup() {
 
 @test "--force-push 'latest' tag sanity check ok" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
+
+  #printenv | grep -i -e DN_  >&3
 
   if [[ $(git symbolic-ref -q --short HEAD) == main ]]; then
     skip "Curent checkout branch is 'main' which invalidate this test logic"
@@ -290,7 +304,7 @@ setup() {
 
 #  set +e
   mock_docker_command_exit_ok
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                       --dockerized-norlab-version-build-matrix-override 'latest' \
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r35.4.1'
@@ -300,6 +314,7 @@ setup() {
 
 @test "--force-push 'bleeding' tag sanity check ok" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   if [[ $(git symbolic-ref -q --short HEAD) == dev ]]; then
     skip "Curent checkout branch is 'dev' which invalidate this test logic"
@@ -307,7 +322,7 @@ setup() {
 
 #  set +e
   mock_docker_command_exit_ok
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                       --dockerized-norlab-version-build-matrix-override 'bleeding' \
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r35.4.1'
@@ -317,10 +332,11 @@ setup() {
 
 @test "flag --force-push is passed to dn_execute_compose.bash" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   local _CI_TEST=true
   mock_docker_command_config_services
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                               --force-push \
                               --ci-test-force-runing-docker-cmd \
                               -- build
@@ -341,8 +357,9 @@ setup() {
 
 @test "flag --help" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
-  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} \
+  run bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" \
                                                                  --help
   assert_success
   assert_output --regexp .*"${TESTED_FILE} '<.env.build_matrix.*>' \[<optional flag>\] \[-- <any docker cmd\+arg>\]".*
@@ -350,11 +367,12 @@ setup() {
 
 @test "flag --buildx-bake" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   local DOCKER_CMD="--load --push --builder jetson-nx-redleader-daemon"
   local _CI_TEST=true
   mock_docker_command_config_services_base_image_squash
-  run source ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE} --buildx-bake \
+  run source ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}" --buildx-bake \
                   --ci-test-force-runing-docker-cmd \
                   -- ${DOCKER_CMD}
 
@@ -366,9 +384,10 @@ setup() {
 
 @test "repository version checkout" {
 #  skip "tmp dev"
+  assert_equal "${DN_IMPORTED}" "true"
 
   cd "${BATS_DOCKER_WORKDIR}"
-  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE ${BUILD_MATRIX_CONFIG_FILE}" \
+  run bash -c "bash ./${TESTED_FILE_PATH}/$TESTED_FILE "${BUILD_MATRIX_CONFIG_FILE}"" \
                         --dockerized-norlab-version-build-matrix-override 'v0.2.0' \
                         --os-name-build-matrix-override 'l4t' \
                         --l4t-version-build-matrix-override 'r35.4.1'

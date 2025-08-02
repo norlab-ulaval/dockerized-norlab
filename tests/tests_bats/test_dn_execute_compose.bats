@@ -75,7 +75,6 @@ setup() {
 
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
 

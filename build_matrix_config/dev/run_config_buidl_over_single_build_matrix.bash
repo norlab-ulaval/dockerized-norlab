@@ -26,19 +26,19 @@ function buidl_over_single_build_matrix() {
 #  docker_flag+=( l4t-base-image-amd64-tester )
 
   # ....ROS2-install base images...................................................................
-  docker_flag+=( base-image-ros2-clean-main )
-  docker_flag+=( base-image-ros2-clean-tester )
-  docker_flag+=( base-image-ros2-clean )
+#  docker_flag+=( base-image-ros2-clean-main )
+#  docker_flag+=( base-image-ros2-clean-tester )
+#  docker_flag+=( base-image-ros2-clean )
 
   # ....dependencies images........................................................................
-  #docker_flag+=( dependencies-core-main )
-  #docker_flag+=( dependencies-core-tester )
-  #docker_flag+=( dependencies-core )
-  #docker_flag+=( dependencies-prompt )
-  #docker_flag+=( dependencies-python-science-stack )
-  #docker_flag+=( dependencies-ros2-custom-main )
-  #docker_flag+=( dependencies-ros2-custom-tester )
-  #docker_flag+=( dependencies-ros2-custom )
+#  docker_flag+=( dependencies-core-main )
+#  docker_flag+=( dependencies-core-tester )
+#  docker_flag+=( dependencies-core )
+#  docker_flag+=( dependencies-prompt )
+#  docker_flag+=( dependencies-python-science-stack )
+#  docker_flag+=( dependencies-ros2-custom-main )
+#  docker_flag+=( dependencies-ros2-custom-tester )
+#  docker_flag+=( dependencies-ros2-custom )
 
   # ....dn-control images..........................................................................
   #docker_flag+=( dn-control )
@@ -56,6 +56,17 @@ function buidl_over_single_build_matrix() {
 #  docker_flag+=( dn-control-deep-rl-f1tenth-gym-main )
 #  docker_flag+=( dn-control-deep-rl-f1tenth-gym-tester )
 #  docker_flag+=( dn-control-deep-rl-f1tenth-gym ) # final
+
+  # ....dn-project images............................................................................
+#  docker_flag+=( project-core-main )
+#  docker_flag+=( project-core )
+#  docker_flag+=( project-develop-main )
+#  docker_flag+=( project-develop-test-ssh-user )
+#  docker_flag+=( project-develop-test-project-user )
+#  docker_flag+=( project-develop )
+  docker_flag+=( project-deploy-main )
+  docker_flag+=( project-deploy-tester )
+  docker_flag+=( project-deploy )
 
   # ....Script flag..................................................................................
   local script_flag=()

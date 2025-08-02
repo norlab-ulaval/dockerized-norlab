@@ -16,8 +16,8 @@ RUN <<EOF
 
     (
       echo
-      echo "alias dn_pytorch_cuda_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch.py'"
-      echo "alias dn_pytorch_cpu_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py'"
+      echo "alias dn-pytorch-cuda-check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch.py'"
+      echo "alias dn-pytorch-cpu-check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py'"
       echo
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 

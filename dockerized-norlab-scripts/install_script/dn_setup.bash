@@ -40,16 +40,16 @@ echo -e "${MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to install
 (
   echo
   echo "# >>> dockerized-norlab aliases"
-  echo "export DN_PATH=${DN_PATH}"
-  echo "alias dn_cd='cd $DN_PATH'"
-  echo "alias dn_attach='cd ${DN_PATH}/dockerized-norlab-scripts/run_script && bash dn_attach.bash'"
-#  echo "alias dn_instantiate_develop='cd $DN_PATH && bash dn_instantiate_develop.bash'"
-#  echo "alias dn_instantiate_deploy='cd $DN_PATH && bash dn_instantiate_deploy.bash'"
-#  echo "alias dn_build_dependencies='cd $DN_PATH && bash dn_build_dependencies.bash'"
-#  echo "alias ds_build_deploy='cd $DN_PATH && bash ds_build_deploy.bash'"
-#  echo "alias ds_build_develop='cd $DN_PATH && bash ds_build_develop.bash'"
-#  echo "alias ds_build_melodic_python3='cd $DN_PATH && bash ds_build_melodic_python3.bash'"
-#  echo "alias _ds_build_and_push_norlab_MPPI='cd $DN_PATH && bash _ds_build_and_push_norlab_MPPI.bash'"
+  echo "export _DN_PATH=${DN_PATH}"
+  echo "alias dn-cd='cd $DN_PATH'"
+#  echo "alias dn-attach='cd ${DN_PATH}/dockerized-norlab-scripts/run_script && bash dn_attach.bash'"
+#  echo "alias dn-instantiate-develop='cd $DN_PATH && bash dn_instantiate_develop.bash'"
+#  echo "alias dn-instantiate-deploy='cd $DN_PATH && bash dn_instantiate_deploy.bash'"
+#  echo "alias dn-build-dependencies='cd $DN_PATH && bash dn_build_dependencies.bash'"
+#  echo "alias ds-build-deploy='cd $DN_PATH && bash ds_build_deploy.bash'"
+#  echo "alias ds-build-develop='cd $DN_PATH && bash ds_build_develop.bash'"
+#  echo "alias ds-build-melodic-python3='cd $DN_PATH && bash ds_build_melodic_python3.bash'"
+#  echo "alias ds-build-and-push-norlab-mppi='cd $DN_PATH && bash _ds_build_and_push_norlab_MPPI.bash'"
   echo
 ) >> ~/.bashrc
 
@@ -97,15 +97,15 @@ fi
 echo -e "${MSG_DONE} Setup completed!
 
 New available alias:
-  dn_cd
-  dn_attach
+  dn-cd
+  dn-attach
 
 "
-#  dn_instantiate_develop
-#  dn_instantiate_deploy
-#  dn_build_dependencies
-#  ds_build_deploy
-#  ds_build_develop
-#  ds_build_melodic_python3
+#  dn-instantiate-develop
+#  dn-instantiate-deploy
+#  dn-build-dependencies
+#  ds-build-deploy
+#  ds-build-develop
+#  ds-build-melodic-python3
 
 

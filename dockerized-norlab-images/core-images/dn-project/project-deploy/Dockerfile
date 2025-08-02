@@ -27,7 +27,7 @@ RUN <<EOF
         test -n ${DN_PROJECT_GIT_DOMAIN:?'Env variable need to be set and non-empty.'} && \
         test -n ${DN_PROJECT_DEPLOY_REPO_BRANCH:?'Env variable need to be set and non-empty.'} && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || n2st::print_msg_error "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; } ;
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
 EOF
 
@@ -158,14 +158,18 @@ RUN <<EOF
     )
     n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
 
-    source "/opt/ros/${ROS_DISTRO}/setup.bash"
-    if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
-      source "${DN_DEV_WORKSPACE}/install/setup.bash"
-    fi
+    # (CRITICAL) ToDo: should replace the following bloc with dn::source_ros2 (ref task NMO-770)
+    #source "/opt/ros/${ROS_DISTRO}/setup.bash"
+    #if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
+    #  source "${DN_DEV_WORKSPACE}/install/setup.bash"
+    #fi
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    dn::source_ros2 || exit 1
 
     n2st::print_msg "Execute colcon build..."
     colcon build ${COLCON_FLAGS[@]} || n2st::print_msg_error_and_exit "Failed colcon build!"
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -201,7 +205,7 @@ RUN <<EOF
       chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_PROJECT_PATH:?err}
       chown -R $(id -u ${DN_PROJECT_USER}):$(id -g ${DN_PROJECT_USER}) ${DN_DEV_WORKSPACE:?err}
     } || {
-      # Collect debugg information on faillure
+      # Collect debug information on faillure
       pwd
       tree -agu
       tree -agu ${DN_PROJECT_USER_HOME}
@@ -214,35 +218,27 @@ RUN <<EOF
       echo ""
       echo "# >>> dockerized-norlab project-deploy"
       echo "# Dockerized-NorLab aliases (from project-deploy img)"
-      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"
+      echo "alias dn-info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"
       echo "# <<< dockerized-norlab project-deploy"
       echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 EOF
-
-# ....TMP DEV introspection........................................................................
-## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-#RUN <<EOF
-#    # TMP DEV introspection
-#    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
-#    echo -e "\n${0}: not implemented error\n" && exit 1
-#EOF
-# ........................................................................TMP DEV introspection....
-
-# ....TMP DEV dn_info.bash refactor................................................................
-### (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-#COPY --from=context-dn-container-tools ./dn_info.bash .
-# ................................................................TMP DEV dn_info.bash refactor....
 
 
 FROM package-project-src-code AS test
 
 # ....Test project user............................................................................
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
-SHELL ["/bin/bash", "-c"]
+#SHELL ["/bin/bash", "-c"]
+SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
 
 RUN <<EOF
+    echo -e "\nSanity check...\n"
+    cat ~/.bashrc
+    echo
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    dn::source_ros2 || exit 1
+
     {
         test "$(whoami)" == "${DN_PROJECT_USER}" && \
         test -d "/home/${DN_PROJECT_USER}" ;

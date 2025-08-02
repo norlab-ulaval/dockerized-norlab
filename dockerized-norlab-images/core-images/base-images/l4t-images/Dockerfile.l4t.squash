@@ -18,7 +18,7 @@ RUN <<EOF
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Fetch pip installed packages list........................................................
@@ -52,9 +52,6 @@ RUN <<EOF
     rm --recursive --force /jetson-inference
 
 EOF
-
-## (CRITICAL) ToDo: on DEV task end >> mute next line ↓↓
-#FROM --platform=linux/arm64 base-image AS base-image-arm64
 
 FROM --platform=linux/arm64 scratch AS base-image-arm64
 # .................................................................................................
@@ -178,6 +175,7 @@ RUN <<EOF
     echo "Build time environment variable..."
     printenv
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -205,7 +203,7 @@ RUN <<EOF
         test -n "${UBUNTU_VERSION_MAJOR:?'Env variable need to be set and non-empty.'}" && \
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
@@ -237,6 +235,7 @@ RUN <<EOF
           wget \
           psutil
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -259,7 +258,7 @@ RUN <<EOF
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${TARGETARCH:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Reinstall l4t image package in amd64 image...............................................
@@ -342,6 +341,7 @@ RUN <<EOF
         python3 setup.py install || exit 1
     fi
 
+    # ....Teardown.................................................................................
     apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -373,7 +373,7 @@ RUN <<EOF
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
         test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
-        { [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]] || echo "DEBIAN_FRONTEND == ${DEBIAN_FRONTEND} != noninteractive" ; exit 1 ; } ;
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
 

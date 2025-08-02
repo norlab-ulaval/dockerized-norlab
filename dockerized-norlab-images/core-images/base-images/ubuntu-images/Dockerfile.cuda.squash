@@ -17,7 +17,6 @@ SHELL ["/bin/bash", "-c"]
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-
 RUN touch /requirements.l4t-base-image.txt \
     && pip3 list --format freeze --not-required  \
               --exclude onnx  \
@@ -30,10 +29,6 @@ RUN touch /requirements.l4t-base-image.txt \
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
-## (CRITICAL) ToDo: on task end >> delete next line ↓↓
-#FROM base-image AS squash-base-image
-
-## (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
 FROM scratch AS squash-base-image
 
 #FROM nvcr.io/nvidia/l4t-jetpack:${TAG_OS_VERSION:?err} AS squash-base-image
@@ -46,7 +41,6 @@ ARG TARGETPLATFORM
 # ★ Note: is reset on the project-develop, project-deploy last stage
 ENV DEBIAN_FRONTEND=noninteractive
 
-
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
@@ -55,7 +49,6 @@ SHELL ["/bin/bash", "-c"]
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
 
-# (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
 COPY --from=base-image / /
 # Note:
 #   - The squash-base-image stage is a workaround to prevent the "max depth exceeded" error
@@ -143,11 +136,11 @@ FROM squash-base-image AS ros2-python-compatible
 ##   or keep conda in path and simply prepend the system python path to the front
 ##
 ## Prepend the system python path to PATH so that the system python can be reached first
-## (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "dn_bashrc_non_interactive.bash"
+## (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via ".bashrc.dn_non_interactive"
 #ARG PATH="/usr/bin:${UBUNTU__BASE_IMG_ENV_PATH:?err}"
 #ENV PATH=${PATH}
 
-# (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "dn_bashrc_non_interactive.bash"
+# (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via ".bashrc.dn_non_interactive"
 ## ===Execute ros sourcing ========================================================================
 ## (since .bashrc is not executed in non-interactive shell)
 

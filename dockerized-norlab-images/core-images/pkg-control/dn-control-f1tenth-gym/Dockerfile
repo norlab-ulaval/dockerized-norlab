@@ -95,7 +95,8 @@ RUN <<EOF
     echo -e "Container build time environment variables\n"
     printenv
     echo -e "\n----------------------------------------------------------\n"
-    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+    echo -e "Log .bashrc.dn state\n"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
     echo -e "\n----------------------------------------------------------\n"
     echo -e "           which pip's: $(which pip pip3)"
     echo -e "              pip list: $(pip list)"

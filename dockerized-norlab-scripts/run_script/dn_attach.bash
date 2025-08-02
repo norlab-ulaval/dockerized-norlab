@@ -88,9 +88,6 @@ ${SP}$ dn_attach --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" <the-running-contai
 "
 }
 
-## todo: on task end >> comment next dev bloc ↓↓
-#echo "${0}: all arg >>" \
-#  && echo "${@}"
 
 if [ $# -lt 1 ]; then
   echo -e "${MSG_ERROR} Missing argument: $0 ${MSG_ERROR_FORMAT}<THE_CONTAINER_NAME>${MSG_END_FORMAT}
