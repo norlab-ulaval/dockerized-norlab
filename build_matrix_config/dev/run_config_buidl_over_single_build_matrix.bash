@@ -26,9 +26,9 @@ function buidl_over_single_build_matrix() {
 #  docker_flag+=( l4t-base-image-amd64-tester )
 
   # ....ROS2-install base images...................................................................
-#  docker_flag+=( base-image-ros2-clean-main )
-#  docker_flag+=( base-image-ros2-clean-tester )
-#  docker_flag+=( base-image-ros2-clean )
+  docker_flag+=( base-image-ros2-clean-main )
+  docker_flag+=( base-image-ros2-clean-tester )
+  docker_flag+=( base-image-ros2-clean )
 
   # ....dependencies images........................................................................
 #  docker_flag+=( dependencies-core-main )
@@ -64,9 +64,9 @@ function buidl_over_single_build_matrix() {
 #  docker_flag+=( project-develop-test-ssh-user )
 #  docker_flag+=( project-develop-test-project-user )
 #  docker_flag+=( project-develop )
-  docker_flag+=( project-deploy-main )
-  docker_flag+=( project-deploy-tester )
-  docker_flag+=( project-deploy )
+#  docker_flag+=( project-deploy-main )
+#  docker_flag+=( project-deploy-tester )
+#  docker_flag+=( project-deploy )
 
   # ....Script flag..................................................................................
   local script_flag=()

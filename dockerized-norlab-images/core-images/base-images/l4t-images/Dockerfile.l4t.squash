@@ -50,7 +50,6 @@ RUN <<EOF
     # ....Remove Jetson-container unused component to save time and space during squashing.........
     rm --recursive --force /ros_deep_learning
     rm --recursive --force /jetson-inference
-
 EOF
 
 FROM --platform=linux/arm64 scratch AS base-image-arm64
@@ -103,10 +102,35 @@ COPY --from=base-image / /
 #COPY --from=base-image /opt /opt
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
-# Update symlink to point to system python3 instead of system python2
 RUN <<EOF
+    echo "(deb) Install basic utilities..."
+
+    # ....Setup Sources............................................................................
+    {
+      apt-get update \
+      && apt-get install --assume-yes --no-install-recommends \
+            software-properties-common \
+      && add-apt-repository --yes universe \
+      && apt-get update;
+    } || exit 1
+
+    apt-get install --assume-yes --no-install-recommends \
+            curl \
+            pkg-config \
+            lsb-release \
+      || exit 1
+
+    echo "Log build time environment variable..."
+    printenv
+
+    # Update symlink to point to system python3 instead of system python2
     update-alternatives --install /usr/bin/python python /usr/bin/python3 1 || exit 1
     update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 || exit 1
+
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 EOF
 
 # ....Transfer environment variable from base-images...............................................
@@ -167,20 +191,6 @@ ENV NVCC_PATH=${NVCC_PATH}
 ENV CUDA_NVCC_EXECUTABLE=${CUDA_NVCC_EXECUTABLE}
 ENV CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
 
-RUN <<EOF
-    apt-get update
-    apt-get install --assume-yes --no-install-recommends \
-            software-properties-common
-
-    echo "Build time environment variable..."
-    printenv
-
-    # ....Teardown.................................................................................
-    apt-get autoremove --assume-yes
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-EOF
-
 
 FROM --platform=linux/amd64 ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
 ARG TARGETPLATFORM
@@ -206,6 +216,26 @@ RUN <<EOF
         [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
+    echo "(deb) Install basic utilities..."
+
+    # ....Setup Sources............................................................................
+    apt-get update
+    apt-get install --assume-yes --no-install-recommends software-properties-common
+    add-apt-repository --yes universe
+    # Update again since we added a new key
+    apt-get update
+
+    apt-get install --assume-yes --no-install-recommends \
+        curl \
+        pkg-config \
+        lsb-release \
+        gcc \
+        python3-dev \
+        python3-pip
+
+    echo "Log build time environment variable..."
+    printenv
+
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
     if [[ "${UBUNTU_VERSION_MAJOR:?err}.04" != "${IMG_RELEASE}" ]]; then
       echo -e "Expected Ubuntu distro release ${UBUNTU_VERSION_MAJOR}.04 but image distro is ${IMG_RELEASE}!" 1>&2
@@ -213,23 +243,20 @@ RUN <<EOF
     fi
 
     # ....Make python 3 default........................................................................
-    apt-get update
-    apt-get install --assume-yes --no-install-recommends \
-      gcc \
-      python3-dev \
-      python3-pip
-
     # Update symlink to point to system python3 instead of system python2
     update-alternatives --install /usr/bin/python python /usr/bin/python3 1
     update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
+    # ....Install python utilities..................................................................
     python3 -m pip install --upgrade pip
 
     pip3 install --upgrade --no-cache-dir \
         wheel \
         setuptools \
         packaging \
-        'Cython<3'
+        Cython
+
+        # 'Cython<3' # Why was it set to lower than 3 !?!
 
     pip3 install --no-cache-dir  \
           wget \
@@ -262,7 +289,7 @@ RUN <<EOF
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Reinstall l4t image package in amd64 image...............................................
-    apt-get update || exit 1
+    apt-get update
 
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
 
@@ -281,8 +308,7 @@ RUN <<EOF
             curl \
             nano \
             zip \
-            unzip \
-            || exit 1
+            unzip
 
         echo "Install pytorch utilities..."
         apt-get install --assume-yes --no-install-recommends \
@@ -291,13 +317,11 @@ RUN <<EOF
             openmpi-bin \
             openmpi-common \
             gfortran \
-            libomp-dev \
-            || exit 1
+            libomp-dev
 
         pip3 install --no-cache-dir \
             scikit-build  \
-            ninja \
-           || exit 1
+            ninja
 
     fi
 
@@ -308,8 +332,7 @@ RUN <<EOF
     #
     # Requirement for 'pycairo' which is required by 'pycuda'
     apt-get install --assume-yes --no-install-recommends \
-      libcairo2-dev \
-      || exit 1
+      libcairo2-dev
 
     # ....Install l4t image python requirement from file...........................................
     echo "Install l4t image python requirement from file..."
@@ -384,7 +407,8 @@ RUN <<EOF
            whereis pip: $(whereis pip)"
 
     if [[ ! $(python --version) =~ "Python 3.".* ]]; then
-      echo "Need python 3" && exit 1
+        echo "Require python 3 but current verison is $(python --version)" 1>&2
+        exit 1
     fi
 
     if [[ $(which python) != "/usr/bin/python" ]] || [[ $(which python) == "/opt/conda/bin/python" ]]; then
