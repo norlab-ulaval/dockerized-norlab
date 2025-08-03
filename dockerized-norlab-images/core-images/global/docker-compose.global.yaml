@@ -99,11 +99,19 @@ services:
 #    build:
 #      platforms: !reset []
 
-  # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build <--
-  global-service-builder-config:
-    extends:
-      service: global-service-builder-config-base-images
-    build:
-      platforms:
-        - linux/arm64
-        - linux/amd64
+  # global-service-builder-config:
+  #  # Note: DEV config for local build on native architecture. Keep MUTED for push to CI build.
+  #  extends:
+  #    service: global-service-builder-config-base-images
+  #  build:
+  #    platforms:
+  #       - linux/amd64
+
+  # # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build <--
+  # global-service-builder-config:
+  #   extends:
+  #     service: global-service-builder-config-base-images
+  #   build:
+  #     platforms:
+  #       - linux/arm64
+  #       - linux/amd64

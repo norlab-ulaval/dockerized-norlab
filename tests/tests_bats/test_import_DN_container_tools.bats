@@ -116,12 +116,40 @@ teardown() {
 }
 
 @test "${TESTED_FILE} › validate DN import › expect pass" {
+  # local setup
+  export ROS_DISTRO=humble
+  export DN_DEV_WORKSPACE=/ros2_ws_mock
+
+  mkdir -p "/opt/ros/${ROS_DISTRO}"
+  cat > "/opt/ros/${ROS_DISTRO}/setup.bash" <<EOF
+echo "Mock /opt/ros/${ROS_DISTRO}/setup.bash"
+exit 0
+EOF
+
+  mkdir -p "${DN_DEV_WORKSPACE}/install/"
+  cat > "${DN_DEV_WORKSPACE}/install/local_setup.bash" <<EOF
+echo "Mock ${DN_DEV_WORKSPACE}/install/local_setup.bash"
+exit 0
+EOF
 
   source $TESTED_FILE
-  run dn::source_ros2_underlay_only
 
+  run dn::source_ros2_underlay_only
   assert_success
   assert_output --regexp "sourcing underlay \/opt\/ros".*"setup.bash from dn_source_ros2.bash"
+
+  run dn::source_ros2_overlay_only
+  assert_success
+  assert_output --regexp "sourcing overlay".*"setup.bash from dn_source_ros2.bash"
+
+  run dn::source_ros2
+  assert_success
+
+  # local teardown
+  unset ROS_DISTRO
+  unset DN_DEV_WORKSPACE
+  rm -f "/opt/ros/${ROS_DISTRO}/setup.bash"
+  rm -f "${DN_DEV_WORKSPACE}/install/local_setup.bash"
 }
 
 @test "${TESTED_FILE} › validate teardown › expect pass" {
