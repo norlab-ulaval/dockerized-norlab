@@ -107,11 +107,11 @@ services:
   #    platforms:
   #       - linux/amd64
 
-  # # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build <--
-  # global-service-builder-config:
-  #   extends:
-  #     service: global-service-builder-config-base-images
-  #   build:
-  #     platforms:
-  #       - linux/arm64
-  #       - linux/amd64
+  # (CRITICAL) ToDo: Release config. Keep UNMUTED for push to CI build <--
+  global-service-builder-config:
+    extends:
+      service: global-service-builder-config-base-images
+    build:
+      platforms:
+        - linux/arm64
+        - linux/amd64
