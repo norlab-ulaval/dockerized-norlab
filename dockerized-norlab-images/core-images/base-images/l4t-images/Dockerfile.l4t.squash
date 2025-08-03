@@ -10,6 +10,7 @@ SHELL ["/bin/bash", "-c"]
 
 # ★ Note: is reset on the project-develop, project-deploy last stage
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN <<EOF
 
@@ -250,7 +251,9 @@ RUN <<EOF
     # ....Install python utilities..................................................................
     python3 -m pip install --upgrade pip
 
-    pip3 install --upgrade --no-cache-dir \
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --upgrade --no-cache-dir \
+    pip3 install --no-cache-dir \
         wheel \
         setuptools \
         packaging \

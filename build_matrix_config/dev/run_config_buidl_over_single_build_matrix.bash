@@ -26,9 +26,9 @@ function buidl_over_single_build_matrix() {
 #  docker_flag+=( l4t-base-image-amd64-tester )
 
   # ....ROS2-install base images...................................................................
-  docker_flag+=( base-image-ros2-clean-main )
-  docker_flag+=( base-image-ros2-clean-tester )
-  docker_flag+=( base-image-ros2-clean )
+#  docker_flag+=( base-image-ros2-clean-main )
+#  docker_flag+=( base-image-ros2-clean-tester )
+#  docker_flag+=( base-image-ros2-clean )
 
   # ....dependencies images........................................................................
 #  docker_flag+=( dependencies-core-main )
@@ -50,8 +50,8 @@ function buidl_over_single_build_matrix() {
 #  docker_flag+=( dn-control-deep-rl-tester )
 #  docker_flag+=( dn-control-deep-rl ) # final
 
-#  docker_flag+=( dn-control-deep-rl-openai-gym )
-#  docker_flag+=( dn-control-deep-rl-openai-gym-tester )
+  docker_flag+=( dn-control-deep-rl-openai-gym )
+  docker_flag+=( dn-control-deep-rl-openai-gym-tester )
 
 #  docker_flag+=( dn-control-deep-rl-f1tenth-gym-main )
 #  docker_flag+=( dn-control-deep-rl-f1tenth-gym-tester )
@@ -70,7 +70,7 @@ function buidl_over_single_build_matrix() {
 
   # ....Script flag..................................................................................
   local script_flag=()
-#  script_flag+=( --fail-fast )
+  script_flag+=( --fail-fast )
 
   # ....Docker env variables.......................................................................
 #  export BUILDX_BUILDER=local-builder-multiarch-virtual

@@ -58,7 +58,9 @@ RUN <<EOF
     # Note: fix openai gym + f110 gym install error
     #   See "ERROR: Failed building wheel for gym" https://github.com/freqtrade/freqtrade/issues/8376#issuecomment-1520844382
     # Note: pip<24.1 is required for backward compatibility
-    pip3 install --upgrade \
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --upgrade \
+    pip3 install --no-cache-dir \
         'pip<24.1' \
         'wheel==0.38.4' \
         'setuptools==65.5.1' \
@@ -82,34 +84,53 @@ RUN <<EOF
 
     # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
     # See known issues comment https://github.com/f1tenth/f1tenth_gym
-    pip3 install --no-cache-dir --upgrade 'pyglet<1.5.11'
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --no-cache-dir --upgrade 'pyglet<1.5.11'
+#    pip3 install --no-cache-dir 'pyglet<1.5.11'
+    pip3 install --no-cache-dir 'pyglet==1.5.20'
     #pip3 install --no-cache-dir --upgrade 'pyglet!=1.5.11'
 
 EOF
 
 
 FROM main AS test
-
 RUN <<EOF
-    echo -e "\n----------------------------------------------------------"
-    echo -e "Container build time environment variables\n"
-    printenv
-    echo -e "\n----------------------------------------------------------\n"
-    echo -e "Log .bashrc.dn state\n"
-    cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
-    echo -e "\n----------------------------------------------------------\n"
-    echo -e "           which pip's: $(which pip pip3)"
-    echo -e "              pip list: $(pip list)"
-    echo -e "\n----------------------------------------------------------\n"
-    pip3 show pycuda
-    python3 -c "import pycuda; print( pycuda.VERSION_TEXT )"
-    echo -e "\n----------------------------------------------------------\n"
-    pip3 show torch
-    python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )"
-    echo -e "\n----------------------------------------------------------\n"
-    pip3 show f110_gym
-    echo -e "\n----------------------------------------------------------"
-    echo -e "Sanity check...\n"
+    echo -e "
+----------------------------------------------------------
+Container build time environment variables
+$(printenv)
+
+----------------------------------------------------------
+Log dn_bash_alias.bash state
+$(cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash)
+
+----------------------------------------------------------
+Python version: $(python --version)
+Numpy version: $(pip list | grep -i -e "numpy ")
+
+which python:
+$(which python)
+
+whereis python:
+$(whereis python)
+
+which pip's:
+$(which pip pip3)
+
+pip list:
+$(pip list)
+
+----------------------------------------------------------
+$(pip3 show pycuda)
+$(python3 -c "import pycuda; print( pycuda.VERSION_TEXT )")
+----------------------------------------------------------
+$(pip3 show torch)
+$(python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )")
+----------------------------------------------------------
+$(pip3 show f110_gym)
+----------------------------------------------------------
+Sanity check...
+"
     python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py || exit 1
     python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py || exit 1
     python3 -c "import f110_gym" || exit 1

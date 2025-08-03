@@ -13,6 +13,10 @@ ENV PROJECT_PROMPT_NAME=${PROJECT_PROMPT_NAME:-Dockerized-NorLab}
 #ARG DN_PROMPT_NAME
 #ENV DN_PROMPT_NAME=${DN_PROMPT_NAME:?err}
 
+# ★ Note: is reset on the project-develop, project-deploy last stage
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_ROOT_USER_ACTION=ignore
+
 SHELL ["/bin/bash", "-c"]
 
 ENV TZ=Etc/UTC
@@ -139,6 +143,8 @@ COPY --from=context-dn-root ./.git ./.git
 COPY --from=context-dn-submodules ./norlab-shell-script-tools/ ./utilities/norlab-shell-script-tools
 
 # ....Add dn-container tools.......................................................................
+#RUN echo "Built at: $(date)" # Force invalidate layer cache -> (CRITICAL) ToDo: on task end >> mute this line
+
 COPY --from=context-dn-container-tools . ./dockerized-norlab-images/container-tools
 
 RUN <<EOF
@@ -177,33 +183,44 @@ FROM dependencies AS test
 # ....Build time tests.............................................................................
 # Note: DN container-tools library should be sourced automaticaly via our .bashrc.dn_non_interactive setup
 RUN <<EOF
-    echo "(dn-container tools) Non-interactive shell sanity check. Validate .bashrc.dn_non_interactive logic"
+    echo "(dn-container tools) Non-interactive shell sanity check. Validate .bashrc.dn_non_interactive logic..."
+
+    echo "Check if import_dockerized_norlab_container_tools.bash was executed..."
     {
-        # Check if import_dockerized_norlab_container_tools.bash was executed
-        test "$(type -t n2st::set_which_python3_version)" == "function" && \
-        n2st::set_which_python3_version && \
-        test -n "${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}" ;
+        test -n "${DN_CONTAINER_TOOLS_LOADED:?'Env variable DN_CONTAINER_TOOLS_LOADED is not set'}" && \
+        test -n "$( declare -f n2st::print_msg )" ;
     } || { echo "Failed non-interactive shell sanity check" ; exit 1 ; }
 
-    echo "(container-tools directory copy) Sanity check"
+    echo "(container-tools directory copy) Sanity check..."
     {
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash ;
-    } || exit 1
+    } || { echo "(container-tools directory copy) Sanity check failed" ; exit 1 ; }
+
+    echo "(dn-container tools) Non-interactive shell sanity check. ok."
 EOF
 
 # ....Run time tests...............................................................................
 # Note: DN container-tools library should be sourced automaticaly via our .bashrc.dn setup
 SHELL ["/bin/bash", "-i", "-c"]
 RUN <<EOF
-    echo "(dn-container tools) Interactive shell sanity check. Validate .bashrc.dn logic"
+    echo "(dn-container tools) Interactive shell sanity check. Validate .bashrc.dn logic..."
+
+    echo "Check if import_dockerized_norlab_container_tools.bash was executed..."
     {
-        # Check if import_dockerized_norlab_container_tools.bash was executed
+        test -n "${DN_CONTAINER_TOOLS_LOADED:?'Env variable DN_CONTAINER_TOOLS_LOADED is not set'}" && \
+        test -n "$( declare -f n2st::print_msg )" ;
+    } || { echo "Failed non-interactive shell sanity check" ; exit 1 ; }
+
+    {
+        test -n "${DN_CONTAINER_TOOLS_LOADED:?'Env variable DN_CONTAINER_TOOLS_LOADED is not set'}" && \
         test "$(type -t n2st::set_which_python3_version)" == "function" && \
         n2st::set_which_python3_version && \
         test -n "${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}" ;
-    } || { echo "Failed non-interactive shell sanity check" ; exit 1 ; }
+    } || { echo "Failed interactive shell sanity check" ; exit 1 ; }
+
+    echo "(dn-container tools) interactive shell sanity check. ok."
 EOF
 
 FROM dependencies AS final

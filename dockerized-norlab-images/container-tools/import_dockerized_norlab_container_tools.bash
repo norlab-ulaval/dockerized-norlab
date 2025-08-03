@@ -89,11 +89,9 @@ function dn::source_lib() {
   cd "${DN_PATH}/dockerized-norlab-images/container-tools" || return 1
   source dn_source_ros2.bash
 
-  # ....Export loaded functions....................................................................
-  for func in $(compgen -A function | grep -e n2st:: -e dn::); do
-    # shellcheck disable=SC2163
-    export -f "${func}"
-  done
+  # Note: Do not `export -f [n2st|dn]::<function-name>` in the container as it polute the
+  #       container environment variables space and make it hard to consult with 'printenv' and
+  #       'env' for example both at runtime and in CI ⚠️.
 
   # ....Teardown...................................................................................
   # Set reference that the DN tools where imported with this script

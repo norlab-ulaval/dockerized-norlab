@@ -8,6 +8,7 @@ ARG TARGETPLATFORM
 
 # ★ Note: is reset on the project-develop, project-deploy last stage
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_ROOT_USER_ACTION=ignore
 
 ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}

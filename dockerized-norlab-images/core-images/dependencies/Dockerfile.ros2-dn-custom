@@ -132,8 +132,13 @@ RUN <<EOF
     echo -e "\nCheck ros2 is available...\n"
     {
         python -c "import rclpy" && \
-        ros2 pkg list ;
-    } || exit 1
+        ros2 pkg list && \
+        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
+        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+    } ||  exit 1
+
+    echo "(ROS2 sourcing) Non-interactive shell sanity check ok."
 EOF
 
 # Note: ROS2 distro should be sourced automaticaly via our .bashrc.dn_non_interactive setup
@@ -161,8 +166,13 @@ RUN <<EOF
     echo -e "\nCheck ros2 is available...\n"
     {
         python -c "import rclpy" && \
-        ros2 pkg list ;
-    } || exit 1
+        ros2 pkg list && \
+        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
+        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+    } ||  exit 1
+
+    echo "(ROS2 sourcing) Interactive shell sanity check ok."
 EOF
 
 

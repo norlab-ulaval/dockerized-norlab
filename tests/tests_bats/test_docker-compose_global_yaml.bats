@@ -110,6 +110,4 @@ Make sure the following lines look like this for PUSH TO CI BUILD:
   # ....Test native build config is muted..........................................................
   assert_file_contains "${TESTED_FILE}" "^.*#.*platforms: !reset \[\]$"
   assert_file_not_contains "${TESTED_FILE}" "^      platforms: !reset \[\]$"
-
-
 }

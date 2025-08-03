@@ -229,7 +229,6 @@ FROM package-project-src-code AS test
 
 # ....Test project user............................................................................
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
-#SHELL ["/bin/bash", "-c"]
 SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
 
 RUN <<EOF
@@ -253,12 +252,10 @@ RUN <<EOF
 
     echo
     n2st::print_msg "ros2 install pkg sanity check"
-    ros2 pkg list
-    echo
     {
+        ros2 pkg list && \
         test -n "$(ros2 pkg list | grep -e ros_core)" && \
-        test -n "$(ros2 pkg list | grep -e rclpy)" && \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+        test -n "$(ros2 pkg list | grep -e rclpy)";
     } ||  exit 1
 
     {

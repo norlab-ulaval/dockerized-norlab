@@ -20,5 +20,4 @@ else
   echo -e "${_dna_error_prefix} ${_bashrc_dn_common_path} is unreachable!" 1>&2 && exit 1
 fi
 
-
 # ====Build-time appended instructions=============================================================

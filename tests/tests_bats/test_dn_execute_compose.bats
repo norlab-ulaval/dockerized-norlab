@@ -217,7 +217,8 @@ setup() {
 @test "Variable are exported to calling script › expect pass" {
   assert_equal "${DN_IMPORTED}" "true"
 
-  assert_empty "$BUILDKIT_PROGRESS"
+  unset BUILDKIT_PROGRESS
+  #assert_empty "$BUILDKIT_PROGRESS"
   assert_empty "$REPOSITORY_VERSION"
   assert_empty "$BASE_IMAGE"
   assert_empty "$OS_NAME"

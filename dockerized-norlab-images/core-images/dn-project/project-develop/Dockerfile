@@ -55,9 +55,6 @@ COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 
 
 RUN <<EOF
-    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    # source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
-
     # ....Pre-condition checks.....................................................................
     n2st::print_msg "Pre-condition checks"
     {
@@ -106,9 +103,6 @@ RUN chmod +x dn_entrypoint.init.bash && \
 WORKDIR /dn_container_env_variable/
 
 RUN <<EOF
-    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    # source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
-
     n2st::print_msg "Create soft link in the home dir"
     ln -s /dn_container_env_variable ${DN_PROJECT_USER_HOME}/dn_container_env_variable
     ln -s ${DN_PROJECT_SERVICE_DIR}/dn_entrypoint.init.bash ${DN_PROJECT_USER_HOME}/dn_entrypoint.init.bash
@@ -149,14 +143,10 @@ EOF
 
 FROM dockerized-norlab-project-internal AS test-ssh-user
 USER "${DN_SSH_SERVER_USER}"
-#SHELL ["/bin/bash", "-c"]
 SHELL ["/usr/local/bin/bash-dn-ssh-user", "-c"]
 WORKDIR /
 
 RUN <<EOF
-    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    # source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
-
     test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
 
     {
@@ -176,18 +166,15 @@ RUN <<EOF
 
     echo
     n2st::print_msg "ros2 install pkg sanity check"
-    ros2 pkg list
-    echo
     {
-        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
-        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+        ros2 pkg list && \
+        test -n "$(ros2 pkg list | grep -e ros_core)" && \
+        test -n "$(ros2 pkg list | grep -e rclpy)";
     } ||  exit 1
 EOF
 
 FROM dockerized-norlab-project-internal AS test-project-user
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
-#SHELL ["/bin/bash", "-c"]
 SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -203,9 +190,6 @@ RUN <<EOF
         [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || exit 1
 
-    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    # source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
-
     test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
     dn::source_ros2 || exit 1
 
@@ -218,24 +202,20 @@ RUN <<EOF
 
     echo
     n2st::print_msg "ros2 install pkg sanity check"
-    ros2 pkg list
     echo
     {
-        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
-        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+        ros2 pkg list && \
+        test -n "$(ros2 pkg list | grep -e ros_core)" && \
+        test -n "$(ros2 pkg list | grep -e rclpy)";
     } ||  exit 1
 EOF
 
 WORKDIR ${DN_PROJECT_USER_HOME}
 
 RUN <<EOF
-    # (CRITICAL) ToDo: on task NMO-768 end >> delete this line ↓
-    # source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
-
     {
         test -x "${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash" && \
-        bash dn_expose_container_env_variables.bash && \
+        source dn_expose_container_env_variables.bash && \
         TMP_DOTENV_EXPOSE_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}" && \
         test -f "${TMP_DOTENV_EXPOSE_PATH}" && \
         TMP_DOTENV_EXPOSE_USER_PATH="${DN_PROJECT_USER_HOME}/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}" && \

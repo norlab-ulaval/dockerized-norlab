@@ -72,12 +72,12 @@ teardown() {
 
 @test "${TESTED_FILE_1} › validate env variable values › expect pass" {
   # ....Pre-condition..............................................................................
-  assert_empty ${NBS_COMPOSE_DIR}
-  assert_empty ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}
-  assert_empty ${NBS_MATRIX_ROS_DISTRO}
-  assert_empty ${NBS_MATRIX_ROS_PKG}
+  assert_empty "${NBS_COMPOSE_DIR}"
+  assert_empty "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}"
+  assert_empty "${NBS_MATRIX_ROS_DISTRO}"
+  assert_empty "${NBS_MATRIX_ROS_PKG}"
 
-  # ....Import N2ST library........................................................................
+  # ....Source dotenv file........................................................................
   source "$TESTED_FILE_1"
 
   # ....Tests......................................................................................
@@ -89,18 +89,37 @@ teardown() {
 
 @test "${TESTED_FILE_2} › validate env variable values › expect pass" {
   # ....Pre-condition..............................................................................
-  assert_empty ${NBS_COMPOSE_DIR}
-  assert_empty ${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}
-  assert_empty ${NBS_MATRIX_ROS_DISTRO}
-  assert_empty ${NBS_MATRIX_ROS_PKG}
+  assert_empty "${NBS_COMPOSE_DIR}"
+  assert_empty "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}"
+  assert_empty "${NBS_MATRIX_ROS_DISTRO}"
+  assert_empty "${NBS_MATRIX_ROS_PKG}"
 
-  # ....Import N2ST library........................................................................
+  # ....Source dotenv file........................................................................
   source "$TESTED_FILE_2"
 
   # ....Tests......................................................................................
   assert_equal "${NBS_COMPOSE_DIR}" "dockerized-norlab-images/core-images/base-images/ros2-install"
   assert_equal "${NBS_EXECUTE_BUILD_MATRIX_OVER_COMPOSE_FILE}" "${NBS_COMPOSE_DIR}/docker-compose.ros2.build.yaml"
-  assert_empty ${NBS_MATRIX_ROS_DISTRO}
-  assert_empty ${NBS_MATRIX_ROS_PKG}
+  assert_empty "${NBS_MATRIX_ROS_DISTRO}"
+  assert_empty "${NBS_MATRIX_ROS_PKG}"
 
+}
+
+@test "Validate .env.dockerized-norlab-build-system › expect pass" {
+  cd "$BATS_DOCKER_WORKDIR"
+
+  # ....Source dotenv file........................................................................
+  source ./.env.dockerized-norlab-build-system
+
+  # ....Tests......................................................................................
+  assert_not_empty "${DN_PATH}"
+  assert_not_empty "${NBS_BUILD_MATRIX_CONFIG}"
+  assert_not_empty "${NBS_PATH}"
+  assert_not_empty "${N2ST_PATH}"
+
+  assert_equal "${COMPOSE_BAKE}" "false"
+
+  assert_empty "${DOCKER_CONTEXT}"
+  assert_empty "${BUILDX_BUILDER}"
+  assert_empty "${BUILDKIT_PROGRESS}"
 }
