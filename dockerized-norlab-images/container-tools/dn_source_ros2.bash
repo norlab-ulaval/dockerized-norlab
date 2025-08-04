@@ -19,7 +19,7 @@
 # =================================================================================================
 
 _dn_error_prefix="\033[1;31m[DN error]\033[0m"
-_debug_log=true
+_debug_log=false
 
 function _show_debug_info() {
   local caller="$1"
