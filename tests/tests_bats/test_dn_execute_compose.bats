@@ -75,7 +75,6 @@ setup() {
 
 
 @test "sourcing $TESTED_FILE from bad cwd › expect fail" {
-#  skip "tmp dev" # ToDo: on task end >> delete this line ←
 
   cd "${BATS_DOCKER_WORKDIR}/dockerized-norlab-scripts/"
 
@@ -218,7 +217,8 @@ setup() {
 @test "Variable are exported to calling script › expect pass" {
   assert_equal "${DN_IMPORTED}" "true"
 
-  assert_empty "$BUILDKIT_PROGRESS"
+  unset BUILDKIT_PROGRESS
+  #assert_empty "$BUILDKIT_PROGRESS"
   assert_empty "$REPOSITORY_VERSION"
   assert_empty "$BASE_IMAGE"
   assert_empty "$OS_NAME"

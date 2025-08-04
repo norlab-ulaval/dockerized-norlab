@@ -21,13 +21,24 @@
 
 
 function dn::source_lib() {
-
   # ....Setup......................................................................................
   local debug_log=false
   local tmp_cwd
   tmp_cwd=$(pwd)
   local script_path
   local target_path
+
+  if [[ "${DN_IMPORTED:-}" == true ]]; then
+    if [[ ${debug_log} == true ]]; then
+      n2st::print_msg "Dockerized-NorLab tools are already loaded. Skip import."
+    fi
+    return 0
+  else
+    if [[ ${debug_log} == true ]]; then
+      echo "Import Dockerized-NorLab tools..."
+    fi
+  fi
+
 
   # ....Find path to script........................................................................
   if [[ -z ${DN_PATH} ]]; then
@@ -55,7 +66,7 @@ function dn::source_lib() {
       realpath: $(realpath .)
       \$0: $0
       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-      "  >&3
+      "
     fi
   else
     target_path="${DN_PATH}"
@@ -91,6 +102,12 @@ function dn::source_lib() {
   # Note: Import last so that N2ST_PATH point to the DN submodule path instead of NBS submodule path
   cd "${N2ST_PATH:?"Variable not set"}" || return 1
   source "import_norlab_shell_script_tools_lib.bash" || return 1
+
+  # ....Export loaded functions....................................................................
+  for func in $(compgen -A function | grep -e n2st:: -e nbs::); do
+    # shellcheck disable=SC2163
+    export -f "${func}"
+  done
 
   # ....Teardown...................................................................................
   # Set reference that the DN tools where imported with this script

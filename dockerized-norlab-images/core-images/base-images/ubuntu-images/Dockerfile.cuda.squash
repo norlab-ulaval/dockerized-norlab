@@ -1,7 +1,22 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
+
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+
+# ★ Note: is reset on the project-develop, project-deploy last stage
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_ROOT_USER_ACTION=ignore
+
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
+SHELL ["/bin/bash", "-c"]
+
+ENV TZ=Etc/UTC
+ENV TERM=${TERM:-"xterm-256color"}
 
 RUN touch /requirements.l4t-base-image.txt \
     && pip3 list --format freeze --not-required  \
@@ -15,16 +30,26 @@ RUN touch /requirements.l4t-base-image.txt \
 RUN rm --recursive --force /ros_deep_learning \
   && rm --recursive --force /jetson-inference
 
-## (CRITICAL) ToDo: on task end >> delete next line ↓↓
-#FROM base-image AS squash-base-image
-
-## (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
 FROM scratch AS squash-base-image
+
 #FROM nvcr.io/nvidia/l4t-jetpack:${TAG_OS_VERSION:?err} AS squash-base-image
 #FROM nvcr.io/nvidia/l4t-base:${TAG_OS_VERSION:?err} AS squash-base-image # ToDo: validate using l4t-base instead of l4t-jetson
 #FROM docker.io/arm64v8/ubuntu:20.04 AS squash-base-image
 
-# (CRITICAL) ToDo: on task end >> unmute next bloc ↓↓
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+
+# ★ Note: is reset on the project-develop, project-deploy last stage
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG IS_TEAMCITY_RUN
+ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
+
+SHELL ["/bin/bash", "-c"]
+
+ENV TZ=Etc/UTC
+ENV TERM=${TERM:-"xterm-256color"}
+
 COPY --from=base-image / /
 # Note:
 #   - The squash-base-image stage is a workaround to prevent the "max depth exceeded" error
@@ -44,14 +69,6 @@ COPY --from=base-image / /
 #   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-base
 #   - https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-jetpack
 
-ARG IS_TEAMCITY_RUN
-ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
-
-SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
-
-ENV TZ=Etc/UTC
-ENV TERM=${TERM:-"xterm-256color"}
 
 # ....Transfer environment variable from base-images...............................................
 # Env var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
@@ -108,6 +125,7 @@ ENV JUPYTER_PORT=${JUPYTER_PORT}
 
 
 FROM squash-base-image AS ros2-python-compatible
+
 #FROM squash-base-image AS final-arm64
 
 ## Note on anaconda cases:
@@ -119,18 +137,18 @@ FROM squash-base-image AS ros2-python-compatible
 ##   or keep conda in path and simply prepend the system python path to the front
 ##
 ## Prepend the system python path to PATH so that the system python can be reached first
-## (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "dn_bashrc_non_interactive.bash"
-#ARG PATH="/usr/bin:${BASE_IMG_ENV_PATH:?err}"
+## (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via ".bashrc.dn_non_interactive"
+#ARG PATH="/usr/bin:${UBUNTU__BASE_IMG_ENV_PATH:?err}"
 #ENV PATH=${PATH}
 
-# (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via "dn_bashrc_non_interactive.bash"
+# (NICE TO HAVE) ToDo: assessment >> does PATH require to be set via the 'dn_callback_execute_compose_pre.bash' or via ".bashrc.dn_non_interactive"
 ## ===Execute ros sourcing ========================================================================
 ## (since .bashrc is not executed in non-interactive shell)
 
 # ....Make python 3 default........................................................................
 RUN if [[ $(which python) =~ "/opt/conda".* ]] || [[ ! $(which python) =~ .*"python3".* ]]; then \
           apt-get update \
-          &&  apt-get install --assume-yes --no-install-recommends \
+          && apt-get install --assume-yes --no-install-recommends \
               gcc \
               python3-dev \
               python3-pip \
@@ -156,6 +174,7 @@ RUN python3 -m pip install --upgrade pip \
 
 
 FROM --platform="linux/amd64" ros2-python-compatible AS final-amd64
+
 
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
@@ -184,8 +203,8 @@ RUN apt-get update  \
         openmpi-common \
         gfortran \
         libomp-dev \
-    && rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && pip3 install --no-cache-dir \
         scikit-build  \
         ninja
@@ -199,8 +218,8 @@ RUN apt-get update  \
       libcairo2-dev \
       pkg-config \
       python3-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Use the following command in a l4t container to fetch the current list of python pkg
 #       $ pip3 list --format freeze --not-required --exclude onnx --exclude torch2trt --exclude torchaudio --exclude tensorrt

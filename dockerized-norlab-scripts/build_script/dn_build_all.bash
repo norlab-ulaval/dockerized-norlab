@@ -61,9 +61,9 @@ function dn::agregate_build_logs() {
 }
 
 # ====Begin========================================================================================
-if [[ -n $(set | grep -e NBS_OVERRIDE | sed 's/ZSH_EXECUTION_STRING.*//') ]]; then
+if [[ -n $(printenv| grep -e NBS_OVERRIDE | sed 's/ZSH_EXECUTION_STRING.*//') ]]; then
   n2st::print_msg "Using the folowing environment variable override\n"
-  echo -e "${MSG_DIMMED_FORMAT}$(set | grep -e NBS_OVERRIDE | sed 's/ZSH_EXECUTION_STRING.*//' | sed 's/_p9k__.*//' | sed 's/\[.*\]=//' | sed 's/^NBS_OVERRIDE/    NBS_OVERRIDE/')${MSG_END_FORMAT}"
+  echo -e "${MSG_DIMMED_FORMAT}$(printenv| grep -e NBS_OVERRIDE | sed 's/ZSH_EXECUTION_STRING.*//' | sed 's/_p9k__.*//' | sed 's/\[.*\]=//' | sed 's/^NBS_OVERRIDE/    NBS_OVERRIDE/')${MSG_END_FORMAT}"
   echo
 fi
 

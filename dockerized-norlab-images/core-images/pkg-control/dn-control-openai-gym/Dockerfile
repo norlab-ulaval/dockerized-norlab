@@ -1,69 +1,130 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
-FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS base-image
+FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
 
 COPY --from=context-dn-container-tools ./dn_test/try_gym.py /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/
 
-# ...Install simulator..............................................................................
-
-# Dependencies
-#   box2d-py dependency: swig
-#   Gym headless server rendering require a virtual X server like xvfb
-#       pyvirtualdisplay is a python wraper for xvfb › https://github.com/ponty/pyvirtualdisplay/tree/3.0
-#       gym-notebook-wrapper is wrapper for running gym and recording movie on Jupyter notebook
-#           ↳ |  require xvfb and python-opengl
-#   gym VideoRecorder dependency: ffmpeg and imageio-ffmpeg
-
 RUN <<EOF
+    # ....Dependencies notes.......................................................................
+    #   - box2d-py dependency: swig
+    #   - gym VideoRecorder dependency: ffmpeg and imageio-ffmpeg
+    #   - gym headless server rendering require a virtual X server like xvfb
+    #       pyvirtualdisplay is a python wraper for xvfb › https://github.com/ponty/pyvirtualdisplay/tree/3.0
+    #       gym-notebook-wrapper is wrapper for running gym and recording movie on Jupyter notebook
+    #           ↳ |  require xvfb and python-opengl
+    # .............................................................................................
 
-    apt-get update \
-        && apt-get install --assume-yes  --no-install-recommends \
+    # ....Deb install..............................................................................
+    apt-get update
+
+    echo "(deb) Install OpenAI gym dependencies..."
+    apt-get install --assume-yes  --no-install-recommends \
             swig \
             mesa-utils \
-            ffmpeg
+            ffmpeg \
+        || exit 1
 
-    echo "pyvirtualdisplay dependencies and backends on Ubuntu 20.04"
+    echo "Install pyvirtualdisplay dependencies and backends on Ubuntu 20.04..."
+    # Note:
+    #   Do NOT install opengl using deb i.e., 'python3-opengl' ⚠️
+    #   Use pip install PyOpenGL instead.
     apt-get install --assume-yes  --no-install-recommends \
             xvfb \
-            python3-opengl \
             xserver-xephyr \
             tigervnc-standalone-server \
             x11-utils \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/*
+            gnumeric \
+        || exit 1
 
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    # ....Pip install..............................................................................
     pip3 install --no-cache-dir --upgrade pip
 
-    echo "Vizualisation tools"
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --no-cache-dir --upgrade Cython \
+    #pip3 install --no-cache-dir Cython \
+    #echo "Install >>> pip cython $( pip list | grep -i cython )..."
 
-    #    && pip3 install --no-cache-dir --upgrade Cython \
-    echo ">>> pip cython $( pip list | grep -i cython )"
+    echo "Install vizualisation tools..."
     pip3 install --no-cache-dir  \
         pyvirtualdisplay \
-        imageio-ffmpeg
+        imageio-ffmpeg \
+        PyOpenGL
 
-        #PyOpenGL \
-        #PyOpenGL_accelerate
+        #PyOpenGL_accelerate # Might only provides optional performance optimizations
 
-    echo "Gym depencies"
+    echo "(pip) Install OpenAI gym dependencies..."
+    # Note: OpenAI gym is not compatible with numpy 2.0, so pin to earlier version ⚠️
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --upgrade \
+    pip3 install --no-cache-dir \
+        'numpy<2.0.0' \
+        || exit 1
+
     pip3 install --no-cache-dir  \
         gym[classic_control,box2d]  \
         pyglet \
-        box2d-py
+        box2d-py \
+      || exit 1
 
-    echo "Jupyter + gym related"
-
+    echo "Install Jupyter + gym related..."
     pip3 install --no-cache-dir  \
         jupyterlab \
         notebook \
         gym-notebook-wrapper
 
-    echo "Sanity check"
-    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py
+    # ....Add gym dn_test module...................................................................
+    (
+      echo "alias dn-gym-check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 
-    ( \
-      echo "alias dn_gym_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py'"; \
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
 
+EOF
+
+FROM main AS test
+
+## (CRITICAL) ToDo: on task NMO-770 end >> delete this line ↓
+#COPY --from=context-dn-container-tools ./import_dockerized_norlab_container_tools.bash /dockerized-norlab/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash
+
+RUN <<EOF
+    echo -e "
+----------------------------------------------------------
+Container build time environment variables
+$(printenv)
+
+----------------------------------------------------------
+Log dn_bash_alias.bash state
+$(cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash)
+
+----------------------------------------------------------
+Python version: $(python --version)
+Numpy version: $(pip list | grep -i -e "numpy ")
+
+which python:
+$(which python)
+
+whereis python:
+$(whereis python)
+
+which pip's:
+$(which pip pip3)
+
+pip list:
+$(pip list)
+
+----------------------------------------------------------
+$(pip3 show pycuda)
+$(python3 -c "import pycuda; print( pycuda.VERSION_TEXT )")
+----------------------------------------------------------
+$(pip3 show torch)
+$(python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )")
+----------------------------------------------------------
+Sanity check...
+"
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py || exit 1
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py || exit 1
 EOF

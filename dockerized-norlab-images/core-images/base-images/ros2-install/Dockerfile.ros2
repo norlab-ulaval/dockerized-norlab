@@ -1,7 +1,9 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
+
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-install
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -16,7 +18,6 @@ ENV ROS_ROOT=/opt/ros/${ROS_DISTRO}
 ENV ROS_PYTHON_VERSION=3
 
 SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
 
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
@@ -24,19 +25,37 @@ ENV TERM=${TERM:-"xterm-256color"}
 ARG DN_DEV_WORKSPACE_DIR
 ENV DN_DEV_WORKSPACE="${HOME}/${DN_DEV_WORKSPACE_DIR:-ros2_ws}"
 
+ENV LANGUAGE=en_US:en \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
+
+ENV PYTHONIOENCODING=utf-8
+
 # ====Begin Dockerized-NorLab======================================================================
 
-# ....Setup timezone and localization..............................................................
-# change the locale from POSIX to UTF-8
-RUN apt-get update && \
-    apt-get install --assume-yes --no-install-recommends \
-        locales \
-    && rm -rf /var/lib/apt/lists/* \
-    && locale-gen en_US en_US.UTF-8 \
-    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+RUN <<EOF
+    # ....Check pre-conditions.....................................................................
+    {
+        test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${BUILDPLATFORM:?'Env variable need to be set and non-empty.'}" && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
+    } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
-ENV LANG=en_US.UTF-8
-ENV PYTHONIOENCODING=utf-8
+    # ....Setup timezone and localization..........................................................
+    # change the locale from POSIX to UTF-8
+    apt-get update
+    apt-get install --assume-yes --no-install-recommends locales
+
+    locale-gen en_US en_US.UTF-8
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
 
 # ....Install ROS2.................................................................................
 RUN <<EOF
@@ -44,7 +63,7 @@ RUN <<EOF
     # ....Distro compatibility check...............................................................
     UBUNTU_DISTRO_NAME="$( source /etc/lsb-release && echo ${DISTRIB_CODENAME})"
     UBUNTU_DISTRO_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
-    n2st::print_msg "Ubuntu version is ${UBUNTU_DISTRO_NAME}"
+    echo -e "Ubuntu version is ${UBUNTU_DISTRO_NAME}"
 
     if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]] && [[ "${ROS_DISTRO}" =~ ^(foxy|galactic)$ ]] ; then
       :
@@ -53,7 +72,7 @@ RUN <<EOF
     elif [[ "${UBUNTU_DISTRO_RELEASE}" == "24.04" ]] && [[ "${ROS_DISTRO}" =~ ^(jazzy|kilted)$ ]] ; then
       :
     else
-        n2st::print_msg_error "Ubuntu distro ${UBUNTU_DISTRO_NAME} not compatible with ROS2 distro ${ROS_DISTRO}!"
+        echo -e "Ubuntu distro ${UBUNTU_DISTRO_NAME} not compatible with ROS2 distro ${ROS_DISTRO}!" 1>&2
         echo "Compatible configurations are:"
         echo "- Ubuntu 20.04 -> ROS2 Foxy or Galactic"
         echo "- Ubuntu 22.04 -> ROS2 Humble or Iron"
@@ -62,13 +81,16 @@ RUN <<EOF
     fi
     
     # ....Installer requirements ..................................................................
-    apt-get update \
-    && apt-get upgrade --assume-yes \
-    && apt-get install --assume-yes --no-install-recommends \
-        software-properties-common \
-        curl \
-        pkg-config \
-    || exit 1
+    {
+      apt-get update && \
+      apt-get upgrade --assume-yes && \
+      apt-get install --assume-yes --no-install-recommends \
+            software-properties-common \
+            apt-utils \
+            curl \
+            pkg-config \
+            lsb-release ;
+    } || exit 1
 
     if [[ "${UBUNTU_DISTRO_RELEASE}" == "22.04" ]]; then
         # Note systemd and udev must be updated before installing ros2 humble
@@ -80,33 +102,34 @@ RUN <<EOF
     fi
 
     # ....Setup Sources............................................................................
-    add-apt-repository universe
+    add-apt-repository --yes universe || exit 1
 
     if [[ "${ROS_DISTRO:?err}" =~ ^(foxy|galactic)$ ]]; then
         curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
     else
-        export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
+        ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
+        export ROS_APT_SOURCE_VERSION
         curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $UBUNTU_CODENAME)_all.deb"
-        dpkg -i /tmp/ros2-apt-source.deb
+
+        dpkg -i /tmp/ros2-apt-source.deb || exit 1
     fi
 
     # ....Install ROS2 Requirements................................................................
     # Note: Reference ros-desktop vs cuda enabled opencv
     #   - Ref https://github.com/dusty-nv/jetson-containers/issues/158
     #   - Ref https://github.com/dusty-nv/jetson-containers/issues/89
-    if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(dpkg --get-selections | grep opencv) ]]; then \
-      CV_WARN=("Removing previously installed version of opencv as it conflict with ros-${ROS_DISTRO}-${ROS_PKG} install process which install its own version.") \
-      && apt-get purge -y *opencv* \
-      && CV_WARN+=("Be advised that the ros-${ROS_DISTRO}-${ROS_PKG} opencv version is not CUDA enable and may interfere with the one installed by Pytorch or TensorFlow.") \
-      && echo "${CV_WARN[*]}" >> /dn_warning.log \
-      && echo -e "[WARNING] ${CV_WARN[*]}" ; \
+    if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(dpkg --get-selections | grep opencv) ]]; then
+      CV_WARN=("Removing previously installed version of opencv as it conflict with ros-${ROS_DISTRO}-${ROS_PKG} install process which install its own version.")
+      apt-get purge -y *opencv*
+      CV_WARN+=("Be advised that the ros-${ROS_DISTRO}-${ROS_PKG} opencv version is not CUDA enable and may interfere with the one installed by Pytorch or TensorFlow.")
+      echo "${CV_WARN[*]}" >> /dn_warning.log
+      echo -e "[WARNING] ${CV_WARN[*]}"
     fi
 
-    apt-get update
-    apt-get install --assume-yes --no-install-recommends \
-        apt-utils \
-        lsb-release \
+    {
+      apt-get update && \
+      apt-get install --assume-yes --no-install-recommends \
         build-essential \
         clang \
         gdb \
@@ -116,36 +139,38 @@ RUN <<EOF
         libbullet-dev \
         libpython3-dev \
         python3-vcstools \
-        python3-setuptools \
         python3-pycodestyle \
-        python3-pygments \
-      || exit 1
+        python3-pygments ;
+    } || exit 1
 
-    apt-get autoremove -y
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
+    # (Priority) ToDo: validate removing deb installed setuptools >> this line ↓
+    #    python3-setuptools \
 
-    python3 -m pip install --upgrade pip \
-    && pip3 install --no-cache-dir  \
-        scikit-build \
-        six \
-        msgpack \
-    || exit 1
+    {
+      python3 -m pip install --upgrade pip && \
+      pip3 install --no-cache-dir  \
+            scikit-build \
+            six \
+            msgpack ;
+    } || exit 1
 
     # Fix setuptools compatibility issues for colcon build
     if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]]; then
         # Python 3.8 - Use older setuptools that works with colcon
         pip3 install --no-cache-dir \
             "setuptools>=58.0.0,<59.0.0" \
-            "pyparsing==2.4.7"
+            "pyparsing==2.4.7" \
+            || exit 1
     elif [[ "${UBUNTU_DISTRO_RELEASE}" == "22.04" ]]; then
         # Python 3.10 - Use compatible setuptools version
         pip3 install --no-cache-dir \
-            "setuptools>=65.0.0,<67.0.0"
+            "setuptools>=65.0.0,<67.0.0" \
+            || exit 1
     else
         # Python 3.12+ (Ubuntu 24.04) - Use newer setuptools
         pip3 install --no-cache-dir \
-            "setuptools>=69.0.0"
+            "setuptools>=69.0.0" \
+            || exit 1
     fi
 
     # Note: ref cmake upgrade via pip:
@@ -153,26 +178,60 @@ RUN <<EOF
     #  - this is needed to build some of the ROS2 packages
     #  - use pip to upgrade cmake instead because of kitware's rotating GPG keys:
     # Source https://github.com/dusty-nv/jetson-containers/issues/216
-    pip3 install --upgrade --no-cache-dir cmake || exit 1
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --upgrade --no-cache-dir cmake || exit 1
+    pip3 install --no-cache-dir cmake || exit 1
 
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 EOF
 
 
 RUN <<EOF
-
     # ....Install ROS2.............................................................................
-    # Note: ROS2 doc recommend executing 'apt upgrade' just before installing ros
-    apt-get update \
-    && apt-get upgrade --assume-yes \
-    && apt-get install --assume-yes --no-install-recommends \
-        ros-${ROS_DISTRO}-${ROS_PKG} \
-        python3-rosdep \
-    || exit 1
-    # && dpkg --configure -a \
+    echo "Install ROS2 ${ROS_DISTRO:?err} ${ROS_PKG:?err}..."
 
+    # Note:
+    #   - ROS2 doc recommend executing 'apt upgrade' just before installing ros
+    #     Ref warning at https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html
+    #   - Do not install recommended pkg automaticaly to prevent 'libpaper-utils' configuration
+    #     problem on amd64 architecture (the arm64 version is setup for headless install).
+    {
+      apt-get update && \
+      apt-get upgrade --assume-yes && \
+      apt-get install --assume-yes --no-install-recommends \
+            ros-${ROS_DISTRO}-${ROS_PKG} \
+            python3-rosdep ;
+     } || exit 1
+
+    echo "Manualy installed recommendation from '$ apt-get install ros-${ROS_DISTRO}-${ROS_PKG}'..."
+    # (CRITICAL) ToDo: validate it does not produce error in RLRP >> next bloc ↓↓
+    apt-get install --assume-yes --no-install-recommends \
+        gcc \
+        make \
+        fonts-liberation \
+        manpages \
+        manpages-dev \
+        libgts-bin \
+        javascript-common \
+        python3-pil \
+        python3-bs4 \
+        python3-html5lib \
+        pyflakes3 \
+      || exit 1
+
+    UBUNTU_DISTRO_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
+    if [[ "${UBUNTU_DISTRO_RELEASE}" != "20.04" ]]; then
+        apt-get install --assume-yes --no-install-recommends \
+            libc-devtools \
+        || exit 1
+    fi
+
+    echo "Install dev utilities..."
     # Note: pytest version is managed by 'colcon-common-extensions'
-    apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
+    apt-get install --assume-yes --no-install-recommends \
         ros-dev-tools \
         python3-colcon-common-extensions \
         python3-colcon-mixin \
@@ -180,12 +239,14 @@ RUN <<EOF
         libtinyxml2-dev \
         libcunit1-dev \
         tree \
-    || exit 1
+      || exit 1
 
-    echo "Install python testing tools"
+    echo "Install python testing tools..."
     # Note: pip 'flake8-blind-except' version
     #       ref https://github.com/ros2/examples/issues/325#issuecomment-936131710
-    pip3 install --upgrade --no-cache-dir \
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --upgrade --no-cache-dir \
+    pip3 install --no-cache-dir \
         flake8-blind-except==0.1.1 \
         flake8-builtins \
         flake8-class-newline \
@@ -204,14 +265,14 @@ RUN <<EOF
         pytest-repeat \
         pytest-rerunfailures \
         pytest-runner \
-    || exit 1
+      || exit 1
 
-    apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
+    echo "Install ROS2 utilities..."
+    apt-get install --assume-yes --no-install-recommends \
         ros-${ROS_DISTRO}-rosbridge-server \
         ros-${ROS_DISTRO}-rqt-graph \
         ros-${ROS_DISTRO}-rviz2 \
-    || exit 1
+      || exit 1
 
     ## ToDo: assessment >> maybe not usefull anymore (pining setuptools as been moved earlier)
     # echo "Quick hack for building ros2 example under ROS foxy focal linux/amd64"  \
@@ -223,7 +284,8 @@ RUN <<EOF
     # && apt-get clean \
     # && rm -rf /var/lib/apt/lists/*
 
-    apt-get autoremove -y
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
@@ -252,48 +314,53 @@ WORKDIR ${DN_DEV_WORKSPACE}
 #    --directory-prefix="src/examples" "https://raw.githubusercontent.com/ros2/examples/${ROS_DISTRO}/rclpy" \
 #    && cd src/examples/rclpy || exit 1
 
-RUN git clone --depth=1 https://github.com/ros2/examples src/ros2_examples -b ${ROS_DISTRO} \
-    && cd src/ros2_examples \
-    && git sparse-checkout set --no-cone rclpy/topics/minimal_publisher rclpy/topics/minimal_subscriber \
-    && cd rclpy/topics/minimal_publisher || exit 1 \
-    && cd - && cd rclpy/topics/minimal_subscriber || exit 1
+## ....Install colcon mixin.....................................................................
+#RUN echo "Install colcon mixin..." \
+#  && colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml \
+#  && colcon mixin update \
+#  && colcon metadata add default https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml \
+#  && colcon metadata update
 
 RUN <<EOF
+
+    # ....Clone ros2 examples......................................................................
+    echo "Clone ros2 examples (python only) ..."
+    {
+        git clone --depth=1 https://github.com/ros2/examples src/ros2_examples -b ${ROS_DISTRO} && \
+        cd src/ros2_examples && \
+        git sparse-checkout set --no-cone rclpy/topics/minimal_publisher rclpy/topics/minimal_subscriber && \
+        test -d "./rclpy/topics/minimal_publisher" && \
+        test -d "./rclpy/topics/minimal_subscriber" && \
+        cd "${DN_DEV_WORKSPACE}";
+    } || exit 1
+
+    # ....Install ros2 examples....................................................................
+    echo "Install ros2 examples..."
     # Note: For some reason, building ros2 example under ROS foxy focal linux/amd64 fail when
     #       "rosdep update" use those flags:
     #          $ rosdep update --rosdistro ${ROS_DISTRO} --include-eol-distros
 
     source /opt/ros/${ROS_DISTRO}/setup.bash
 
-    apt-get update
+    apt-get update || exit 1
 
     rosdep init || echo "rosdep already initialized"
-    rosdep update --rosdistro "${ROS_DISTRO}"
+    rosdep update --rosdistro "${ROS_DISTRO}" || exit 1
     rosdep fix-permissions
 
-    colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml \
-      && colcon mixin update \
-      && colcon metadata add default https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml \
-      && colcon metadata update
-EOF
+    tree "${DN_DEV_WORKSPACE}/src/ros2_examples"
 
-WORKDIR ${DN_DEV_WORKSPACE}
-
-RUN <<EOF
-    source /opt/ros/${ROS_DISTRO}/setup.bash
-
-    tree src/ros2_examples
+    cd "${DN_DEV_WORKSPACE}"
     rosdep install  \
             --ignore-packages-from-source \
             --from-path ./src  \
             --rosdistro ${ROS_DISTRO}  \
             -y \
-    && colcon version-check \
-    || exit 1
-EOF
+        || exit 1
 
-# Note: The colcon flag "--cmake-clean-cache" reset the python3 env
-RUN <<EOF
+    colcon version-check
+
+    # Note: The colcon flag "--cmake-clean-cache" reset the python3 env
     COLCON_FLAGS=()
     if [[ ${TARGETPLATFORM:?err} != ${BUILDPLATFORM:?err} ]]; then
          echo -e "Builder is running in architecture virtualisation"
@@ -314,6 +381,10 @@ RUN <<EOF
 
     colcon build ${COLCON_FLAGS[@]} || exit 1
 
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 EOF
 
 # ===Remove dustynv entrypoint from .bashrc. ======================================================
@@ -323,28 +394,41 @@ RUN sed --in-place "s;source /ros_entrypoint.sh;;" "$HOME/.bashrc" \
 
 
 FROM ros2-install AS test
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
 WORKDIR ${DN_DEV_WORKSPACE}
 
-RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
-    && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
-    && echo "Sanity check" \
-    && echo ROS_VERSION=${ROS_VERSION:?'Build argument needs to be set and non-empty.'} \
-    && echo ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} \
-    && echo ROS_DISTRO=${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} \
-    && echo PATH=${PATH} \
-    && echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'} \
-    && echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-#    && echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} \
-    && python -c "import rclpy" \
-    && ros2 pkg list \
-    && colcon --log-level error test-result --all --verbose \
-    || exit 1
+RUN <<EOF
+    # (NICE TO HAVE) ToDo: assess replacing the ros2 source logic by dn_source_ros2.bash instead
+    echo "sourcing /opt/ros/${ROS_DISTRO:?err}/setup.bash"
+    source /opt/ros/${ROS_DISTRO}/setup.bash
+    echo "sourcing ${DN_DEV_WORKSPACE:?err}/install/setup.bash"
+    source ${DN_DEV_WORKSPACE}/install/setup.bash
+
+    echo "ROS2 install Sanity check"
+
+    echo ROS_VERSION=${ROS_VERSION:?'Build argument needs to be set and non-empty.'}
+    echo ROS_PYTHON_VERSION=${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'}
+    echo ROS_DISTRO=${ROS_DISTRO:?'Build argument needs to be set and non-empty.'}
+    echo PATH=${PATH}
+    echo PYTHONPATH=${PYTHONPATH:?'Build argument needs to be set and non-empty.'}
+    echo AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}
+    echo COLCON_PREFIX_PATH=${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}
+
+    #echo CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}
+
+    python -c "import rclpy" || exit 1
+
+    ros2 pkg list || exit 1
+    {
+        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
+        test -n "$(ros2 pkg list | grep -e rclpy)" ;
+    } ||  exit 1
+
+    colcon --log-level error test-result --all --verbose || exit 1
+EOF
 
 RUN if [[ ${ROS_PKG} =~ "desktop".* ]] && [[ -n $(pip list | grep cv2) ]]; then \
       python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )" ; \
@@ -362,6 +446,7 @@ RUN echo "Check workspace directory installation"  \
     || exit 1
 
 FROM ros2-install AS final
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 

@@ -17,10 +17,10 @@
 # Globals:
 #   write DN_PATH
 #   write N2ST_PATH
-#   write DN_IMPORTED
+#   write DN_CONTAINER_TOOLS_LOADED
 #
 # =================================================================================================
-pushd "$(pwd)" >/dev/null || exit 1
+
 
 function dn::source_lib() {
   # ....Setup......................................................................................
@@ -29,6 +29,18 @@ function dn::source_lib() {
   tmp_cwd=$(pwd)
   local script_path
   local target_path
+
+  if [[ "${DN_CONTAINER_TOOLS_LOADED:-}" == true ]]; then
+    if [[ ${debug_log} == true ]]; then
+      n2st::print_msg "Dockerized-NorLab container tools are already loaded. Skip import."
+    fi
+    return 0
+  else
+    if [[ ${debug_log} == true ]]; then
+      echo "Import Dockerized-NorLab container tools..."
+    fi
+  fi
+
 
   # ....Find path to script........................................................................
   if [[ -z ${DN_PATH} ]]; then
@@ -54,11 +66,11 @@ function dn::source_lib() {
 
       realpath: $(realpath .)
       \$0: $0
-      "  >&3
+      "
     fi
 
     if [[ "$( basename "${target_path}" )" != "container-tools" ]]; then
-      echo -e "\n[\033[1;31mDN error\033[0m] Can't find directory 'container-tools'!" 1>&2
+      echo -e "\n[\033[1;31mDN error\033[0m] Can't find directory 'container-tools' at ${target_path}!" 1>&2 && return 1
     fi
 
     DN_PATH=$(realpath "${target_path}/../..")
@@ -73,9 +85,17 @@ function dn::source_lib() {
   cd "${N2ST_PATH}" || return 1
   source "import_norlab_shell_script_tools_lib.bash" || return 1
 
+  # ....Source DN container-tools..................................................................
+  cd "${DN_PATH}/dockerized-norlab-images/container-tools" || return 1
+  source dn_source_ros2.bash
+
+  # Note: Do not `export -f [n2st|dn]::<function-name>` in the container as it polute the
+  #       container environment variables space and make it hard to consult with 'printenv' and
+  #       'env' for example both at runtime and in CI ⚠️.
+
   # ....Teardown...................................................................................
   # Set reference that the DN tools where imported with this script
-  export DN_IMPORTED=true
+  export DN_CONTAINER_TOOLS_LOADED=true
 
   cd "${tmp_cwd}" || { echo "Return to original dir error" 1>&2 && return 1; }
   return 0
@@ -92,6 +112,3 @@ else
   # This script is being sourced, ie: __name__="__source__"
   dn::source_lib || exit 1
 fi
-
-# ====Teardown=====================================================================================
-popd >/dev/null || exit 1

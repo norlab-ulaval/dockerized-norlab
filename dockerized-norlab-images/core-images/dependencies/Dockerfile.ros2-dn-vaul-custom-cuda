@@ -9,7 +9,7 @@ ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
 SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
+
 
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
@@ -27,7 +27,6 @@ RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
       "ros-${ROS_DISTRO:?err}-rosbridge-server" \
       "ros-${ROS_DISTRO}-slam-toolbox" \
-    && apt-get autoremove -y \
     && apt-get clean
 
 #      cifs-utils \
@@ -35,7 +34,7 @@ RUN apt-get update \
 
 FROM ros2-vaul-custom-install AS opencv-requirements
 ARG IS_TEAMCITY_RUN
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -82,7 +81,6 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
             libv4l-dev \
             v4l-utils \
             qv4l2 \
-        && apt-get autoremove -y \
         && apt-get clean \
         && n2st::teamcity_service_msg_blockClosed_v2 "Install opencv apt requirement" \
         && n2st::teamcity_service_msg_blockOpened "Download opencv" \
@@ -100,7 +98,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
 
 FROM opencv-requirements AS opencv-build
 ARG IS_TEAMCITY_RUN
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG OPENCV_VERSION="4.6.0"
@@ -157,7 +155,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
 
 FROM opencv-build AS opencv-install
 ARG IS_TEAMCITY_RUN
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG OPENCV_VERSION="4.6.0"
@@ -175,11 +173,11 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
         && echo "** Install opencv "${OPENCV_VERSION}" (4/4)" \
         && echo "------------------------------------" \
         && make install \
-        && echo '' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
-        && echo '# Opencv related' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
-        && echo 'export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
-        && echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
-        && source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash \
+        && echo '' >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn \
+        && echo '# Opencv related' >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn \
+        && echo 'export PYTHONPATH=/usr/local/lib/python3.8/site-packages/:$PYTHONPATH' >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn \
+        && echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn \
+        && source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn \
         && n2st::teamcity_service_msg_blockClosed_v2 "Install opencv with cuda support" ; \
        else \
         echo -e "Builder is targeting non Jetson device. Assume there's no CUDA support" \
@@ -198,7 +196,7 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
 
 FROM opencv-install AS vaul-dependencies-final
 ARG IS_TEAMCITY_RUN
-ARG DEBIAN_FRONTEND=noninteractive
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -233,7 +231,6 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
       "ros-${ROS_DISTRO}-laser-filters" \
-    && apt-get autoremove -y \
     && apt-get clean
 
 #

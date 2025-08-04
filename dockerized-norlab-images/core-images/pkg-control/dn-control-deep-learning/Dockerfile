@@ -14,9 +14,12 @@ RUN <<EOF
     pip3 install --no-cache-dir -r /requirements_deep_learning.txt || exit 1
     rm -rf /requirements_deep_learning.txt
 
-    {
-      echo "alias dn_python3_check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch.py'";
-    } >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
+    (
+      echo
+      echo "alias dn-pytorch-cuda-check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch.py'"
+      echo "alias dn-pytorch-cpu-check='python3 /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py'"
+      echo
+    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 
     # ....TensorDict distro conditional install....................................................
     # Note: TensorDict and TorchRL was in pre-release stage during python 3.8

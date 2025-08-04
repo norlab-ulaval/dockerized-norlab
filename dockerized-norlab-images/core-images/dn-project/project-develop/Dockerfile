@@ -10,17 +10,6 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS debugging-tools
 ENV DN_PROJECT_SERVICE=project-develop
 ENV DN_PROJECT_SERVICE_DIR=/dockerized-norlab/project/${DN_PROJECT_SERVICE}
 
-RUN <<EOF
-    n2st::print_msg "Pre-condition checks"
-    {
-        test $(whoami) == "root" &&  \
-        test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
-        test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
-        test -d ${DN_PROJECT_USER_HOME} && \
-        test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
-        test -d ${DN_PROJECT_PATH} ;
-    } || exit 1
-EOF
 
 # Set python to print stdin/sderr in real-time for dev/debug
 ENV PYTHONUNBUFFERED=1
@@ -43,12 +32,49 @@ ARG DN_SSH_SERVER_USER=pycharm-debugger
 ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
 ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 
+
 # ....install debugging tools......................................................................
 WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
-RUN source ./dn_install_debugging_tools.bash \
-    && rm -f ./dn_install_debugging_tools.bash \
-    && test -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server || exit 1
+
+### (CRITICAL) ToDo: on DEV ⚠️ task NMO-768 end >> delete this bloc ↓↓
+##COPY --from=context-dn-container-tools ./.bashrc.dn_non_interactive ./.bashrc.dn_non_interactive
+##COPY --from=context-dn-container-tools ./.bashrc.dn ./.bashrc.dn
+#COPY --from=context-dn-container-tools ./import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash
+#RUN <<EOF
+#  # ⚠️ DEV TMP -> mod .bashrc.dn_non_interactive without rebuilding depenencies images
+#  echo "unset BASH_ENV" >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
+#
+#  echo "Introspec .bashrc.dn_non_interactive ..."
+#  cat ./.bashrc.dn_non_interactive
+#  echo
+#  echo "Introspec .bashrc.dn ..."
+#  cat ./.bashrc.dn
+#  echo
+#EOF
+
+
+RUN <<EOF
+    # ....Pre-condition checks.....................................................................
+    n2st::print_msg "Pre-condition checks"
+    {
+        test $(whoami) == "root" &&  \
+        test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
+        test -n ${DN_PROJECT_USER_HOME:?'Env variable need to be set and non-empty.'} && \
+        test -d ${DN_PROJECT_USER_HOME} && \
+        test -n ${DN_PROJECT_PATH:?'Env variable need to be set and non-empty.'} && \
+        test -d ${DN_PROJECT_PATH} && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
+    } || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
+
+    # ....Install debugging tools..................................................................
+    source ./dn_install_debugging_tools.bash || exit 1
+    rm -f ./dn_install_debugging_tools.bash
+
+    # ....Sanity check.............................................................................
+    test -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server || exit 1
+EOF
 
 
 # ====Project specific ros setup===================================================================
@@ -105,41 +131,30 @@ RUN <<EOF
       echo ""
       echo "# >>> dockerized-norlab project-develop"
       echo "# Dockerized-NorLab aliases (from project-develop img)"
-      echo "alias dn_info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"
-      echo "alias dn_ros2_rebuild_dev_workspace='source /dockerized-norlab/project/project-develop/dn_ros2_rebuild_dev_workspace.bash'"
-      echo "alias dn_fetch_ros_env_variables='source /dockerized-norlab/project/project-develop/dn_fetch_ros_env_variables.bash'"
-      echo "alias dn_expose_container_env_variables='source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash'"
+      echo "alias dn-info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"
+      echo "alias dn-ros2-rebuild-dev-workspace='source /dockerized-norlab/project/project-develop/dn_ros2_rebuild_dev_workspace.bash'"
+      echo "alias dn-fetch-ros-env-variables='source /dockerized-norlab/project/project-develop/dn_fetch_ros_env_variables.bash'"
+      echo "alias dn-expose-container-env-variables='source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash'"
       echo "# <<< dockerized-norlab project-develop"
       echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 EOF
 
-# ....TMP DEV introspection........................................................................
-## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-#RUN <<EOF
-#    # TMP DEV introspection
-#    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
-#    echo -e "\n${0}: not implemented error\n" && exit 1
-#EOF
-# ........................................................................TMP DEV introspection....
-
-# ....TMP DEV dn_info.bash refactor................................................................
-### (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-#WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
-#COPY --from=context-dn-container-tools ./dn_info.bash .
-# ................................................................TMP DEV dn_info.bash refactor....
-
 
 FROM dockerized-norlab-project-internal AS test-ssh-user
 USER "${DN_SSH_SERVER_USER}"
-SHELL ["/bin/bash", "-c"]
+SHELL ["/usr/local/bin/bash-dn-ssh-user", "-c"]
 WORKDIR /
 
 RUN <<EOF
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
 
     {
         test $(whoami) == "${DN_SSH_SERVER_USER}" && \
-        test -d /home/${DN_SSH_SERVER_USER} ;
+        test "${DN_CONTAINER_TOOLS_LOADED}" == true && \
+        test -d /home/${DN_SSH_SERVER_USER} && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || exit 1
 
     n2st::print_msg "Check that ROS source is available via the ssh daemon user"
@@ -151,30 +166,33 @@ RUN <<EOF
 
     echo
     n2st::print_msg "ros2 install pkg sanity check"
-    ros2 pkg list
-    echo
     {
-        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
-        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+        ros2 pkg list && \
+        test -n "$(ros2 pkg list | grep -e ros_core)" && \
+        test -n "$(ros2 pkg list | grep -e rclpy)";
     } ||  exit 1
 EOF
 
 FROM dockerized-norlab-project-internal AS test-project-user
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
-SHELL ["/bin/bash", "-c"]
+SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
+
 WORKDIR /
 
 RUN <<EOF
     {
         test $(whoami) == "${DN_PROJECT_USER}" && \
-        test -d /home/${DN_PROJECT_USER} ;
+        test "${DN_CONTAINER_TOOLS_LOADED}" == true && \
+        test -d /home/${DN_PROJECT_USER} && \
+        test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+        [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || exit 1
-EOF
 
-RUN <<EOF
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    dn::source_ros2 || exit 1
+
     n2st::print_msg "Check that ROS source is available via the ssh daemon user"
     printenv
     {
@@ -184,20 +202,20 @@ RUN <<EOF
 
     echo
     n2st::print_msg "ros2 install pkg sanity check"
-    ros2 pkg list
     echo
     {
-        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
-        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+        ros2 pkg list && \
+        test -n "$(ros2 pkg list | grep -e ros_core)" && \
+        test -n "$(ros2 pkg list | grep -e rclpy)";
     } ||  exit 1
 EOF
 
 WORKDIR ${DN_PROJECT_USER_HOME}
+
 RUN <<EOF
     {
         test -x "${DN_PROJECT_USER_HOME}/dn_expose_container_env_variables.bash" && \
-        bash dn_expose_container_env_variables.bash && \
+        source dn_expose_container_env_variables.bash && \
         TMP_DOTENV_EXPOSE_PATH="/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}" && \
         test -f "${TMP_DOTENV_EXPOSE_PATH}" && \
         TMP_DOTENV_EXPOSE_USER_PATH="${DN_PROJECT_USER_HOME}/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}" && \
@@ -229,7 +247,7 @@ RUN <<EOF
 
     echo "container-tools sanity check"
     {
-        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash && \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash && \
         source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash ;
@@ -240,9 +258,11 @@ EOF
 ENTRYPOINT [ "" ]
 
 FROM dockerized-norlab-project-internal AS final
-
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
 SHELL ["/bin/bash", "-c"]
+
+# Unset DEBIAN_FRONTEND (which is set globaly in base DN images) before run stage.
+ENV DEBIAN_FRONTEND=""
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}

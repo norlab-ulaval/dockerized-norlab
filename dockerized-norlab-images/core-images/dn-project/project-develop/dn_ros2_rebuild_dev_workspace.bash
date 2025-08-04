@@ -22,14 +22,21 @@
 set -e
 pushd "$(pwd)" >/dev/null || exit 1
 
+# (Priority) ToDo: implement an help menu
+# (Priority) ToDo: refactor optional argument virtualization|native as flags
+# (NICE TO HAVE) ToDo: consider merging script with DNA dn_project_core.build.aarch_aware_build_ros.bash
+# (Priority) ToDo: move script to container-tools directory
+
 # ....Set argument.................................................................................
 PARAM_ARCH=${1:-"native"}
 
 # ....Check pre-conditions.......................................................................
 {
   test -n "${DN_DEV_WORKSPACE:?'Env variable need to be set and non-empty.'}" && \
-  test -n "${ROS_DISTRO:?'Env variable need to be set and non-empty.'}" ;
-} || exit 1
+  test -n "${ROS_DISTRO:?'Env variable need to be set and non-empty.'}" && \
+  test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+  [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
+} || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
 
 # ====Begin========================================================================================
 n2st::print_formated_script_header "dn_ros2_rebuild_dev_workspace.bash" "${MSG_LINE_CHAR_INSTALLER}"
@@ -37,44 +44,40 @@ cd "${DN_DEV_WORKSPACE}" || exit 1
 
 # shellcheck disable=SC1090
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
-source "${DN_DEV_WORKSPACE}/install/setup.bash"
+if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
+  source "${DN_DEV_WORKSPACE}/install/setup.bash"
+fi
 
 # Install dependencies
-n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}apt-get update${MSG_END_FORMAT}\n"
+n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}apt-get update${MSG_END_FORMAT}...\n"
 sudo apt-get update
 echo
 n2st::draw_horizontal_line_across_the_terminal_window "."
 
 ROSDEP_UPDATE_FLAGS=("--rosdistro" "${ROS_DISTRO}" "--include-eol-distros")
-n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}rosdep update ${ROSDEP_UPDATE_FLAGS[*]}${MSG_END_FORMAT}\n"
-rosdep update "${ROSDEP_UPDATE_FLAGS[@]}"
+n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}rosdep update ${ROSDEP_UPDATE_FLAGS[*]}${MSG_END_FORMAT}...\n"
+rosdep update "${ROSDEP_UPDATE_FLAGS[@]}" || n2st::print_msg_error_and_exit "Failed rosdep update!"
 echo
 n2st::draw_horizontal_line_across_the_terminal_window "."
 
 
-n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}rosdep fix-permissions${MSG_END_FORMAT}\n"
+n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}rosdep fix-permissions${MSG_END_FORMAT}...\n"
 rosdep fix-permissions
 echo
 n2st::draw_horizontal_line_across_the_terminal_window "."
 
 # Note on rosdep install: looks at all the packages in the src directory and tries to find
 # and install their dependencies on your platform.
-#rosdep install \
-#  --ignore-packages-from-source \
-#  --from-paths ./src \
-#  --rosdistro "${ROS_DISTRO}" \
-#  --default-yes
-
 ROSDEP_FLAGS=("--ignore-packages-from-source")
 ROSDEP_FLAGS+=("--from-paths" "./src")
 ROSDEP_FLAGS+=("--rosdistro" "${ROS_DISTRO}")
 ROSDEP_FLAGS+=("--default-yes")
-n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}rosdep install ${ROSDEP_FLAGS[*]}${MSG_END_FORMAT}\n"
-rosdep install "${ROSDEP_FLAGS[@]}"
+n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}rosdep install ${ROSDEP_FLAGS[*]}${MSG_END_FORMAT}...\n"
+rosdep install "${ROSDEP_FLAGS[@]}" || n2st::print_msg_error_and_exit "Failed rosdep install!"
 echo
 n2st::draw_horizontal_line_across_the_terminal_window "."
 
-n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}colcon version-check${MSG_END_FORMAT}\n"
+n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}colcon version-check${MSG_END_FORMAT}...\n"
 colcon version-check
 echo
 n2st::draw_horizontal_line_across_the_terminal_window "."
@@ -96,8 +99,14 @@ COLCON_FLAGS+=(
   "--cmake-args" "-DCMAKE_BUILD_TYPE=Release"
   "--event-handlers" "console_direct+"
 )
-n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}colcon build ${COLCON_FLAGS[*]}${MSG_END_FORMAT}\n"
-colcon build "${COLCON_FLAGS[@]}"
+n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}colcon build ${COLCON_FLAGS[*]}${MSG_END_FORMAT}...\n"
+
+source "/opt/ros/${ROS_DISTRO}/setup.bash"
+if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
+  source "${DN_DEV_WORKSPACE}/install/setup.bash"
+fi
+
+colcon build "${COLCON_FLAGS[@]}" || n2st::print_msg_error_and_exit "Failed colcon build!"
 n2st::draw_horizontal_line_across_the_terminal_window "."
 
 # ====Teardown=====================================================================================

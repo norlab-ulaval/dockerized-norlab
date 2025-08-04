@@ -9,7 +9,7 @@ ARG IS_TEAMCITY_RUN
 ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 
 SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
+
 
 ENV TZ=Etc/UTC
 ENV TERM=${TERM:-"xterm-256color"}
@@ -28,9 +28,8 @@ RUN apt-get update \
       "ros-${ROS_DISTRO:?err}-rosbridge-server" \
       "ros-${ROS_DISTRO}-slam-toolbox" \
       "python3-opencv" \
-    && apt-get autoremove -y \
     && apt-get clean \
-    && echo "Validate opencv install"\
+    && echo "Validate opencv install" \
     && python3 -c "import cv2; print( f'Opencv version: {cv2.__version__}' )"
 
 #      cifs-utils \
@@ -67,7 +66,6 @@ RUN cd /dockerized-norlab/dockerized-norlab-images/container-tools \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
       "ros-${ROS_DISTRO}-laser-filters" \
-    && apt-get autoremove -y \
     && apt-get clean
 
 CMD [ "bash" ]

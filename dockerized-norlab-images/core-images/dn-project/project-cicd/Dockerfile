@@ -3,8 +3,8 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS norlab-teamcity-cicd-setup
 
-SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
+SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
+
 
 RUN echo "Pre-condition checks" && { \
         test $(whoami) == "root" &&  \
@@ -32,8 +32,8 @@ EOF
 # ====Execute tests================================================================================
 FROM norlab-teamcity-cicd-setup AS execute-tests
 USER ${DN_PROJECT_USER}
-SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
+SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
+
 ENV PYTEST_CI_RUN=true
 
 WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}

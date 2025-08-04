@@ -1,0 +1,46 @@
+#!/bin/bash
+# =================================================================================================
+# Bash wrapper tailormade for docker build time uses.
+#
+# Usage:
+#   # Dockerfile
+#   SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
+#   RUN echo "command executed in bash-dn-buildtime"
+#
+# Options:
+#   any bash flag
+#
+# Positional argument:
+#   Instructions in RUN, CMD or ENTRYPOINT are passed to the '-c' flag.
+#
+# =================================================================================================
+function dn::bash_dn_buidtime() {
+  local debug_log=false
+  local cmds=()
+  local bash_run_config_root="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config"
+
+  # ....Parse bash flags...........................................................................
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -c)
+        # Insert DN lib sourcing logic before command string arguments
+        shift
+        cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive; $*" )
+        shift
+        ;;
+      *) # Fetch all argument preceeding '-c <the command string>'
+        cmds+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  # ....Execute commands...........................................................................
+  if [[ ${debug_log} == true ]]; then
+    echo -e "Executing $ \033[1;2mexec bash ${cmds[*]}${MSG_END_FORMAT}\033[0m"
+  fi
+  exec bash "${cmds[@]}" || return 1
+  return 0
+}
+
+dn::bash_dn_buidtime "$@" || exit 1

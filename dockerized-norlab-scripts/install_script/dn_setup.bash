@@ -37,20 +37,20 @@ set -o allexport; source "${DN_PATH}/.env.prompt"; set +o allexport
 echo -e "${MSG_DONE} The '/dockerized-norlab' dir is reachable. Ready to install alias"
 
 
-( \
-  echo ""; \
-  echo "# >>> dockerized-norlab aliases"; \
-  echo "export DN_PATH=${DN_PATH}"; \
-  echo "alias dn_cd='cd $DN_PATH'"; \
-  echo "alias dn_attach='cd ${DN_PATH}/dockerized-norlab-scripts/run_script && bash dn_attach.bash'"; \
-#  echo "alias dn_instantiate_develop='cd $DN_PATH && bash dn_instantiate_develop.bash'"; \
-#  echo "alias dn_instantiate_deploy='cd $DN_PATH && bash dn_instantiate_deploy.bash'"; \
-#  echo "alias dn_build_dependencies='cd $DN_PATH && bash dn_build_dependencies.bash'"; \
-#  echo "alias ds_build_deploy='cd $DN_PATH && bash ds_build_deploy.bash'"; \
-#  echo "alias ds_build_develop='cd $DN_PATH && bash ds_build_develop.bash'"; \
-#  echo "alias ds_build_melodic_python3='cd $DN_PATH && bash ds_build_melodic_python3.bash'"; \
-#  echo "alias _ds_build_and_push_norlab_MPPI='cd $DN_PATH && bash _ds_build_and_push_norlab_MPPI.bash'"; \
-  echo ""; \
+(
+  echo
+  echo "# >>> dockerized-norlab aliases"
+  echo "export _DN_PATH=${DN_PATH}"
+  echo "alias dn-cd='cd $DN_PATH'"
+#  echo "alias dn-attach='cd ${DN_PATH}/dockerized-norlab-scripts/run_script && bash dn_attach.bash'"
+#  echo "alias dn-instantiate-develop='cd $DN_PATH && bash dn_instantiate_develop.bash'"
+#  echo "alias dn-instantiate-deploy='cd $DN_PATH && bash dn_instantiate_deploy.bash'"
+#  echo "alias dn-build-dependencies='cd $DN_PATH && bash dn_build_dependencies.bash'"
+#  echo "alias ds-build-deploy='cd $DN_PATH && bash ds_build_deploy.bash'"
+#  echo "alias ds-build-develop='cd $DN_PATH && bash ds_build_develop.bash'"
+#  echo "alias ds-build-melodic-python3='cd $DN_PATH && bash ds_build_melodic_python3.bash'"
+#  echo "alias ds-build-and-push-norlab-mppi='cd $DN_PATH && bash _ds_build_and_push_norlab_MPPI.bash'"
+  echo
 ) >> ~/.bashrc
 
 
@@ -64,14 +64,14 @@ else
     # nvcc command not working
     echo -e "${MSG_WARNING} Fixing CUDA path for nvcc"
 
-    ( \
-    echo ""; \
-    echo "# CUDA toolkit related"; \
-    echo "# ref dusty_nv comment at"; \
-    echo "#    https://forums.developer.nvidia.com/t/cuda-nvcc-not-found/118068"; \
-    echo "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}"; \
-    echo "export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"; \
-    echo ""; \
+    (
+      echo
+      echo "# CUDA toolkit related"
+      echo "# ref dusty_nv comment at"
+      echo "#    https://forums.developer.nvidia.com/t/cuda-nvcc-not-found/118068"
+      echo "export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}"
+      echo "export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+      echo
     ) >> ~/.bashrc
 
     source ~/.bashrc && echo -e "${MSG_DONE} CUDA path hack added to ~/.bashrc for nvcc"
@@ -97,15 +97,15 @@ fi
 echo -e "${MSG_DONE} Setup completed!
 
 New available alias:
-  dn_cd
-  dn_attach
+  dn-cd
+  dn-attach
 
 "
-#  dn_instantiate_develop
-#  dn_instantiate_deploy
-#  dn_build_dependencies
-#  ds_build_deploy
-#  ds_build_develop
-#  ds_build_melodic_python3
+#  dn-instantiate-develop
+#  dn-instantiate-deploy
+#  dn-build-dependencies
+#  ds-build-deploy
+#  ds-build-develop
+#  ds-build-melodic-python3
 
 

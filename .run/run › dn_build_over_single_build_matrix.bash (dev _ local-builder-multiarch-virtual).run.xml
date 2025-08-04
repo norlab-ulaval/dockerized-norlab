@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="run › dn_build_over_single_build_matrix.bash (dev | local-builder-multiarch-virtual)" type="ShConfigurationType" folderName="[DN] development ( build over single build matrix .env.build_matrix.dev )">
+    <option name="SCRIPT_TEXT" value="echo &amp;&amp; clear &amp;&amp; bash dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash build_matrix_config/dev/.env.build_matrix.main.dev" />
+    <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script/dn_build_over_single_build_matrix.bash" />
+    <option name="SCRIPT_OPTIONS" value="" />
+    <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+    <option name="INTERPRETER_PATH" value="/bin/zsh" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="EXECUTE_IN_TERMINAL" value="true" />
+    <option name="EXECUTE_SCRIPT_FILE" value="false" />
+    <envs>
+      <env name="BUILDX_BUILDER" value="local-builder-multiarch-virtual" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

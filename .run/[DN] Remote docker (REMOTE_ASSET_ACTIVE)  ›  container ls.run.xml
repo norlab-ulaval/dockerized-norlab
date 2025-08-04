@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run › dn_push_services.bash (dn-dependencies)" type="ShConfigurationType" folderName="[DN] development ( .env.build_matrix.dev )">
-    <option name="SCRIPT_TEXT" value="source dn_push_services.bash .env.build_matrix.dn-dependencies" />
+  <configuration default="false" name="[DN] Remote docker (REMOTE_ASSET_ACTIVE)  ›  container ls" type="ShConfigurationType" folderName="[DN] F | remote jetson via REMOTE_ASSET_ACTIVE">
+    <option name="SCRIPT_TEXT" value="docker -H ssh://$REMOTE_ASSET_ACTIVE container ls" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
-    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/dockerized-norlab-scripts/build_script" />
+    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
     <option name="INTERPRETER_PATH" value="/bin/zsh" />
     <option name="INTERPRETER_OPTIONS" value="" />

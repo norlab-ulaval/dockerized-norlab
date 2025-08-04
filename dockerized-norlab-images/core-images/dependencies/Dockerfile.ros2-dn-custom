@@ -1,10 +1,11 @@
 
 ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
+
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS ros2-custom-install
+
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-ARG DEBIAN_FRONTEND=noninteractive
 
 # ====Begin install================================================================================
 WORKDIR ${DN_DEV_WORKSPACE}
@@ -15,7 +16,7 @@ RUN <<EOF
     apt-get upgrade --assume-yes
 
     apt-get install --assume-yes --no-install-recommends \
-        ros-${ROS_DISTRO}-rosbridge-msgs \
+        ros-${ROS_DISTRO:?err}-rosbridge-msgs \
         python3-tornado \
         python3-bson \
         python3-pymongo \
@@ -51,7 +52,8 @@ RUN <<EOF
         ros-${ROS_DISTRO}-urg-node-msgs \
         || exit 1
 
-    apt-get autoremove -y
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
@@ -64,13 +66,15 @@ EOF
 # ====Build ROS2 workspace=========================================================================
 RUN <<EOF
 
-    apt-get update
-    rosdep update --rosdistro ${ROS_DISTRO}
+    apt-get update || exit 1
+
+    rosdep update --rosdistro ${ROS_DISTRO:?err} || exit 1
     rosdep fix-permissions
+
     rosdep install \
         --ignore-packages-from-source \
-        --from-path ./src  \
-        --rosdistro ${ROS_DISTRO}  \
+        --from-path ./src \
+        --rosdistro ${ROS_DISTRO} \
         -y \
         || exit 1
 
@@ -91,133 +95,88 @@ RUN <<EOF
           "--event-handlers" "console_direct+"
        )
     echo -e "COLCON_FLAGS=( ${COLCON_FLAGS[*]} )"
-    colcon build ${COLCON_FLAGS[@]}
 
-    # ===ROS sourcing logic for interactive and non-interactive shell==============================
-    # (since .bashrc is not executed in non-interactive shell)
+    dn::source_ros2 || exit 1
+    colcon build ${COLCON_FLAGS[@]} || exit 1
 
-    # Note:
-    #  - Environment variable formated such as "\$``{ENV_VAR}``" wont be substituted at build time.
-    (
-        echo ""
-        echo "# >>> dockerized-norlab dependencies ros2-dn-custom"
-        echo "# Source ROS2 environment"
-        echo "echo -e \"\\033[1;2m\" # MSG_DIMMED_FORMAT"
-        echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash\""
-        echo "source /opt/ros/${ROS_DISTRO}/setup.bash"
-        echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"
-        echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash\""
-        echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"
-        echo "fi"
-        echo "echo -e \"\\033[0m\" # MSG_END_FORMAT"
-        echo "# <<< dockerized-norlab dependencies ros2-dn-custom"
-        echo ""
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
-
-    (
-        echo ""
-        echo "# >>> dockerized-norlab dependencies ros2-dn-custom"
-        echo "# Source ROS2 environment"
-        echo "echo -e \"\\033[1;2m\" # MSG_DIMMED_FORMAT"
-        echo "echo \"sourcing /opt/ros/${ROS_DISTRO}/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash\""
-        echo "source /opt/ros/${ROS_DISTRO}/setup.bash"
-        echo "if [[ -f \$``{DN_DEV_WORKSPACE}``/install/setup.bash ]]; then"
-        echo "  echo \"sourcing \$``{DN_DEV_WORKSPACE}``/install/setup.bash from /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash\""
-        echo "  source \$``{DN_DEV_WORKSPACE}``/install/setup.bash"
-        echo "fi"
-        echo "echo -e \"\\033[0m\" # MSG_END_FORMAT"
-        echo "# <<< dockerized-norlab dependencies ros2-dn-custom"
-        echo ""
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
-
-    # (NICE TO HAVE) ToDo: DN_CONTAINER_NAME is being set with the build arg instead of the env at runtime
-    #      echo ""; \
-    #      echo "# Dockerized-NorLab › Quickhack for connecting to pycharm-debugger (over ssh)"; \
-    #      echo "export DN_CONTAINER_NAME=$DN_CONTAINER_NAME"; \
-    #      echo "export DN_ACTIVATE_POWERLINE_PROMT=$DN_ACTIVATE_POWERLINE_PROMT"; \
-
-    echo "Add ROS2 specific aliases"
-    (
-        echo ""
-        echo "# >>> dockerized-norlab dependencies ros2-dn-custom"
-        echo "alias dn_source_ros_worspace_overlay='echo \"Sourcing ${DN_DEV_WORKSPACE} overlay \" && source ${DN_DEV_WORKSPACE}/install/local_setup.bash'"
-        echo "# <<< dockerized-norlab dependencies ros2-dn-custom"
-        echo ""
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
-
-    echo "Add ROS2 specific config to /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash"
-    (
-        echo ""
-        echo "# >>> dockerized-norlab dependencies ros2-dn-custom"
-        echo "# Enable ROS2 log collouring"
-        echo "export RCUTILS_COLORIZED_OUTPUT=1"
-        echo "# <<< dockerized-norlab dependencies ros2-dn-custom"
-        echo ""
-    ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 EOF
 
 
 FROM ros2-custom-install AS test
 
-# Note: ROS2 distro should be sourced automaticaly via our dn_bashrc_non_interactive.bash setup
+# Note: ROS2 distro should be sourced automaticaly via our .bashrc.dn_non_interactive setup
 RUN <<EOF
-    echo "(ROS2 sourcing) Non-interactive shell sanity check. Validate dn_bashrc_non_interactive.bash logic"
+    echo "(ROS2 sourcing) Non-interactive shell sanity check. Validate .bashrc.dn_non_interactive logic..."
+
+    echo -e "\nLog .bashrc.dn_non_interactive state\n"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
+
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    dn::source_ros2 || exit 1
+
+    echo -e "\nPre-condition check...\n"
     {
         test -n ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} && \
         test -n ${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} && \
         test -n ${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} && \
         test -n ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
-    #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
         test -n ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
         test -n ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} ;
     } || exit 1
+    #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
 
+    echo -e "\nCheck ros2 is available...\n"
     {
         python -c "import rclpy" && \
-        ros2 pkg list ;
-    } || exit 1
+        ros2 pkg list && \
+        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
+        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+    } ||  exit 1
 
-    echo -e "\nLog dn_bashrc.bash content\n"
-    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
-
-    echo -e "\nLog dn_bashrc_non_interactive.bash content\n"
-    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
-
+    echo "(ROS2 sourcing) Non-interactive shell sanity check ok."
 EOF
 
-# Note: ROS2 distro should be sourced automaticaly via our dn_bashrc_non_interactive.bash setup
+# Note: ROS2 distro should be sourced automaticaly via our .bashrc.dn_non_interactive setup
 SHELL ["/bin/bash", "-i", "-c"]
 RUN <<EOF
-    echo "(ROS2 sourcing) Interactive shell sanity check. Validate dn_bashrc.bash logic"
+    echo "(ROS2 sourcing) Interactive shell sanity check. Validate .bashrc.dn logic..."
+
+    echo -e "\nLog .bashrc.dn state\n"
+    cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
+
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    dn::source_ros2 || exit 1
+
+    echo -e "\nPre-condition check...\n"
     {
         test -n ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} && \
         test -n ${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} && \
         test -n ${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} && \
         test -n ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
-        #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
         test -n ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
         test -n ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} ;
     } || exit 1
+        #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
 
+    echo -e "\nCheck ros2 is available...\n"
     {
         python -c "import rclpy" && \
-        ros2 pkg list ;
-    } || exit 1
+        ros2 pkg list && \
+        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
+        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
+        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
+    } ||  exit 1
+
+    echo "(ROS2 sourcing) Interactive shell sanity check ok."
 EOF
 
 
 FROM ros2-custom-install AS final
-
-# ....TMP DEV introspection........................................................................
-## (CRITICAL) ToDo: on task end >> mute next bloc ↓↓
-#RUN <<EOF
-#    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc_non_interactive.bash
-#    echo
-#    cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bashrc.bash
-#    exit 1
-#EOF
-#RUN echo "${0}:not implemented error" && exit 1
-# ........................................................................TMP DEV introspection....
 
 
 

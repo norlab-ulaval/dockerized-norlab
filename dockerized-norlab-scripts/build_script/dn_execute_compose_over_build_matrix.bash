@@ -66,31 +66,32 @@ fi
 
 # ....Helper function..............................................................................
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
-  # This script is being run, ie: __name__="__main__"
+  #echo 'This script is being run, ie: __name__="__main__"'
 
   cd "${DN_PATH:?err}"
   source import_dockerized_norlab_tools.bash || exit 1
-
   cd "${DN_PATH}"
 
 else
-  # This script is being sourced, ie: __name__="__source__"
+  #echo 'This script is being sourced, ie: __name__="__source__"'
 
-  if [[ ${_CI_TEST} != true ]]; then
+  if [[ ${_CI_TEST:-} != true ]]; then
     echo -e "\n[${MSG_ERROR_FORMAT}DN ERROR${MSG_END_FORMAT}] Execute this script in a subshell i.e.: $ bash dn_execute_compose_over_build_matrix.bash" 1>&2
     exit 1
   else
-    if [[ "${DN_IMPORTED}" != "true" ]]; then
+    if [[ "${DN_IMPORTED:-}" != "true" ]]; then
       echo -e "\n${MSG_ERROR_FORMAT}[ERROR]${MSG_END_FORMAT} You need to execute ${MSG_DIMMED_FORMAT}import_dockerized_norlab_tools.bash${MSG_END_FORMAT} before sourcing ${MSG_DIMMED_FORMAT}dn_execute_compose_over_build_matrix.bash${MSG_END_FORMAT} otherwise run it with bash." 1>&2
       exit 1
     else
-      # NBS was imported prior to the script execution
+      #echo "Lib were imported prior to the script execution"
       :
     fi
   fi
 
 fi
 
+# Lib import sanity check
+test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[N2ST error]\033[0m The N2ST lib is not loaded!" 1>&2 && exit 1; }
 
 # ....Load environment variables from file.........................................................
 cd "${DN_PATH}" || exit 1
@@ -564,10 +565,10 @@ with tag:
 ${STR_IMAGE_TAG_CRAWLED}"
 
 # Quick hack to export build matrix log to parent script when called via bash sinc we can't source it whitout breacking docker command
-( \
-  echo ""; \
-  echo "STR_BUILD_MATRIX_SERVICES_AND_TAGS=\"$STR_BUILD_MATRIX_SERVICES_AND_TAGS\""; \
-  echo ""; \
+(
+  echo ""
+  echo "STR_BUILD_MATRIX_SERVICES_AND_TAGS=\"$STR_BUILD_MATRIX_SERVICES_AND_TAGS\""
+  echo ""
 ) > ./dockerized-norlab-scripts/build_script/build_all.log
 
 

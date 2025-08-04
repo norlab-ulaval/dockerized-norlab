@@ -1,0 +1,28 @@
+#!/bin/bash
+# =================================================================================================
+# DN/DNA generated bash run configuration/command for run time interactive mode
+#
+# Usage:
+#   $ source .bashrc.dn
+#
+# Note:
+#   This file act as a DN build stages buffer to pass instruction that will be sourced by .bashrc
+#   at the DN project-core build stage interactive mode and at runtime by DNA.
+#
+# =================================================================================================
+
+# ....Load Dockerized-NorLab container-tools libraries.............................................
+_dna_error_prefix="\033[1;31m[DN error]\033[0m"
+_bashrc_dn_common_path=/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_common
+if [[ -f "${_bashrc_dn_common_path}"  ]]; then
+  source "${_bashrc_dn_common_path}" || exit 1
+else
+  echo -e "${_dna_error_prefix} ${_bashrc_dn_common_path} is unreachable!" 1>&2 && exit 1
+fi
+
+# ....Source dockerized-norlab build time generated aliases and DNA super project aliases..........
+source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash || exit 1
+
+# ====Build-time appended instructions=============================================================
+
+# Note: Expect `Dockerfile.prompt` related entries e.g., powerline-daemon cmd, powerline10k config

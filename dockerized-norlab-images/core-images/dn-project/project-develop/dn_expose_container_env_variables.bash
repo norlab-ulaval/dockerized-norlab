@@ -8,7 +8,7 @@
 #
 #
 # Usage:
-#   $ bash dn_expose_container_env_variables.bash
+#   $ source dn_expose_container_env_variables.bash
 #
 # Globals:
 #   Read ros related env variables:

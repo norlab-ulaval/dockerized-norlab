@@ -77,14 +77,14 @@ teardown() {
 @test "Test utilities › validate env var are not set between test run" {
   assert_empty "${DN_PATH}"
   assert_empty "${N2ST_PATH}"
-  assert_empty "${DN_IMPORTED}"
+  assert_empty "${DN_CONTAINER_TOOLS_LOADED}"
 }
 
 @test "${TESTED_FILE} › check if env variable where properly exported › expect pass" {
   # ....Pre-condition..............................................................................
   assert_empty ${DN_PATH}
   assert_empty ${N2ST_PATH}
-  assert_empty ${DN_IMPORTED}
+  assert_empty ${DN_CONTAINER_TOOLS_LOADED}
 
   assert_empty ${N2ST_PROMPT_NAME}
   assert_empty ${N2ST_GIT_REMOTE_URL}
@@ -97,7 +97,7 @@ teardown() {
   # ....Tests......................................................................................
   assert_equal "${DN_PATH}" "/code/dockerized-norlab"
   assert_equal "${N2ST_PATH}" "/code/dockerized-norlab/utilities/norlab-shell-script-tools"
-  assert_equal "${DN_IMPORTED}" "true"
+  assert_equal "${DN_CONTAINER_TOOLS_LOADED}" "true"
 
   assert_equal "${N2ST_PROMPT_NAME}" "N2ST"
   assert_regex "${N2ST_GIT_REMOTE_URL}" "https://github.com/norlab-ulaval/norlab-shell-script-tools"'(".git")?'
@@ -113,6 +113,43 @@ teardown() {
 
   assert_success
   assert_output --regexp "\[N2ST done\]".*"Test N2ST import"
+}
+
+@test "${TESTED_FILE} › validate DN import › expect pass" {
+  # local setup
+  export ROS_DISTRO=humble
+  export DN_DEV_WORKSPACE=/ros2_ws_mock
+
+  mkdir -p "/opt/ros/${ROS_DISTRO}"
+  cat > "/opt/ros/${ROS_DISTRO}/setup.bash" <<EOF
+echo "Mock /opt/ros/${ROS_DISTRO}/setup.bash"
+exit 0
+EOF
+
+  mkdir -p "${DN_DEV_WORKSPACE}/install/"
+  cat > "${DN_DEV_WORKSPACE}/install/local_setup.bash" <<EOF
+echo "Mock ${DN_DEV_WORKSPACE}/install/local_setup.bash"
+exit 0
+EOF
+
+  source $TESTED_FILE
+
+  run dn::source_ros2_underlay_only
+  assert_success
+  assert_output --regexp "sourcing underlay \/opt\/ros".*"setup.bash from dn_source_ros2.bash"
+
+  run dn::source_ros2_overlay_only
+  assert_success
+  assert_output --regexp "sourcing overlay".*"setup.bash from dn_source_ros2.bash"
+
+  run dn::source_ros2
+  assert_success
+
+  # local teardown
+  unset ROS_DISTRO
+  unset DN_DEV_WORKSPACE
+  rm -f "/opt/ros/${ROS_DISTRO}/setup.bash"
+  rm -f "${DN_DEV_WORKSPACE}/install/local_setup.bash"
 }
 
 @test "${TESTED_FILE} › validate teardown › expect pass" {

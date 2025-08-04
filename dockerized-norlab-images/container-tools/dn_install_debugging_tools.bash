@@ -29,12 +29,17 @@ pushd "$(pwd)" >/dev/null || exit 1
 # (CRITICAL) ToDo: unit-test (ref task TASK)
 
 # ....Optional settings............................................................................
-_SETUP_DEBUGGER_USER=true
-_SETUP_DEBUG_PROJECT_TMP_DIR=false
+_SETUP_DEBUGGER_USER=${1:-true}
+_SETUP_DEBUG_PROJECT_TMP_DIR=${2:-false}
 
 # ....Source project shell-scripts dependencies....................................................
+# (CRITICAL) ToDo: assess adding this line (ref task NMO-768) ↓
+#unset BASH_ENV
+
+# (CRITICAL) ToDo: assess deleting those lines (ref task NMO-768) ↓
 cd /dockerized-norlab/dockerized-norlab-images/container-tools || exit 1
 source import_dockerized_norlab_container_tools.bash
+
 
 function dn::setup_debugging_tools() {
   # ....Check pre-conditions.........................................................................
@@ -43,37 +48,66 @@ function dn::setup_debugging_tools() {
     test -n "${DN_SSH_SERVER_USER:?'Env variable needs to be set and non-empty.'}" && \
     test -n "${DN_SSH_SERVER_USER_PASSWORD:?'Env variable needs to be set and non-empty.'}" && \
     test -n "${DN_PROJECT_GID:?'Env variable needs to be set and non-empty.'}" && \
-    test -n "${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}" ;
-  } || exit 1
+    test -n "${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}" && \
+    test -n "${DEBIAN_FRONTEND:?'Env variable need to be set and non-empty.'}" && \
+    [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
+  } || n2st::print_msg_error_and_exit "Failed dn::setup_debugging_tools pre-condition check!"
 
   # ===Service: ssh server===========================================================================
-  apt-get update \
-      && apt-get install --assume-yes --no-install-recommends \
-          openssh-server \
-      && apt-get clean \
-      && rm -rf /var/lib/apt/lists/*
+  n2st::print_msg "Installing openssh-server..."
+  apt-get update
+
+  apt-get install --assume-yes --no-install-recommends \
+      openssh-server \
+      ncurses-term \
+      xauth
 
   # ....Setup ssh daemon.............................................................................
+  n2st::print_msg "Setup ssh daemon..."
 
   # (CRITICAL) ToDo: (ref task NMO-348 validate that DN_SSH_SERVER_PORT var in 'sshd_config_dockerized_norlab_openssh_server' can be changed at runtime via compose ENV)
   # Inspired from:
   # - https://austinmorlan.com/posts/docker_clion_development/
   # - https://www.allaban.me/posts/2020/08/ros2-setup-ide-docker/
   # - https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
-  ( \
-    echo "LogLevel DEBUG2"; \
-    echo "PermitRootLogin yes"; \
-    echo "PasswordAuthentication yes"; \
-    echo "Port ${DN_SSH_SERVER_PORT}"; \
-    echo "Subsystem sftp /usr/lib/openssh/sftp-server"; \
-  ) > /etc/ssh/sshd_config_dockerized_norlab_openssh_server \
-  && mkdir /run/sshd
+  (
+    echo
+    echo "# Security settings"
+    echo "PermitRootLogin yes"
+    echo "PasswordAuthentication yes"                     # Allow password-based authentication
+#    echo "X11Forwarding no"                               # Disable X11 forwarding unless needed
+#    echo "AllowTcpForwarding no"                          # Disable TCP forwarding unless needed
+#    echo "PermitEmptyPasswords no"                        # Never allow empty passwords
+#    echo "PermitUserEnvironment yes"
+    echo
+    echo "# Connection settings"
+    echo "Port ${DN_SSH_SERVER_PORT}"                     # Default SSH port
+    echo "MaxAuthTries 3"                                 # Limit authentication attempts
+    echo
+#    echo "# User restrictions"
+#    echo "AllowUsers ${DN_PROJECT_USER},${_SETUP_DEBUGGER_USER}" # Restrict which users can connect
+#    echo "DenyUsers root"                                 # Explicitly deny root access
+    echo
+    echo "# Logging"
+    echo "LogLevel DEBUG2"
+    echo
+    echo "# Subsystem"
+    echo "Subsystem sftp /usr/lib/openssh/sftp-server"
+    echo
+  ) > /etc/ssh/sshd_config_dockerized_norlab_openssh_server
 
-  #  echo "PermitUserEnvironment yes"; \
+  mkdir -p /run/sshd
 
   # SSH login fix. Otherwise user is kicked off after login
   # Ref https://github.com/microsoft/docker/blob/master/docs/examples/running_ssh_service.md
   sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+  echo "Introspect 'sshd_config_dockerized_norlab_openssh_server'..."
+  cat /etc/ssh/sshd_config_dockerized_norlab_openssh_server
+  echo
+  echo "Introspect '/etc/pam.d/sshd'..."
+  cat /etc/pam.d/sshd
+  echo
 
   # ....Set password for users.......................................................................
   # user:newpassword
@@ -107,19 +141,13 @@ function dn::setup_debugging_tools() {
 
   # ....add the ros distro source steps to debugger user.............................................
   if [[ ${_SETUP_DEBUGGER_USER} == true ]]; then
-    usermod --shell /bin/bash "${DN_SSH_SERVER_USER}"
+    # (CRITICAL) ToDo: validate shell wrapper behaviour ⬇︎ (ref task NMO-770)
+    usermod --shell /usr/local/bin/bash-dn-ssh-user "${DN_SSH_SERVER_USER}"
     # Note: Required for ssh in pycharm-debugger, otherwise it use .sh instead of .bash
     #       and result in not sourcing ros from .bashrc
 
-    ## Option 1: source the root .bashrc in the debugger user
-    #( \
-    #  echo ""; \
-    #  echo "# >>> dockerized-norlab dn-project-debugging-tools "; \
-    #  echo "# Step to ensure that ROS related sourcing step are performed in the debugging user "; \
-    #  echo "source /root/.bashrc"; \
-    #  echo "# <<< dockerized-norlab dn-project-debugging-tools "; \
-    #  echo ""; \
-    #) >> /home/"${DN_SSH_SERVER_USER}"/.bashrc
+    ## Option 1 (CURRENT): source a bash wrapper in the debugger user
+    # In effect: $ /usr/local/bin/bash-dn-ssh-user -c COMMAND
 
     ## Option 2: hardlink the root .bashrc to the debugger user .bashrc
     #sudo ln -fv /root/.bashrc "/home/${DN_SSH_SERVER_USER}/.bashrc"
@@ -130,8 +158,7 @@ function dn::setup_debugging_tools() {
     ##       e.g. in dockerfile
     ##       SHELL ["/bin/bash", "-i", "-c"]
 
-    ## Option 3 (CURRENT): rely on BASH_ENV env varibale for non-interactive shell
-    ## Note: this logic is currently implemented via "dn_bashrc_non_interactive.bash"
+    ## Option 3: rely on BASH_ENV env variable for non-interactive shell
   fi
 
   # ====Jetbrains IDE================================================================================
@@ -150,12 +177,16 @@ function dn::setup_debugging_tools() {
   ## Ref
   ##  - https://github.com/sea-bass/pyrobosim/pull/162
   ##  - https://github.com/ros2/launch/issues/765
-  RUN pip3 install 'pytest!=8.1.1'
+  pip3 install 'pytest!=8.1.1'
 
   n2st::print_msg_warning "Be advised, the ssh daemon still need to be started.
   Curently its done by 'dn_entrypoint.global.init.callback.bash'.
   Ref 'dockerized-norlab-images/core-images/dn-project/project-core/project_entrypoints'.
   "
+
+  # ....Teardown...................................................................................
+  apt-get clean
+  rm -rf /var/lib/apt/lists/*
 
   return 0
 }
@@ -170,7 +201,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  dn::setup_debugging_tools
+  dn::setup_debugging_tools || n2st::print_msg_error_and_exit "dn::setup_debugging_tools failed!"
 fi
 
 # ====Teardown=====================================================================================

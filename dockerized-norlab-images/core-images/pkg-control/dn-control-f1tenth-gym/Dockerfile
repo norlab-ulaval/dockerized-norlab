@@ -3,10 +3,8 @@ ARG BASE_IMAGE
 ARG BASE_IMAGE_TAG
 FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS main
 
-## (CRITICAL) ToDo: on task NMO-584 end >> delete next bloc ↓↓
-#ARG DEBIAN_FRONTEND=noninteractive
-#ARG TARGETPLATFORM
-#ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
 # ====Begin=============================================================================================
 # See https://github.com/f1tenth/f1tenth_gym/blob/main/Dockerfile
@@ -26,17 +24,24 @@ ENV LIBGL_ALWAYS_INDIRECT=1
 #    # see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 
 RUN <<EOF
-  apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
+
+    # ....Deb install..............................................................................
+    apt-get update
+
+    echo "(deb) Install F110-gym dependencies..."
+    apt-get install --assume-yes --no-install-recommends \
             libgl1-mesa-dev \
             libglu1-mesa-dev \
             fontconfig \
             libfreetype6-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+      || exit 1
 
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
-## ....F1TENTH install.............................................................................
+    # ....Pip install.............................................................................
+    echo "(pip) Install F110-gym dependencies..."
 
 #    # Fix for gym <-> F1TENTH TypeError:
 #    # >>> obs, step_reward, done, info = env.reset(np.array([[conf.sx, conf.sy, conf.stheta]]))
@@ -53,42 +58,85 @@ RUN <<EOF
     # Note: fix openai gym + f110 gym install error
     #   See "ERROR: Failed building wheel for gym" https://github.com/freqtrade/freqtrade/issues/8376#issuecomment-1520844382
     # Note: pip<24.1 is required for backward compatibility
-    pip3 install --upgrade \
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --upgrade \
+    pip3 install --no-cache-dir \
         'pip<24.1' \
         'wheel==0.38.4' \
-        'setuptools==65.5.1'
+        'setuptools==65.5.1' \
+        || exit 1
 
-    ## (Priority) ToDo: temporary hack >> delete next line ← when solved
-    # rm -f -r /opt/f1tenth_gym
+    # ....F1TENTH install.............................................................................
     if [[ -d /opt/f1tenth_gym ]]; then \
-     tree -L 1 -a && echo "/opt/f1tenth_gym alredy exist!" && exit 1 ; \
+     tree -L 1 -a && echo "/opt/f1tenth_gym already exist!" && exit 1 ; \
     fi
 
-# Notes › f110_gym:
-#   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools
-#   - f110_gym need to be installed in editable mode because there is curently no MANIFESTE.in file
-#       which prevent some required assets (e.g. maps/) to be included in the install path
-    cd /opt \
-    && git clone https://github.com/f1tenth/f1tenth_gym.git \
-    && cd ./f1tenth_gym  \
-    && pip3 install -e . --config-settings editable_mode=compat
+    echo "Install F110-gym..."
+    # Notes › f110_gym:
+    #   - "editable_mode=compat" is a quickhack for the pip editable mode issue related to setuptools
+    #   - f110_gym need to be installed in editable mode because there is curently no MANIFESTE.in file
+    #       which prevent some required assets (e.g. maps/) to be included in the install path
+    cd /opt
+    git clone https://github.com/f1tenth/f1tenth_gym.git
+    cd ./f1tenth_gym
+    pip3 install -e . --config-settings editable_mode=compat || exit 1
 
 
     # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
     # See known issues comment https://github.com/f1tenth/f1tenth_gym
-    pip3 install --no-cache-dir --upgrade 'pyglet<1.5.11'
+    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
+    #pip3 install --no-cache-dir --upgrade 'pyglet<1.5.11'
+#    pip3 install --no-cache-dir 'pyglet<1.5.11'
+    pip3 install --no-cache-dir 'pyglet==1.5.20'
     #pip3 install --no-cache-dir --upgrade 'pyglet!=1.5.11'
+
 EOF
 
 
 FROM main AS test
+RUN <<EOF
+    echo -e "
+----------------------------------------------------------
+Container build time environment variables
+$(printenv)
 
-RUN echo "Sanity-check" \
-    && pip3 show f110_gym \
-    && echo \
-    && python3 -c "import f110_gym" \
-    && python3 -c "from f110_gym.envs import F110Env" \
-    && python3 -c "import gym; env = gym.make('f110_gym:f110-v0', num_agents=1, timestep=0.01, ego_idx=0)"
+----------------------------------------------------------
+Log dn_bash_alias.bash state
+$(cat /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash)
+
+----------------------------------------------------------
+Python version: $(python --version)
+Numpy version: $(pip list | grep -i -e "numpy ")
+
+which python:
+$(which python)
+
+whereis python:
+$(whereis python)
+
+which pip's:
+$(which pip pip3)
+
+pip list:
+$(pip list)
+
+----------------------------------------------------------
+$(pip3 show pycuda)
+$(python3 -c "import pycuda; print( pycuda.VERSION_TEXT )")
+----------------------------------------------------------
+$(pip3 show torch)
+$(python3 -c "import torch; print( f'CUDA is available: {torch.cuda.is_available()}' )")
+----------------------------------------------------------
+$(pip3 show f110_gym)
+----------------------------------------------------------
+Sanity check...
+"
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_gym.py || exit 1
+    python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py || exit 1
+    python3 -c "import f110_gym" || exit 1
+    python3 -c "from f110_gym.envs import F110Env" || exit 1
+    python3 -c "import gym; env = gym.make('f110_gym:f110-v0', num_agents=1, timestep=0.01, ego_idx=0)" || exit 1
+EOF
 
 FROM main AS final
 

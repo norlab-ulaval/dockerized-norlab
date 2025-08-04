@@ -34,7 +34,7 @@
 
 **Containerized development workflow for NorLab perception or control projects
 <br>
-leveraging [_docker_](https://www.docker.com) and [_nvidia-docker_](https://github.com/NVIDIA/nvidia-container-toolkit)
+leveraging [_docker_](https://www.docker.com) and [_NVIDIA Container Toolkit_](https://github.com/NVIDIA/nvidia-container-toolkit)
 technology.**
 <br>
 <br>
@@ -60,7 +60,7 @@ Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
 [//]: # ( ==== Body ================================================== )
 
 ## Features
-- CUDA support via _nvidia-docker_
+- CUDA support via _NVIDIA Container Toolkit_
 - Multi architectures: `l4t/arm64`, `linux/amd64`
 - Multi OS versions:
   - Jetpack: `r35.2.1`, `r35.4.1`, `r36.2.8` ...
@@ -112,7 +112,7 @@ Note: _**Dockerized-Norlab**_ images are intended to be used as base images for 
         norlabulaval/dockerized-norlab-dependencies-full:DN-bleeding-foxy-base-l4t-pytorch-r35.4.1
     ``` 
     Note: 
-    - Add the `--runtime nvidia` flag if you have nvidia gpu and _nvidia-docker_ is installed.
+    - Add the `--runtime nvidia` flag if you have nvidia gpu and _NVIDIA Container Toolkit_ is installed.
     - For _MacOs_ user, replace the line `--net host -p 2222:2222 -p 6006:6006 -p 7777:7777` with `--net bridge`. 
 
 
@@ -124,7 +124,7 @@ Notes:
 - All images also have a tag pinned for each release version, starting from release v0.5.2, e.g. `DN-v0.5.2-foxy-ros-core-l4t-r35.2.1`.
 - Bleeding tags are build from the latest `dev` branch version (e.g. `DN-bleeding-foxy-base-l4t-pytorch-r35.4.1`) and are rebuild each week. 
 - All images are multi-architecture build (amr64 and amd64). 
-- Most have CUDA support via _nvidia-docker_ base image, both for L4T (aka Jetson OS) and ubuntu.
+- Most have CUDA support via _NVIDIA Container Toolkit_ base image, both for L4T (aka Jetson OS) and ubuntu.
 
 
 ### Dockerized-Norlab Perception
