@@ -9,6 +9,19 @@ set -e  # exit script if any statement returns a non-true return value
 ## (CRITICAL) ToDo: validate >> deleting DN lib import ↓ (ref task NMO-770)
 #source /import_dockerized_norlab_container_tools.bash
 
+_debug_log=false
+if [[ $- == *i* ]]; then
+    if [[ "${_debug_log}" == true ]]; then
+      echo "Interactive shell. Sourcing DN lib is handled via .bashrc"
+    fi
+else
+    if [[ "${_debug_log}" == true ]]; then
+      echo "Non-interactive shell. Sourcing DN lib"
+    fi
+    source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
+fi
+
+
 test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[N2ST error]\033[0m The N2ST lib is not loaded!" 1>&2 && exit 1; }
 
 if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
