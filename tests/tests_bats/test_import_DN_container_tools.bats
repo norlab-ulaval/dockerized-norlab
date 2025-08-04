@@ -122,25 +122,25 @@ teardown() {
 
   mkdir -p "/opt/ros/${ROS_DISTRO}"
   cat > "/opt/ros/${ROS_DISTRO}/setup.bash" <<EOF
+#!/bin/bash
 echo "Mock /opt/ros/${ROS_DISTRO}/setup.bash"
-exit 0
 EOF
 
   mkdir -p "${DN_DEV_WORKSPACE}/install/"
   cat > "${DN_DEV_WORKSPACE}/install/local_setup.bash" <<EOF
+#!/bin/bash
 echo "Mock ${DN_DEV_WORKSPACE}/install/local_setup.bash"
-exit 0
 EOF
 
   source $TESTED_FILE
 
   run dn::source_ros2_underlay_only
   assert_success
-  assert_output --regexp "sourcing underlay \/opt\/ros".*"setup.bash from dn_source_ros2.bash"
+  assert_output --regexp "sourcing underlay \/opt\/ros".*"setup.bash from".*
 
   run dn::source_ros2_overlay_only
   assert_success
-  assert_output --regexp "sourcing overlay".*"setup.bash from dn_source_ros2.bash"
+  assert_output --regexp "sourcing overlay".*"setup.bash from".*
 
   run dn::source_ros2
   assert_success
@@ -150,6 +150,61 @@ EOF
   unset DN_DEV_WORKSPACE
   rm -f "/opt/ros/${ROS_DISTRO}/setup.bash"
   rm -f "${DN_DEV_WORKSPACE}/install/local_setup.bash"
+}
+
+@test "${TESTED_FILE} › validate source ros2 function refer the caller script name › expect pass" {
+  # local setup
+  export ROS_DISTRO=humble
+  export DN_DEV_WORKSPACE=/ros2_ws_mock
+
+  mkdir -p "/opt/ros/${ROS_DISTRO}"
+  cat > "/opt/ros/${ROS_DISTRO}/setup.bash" <<EOF
+#!/bin/bash
+echo "Mock /opt/ros/${ROS_DISTRO}/setup.bash"
+EOF
+
+  mkdir -p "${DN_DEV_WORKSPACE}/install/"
+  cat > "${DN_DEV_WORKSPACE}/install/local_setup.bash" <<EOF
+#!/bin/bash
+echo "Mock ${DN_DEV_WORKSPACE}/install/local_setup.bash"
+EOF
+
+  export MOCK_DNA_DIR=$(temp_make)
+  cat > "${MOCK_DNA_DIR}/mock_source_ros2_caller_shlvl1.bash" <<'EOF'
+#!/bin/bash
+# ....Import DN lib................................................................................
+echo "Sourcing DN lib..."
+cd "${BATS_DOCKER_WORKDIR:?err}/dockerized-norlab-images/container-tools" || exit 1
+source import_dockerized_norlab_container_tools.bash || exit 1
+
+# ....Sanity check.................................................................................
+##echo && printenv && echo
+[[ "${DN_CONTAINER_TOOLS_LOADED}" == "true" ]] || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
+test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The ROS2 sourcing fct are not loaded!" 1>&2 && exit 1; }
+
+# ....Sourcing ROS2................................................................................
+source "${MOCK_DNA_DIR}/mock_callback.bash"
+EOF
+
+  cat > "${MOCK_DNA_DIR}/mock_callback.bash" <<'EOF'
+#!/bin/bash
+# ....Sourcing ROS2................................................................................
+echo "Sourcing ROS2..."
+#dn::source_ros2_underlay_only
+dn::source_ros2
+EOF
+
+  run bash "${MOCK_DNA_DIR}/mock_source_ros2_caller_shlvl1.bash" # >&3
+  assert_success
+  assert_output --regexp "sourcing underlay \/opt\/ros".*"setup.bash from ${MOCK_DNA_DIR}/mock_callback.bash"
+  assert_output --regexp "sourcing overlay".*"setup.bash from ${MOCK_DNA_DIR}/mock_callback.bash"
+
+  # local teardown
+  unset ROS_DISTRO
+  unset DN_DEV_WORKSPACE
+  rm -f "/opt/ros/${ROS_DISTRO}/setup.bash"
+  rm -f "${DN_DEV_WORKSPACE}/install/local_setup.bash"
+  temp_del "${MOCK_DNA_DIR}"
 }
 
 @test "${TESTED_FILE} › validate teardown › expect pass" {
