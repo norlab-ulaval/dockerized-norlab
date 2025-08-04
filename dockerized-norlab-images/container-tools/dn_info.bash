@@ -111,8 +111,8 @@ function dn::show_container_runtime_information() {
 \033[1;37m
 $(
 cd "${DN_PATH}"/dockerized-norlab-images/container-tools &&
-sed "s;alias dn_;${_sp}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn_.*;;" | grep -e dn_
 sed "s;alias dn-;${_sp}  $ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn-.*;;" | grep -e dn-
+#sed "s;alias dn_;${_sp}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn_.*;;" | grep -e dn_
 )
 \033[0m"
 
