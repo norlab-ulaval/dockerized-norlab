@@ -20,7 +20,7 @@
 #
 # =================================================================================================
 
-_debug_log=true
+_debug_log=false
 _dn_error_prefix="\033[1;31m[DN error]\033[0m"
 _dn_warning_prefix="\033[1;33m[DN warning]\033[0m"
 
