@@ -17,8 +17,8 @@ services:
     environment:
       ROS_DOMAIN_ID: 1
       DISPLAY: ${DISPLAY}
-      # DISPLAY: ${DISPLAY:-':0'} # set to 0 if DISPLAY is unset or none
-      # DISPLAY: '169.254.205.89:0.0'
+      # DISPLAY: ${DISPLAY:-":0"} # set to 0 if DISPLAY is unset or none
+      # DISPLAY: "169.254.205.89:0.0"
       QT_X11_NO_MITSHM: 1
     ports:
       - "2222:2222" # ssh pycharm-debugger

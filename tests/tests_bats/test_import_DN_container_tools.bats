@@ -178,7 +178,6 @@ cd "${BATS_DOCKER_WORKDIR:?err}/dockerized-norlab-images/container-tools" || exi
 source import_dockerized_norlab_container_tools.bash || exit 1
 
 # ....Sanity check.................................................................................
-##echo && printenv && echo
 [[ "${DN_CONTAINER_TOOLS_LOADED}" == "true" ]] || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
 test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The ROS2 sourcing fct are not loaded!" 1>&2 && exit 1; }
 
