@@ -134,8 +134,8 @@ sed "s;alias dn-;${_sp}  $ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;
   ${_sp}
   ${_sp}path: .dockerized_norlab/configuration/.env.dna:
   ${_sp}Set environment variable DN_ACTIVATE_POWERLINE_PROMT to false
-  \033[0m
-  or pass the following flag to \033[1;dna up\033[0m or \033[1;dna exec\033[0m when connecting to a running container:
+
+  or pass the following flag to \033[1;\033[1;37mdna up\033[0m or \033[1;\033[1;37mdna exec\033[0m when connecting to a running container:
   \033[1;37m
   ${_sp}$ dna [up|exec] --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" -- bash
   \033[0m"

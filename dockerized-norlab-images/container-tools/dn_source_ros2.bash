@@ -41,7 +41,7 @@ function dn::source_ros2_overlay_only() {
   local overlay_script=local_setup.bash
   #local overlay_script=setup.bash
 
-  if [[ -f "${DN_DEV_WORKSPACE}/install/${overlay_script}" ]]; then
+  if [[ -f "${DN_DEV_WORKSPACE:?'Environment variable is not set!'}/install/${overlay_script}" ]]; then
     echo -e "\033[1;2m" # MSG_DIMMED_FORMAT
     echo "sourcing overlay ${DN_DEV_WORKSPACE}/install/${overlay_script} from dn_source_ros2.bash"
     source "${DN_DEV_WORKSPACE}/install/${overlay_script}"
