@@ -25,10 +25,10 @@ _dna_error_prefix="\033[1;31m[DN error]\033[0m"
 # Source ROS2 environment (the underlay)
 function dn::source_ros2_underlay_only() {
   if [[ -n "${ROS_DISTRO:?'Environment variable is not set!'}" ]] && [[ -f "/opt/ros/${ROS_DISTRO}/setup.bash"  ]]; then
-    echo -e "\033[1;2msourcing underlay /opt/ros/${ROS_DISTRO}/setup.bash from $0\033[0m"
+    echo -e "\033[1;2msourcing underlay /opt/ros/${ROS_DISTRO}/setup.bash from ${BASH_SOURCE[0]}\033[0m"
     source "/opt/ros/${ROS_DISTRO}/setup.bash"
   else
-    echo -e "${_dna_error_prefix} /opt/ros/${ROS_DISTRO}/setup.bash is unreachable!" 1>&2
+    echo -e "${_dna_error_prefix} /opt/ros/${ROS_DISTRO}/setup.bash is unreachable in ${BASH_SOURCE[0]}!" 1>&2
     return 1
   fi
   return 0
@@ -40,10 +40,10 @@ function dn::source_ros2_overlay_only() {
   #local overlay_script=setup.bash
 
   if [[ -f "${DN_DEV_WORKSPACE:?'Environment variable is not set!'}/install/${overlay_script}" ]]; then
-    echo -e "\033[1;2msourcing overlay ${DN_DEV_WORKSPACE}/install/${overlay_script} from $0\033[0m"
+    echo -e "\033[1;2msourcing overlay ${DN_DEV_WORKSPACE}/install/${overlay_script} from ${BASH_SOURCE[0]}\033[0m"
     source "${DN_DEV_WORKSPACE}/install/${overlay_script}"
   else
-    echo -e "${_dna_error_prefix} ${DN_DEV_WORKSPACE}/install/local_setup.bash is unreachable!" 1>&2
+    echo -e "${_dna_error_prefix} ${DN_DEV_WORKSPACE}/install/local_setup.bash is unreachable in ${BASH_SOURCE[0]}!" 1>&2
     return 1
   fi
   return 0
@@ -51,8 +51,10 @@ function dn::source_ros2_overlay_only() {
 
 # Source ROS2 workspace environment (both the underlay and the overlay)
 function dn::source_ros2() {
+  echo
   dn::source_ros2_underlay_only || return 1
   dn::source_ros2_overlay_only || return 1
+  echo
   return 0
 }
 
