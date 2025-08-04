@@ -376,9 +376,6 @@ RUN <<EOF
           --event-handlers console_direct+
        )
     echo -e "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
-
-    source /opt/ros/${ROS_DISTRO}/setup.bash
-
     colcon build ${COLCON_FLAGS[@]} || exit 1
 
     # ....Teardown.................................................................................

@@ -6,11 +6,11 @@ set -e  # exit script if any statement returns a non-true return value
 # ====DN-project internal logic====================================================================
 
 # ....Load library.................................................................................
-source /import_dockerized_norlab_container_tools.bash
-n2st::set_which_python3_version && test -n "${PYTHON3_VERSION}" || exit 1
-if [[ -z "${PYTHON3_VERSION}" ]]; then
-  echo -e "[\033[1;31mERROR\033[0m] $0 | Script import_dockerized_norlab_container_tools.bash failled" 1>&2
-fi
+
+## (CRITICAL) ToDo: validate >> deleting DN lib import ↓ (ref task NMO-770)
+#source /import_dockerized_norlab_container_tools.bash
+
+test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[N2ST error]\033[0m The N2ST lib is not loaded!" 1>&2 && exit 1; }
 
 if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
   n2st::print_msg "Execute $0"

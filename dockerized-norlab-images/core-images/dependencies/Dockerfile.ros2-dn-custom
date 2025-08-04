@@ -68,6 +68,9 @@ RUN <<EOF
 
     apt-get update || exit 1
 
+    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    dn::source_ros2_underlay_only || exit 1
+
     rosdep update --rosdistro ${ROS_DISTRO:?err} || exit 1
     rosdep fix-permissions
 
@@ -95,8 +98,6 @@ RUN <<EOF
           "--event-handlers" "console_direct+"
        )
     echo -e "COLCON_FLAGS=( ${COLCON_FLAGS[*]} )"
-
-    dn::source_ros2 || exit 1
     colcon build ${COLCON_FLAGS[@]} || exit 1
 
     # ....Teardown.................................................................................
