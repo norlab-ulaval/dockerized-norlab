@@ -100,10 +100,10 @@ function dn::show_container_runtime_information() {
   ${_sp}python3 version:             ${DN_PYTHON3_VERSION}
   ${_sp}numpy version:               $(echo "${PKG_VERSION}" | grep numpy== | sed 's/numpy==//g')
   ${_sp}pyTorch version:             $(echo "${PKG_VERSION}" | grep -w torch | sed 's/torch==//g')
-#  ${_sp}torchvision version:         $(echo "${PKG_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
   ${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')
   ${_sp}LLVMlite version:            $(echo "${PKG_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')
   \033[0m"
+#  ${_sp}torchvision version:         $(echo "${PKG_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
 
 
   # ....DN wide aliases............................................................................
@@ -112,9 +112,9 @@ function dn::show_container_runtime_information() {
 $(
 cd "${DN_PATH}"/dockerized-norlab-images/container-tools &&
 sed "s;alias dn-;${_sp}  $ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn-.*;;" | grep -e dn-
-#sed "s;alias dn_;${_sp}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn_.*;;" | grep -e dn_
 )
 \033[0m"
+#sed "s;alias dn_;${_sp}  $ dn_;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn_.*;;" | grep -e dn_
 
   # ....Service specific (project-develop) ........................................................
   if [[ "${DN_PROJECT_SERVICE}" == "project-develop" ]]; then
@@ -135,7 +135,7 @@ sed "s;alias dn-;${_sp}  $ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;
   ${_sp}path: .dockerized_norlab/configuration/.env.dna:
   ${_sp}Set environment variable DN_ACTIVATE_POWERLINE_PROMT to false
 
-  or pass the following flag to \033[1;\033[1;37mdna up\033[0m or \033[1;\033[1;37mdna exec\033[0m when connecting to a running container:
+  or pass the following flag to \033[1;37mdna up\033[0m or \033[1;37mdna exec\033[0m when connecting to a running container:
   \033[1;37m
   ${_sp}$ dna [up|exec] --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" -- bash
   \033[0m"
