@@ -1,7 +1,57 @@
-
 # Repository Guidelines
+
+dockerized-norlab guidelines and instructions
+
+## Repository Description
+
+Containerized development workflow for NorLab robotic software engineering project
+leveraging docker and NVIDIA Container Toolkit technology.
+
+### Features
+- CUDA support via _NVIDIA Container Toolkit_
+- Multi architectures: `l4t/arm64`, `linux/amd64`
+- Multi OS versions:
+  - Jetpack: `r35.2.1`, `r35.4.1`, `r36.2.8` ...
+  - Ubuntu: `focal`, `jammy`
+- Multi ros2 distros: `foxy`, `humble` ...
+- Multi ros2 packages: `core`, `base`, `desktop`
+- Multi packages (non-exhaustive list): 
+  - Numerical computing: `numpy`, `numba`, `pycuda`, `tensorrt`
+  - Deep-learning: `pytorch`, `torch2trt`, `tensordict`
+  - Vision: `opencv`, `torchvision`
+  - NorLab perception stack: `libpointmatcher[-ros]`, `norlab-icp-mapper[-ros]` 
+  - NorLab control stack: (in progress) 
+  - MLOps: `ray`, `omegaconf`, `hydra-core`, `wandb`
+  - Deep-rl: `stable-baseline3`
+  - Simulation: `gym`, `f1tenth-gym`
  
+### Why
+1. custom dependency management; 
+2. development environment consistency; 
+3. codebase stabilization trough continuous integration pipeline;
+4. easy deployment to robots compute box;
+5. results reproducibility.
+ 
+Recommanded reading by [Tobit Flatscher](https://github.com/2b-t)
+- [Why should I use Docker when developing robotics software?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#2-why-should-i-use-docker-when-developing-robotics-software)
+- [Why is Docker important in particular for academic and research institutions?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#3-why-is-docker-important-in-particular-for-academic-and-research-institutions)
+
+
+
+## Prime directive:
+
+Always comply with guidelines and instructions.
+
+## Repository Guidelines Instructions
+
+- First, review _A2G Framework Guidelines_ specified in
+  `.junie/ai_agent_guidelines/guidelines.a2g_framework.md` for additional guidelines.
+- Then proceed with the remaining repository guidelines instructions.
+
 ## Repository Organization
+
+- `.junie/` contains AI agent related files.
+- `.junie/ai_agent_guidelines` contains _AI Agent Guidelines (A2G)_ with entrypoint at `.junie/ai_agent_guidelines/README.md`.
 - `.env.build_matrix.main*` contain build matrix configuration related environment variables
 - `build_matrix_config/` contain mode based build matrix configuration dotenv files. Files are organized by mode: `dev/` -> _development_, `prod/` -> _production_ and `test/` -> _testing_ 
 - `dockerized-norlab-images/` contain Dockerfiles, docker compose yaml files and any ressources either available inside image at build time or available inside container at runtime
@@ -13,119 +63,7 @@
 - `utilities/tmp/dockerized-norlab-project-mock` is use for cloning a fresh copy of a mock "super project" from https://github.com/norlab-ulaval/dockerized-norlab-project-mock.git on test execution.
   `dockerized-norlab-project-mock` is a mock of how a user would install and uses DNP. We refer to this as a "super project" or the "user side".
 
-## General Instructions:
+## Repository Terminology
 
-### Planning instructions
-- Always put plan ready for review in the `.junie/plans` directory.
-
-### Coding instructions
-- Don't repeat yourself: 
-  - Use already implemented code such as:
-    - `import_dockerized_norlab_tools.bash`
-  - Leverage functionality provided by submodule such as _N2ST_ and _NBS_ library whenever possible.
-- Path management:
-  - Use `source import_dockerized_norlab_tools.bash` to load repository dependencies.
-  - Each script can optionally use the env var `DN_PATH`, `NBS_PATH`, `N2ST_PATH` and others define in `.env.dockerized-norlab-build-system`.
-
-### Version Control Instructions
-- Never `git add` or `git commit` changes, all changes require explicit code review and acceptance by the code owner.
-
-## Testing Strategy Instructions
-- In the context of testing:
-  - the definition of _pass_ is that a test exit without error. Synonym: _green_, _successful_; 
-  - the definition fo _done_ mean that all tests where executed and all required tests passed, i.e. tests are _green_.
-- Inspect the tested script/functions for business logic related error or implementation error. Propose correction before going forward if any. 
-- Identify relevant test cases e.g., behavior validation, error handling, desired user feedback, ...   
-- If the tested script implements helper functions (i.e., support function meant to be used by the main function), test those functions first.
-- Always execute all unit-tests and all integration tests before submitting and only submit when _done_.
-
-## General Testing Instructions
-- Write tests who challenge the intended functionality or behavior.
-- Divide test file by test cases: one test function per test case.
-- Provide a summary explanation of the test case: 
-  - What does it test for; 
-  - What's the test expected outcome (i.e, should it pass or fail); 
-  - If you do mock something, justify why.
-- Their should be at least one test file per corresponding source code file.
-- Write **Unit-tests** and/or **Integration tests**:
-  - All new scripts or functionalities need to have (either or both):
-    - **Unit-tests**: 
-      - Those are tests that check if the core expected behaviors are satisfy. It test a piece of code in a stand alone fashion.  
-    - **Integration tests**: 
-      - Those are test case where there is multiple script interacting whith each other or we want to assess execution from beginning to end;
-
-
-### General Mocking Instructions
-- Never mock the logic that is actually tested.
-- Copying the source code in a test instead of using the real one fall into the mocking category, don't do that.
-
-### General Instructions On Tests Execution
-- Always run unit-tests before integration tests.
-- Never run integration tests if any unit-tests fail.
-
-## Shell Script specific Testing Instructions
-All instructions in sections _General Testing Instructions_ plus the following:
-- All new scripts or functionalities need to have (either or both):
-  - **Unit-tests**: 
-    - Use [N2ST](https://github.com/norlab-ulaval/norlab-shell-script-tools) bats tests tools for unit-test (See `tests/run_bats_core_test_in_n2st.bash` script) and a corresponding bats unit-test `.bats` file in the `tests/tests_bats/` directory. N2ST Bats tests are running in a docker container in complete isolation with a copy of the source code.
-  - **Integration tests**: 
-    - Those tests are divided in two categories: 
-      - Dryrun: either make use of a `--dry-run` flag implemented in the script when available or make use of the docker `--dry-run` flag;  
-      - Test: all other integration test case that are not dryrun.
-    - Use [NBS](https://github.com/norlab-ulaval/norlab-build-system) tests tools for integration-test (See `tests/run_all_docker_dryrun_and_config_tests.bash` script) and a corresponding `test_*` or `dryrun_*` script in the `tests/tests_docker_dryrun_and_config/` directory.
-    - New integration test script must go in the `tests/tests_docker_dryrun_and_config/` directory.
-- Their should be at least one test file (`.bats` and/or `.bash`) per corresponding source code file.
-
-### Shell Script specific Mocking Instructions
-All instructions in sections _General Mocking Instruction_ plus the following:
-- You can mock `docker [OPTIONS|COMMAND]` commands and `git [OPTIONS|COMMAND]` commands.
-- Ask permission before mocking shell builtin commands.
-- Avoid mocking N2ST functions, at the exception of those in `${N2ST_PATH}/src/function_library/prompt_utilities.bash`. For example, instead of re-implementing `n2st::seek_and_modify_string_in_file`, just load the real one and test that the content of the file at `file_path` has been updated? You can find the real one in `${N2ST_PATH}/src/function_library/general_utilities.bash`.
-- Avoid mocking the `read` command. Instead use `echo 'y'` or `echo 'N'` for piping a keyboard input to the function who use the `read` command which in turn expect a single character, example: `run bash -c "echo 'y' | <the-tested-function>"`. Alternatively, use the `yes [n]` shell command which optionaly send [y|Y|yes] n time, example: `run bash -c "yes 2 | <the-tested-function>"`.
-- Use `timeouts 10 ` in integration tests that execute real scripts with mocked dependencies to prevent test hangs.
-
-### Instructions On Bats Tests
-- Use bats framework `bats-file` helper library provide tools for temporary directory management, such as the `temp_make` and `temp_del` functions. 
-  Reference https://github.com/bats-core/bats-file?tab=readme-ov-file#working-with-temporary-directories
-- Use bats test function `assert_file_executable` and `assert_file_not_executable` to test executable.
-- Use bats test function `assert_symlink_to` and `assert_not_symlink_to` to test symlink.
-- You can test directory/file mode, existence, permision, content and symlink directly without mocking since bats tests are running in a docker container in complete isolation.
-- Test `/usr/local/bin/dna` symlink related logic directly without mocking.
-
-Bats helper library documentation:
-  - https://github.com/bats-core/bats-assert
-  - https://github.com/bats-core/bats-file
-  - https://github.com/bats-core/bats-support
-
-### Shell Script specific Instructions On Tests Execution
-All instructions in sections _General Instruction On Tests Execution_ plus the following:
-- Don't directly execute `.bats` files, instead execute from the repository root `bash ./tests/run_bats_core_test_in_n2st.bash tests/tests_bats/<bats-file-name>.bats`.
-- Don't set tests script in executable mode, instead execute them with `bash <the-script-name>.bash`. 
-
-## Python Specific Testing Instructions
-All instructions in sections _General Testing Instructions_ plus the following:
-1. Place new tests in the appropriate subdirectory based on what you're testing
-2. Follow the existing naming conventions (`tests_*` for package, `test_*.py` for files, `test_*` for functions)
-3. Use pytest fixtures from conftest.py for common setup/teardown if exist in directory or parent directory
-4. Use parametrization for testing multiple scenarios
-5. Regroup test function that tests different case of same function or class under a test class following the pytest test discovery naming convention like in the following example:
-
-### Python Specific Instructions On Tests Execution
-To run tests, use the pytest command from the project root or tests directory:
-
-```bash
-# Run all tests
-python -m pytest
-
-# Run tests with verbose output
-python -m pytest -v
-
-# Run tests in a specific directory
-python -m pytest tests/tests_tools
-
-# Run a specific test file
-python -m pytest tests/tests_tools/tests_console_tools/test_terminal_splash.py
-
-# Run a specific test function
-python -m pytest tests/tests_tools/tests_console_tools/test_terminal_splash.py::test_norlab_splash
-```
+CUDA: Is a parallel computing platform and application programming interface (API) that allows software to use certain types of graphics processing units (GPUs) for accelerated general-purpose processing, significantly broadening their utility in scientific and high-performance computing.
+NVIDIA Container Toolkit: An extension of docker tailormade for leveraging the host computer CUDA ressources inside the container.
