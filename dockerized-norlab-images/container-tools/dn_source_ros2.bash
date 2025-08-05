@@ -20,34 +20,36 @@
 #
 # =================================================================================================
 
-_debug_log=false
-_dn_error_prefix="\033[1;31m[DN error]\033[0m"
-_dn_warning_prefix="\033[1;33m[DN warning]\033[0m"
+
+#DN_SHOW_DEBUG_INFO=false # (CRITICAL) ToDo: on task end >> switch to false ←
+MSG_DIMMED_FORMAT="\033[1;2m"
+MSG_END_FORMAT="\033[0m"
 
 function _show_debug_info() {
   local caller="$1"
-  echo -e "\nfrom $1
+  echo -e "\033[1;33m[DN trace]\033[0m Info from $1
+  ${MSG_DIMMED_FORMAT}
   BASH_SOURCE: ${BASH_SOURCE[*]}
   realpath: $(realpath .)
   \$0: $0
-  "
+  ${MSG_END_FORMAT}"
 }
 
-if [[ "${_debug_log}" == true ]]; then
+if [[ "${DN_SHOW_DEBUG_INFO}" == true ]] && [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
   _show_debug_info "script dn_source_ros2.bash"
 fi
 
 # Source ROS2 environment (the underlay)
 function dn::source_ros2_underlay_only() {
   local caller="${1:-"${BASH_SOURCE[1]}"}"
-  if [[ "${_debug_log}" == true ]]; then
+  if [[ "${DN_SHOW_DEBUG_INFO}" == true ]] && [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
     _show_debug_info "function dn::source_ros2_underlay_only()"
   fi
   if [[ -n "${ROS_DISTRO:?'Environment variable is not set!'}" ]] && [[ -f "/opt/ros/${ROS_DISTRO}/setup.bash"  ]]; then
-    echo -e "\033[1;2msourcing underlay /opt/ros/${ROS_DISTRO}/setup.bash from ${caller}\033[0m"
+    echo -e "${MSG_DIMMED_FORMAT}sourcing underlay /opt/ros/${ROS_DISTRO}/setup.bash from ${caller}${MSG_END_FORMAT}"
     source "/opt/ros/${ROS_DISTRO}/setup.bash" || return 1
   else
-    echo -e "${_dn_error_prefix} /opt/ros/${ROS_DISTRO}/setup.bash is unreachable in ${caller}!" 1>&2
+    echo -e "\033[1;31m[DN error]\033[0m /opt/ros/${ROS_DISTRO}/setup.bash is unreachable in ${caller}!" 1>&2
     return 1
   fi
   return 0
@@ -58,15 +60,15 @@ function dn::source_ros2_overlay_only() {
   local overlay_script="${1:-"local_setup.bash"}"
   #local overlay_script=setup.bash
   local caller="${2:-"${BASH_SOURCE[1]}"}"
-  if [[ "${_debug_log}" == true ]]; then
+  if [[ "${DN_SHOW_DEBUG_INFO}" == true ]] && [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
     _show_debug_info "function dn::source_ros2_overlay_only()"
-    echo -e "  overlay_script: ${overlay_script}\n  caller: ${caller}\n  DN_DEV_WORKSPACE: ${DN_DEV_WORKSPACE}"
+    echo -e "${MSG_DIMMED_FORMAT}  overlay_script: ${overlay_script}\n  caller: ${caller}\n  DN_DEV_WORKSPACE: ${DN_DEV_WORKSPACE}${MSG_END_FORMAT}\n"
   fi
   if [[ -f "${DN_DEV_WORKSPACE:?'Environment variable is not set!'}/install/${overlay_script}" ]]; then
-    echo -e "\033[1;2msourcing overlay ${DN_DEV_WORKSPACE}/install/${overlay_script} from ${caller}\033[0m"
+    echo -e "${MSG_DIMMED_FORMAT}sourcing overlay ${DN_DEV_WORKSPACE}/install/${overlay_script} from ${caller}${MSG_END_FORMAT}"
     source "${DN_DEV_WORKSPACE}/install/${overlay_script}" || return 1
   else
-    echo -e "${_dn_warning_prefix} ${DN_DEV_WORKSPACE}/install/local_setup.bash is unreachable in ${caller}! Skip sourcing overlay."
+    echo -e "\033[1;33m[DN warning]\033[0m ${DN_DEV_WORKSPACE}/install/local_setup.bash is unreachable in ${caller}! Skip sourcing overlay."
   fi
   return 0
 }
@@ -75,7 +77,7 @@ function dn::source_ros2_overlay_only() {
 function dn::source_ros2() {
   local overlay_script="${1:-"local_setup.bash"}"
   local caller="${BASH_SOURCE[1]}"
-  if [[ "${_debug_log}" == true ]]; then
+  if [[ "${DN_SHOW_DEBUG_INFO}" == true ]] && [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
     _show_debug_info "function dn::source_ros2()"
   fi
   echo
@@ -85,7 +87,7 @@ function dn::source_ros2() {
       dn::source_ros2_overlay_only "local_setup.bash" "${caller}" || return 1
     fi
   else
-    echo -e "${_dn_warning_prefix} ROS_DISTRO is missing! Skipping dn::source_ros2"
+    echo -e "\033[1;33m[DN warning]\033[0m ROS_DISTRO is missing! Skipping dn::source_ros2"
   fi
   echo
   return 0

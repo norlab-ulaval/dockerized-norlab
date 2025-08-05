@@ -92,13 +92,12 @@ function dn::initialize_dockerized_norlab_project() {
 # ::::Main:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   # This script is being run, ie: __name__="__main__"
-  dna_error_prefix="\033[1;31m[DNA error]\033[0m"
-  echo -e "${dna_error_prefix} This script must be sourced!
+  echo -e "\033[1;31m[DN error]\033[0m This script must be sourced!
         i.e.: $ source $(basename "$0")" 1>&2
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[N2ST error]\033[0m The N2ST lib is not loaded!" 1>&2 && exit 1; }
+  test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[DN error]\033[0m The N2ST lib is not loaded!" 1>&2 && exit 1; }
   dn::initialize_dockerized_norlab_project || n2st::print_msg_error_and_exit "dn::initialize_dockerized_norlab_project exited with error!"
 fi
 
