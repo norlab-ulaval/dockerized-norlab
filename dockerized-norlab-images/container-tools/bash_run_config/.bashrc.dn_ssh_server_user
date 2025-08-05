@@ -29,7 +29,7 @@
 # =================================================================================================
 
 if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
-  echo -e "\033[1;33m[DN trace]\033[0m Execute $0"
+  echo -e "\033[1;33m[DN trace]\033[0m Execute .bashrc.dn_ssh_server_user"
 fi
 
 # ....Load Dockerized-NorLab container-tools libraries.............................................
