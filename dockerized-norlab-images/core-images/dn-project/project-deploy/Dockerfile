@@ -128,6 +128,9 @@ ARG BUILDPLATFORM
 RUN <<EOF
     apt-get update
 
+    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    dn::source_ros2_underlay_only || exit 1
+
     n2st::print_msg "Execute rosdep update..."
     rosdep update --rosdistro ${ROS_DISTRO} || n2st::print_msg_error_and_exit "Failed rosdep update!"
     rosdep fix-permissions
@@ -140,7 +143,6 @@ RUN <<EOF
         -q \
         -y \
     || n2st::print_msg_error_and_exit "Failed rosdep install!"
-
 
     COLCON_FLAGS=()
     if [[ "${TARGETPLATFORM:?err}" != "${BUILDPLATFORM:?err}" ]]; then
@@ -157,14 +159,6 @@ RUN <<EOF
         "--event-handlers" "console_direct+"
     )
     n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
-
-    # (CRITICAL) ToDo: should replace the following bloc with dn::source_ros2 (ref task NMO-770)
-    #source "/opt/ros/${ROS_DISTRO}/setup.bash"
-    #if [[ -d "${DN_DEV_WORKSPACE}/install/setup.bash" ]]; then
-    #  source "${DN_DEV_WORKSPACE}/install/setup.bash"
-    #fi
-    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
-    dn::source_ros2 || exit 1
 
     n2st::print_msg "Execute colcon build..."
     colcon build ${COLCON_FLAGS[@]} || n2st::print_msg_error_and_exit "Failed colcon build!"

@@ -62,8 +62,6 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN echo "sourcing /opt/ros/${ROS_DISTRO}/setup.bash" \
     && source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && echo "sourcing ${DN_DEV_WORKSPACE}/install/setup.bash" \
-    && source ${DN_DEV_WORKSPACE}/install/setup.bash \
     && apt-get update \
     && rosdep update --rosdistro ${ROS_DISTRO} \
     && rosdep fix-permissions \
