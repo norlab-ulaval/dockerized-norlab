@@ -21,7 +21,7 @@
 # =================================================================================================
 
 
-#DN_SHOW_DEBUG_INFO=false # (CRITICAL) ToDo: on task end >> switch to false ←
+#DN_SHOW_DEBUG_INFO=false # (CRITICAL) ToDo: on task end >> mute this line ←
 MSG_DIMMED_FORMAT="\033[1;2m"
 MSG_END_FORMAT="\033[0m"
 
