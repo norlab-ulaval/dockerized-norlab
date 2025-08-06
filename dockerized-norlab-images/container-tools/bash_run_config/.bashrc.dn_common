@@ -45,5 +45,7 @@ function dn::load_container_tools_libraries() {
   fi
 }
 
+dn::load_container_tools_libraries || exit 1
+
 # ====Build-time appended instructions=============================================================
 
