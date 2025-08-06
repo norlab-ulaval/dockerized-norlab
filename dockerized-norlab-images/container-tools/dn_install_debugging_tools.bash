@@ -58,9 +58,10 @@ function dn::setup_debugging_tools() {
   apt-get update
 
   apt-get install --assume-yes --no-install-recommends \
-      openssh-server \
-      ncurses-term \
-      xauth
+      openssh-server
+
+#      ncurses-term \
+#      xauth
 
   # ....Setup ssh daemon.............................................................................
   n2st::print_msg "Setup ssh daemon..."

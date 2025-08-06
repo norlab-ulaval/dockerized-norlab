@@ -38,7 +38,7 @@ if [[ $(whoami) == "root" ]]; then
   "${LAUNCH_SSH_DAEMON[@]}" || n2st::print_msg_warning "Something went wrong with the ssh daemon!"
 else
   n2st::print_msg "Launching the ssh daemon in a subshell with sudo priviledge instead of the $(whoami) shell"
-  sudo bash -c "${LAUNCH_SSH_DAEMON[*]}" || n2st::print_msg_warning "Something went wrong with the ssh daemon!"
+  sudo bash -c "${LAUNCH_SSH_DAEMON[*]}"
 fi
 
 # ====DN-project user defined logic================================================================
