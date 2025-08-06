@@ -4,39 +4,12 @@ dockerized-norlab guidelines and instructions
 
 ## Repository Description
 
-Containerized development workflow for NorLab robotic software engineering project
-leveraging docker and NVIDIA Container Toolkit technology.
+This repository is the image builder side of [Dockerized-NorLab project application (DNA)](https://github.com/norlab-ulaval/dockerized-norlab-project).
+Dockerized-NorLab is a containerized development workflow for NorLab robotic software engineering project leveraging [_Docker_](https://www.docker.com) and [_NVIDIA Container Toolkit_](https://github.com/NVIDIA/nvidia-container-toolkit).
 
-### Features
-- CUDA support via _NVIDIA Container Toolkit_
-- Multi architectures: `l4t/arm64`, `linux/amd64`
-- Multi OS versions:
-  - Jetpack: `r35.2.1`, `r35.4.1`, `r36.2.8` ...
-  - Ubuntu: `focal`, `jammy`
-- Multi ros2 distros: `foxy`, `humble` ...
-- Multi ros2 packages: `core`, `base`, `desktop`
-- Multi packages (non-exhaustive list): 
-  - Numerical computing: `numpy`, `numba`, `pycuda`, `tensorrt`
-  - Deep-learning: `pytorch`, `torch2trt`, `tensordict`
-  - Vision: `opencv`, `torchvision`
-  - NorLab perception stack: `libpointmatcher[-ros]`, `norlab-icp-mapper[-ros]` 
-  - NorLab control stack: (in progress) 
-  - MLOps: `ray`, `omegaconf`, `hydra-core`, `wandb`
-  - Deep-rl: `stable-baseline3`
-  - Simulation: `gym`, `f1tenth-gym`
- 
-### Why
-1. custom dependency management; 
-2. development environment consistency; 
-3. codebase stabilization trough continuous integration pipeline;
-4. easy deployment to robots compute box;
-5. results reproducibility.
- 
-Recommanded reading by [Tobit Flatscher](https://github.com/2b-t)
-- [Why should I use Docker when developing robotics software?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#2-why-should-i-use-docker-when-developing-robotics-software)
-- [Why is Docker important in particular for academic and research institutions?](https://github.com/2b-t/docker-for-robotics/blob/main/doc/Motivation.md#3-why-is-docker-important-in-particular-for-academic-and-research-institutions)
+Refer to the [Features](../README.md#features) section in the README.md for details.
 
-
+Refer to the [Why](../README.md#why) section in the README.md for details.
 
 ## Prime directive:
 
