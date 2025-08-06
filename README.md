@@ -28,15 +28,12 @@
 &nbsp; • &nbsp;
 </sup>
 <br>
-<br>
 
 [//]: # ( ==== Description =========================================== )
 
 **This repository is the image builder side of [Dockerized-NorLab project application (DNA)](https://github.com/norlab-ulaval/dockerized-norlab-project). 
 <br>
 Dockerized-NorLab is a containerized development workflow for NorLab robotic software engineering project leveraging [_Docker_](https://www.docker.com) and [_NVIDIA Container Toolkit_](https://github.com/NVIDIA/nvidia-container-toolkit).**
-<br>
-<br>
 <br>
 
 [//]: # ( ==== Badges ================================================ )
@@ -45,7 +42,6 @@ Dockerized-NorLab is a containerized development workflow for NorLab robotic sof
 <img alt="GitHub release (with filter)" src="https://img.shields.io/github/v/release/norlab-ulaval/dockerized-norlab">
 <a href="http://132.203.26.125:8111"><img alt="Static Badge" src="https://img.shields.io/badge/JetBrains%20TeamCity-CI-green?style=plastic&logo=teamcity"></a>
 
-<br>
 
 [//]: # ( ==== Maintainer ============================================ )
 <sub>
@@ -65,7 +61,7 @@ Maintainer <a href="https://redleader962.github.io">Luc Coupal</a>
 - Multi OS versions:
   - Jetpack: `r36.4.0`, `r35.4.1`
   - Ubuntu: `jammy`, `focal`
-- Multi ros2 distros: `humble`, `galactic`
+- Multi ros2 distros: `humble`, `galactic`, (archived: `foxy`)
 - Multi ros2 packages: `core`, `base`, `desktop`
 - Multi packages (non-exhaustive list): 
   - Deep-learning: `pytorch`, `torch2trt`, `tensordict`
@@ -131,19 +127,39 @@ Notes:
 ### Dockerized-Norlab Control
 
 #### [dockerized-norlab-control-deep-rl](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-control-deep-rl)   
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
+
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
 
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl)
 
+#### [dockerized-norlab-control-deep-learning](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-control-deep-learning)   
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
+
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
+
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
 
 #### [dockerized-norlab-control-deep-rl-f1tenth](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth) (alias [dockerized-norlab-control-deep-rl-f1tenth-gym](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth-gym) )
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
+
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
 
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-f1tenth/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-f1tenth)
@@ -151,81 +167,104 @@ Notes:
 
 
 #### [dockerized-norlab-control-deep-rl-openai-gym](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym)  (legacy Gym)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
+
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
 
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-rl-openai-gym/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-rl-openai-gym)
 
-#### [dockerized-norlab-control-deep-learning](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-control-deep-learning)   
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
-
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-control-deep-learning/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-control-deep-learning)
 
 
 ### Dockerized-Norlab Dependencies
 #### [dockerized-norlab-dependencies-full](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-dependencies-full) (alias [dockerized-norlab-dependencies-ros2-custom](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-dependencies-ros2-custom) )    
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
+
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
 
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-full/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-full)
 
 #### [dockerized-norlab-dependencies-python-science-stack](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-dependencies-python-science-stack)   
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
+  
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
   
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-python-science-stack/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-python-science-stack)
 
 #### [dockerized-norlab-dependencies-prompt](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-dependencies-prompt)   
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
+  
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
   
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-prompt/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-prompt)
 
 #### [dockerized-norlab-dependencies-core](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-dependencies-core)   
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
+  
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
+
   
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-dependencies-core/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-dependencies-core)
 
 
-### Base images
+### L4T/Ubuntu Base images
 
 #### [dockerized-norlab-base-image-ros2-clean](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-base-image-ros2-clean)    
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-humble-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-humble-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-humble-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
+  
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-galactic-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-galactic-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
+  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-galactic-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
   
  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image-ros2-clean/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image-ros2-clean)
 
-#### [dockerized-vaul-base-image-ros2-clean](https://hub.docker.com/repository/docker/norlabulaval/dockerized-vaul-base-image-ros2-clean)    
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean)
+[//]: # (#### [dockerized-vaul-base-image-ros2-clean]&#40;https://hub.docker.com/repository/docker/norlabulaval/dockerized-vaul-base-image-ros2-clean&#41;    )
 
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean)
-  ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean)
+[//]: # (  ![Docker Image Version &#40;tag&#41;]&#40;https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-desktop-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean&#41;)
+
+[//]: # (  ![Docker Image Version &#40;tag&#41;]&#40;https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-base-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean&#41;)
+
+[//]: # (  ![Docker Image Version &#40;tag&#41;]&#40;https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-core-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean&#41;)
+
+[//]: # ()
+[//]: # (  ![Docker Image Version &#40;tag&#41;]&#40;https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-desktop-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean&#41;)
+
+[//]: # (  ![Docker Image Version &#40;tag&#41;]&#40;https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-base-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean&#41;)
+
+[//]: # (  ![Docker Image Version &#40;tag&#41;]&#40;https://img.shields.io/docker/v/norlabulaval/dockerized-vaul-base-image-ros2-clean/DN-bleeding-foxy-core-l4t-pytorch-r35.4.1?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-vaul-base-image-ros2-clean&#41;)
 
 #### [dockerized-norlab-base-image](https://hub.docker.com/repository/docker/norlabulaval/dockerized-norlab-base-image)   
   ![Docker Image Version (tag)](https://img.shields.io/docker/v/norlabulaval/dockerized-norlab-base-image/DN-bleeding-l4t-pytorch-r36.4.0?logo=docker&color=blue&link=https%3A%2F%2Fhub.docker.com%2Frepository%2Fdocker%2Fnorlabulaval%2Fdockerized-norlab-base-image)
