@@ -30,7 +30,7 @@ pushd "$(pwd)" >/dev/null || exit 1
 
 # ....Optional settings............................................................................
 _SETUP_DEBUGGER_USER=${1:-true}
-_SETUP_DEBUG_PROJECT_TMP_DIR=${2:-false}
+_SETUP_DEBUG_PROJECT_TMP_DIR=${2:-true}
 
 # ....Source project shell-scripts dependencies....................................................
 # (CRITICAL) ToDo: assess adding this line (ref task NMO-768) ↓
