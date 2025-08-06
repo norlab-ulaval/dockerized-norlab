@@ -20,6 +20,7 @@ RUN <<EOF
         python3-tornado \
         python3-bson \
         python3-pymongo \
+        python3-regex \
         || exit 1
 
     pip3 install --no-cache-dir  \
@@ -68,7 +69,7 @@ RUN <<EOF
 
     apt-get update || exit 1
 
-    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
     dn::source_ros2_underlay_only || exit 1
 
     rosdep update --rosdistro ${ROS_DISTRO:?err} || exit 1
@@ -116,7 +117,7 @@ RUN <<EOF
     echo -e "\nLog .bashrc.dn_non_interactive state\n"
     cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
 
-    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
     dn::source_ros2 || exit 1
 
     echo -e "\nPre-condition check...\n"
@@ -150,7 +151,7 @@ RUN <<EOF
     echo -e "\nLog .bashrc.dn state\n"
     cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
 
-    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
     dn::source_ros2 || exit 1
 
     echo -e "\nPre-condition check...\n"

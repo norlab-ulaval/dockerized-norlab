@@ -150,7 +150,7 @@ sed "s;alias dn-;${_sp}  $ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;
   volume \033[1;37m dockerized-norlab-tools/dn_container_env_variable/ \033[0m making them availbale to configure your IDE
   (e.g.: PyCharm run configuration using EnvFile plugin https://github.com/Ashald/EnvFile) execute:
   \033[1;37m
-  ${_sp} $ dn_expose_container_env_variables
+  ${_sp} $ dn-expose-container-env-variables
   \033[0m "
 
   n2st::draw_horizontal_line_across_the_terminal_window "${line_style}" "${MSG_DIMMED_FORMAT}"

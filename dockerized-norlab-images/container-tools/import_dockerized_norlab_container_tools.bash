@@ -18,26 +18,27 @@
 #   write DN_PATH
 #   write N2ST_PATH
 #   write DN_CONTAINER_TOOLS_LOADED
+#   write DN_SHOW_DEBUG_INFO
 #
 # =================================================================================================
 
+#DN_SHOW_DEBUG_INFO=false # (CRITICAL) ToDo: on task end >> mute this line ←
 
 function dn::source_lib() {
   # ....Setup......................................................................................
-  local debug_log=false
   local tmp_cwd
   tmp_cwd=$(pwd)
   local script_path
   local target_path
 
-  if [[ "${DN_CONTAINER_TOOLS_LOADED:-}" == true ]]; then
-    if [[ ${debug_log} == true ]]; then
-      n2st::print_msg "Dockerized-NorLab container tools are already loaded. Skip import."
+  if [[ -n "$( declare -f n2st::print_msg )" ]] && [[ "${DN_CONTAINER_TOOLS_LOADED:-}" == true ]]; then
+    if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
+      echo -e "\033[1;33m[DN trace]\033[0m Dockerized-NorLab container tools are already loaded. Skip import."
     fi
     return 0
   else
-    if [[ ${debug_log} == true ]]; then
-      echo "Import Dockerized-NorLab container tools..."
+    if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
+      echo -e "\033[1;33m[DN trace]\033[0m Import Dockerized-NorLab container tools..."
     fi
   fi
 
@@ -47,7 +48,7 @@ function dn::source_lib() {
     # Note: can handle both sourcing cases
     #   i.e. from within a script or from an interactive terminal session
     # Check if running interactively
-    if [[ $- == *i* ]]; then
+    if [[ $- == *i* ]] || [[ -n "$PS1" ]]; then
       # Case: running in an interactive session
       target_path=$(realpath .)
     else
@@ -56,17 +57,15 @@ function dn::source_lib() {
       target_path="$(dirname "${script_path}")"
     fi
 
-    if [[ ${debug_log} == true ]]; then
-      echo "
+    if [[ "${DN_SHOW_DEBUG_INFO}" == true ]] && [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
+      echo -e "\033[1;33m[DN trace]\033[0m Execute import_dockerized_norlab_container_tools.bash from ${BASH_SOURCE[2]}
+      ${MSG_DIMMED_FORMAT}
       BASH_SOURCE: ${BASH_SOURCE[*]}
-
       tmp_cwd: ${tmp_cwd}
       script_path: ${script_path}
       target_path: ${target_path}
-
-      realpath: $(realpath .)
       \$0: $0
-      "
+      ${MSG_END_FORMAT}"
     fi
 
     if [[ "$( basename "${target_path}" )" != "container-tools" ]]; then

@@ -128,7 +128,7 @@ ARG BUILDPLATFORM
 RUN <<EOF
     apt-get update
 
-    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
     dn::source_ros2_underlay_only || exit 1
 
     n2st::print_msg "Execute rosdep update..."
@@ -229,7 +229,7 @@ RUN <<EOF
     echo -e "\nSanity check...\n"
     cat ~/.bashrc
     echo
-    test -n "$( declare -f dn::source_ros2 )" || { echo -e "${_dna_error_prefix} The DN lib is not loaded!" 1>&2 && exit 1; }
+    test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
     dn::source_ros2 || exit 1
 
     {
@@ -266,6 +266,13 @@ ENTRYPOINT [ "" ]
 
 FROM package-project-src-code AS final
 USER ${DN_PROJECT_USER:?'Env variable needs to be set and non-empty.'}
+SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
+RUN <<EOF
+    echo "Rebuilding rosdep db for project user ${DN_PROJECT_USER}..."
+    rosdep update --rosdistro ${ROS_DISTRO:?err} || exit 1
+EOF
+
+# Switch to default shell
 SHELL ["/bin/bash", "-c"]
 
 # Unset DEBIAN_FRONTEND (which is set globaly in base DN images) before run stage.

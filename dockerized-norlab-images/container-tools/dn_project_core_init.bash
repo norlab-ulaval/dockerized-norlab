@@ -38,7 +38,11 @@ function dn::initialize_dockerized_norlab_project() {
   # Inspired from https://roboticseabass.com/2023/07/09/updated-guide-docker-and-ros2/
   {
     groupadd --force --gid "${DN_PROJECT_GID}" "${DN_PROJECT_USER}"
-    useradd --uid "${DN_PROJECT_UID}" --gid "${DN_PROJECT_GID}" --create-home "${DN_PROJECT_USER}"
+
+    # (CRITICAL) ToDo: validate primary group change from 'DN_PROJECT_GID' to 'DN_PROJECT_USER' for
+    # compatibility with macOs (ref task NMO-773).
+    useradd --uid "${DN_PROJECT_UID}" -g "${DN_PROJECT_USER}" --create-home "${DN_PROJECT_USER}"
+
     echo "${DN_PROJECT_USER} ALL=(root) NOPASSWD:ALL" >/etc/sudoers.d/"${DN_PROJECT_USER}"
     chmod 0440 "/etc/sudoers.d/${DN_PROJECT_USER}"
     mkdir -p "${DN_PROJECT_USER_HOME}"
@@ -92,13 +96,12 @@ function dn::initialize_dockerized_norlab_project() {
 # ::::Main:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
   # This script is being run, ie: __name__="__main__"
-  dna_error_prefix="\033[1;31m[DNA error]\033[0m"
-  echo -e "${dna_error_prefix} This script must be sourced!
+  echo -e "\033[1;31m[DN error]\033[0m This script must be sourced!
         i.e.: $ source $(basename "$0")" 1>&2
   exit 1
 else
   # This script is being sourced, ie: __name__="__source__"
-  test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[N2ST error]\033[0m The N2ST lib is not loaded!" 1>&2 && exit 1; }
+  test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[DN error]\033[0m The N2ST lib is not loaded!" 1>&2 && exit 1; }
   dn::initialize_dockerized_norlab_project || n2st::print_msg_error_and_exit "dn::initialize_dockerized_norlab_project exited with error!"
 fi
 

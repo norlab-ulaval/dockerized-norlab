@@ -45,7 +45,7 @@ function dn::source_lib() {
     # Note: can handle both sourcing cases
     #   i.e. from within a script or from an interactive terminal session
     # Check if running interactively
-    if [[ $- == *i* ]]; then
+    if [[ $- == *i* ]] || [[ -n "$PS1" ]]; then
       # Case: running in an interactive session
       target_path=$(realpath .)
     else

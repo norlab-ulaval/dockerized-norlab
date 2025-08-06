@@ -32,7 +32,7 @@
 
 [//]: # ( ==== Description =========================================== )
 
-**Containerized development workflow for NorLab perception or control projects
+**Containerized development workflow for NorLab robotic software engineering project
 <br>
 leveraging [_docker_](https://www.docker.com) and [_NVIDIA Container Toolkit_](https://github.com/NVIDIA/nvidia-container-toolkit)
 technology.**

@@ -87,9 +87,6 @@ EOF
 
 FROM main AS test
 
-## (CRITICAL) ToDo: on task NMO-770 end >> delete this line ↓
-#COPY --from=context-dn-container-tools ./import_dockerized_norlab_container_tools.bash /dockerized-norlab/dockerized-norlab-images/container-tools/import_dockerized_norlab_container_tools.bash
-
 RUN <<EOF
     echo -e "
 ----------------------------------------------------------
