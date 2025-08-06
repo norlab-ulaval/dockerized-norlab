@@ -120,8 +120,8 @@ sed "s;alias dn-;${_sp}  $ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;
   if [[ "${DN_PROJECT_SERVICE}" == "project-develop" ]]; then
   echo -e "IDE remote development workflow › to connect to the container internal ssh server:
   \033[1;37m
-  ${_sp}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}')
-  ${_sp}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}'):/target/dir/
+  ${_sp}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}')
+  ${_sp}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}'):/target/dir/
   ${_sp}$ sftp -P ${DN_SSH_SERVER_PORT} openssh-$(hostname -I | awk '{print $1}')
   \033[0m"
   fi

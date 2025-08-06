@@ -82,7 +82,7 @@ function dn::setup_debugging_tools() {
     echo
     echo "# Connection settings"
     echo "Port ${DN_SSH_SERVER_PORT}"                     # Default SSH port
-    echo "MaxAuthTries 3"                                 # Limit authentication attempts
+#    echo "MaxAuthTries 3"                                 # Limit authentication attempts
     echo
 #    echo "# User restrictions"
 #    echo "AllowUsers ${DN_PROJECT_USER},${_SETUP_DEBUGGER_USER}" # Restrict which users can connect
@@ -116,7 +116,7 @@ function dn::setup_debugging_tools() {
 
   # ....Create and setup specialized debugger user.................................................
   if [[ ${_SETUP_DEBUGGER_USER} == true ]]; then
-    useradd -m "${DN_SSH_SERVER_USER}" \
+    useradd --create-home "${DN_SSH_SERVER_USER}" \
       && yes "${DN_SSH_SERVER_USER_PASSWORD}" | passwd "${DN_SSH_SERVER_USER}"
 
     echo "${DN_SSH_SERVER_USER} ALL=(root) NOPASSWD:ALL" >/etc/sudoers.d/"${DN_SSH_SERVER_USER}"

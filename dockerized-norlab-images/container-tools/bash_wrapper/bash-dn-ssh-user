@@ -22,6 +22,10 @@ function dn::bash_dn_ssh_server_user() {
   # (CRITICAL) ToDo: assess using this line (ref task NMO-770) ↓ instead of sourcing it.
   export BASH_ENV="${bash_run_config_root}/.bashrc.dn_ssh_server_user"
 
+  # ....Execute commands...........................................................................
+  if [[ ${debug_log} == true ]]; then
+    echo -e "Executing $ \033[1;2mexec bash ${cmds[*]}${MSG_END_FORMAT}\033[0m"
+  fi
   exec bash "$@" || return 1
   return 0
 }
