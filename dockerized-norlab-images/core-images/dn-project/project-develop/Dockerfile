@@ -138,6 +138,19 @@ RUN <<EOF
       echo "# <<< dockerized-norlab project-develop"
       echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
+
+
+    # ....Sanity check.............................................................................
+    # (CRITICAL) ToDo: validate (ref task TASK)
+    n2st::print_msg "Users configuration sanity check..."
+    getent passwd redleader
+
+    echo "Check pycharm-debugger..."
+    pd_shell_path=$(getent passwd pycharm-debugger | awk -F: '{print $7}')
+    test "$pd_shell_path" = "/usr/local/bin/bash-dn-ssh-user"
+
+    getent passwd root
+
 EOF
 
 
@@ -158,6 +171,7 @@ RUN <<EOF
     } || exit 1
 
     n2st::print_msg "Check that ROS source is available via the ssh daemon user"
+    # Note: ROS2 should have been sourced by /usr/local/bin/bash-dn-ssh-user
     printenv
     {
       test -n "${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" && \
@@ -190,10 +204,10 @@ RUN <<EOF
         [[ "${DEBIAN_FRONTEND}" == "noninteractive" ]];
     } || exit 1
 
+    n2st::print_msg "Check that ROS source is available via the project user"
+    # Note: ROS2 should not been sourced implicitly by project user entrypoint or bashrc. It must be explicitly sourced by the project user.
     test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
     dn::source_ros2 || exit 1
-
-    n2st::print_msg "Check that ROS source is available via the ssh daemon user"
     printenv
     {
       test -n "${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" && \

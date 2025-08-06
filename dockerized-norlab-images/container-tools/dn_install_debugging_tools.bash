@@ -117,8 +117,9 @@ function dn::setup_debugging_tools() {
 
   # ....Create and setup specialized debugger user.................................................
   if [[ ${_SETUP_DEBUGGER_USER} == true ]]; then
-    useradd --create-home "${DN_SSH_SERVER_USER}" \
-      && yes "${DN_SSH_SERVER_USER_PASSWORD}" | passwd "${DN_SSH_SERVER_USER}"
+    useradd --create-home "${DN_SSH_SERVER_USER}"
+
+    yes "${DN_SSH_SERVER_USER_PASSWORD}" | passwd "${DN_SSH_SERVER_USER}"
 
     echo "${DN_SSH_SERVER_USER} ALL=(root) NOPASSWD:ALL" >/etc/sudoers.d/"${DN_SSH_SERVER_USER}"
     chmod 0440 "/etc/sudoers.d/${DN_SSH_SERVER_USER}"
