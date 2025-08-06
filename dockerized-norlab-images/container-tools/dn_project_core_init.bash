@@ -38,7 +38,12 @@ function dn::initialize_dockerized_norlab_project() {
   # Inspired from https://roboticseabass.com/2023/07/09/updated-guide-docker-and-ros2/
   {
     groupadd --force --gid "${DN_PROJECT_GID}" "${DN_PROJECT_USER}"
-    useradd --uid "${DN_PROJECT_UID}" --gid "${DN_PROJECT_GID}" --create-home "${DN_PROJECT_USER}"
+
+    # (CRITICAL) ToDo: validate primary group change from DN_PROJECT_GID to DN_PROJECT_USER for
+    # compatibility with macOs (ref task NMO-770).
+    # On macOs, GID=20 -> 'staff' group != Ubuntu GID=20 -> 'dialout' group
+    useradd --uid "${DN_PROJECT_UID}" -g "${DN_PROJECT_USER}" --create-home "${DN_PROJECT_USER}"
+
     echo "${DN_PROJECT_USER} ALL=(root) NOPASSWD:ALL" >/etc/sudoers.d/"${DN_PROJECT_USER}"
     chmod 0440 "/etc/sudoers.d/${DN_PROJECT_USER}"
     mkdir -p "${DN_PROJECT_USER_HOME}"

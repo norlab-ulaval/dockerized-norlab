@@ -16,15 +16,34 @@ if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
 fi
 
 # ....Load Dockerized-NorLab container-tools libraries.............................................
-_dn_import_lib_root=/dockerized-norlab/dockerized-norlab-images/container-tools
-if pushd "$(pwd)" >/dev/null 2>&1; then
-  if [[ -d "${_dn_import_lib_root}"  ]]; then
-    cd "${_dn_import_lib_root}" || exit 1
-    source "import_dockerized_norlab_container_tools.bash" || exit 1
+function dn::load_container_tools_libraries() {
+  # ....Setup......................................................................................
+  local tmp_cwd
+  tmp_cwd=$(pwd)
+  local dn_import_lib_root=/dockerized-norlab/dockerized-norlab-images/container-tools
+
+  # ....Begin......................................................................................
+  if [[ -d "${dn_import_lib_root}"  ]]; then
+    cd "${dn_import_lib_root}" || exit 1
+    source "import_dockerized_norlab_container_tools.bash"
+    local exit_code=$?
   else
-    echo -e "\033[1;31m[DN error]\033[0m ${_dn_import_lib_root} is unreachable!" 1>&2 && exit 1
+    echo -e "\033[1;31m[DN error]\033[0m ${dn_import_lib_root} is unreachable!" 1>&2 && exit 1
   fi
-  popd >/dev/null 2>&1 || true
-fi
+
+  # ....Teardown.................................................................................
+  cd "${tmp_cwd}" || { echo "Return to original dir error" 1>&2 && return 1; }
+
+  if [[ ${exit_code} -eq 0 ]]; then
+    if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
+      n2st::print_msg_done "dn::load_container_tools_libraries completed successfully."
+    fi
+    return 0
+  else
+    n2st::print_msg_error "dn::load_container_tools_libraries exited with error!"
+    return 1
+  fi
+}
 
 # ====Build-time appended instructions=============================================================
+

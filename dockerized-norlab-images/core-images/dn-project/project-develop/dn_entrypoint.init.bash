@@ -4,15 +4,13 @@ set -e  # exit script if any statement returns a non-true return value
 # (CRITICAL) ToDo: NMO-557 test: add missing dn_entrypoint.*.bash unit-tests
 
 # ====DN-project internal logic====================================================================
-# ....Load library.................................................................................
-## (CRITICAL) ToDo: validate >> deleting DN lib import ↓ (ref task NMO-770)
-#source /import_dockerized_norlab_container_tools.bash
 
+# ....Load library.................................................................................
 if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
   echo -e "\033[1;33m[DN trace]\033[0m Execute dn_entrypoint.init.bash"
 fi
 
-if [[ $- == *i* ]]; then
+if [[ $- == *i* ]] || [[ -n "$PS1" ]]; then
     if [[ "${DN_ENTRYPOINT_TRACE_EXECUTION}" == true ]]; then
       echo -e "\033[1;33m[DN trace]\033[0m Interactive shell. Sourcing DN lib is handled via .bashrc"
     fi

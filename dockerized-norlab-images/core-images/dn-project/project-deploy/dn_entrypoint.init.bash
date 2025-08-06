@@ -14,7 +14,7 @@ if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
   echo -e "\033[1;33m[DN trace]\033[0m Execute dn_entrypoint.init.bash"
 fi
 
-if [[ $- == *i* ]]; then
+if [[ $- == *i* ]] || [[ -n "$PS1" ]]; then
     if [[ "${DN_ENTRYPOINT_TRACE_EXECUTION}" == true ]]; then
       echo -e "\033[1;33m[DN trace]\033[0m Interactive shell. Sourcing DN lib is handled via .bashrc"
     fi
