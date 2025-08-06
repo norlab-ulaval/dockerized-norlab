@@ -18,9 +18,11 @@
 #   write DN_PATH
 #   write N2ST_PATH
 #   write DN_CONTAINER_TOOLS_LOADED
+#   write DN_SHOW_DEBUG_INFO
 #
 # =================================================================================================
 
+#DN_SHOW_DEBUG_INFO=false # (CRITICAL) ToDo: on task end >> mute this line ←
 
 function dn::source_lib() {
   # ....Setup......................................................................................
@@ -55,15 +57,15 @@ function dn::source_lib() {
       target_path="$(dirname "${script_path}")"
     fi
 
-    if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
-      echo -e "\033[1;33m[DN trace]\033[0m Execute import_dockerized_norlab_container_tools.bash from ${BASH_SOURCE[1]}
+    if [[ "${DN_SHOW_DEBUG_INFO}" == true ]] && [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
+      echo -e "\033[1;33m[DN trace]\033[0m Execute import_dockerized_norlab_container_tools.bash from ${BASH_SOURCE[2]}
+      ${MSG_DIMMED_FORMAT}
       BASH_SOURCE: ${BASH_SOURCE[*]}
-      realpath: $(realpath .)
-      \$0: $0
       tmp_cwd: ${tmp_cwd}
       script_path: ${script_path}
       target_path: ${target_path}
-      "
+      \$0: $0
+      ${MSG_END_FORMAT}"
     fi
 
     if [[ "$( basename "${target_path}" )" != "container-tools" ]]; then
