@@ -4,7 +4,7 @@ function dna::setup_python_paths() {
   local python_version
   local ros_python_path
   local site_packages_dir
-  local method=${1=-2}
+  local method=${1:-"pth"} # Either "env", "pth" or "syscustom"
 
   # Get Python version dynamically
   python_version=$(python3 -c "import sys; print(f'python{sys.version_info.major}.{sys.version_info.minor}')")
@@ -13,20 +13,20 @@ function dna::setup_python_paths() {
     ros_python_path="/opt/ros/${ROS_DISTRO}/lib/${python_version}/site-packages"
 
     # Method 1: Environment variable
-    if [[ -d "${ros_python_path}" ]] && [[ ${method} -eq 1 ]]; then
+    if [[ -d "${ros_python_path}" ]] && [[ ${method} == "env" ]]; then
       export PYTHONPATH="${ros_python_path}:${PYTHONPATH}"
       echo -e "\033[1;32m[DNA]\033[0m Added to PYTHONPATH: ${ros_python_path}"
     fi
 
     # Method 2: Create .pth file for permanent addition
     site_packages_dir=$(python3 -c "import site; print(site.getsitepackages()[0])" 2>/dev/null)
-    if [[ -d "${site_packages_dir}" && -w "${site_packages_dir}" ]] && [[ ${method} -eq 2 ]]; then
+    if [[ -d "${site_packages_dir}" && -w "${site_packages_dir}" ]] && [[ ${method} == "pth" ]]; then
       echo "${ros_python_path}" > "${site_packages_dir}/dna_ros_${ROS_DISTRO}.pth"
       echo -e "\033[1;32m[DNA]\033[0m Created .pth file: ${site_packages_dir}/dna_ros_${ROS_DISTRO}.pth"
     fi
 
     # Method 3: Create sitecustomize.py for automatic detection
-    if [[ -d "${site_packages_dir}" && -w "${site_packages_dir}" ]] && [[ ${method} -eq 3 ]]; then
+    if [[ -d "${site_packages_dir}" && -w "${site_packages_dir}" ]] && [[ ${method} == "syscustom" ]]; then
       cat > "${site_packages_dir}/dna_sitecustomize.py" << EOF
 import sys
 import os

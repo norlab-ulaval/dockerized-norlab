@@ -95,7 +95,7 @@ function dn::initialize_dockerized_norlab_project() {
   # ....Configure python system path discovery for ros2............................................
   {
     n2st::print_msg "Add ROS2 lib to python sys path..."
-    source "${DN_CONTAINER_TOOLS_DIR}/dn_add_ros2_pythonpath.bash" || exit 1
+    source "${DN_CONTAINER_TOOLS_DIR}/dn_add_ros2_pythonpath.bash" "pth" || exit 1
   }
 
   return 0
