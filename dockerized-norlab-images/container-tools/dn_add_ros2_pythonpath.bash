@@ -20,13 +20,13 @@ function dna::setup_python_paths() {
 
     # Method 2: Create .pth file for permanent addition
     site_packages_dir=$(python3 -c "import site; print(site.getsitepackages()[0])" 2>/dev/null)
-    if [[ -d "${site_packages_dir}" && -w "${site_packages_dir}" ]] && [[ ${method} == "pth" ]]; then
+    if [[ -d "${site_packages_dir}" && [[ ${method} == "pth" ]]; then
       echo "${ros_python_path}" > "${site_packages_dir}/dna_ros_${ROS_DISTRO}.pth"
       echo -e "\033[1;32m[DNA]\033[0m Created .pth file: ${site_packages_dir}/dna_ros_${ROS_DISTRO}.pth"
     fi
 
     # Method 3: Create sitecustomize.py for automatic detection
-    if [[ -d "${site_packages_dir}" && -w "${site_packages_dir}" ]] && [[ ${method} == "syscustom" ]]; then
+    if [[ -d "${site_packages_dir}" && [[ ${method} == "syscustom" ]]; then
       cat > "${site_packages_dir}/dna_sitecustomize.py" << EOF
 import sys
 import os
