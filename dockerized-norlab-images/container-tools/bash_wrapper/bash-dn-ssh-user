@@ -20,7 +20,7 @@ function dn::bash_dn_ssh_server_user() {
   local bash_run_config_root="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config"
 
   # (CRITICAL) ToDo: assess using this line (ref task NMO-770) ↓ instead of sourcing it.
-  export BASH_ENV="${bash_run_config_root}/.bashrc.dn_ssh_server_user"
+  export BASH_ENV="${bash_run_config_root}/.bashrc.dn_non_interactive_ssh"
 
   # ....Execute commands...........................................................................
   if [[ ${debug_log} == true ]]; then

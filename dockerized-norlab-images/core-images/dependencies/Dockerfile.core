@@ -197,7 +197,7 @@ RUN <<EOF
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_common && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive && \
-        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_ssh_server_user && \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ssh && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash ;
     } || { echo "(container-tools directory copy) Sanity check failed" ; exit 1 ; }
 

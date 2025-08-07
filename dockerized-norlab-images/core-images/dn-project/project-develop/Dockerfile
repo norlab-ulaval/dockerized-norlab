@@ -142,6 +142,14 @@ RUN <<EOF
       echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 
+    # ....Copy environment variable to non-interactive sub shell...................................
+    # Generate dotenv file
+    source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash
+
+    # Override target dotenv
+    (
+      source /dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?}
+    ) > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.bashrc.dn_non_interactive_ssh
 
     # ....Sanity check.............................................................................
     # (CRITICAL) ToDo: validate (ref task TASK)
