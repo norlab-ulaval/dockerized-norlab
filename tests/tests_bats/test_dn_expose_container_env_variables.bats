@@ -126,7 +126,7 @@ function export_DN_container_env() {
     export NVIDIA_VISIBLE_DEVICES=all
     export NVIDIA_DRIVER_CAPABILITIES=graphics
     export TORCH_HOME=/data/models/torch
-    export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+#    export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
 #    export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
 
     # Display forwarding related env
@@ -168,7 +168,7 @@ function show_DN_container_env() {
          -e NVIDIA_VISIBLE_DEVICES \
          -e NVIDIA_DRIVER_CAPABILITIES \
          -e TORCH_HOME \
-         -e PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION \
+#         -e PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION \
 #         -e LD_PRELOAD \
          -e DISPLAY \
          -e LIBGL_ALWAYS_INDIRECT \
@@ -234,7 +234,7 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_PYTHON_VERSION=3"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "NVIDIA_DRIVER_CAPABILITIES=graphics"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "TORCH_HOME=/data/models/torch"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp"
+#  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DOMAIN_ID=1"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_DEV_WORKSPACE=/ros2_ws_mock"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_PATH=/ros2_ws_mock/src/f1tenth-redleader-controller"
