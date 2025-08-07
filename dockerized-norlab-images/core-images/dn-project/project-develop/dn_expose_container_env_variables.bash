@@ -97,7 +97,6 @@ sudo touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Vari
   echo "DN_PROJECT_GIT_DOMAIN=${DN_PROJECT_GIT_DOMAIN}"; \
   echo "PYTHONUNBUFFERED=${PYTHONUNBUFFERED}"; \
   echo ""; \
-#) > "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
 ) | sudo tee "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}"
 
 # ====Teardown=====================================================================================

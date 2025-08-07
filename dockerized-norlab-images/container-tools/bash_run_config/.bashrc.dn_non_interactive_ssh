@@ -29,7 +29,7 @@
 # =================================================================================================
 
 set -o allexport
-source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.bashrc.dn_non_interactive_ssh || exit 1
+source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh || exit 1
 set +o allexport
 
 if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
@@ -47,6 +47,6 @@ fi
 # ....Source ROS2 underlay and overlay.............................................................
 test -n "$( declare -f dn::source_ros2 )" || echo -e "\033[1;33m[DN warning]\033[0m The DN lib is not loaded!" 1>&2
 
-dn::source_ros2
+dn::source_ros2 >/dev/null
 
 # ====Build-time appended instructions=============================================================
