@@ -310,7 +310,7 @@ SHELL ["/bin/bash", "-c"]
 # Unset DEBIAN_FRONTEND (which is set globaly in base DN images) before run stage.
 ENV DEBIAN_FRONTEND=""
 
-#ENV BASH_ENV="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ssh"
+ENV BASH_ENV="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ssh"
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}

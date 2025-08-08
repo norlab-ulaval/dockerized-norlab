@@ -36,12 +36,13 @@ function dn::bash_dn_runtime_ros2() {
   local cmds=()
   local bash_run_config_root="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config"
   local c_flag_buffer
+  local remaining=()
 
   # ....Parse bash flags...........................................................................
   while [ $# -gt 0 ]; do
     case $1 in
       -c) # Fetch all argument preceeding '-c <the command string>'
-        c_flag_buffer="$2; "
+        c_flag_buffer="; $2"
         shift
         shift
         ;;
@@ -56,13 +57,14 @@ function dn::bash_dn_runtime_ros2() {
         shift
         ;;
       *)
+        remaining+=( "${@:-bash}" )
         break
         ;;
     esac
   done
 
   # Insert DN lib sourcing logic before command string arguments
-  cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh; $c_flag_buffer$@" )
+  cmds+=( "-c" "\"source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh${c_flag_buffer}; ${remaining[@]}\"" )
 
   # ....Execute commands...........................................................................
   if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
