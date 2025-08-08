@@ -145,29 +145,29 @@ RUN <<EOF
     # ....Copy environment variable to non-interactive sub shell...................................
     n2st::print_msg "Setup environment variables for run-time non-interactive sub shell..."
 
-    dn::source_ros2 || exit 1
+#    dn::source_ros2 || exit 1
+#
+#    # Generate dotenv file
+#    {
+#      source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash && \
+#      test -f "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err}";
+#    } || n2st::print_msg_error_and_exit "Failed to expose container environment variables!"
+#
+#    # Override target dotenv
+#    cat /dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err} > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
 
-    # Generate dotenv file
-    {
-      source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash && \
-      test -f "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err}";
-    } || n2st::print_msg_error_and_exit "Failed to expose container environment variables!"
-
-    # Override target dotenv
-    cat /dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err} > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
-
-#    (
-#      echo
-#      echo "ROS_DISTRO=${ROS_DISTRO}"
-#      echo "DN_DEV_WORKSPACE=${DN_DEV_WORKSPACE}"
-#      echo "DN_PROJECT_PATH=${DN_PROJECT_PATH}"
-#      echo "PYTHONPATH=${PYTHONPATH}"
-#      echo "ROS_PKG=${ROS_PKG}"
-#      echo "PATH=${PATH}"
-#      echo "ROS_ROOT=${ROS_ROOT}"
-#      echo "ROS_DISTRO=${ROS_DISTRO}"
-#      echo
-#    ) > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
+    (
+      echo
+      echo "ROS_DISTRO=${ROS_DISTRO}"
+      echo "DN_DEV_WORKSPACE=${DN_DEV_WORKSPACE}"
+      echo "DN_PROJECT_PATH=${DN_PROJECT_PATH}"
+      echo "PYTHONPATH=${PYTHONPATH}"
+      echo "ROS_PKG=${ROS_PKG}"
+      echo "PATH=${PATH}"
+      echo "ROS_ROOT=${ROS_ROOT}"
+      echo "ROS_DISTRO=${ROS_DISTRO}"
+      echo
+    ) > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
 
     n2st::print_msg_done "Environment variables for run-time non-interactive sub shell are set."
 
@@ -316,7 +316,7 @@ SHELL ["/bin/bash", "-c"]
 # Unset DEBIAN_FRONTEND (which is set globaly in base DN images) before run stage.
 ENV DEBIAN_FRONTEND=""
 
-ENV BASH_ENV="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ssh"
+#ENV BASH_ENV="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ssh"
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}

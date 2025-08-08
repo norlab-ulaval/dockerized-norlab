@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function dna::setup_python_paths() {
+function dna::setup_ros2_python_paths() {
   local python_version
   local ros_python_path1
   local ros_python_path2
@@ -55,4 +55,4 @@ EOF
   return 0
 }
 
-dna::setup_python_paths "$@" || exit 1
+dna::setup_ros2_python_paths "$@" || exit 1

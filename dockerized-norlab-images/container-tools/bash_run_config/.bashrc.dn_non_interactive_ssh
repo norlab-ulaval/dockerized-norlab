@@ -35,21 +35,21 @@ set -o allexport
 source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh || exit 1
 set +o allexport
 test -n "${ROS_DISTRO}" || { echo -e "\033[1;33m[DN warning]\033[0m DN env var ROS_DISTRO is not set!" 1>&2; exit 1; }
+
+
+# ....Load Dockerized-NorLab container-tools libraries.............................................
+_bashrc_dn_common_path=/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_common
+if [[ -f "${_bashrc_dn_common_path}"  ]]; then
+  source "${_bashrc_dn_common_path}" || exit 1
+else
+  echo -e "\033[1;31m[DN error]\033[0m ${_bashrc_dn_common_path} is unreachable!" 1>&2 && exit 1
+fi
+
+# ....Source ROS2 underlay and overlay.............................................................
+test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;33m[DN warning]\033[0m The DN lib is not loaded!" 1>&2; exit 1; }
+
+# Note: dont print sdtdout as it break the pycharm helper for ssh interpreter configuration
+dn::source_ros2 >/dev/null
 test -n "${ROS_VERSION}" || { echo -e "\033[1;33m[DN warning]\033[0m ROS2 underlay was not sourced!" 1>&2; exit 1; }
-
-
-## ....Load Dockerized-NorLab container-tools libraries.............................................
-#_bashrc_dn_common_path=/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_common
-#if [[ -f "${_bashrc_dn_common_path}"  ]]; then
-#  source "${_bashrc_dn_common_path}" || exit 1
-#else
-#  echo -e "\033[1;31m[DN error]\033[0m ${_bashrc_dn_common_path} is unreachable!" 1>&2 && exit 1
-#fi
-
-## ....Source ROS2 underlay and overlay.............................................................
-#test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;33m[DN warning]\033[0m The DN lib is not loaded!" 1>&2; exit 1; }
-#
-## Note: dont print sdtdout as it break the pycharm helper for ssh interpreter configuration
-#dn::source_ros2 >/dev/null
 
 # ====Build-time appended instructions=============================================================
