@@ -43,7 +43,7 @@ function dn::bash_dn_runtime_ros2() {
     case $1 in
       -c) # Fetch all argument preceeding '-c <the command string>'
         shift
-        c_flag_buffer="$2"
+        c_flag_buffer="$2; "
         shift
         ;;
       -*) # Fetch all argument preceeding '-c <the command string>'
@@ -52,7 +52,7 @@ function dn::bash_dn_runtime_ros2() {
         ;;
       *)
         # Insert DN lib sourcing logic before command string arguments
-        cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh; $c_flag_buffer" )
+        cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh; $c_flag_buffer$@" )
         break
         ;;
     esac
