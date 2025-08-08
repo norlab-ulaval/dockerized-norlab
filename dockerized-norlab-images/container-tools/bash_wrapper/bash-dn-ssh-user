@@ -16,49 +16,54 @@
 #   Instructions in RUN, CMD or ENTRYPOINT are passed to the '-c' flag.
 #
 # =================================================================================================
-function dn::bash_dn_ssh_server_user() {
-  local bash_run_config_root="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config"
-
-  # (CRITICAL) ToDo: assess using this line (ref task NMO-770) ↓ instead of sourcing it.
-  export BASH_ENV="${bash_run_config_root}/.bashrc.dn_non_interactive_ssh"
-
-  # ....Execute commands...........................................................................
-  if [[ ${debug_log} == true ]]; then
-    echo -e "Executing $ \033[1;2mexec bash ${cmds[*]}${MSG_END_FORMAT}\033[0m"
-  fi
-  exec bash "$@" || return 1
-  return 0
-}
-
-dn::bash_dn_ssh_server_user "$@" || exit 1
-
-#function dn::bash_dn_runtime_ros2() {
-#  local debug_log=false
-#  local cmds=()
+#function dn::bash_dn_ssh_server_user() {
 #  local bash_run_config_root="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config"
 #
-#  # ....Parse bash flags...........................................................................
-#  while [ $# -gt 0 ]; do
-#    case $1 in
-#      -c)
-#        # Insert DN lib sourcing logic before command string arguments
-#        shift
-#        cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh; $*" )
-#        shift
-#        ;;
-#      *) # Fetch all argument preceeding '-c <the command string>'
-#        cmds+=("$1")
-#        shift
-#        ;;
-#    esac
-#  done
+#  # (CRITICAL) ToDo: assess using this line (ref task NMO-770) ↓ instead of sourcing it.
+#  export BASH_ENV="${bash_run_config_root}/.bashrc.dn_non_interactive_ssh"
 #
 #  # ....Execute commands...........................................................................
 #  if [[ ${debug_log} == true ]]; then
 #    echo -e "Executing $ \033[1;2mexec bash ${cmds[*]}${MSG_END_FORMAT}\033[0m"
 #  fi
-#  exec bash "${cmds[@]}" || return 1
+#  exec bash "$@" || return 1
 #  return 0
 #}
 #
-#dn::bash_dn_runtime_ros2 "$@" || exit 1
+#dn::bash_dn_ssh_server_user "$@" || exit 1
+
+function dn::bash_dn_runtime_ros2() {
+  local debug_log=false
+  local cmds=()
+  local bash_run_config_root="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config"
+  local c_flag_buffer
+
+  # ....Parse bash flags...........................................................................
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -c) # Fetch all argument preceeding '-c <the command string>'
+        shift
+        c_flag_buffer="$2"
+        shift
+        ;;
+      -*) # Fetch all argument preceeding '-c <the command string>'
+        cmds+=("$1")
+        shift
+        ;;
+      *)
+        # Insert DN lib sourcing logic before command string arguments
+        cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh; $c_flag_buffer" )
+        break
+        ;;
+    esac
+  done
+
+  # ....Execute commands...........................................................................
+  if [[ ${debug_log} == true ]]; then
+    echo -e "Executing $ \033[1;2mexec bash ${cmds[*]}${MSG_END_FORMAT}\033[0m"
+  fi
+  exec bash "${cmds[@]}" || return 1
+  return 0
+}
+
+dn::bash_dn_runtime_ros2 "$@" || exit 1
