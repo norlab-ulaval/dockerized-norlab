@@ -41,21 +41,28 @@ function dn::bash_dn_runtime_ros2() {
   while [ $# -gt 0 ]; do
     case $1 in
       -c) # Fetch all argument preceeding '-c <the command string>'
-        shift
         c_flag_buffer="$2; "
         shift
+        shift
         ;;
-      -*) # Fetch all argument preceeding '-c <the command string>'
+      --init-file|--rcfile|-O|+O)
+        cmds+=("$1") # flag
+        cmds+=("$2") # file/shopt_option
+        shift
+        shift
+        ;;
+      -*|--*) # Fetch all argument preceeding '-c <the command string>'
         cmds+=("$1")
         shift
         ;;
       *)
-        # Insert DN lib sourcing logic before command string arguments
-        cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh; $c_flag_buffer$@" )
         break
         ;;
     esac
   done
+
+  # Insert DN lib sourcing logic before command string arguments
+  cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh; $c_flag_buffer$@" )
 
   # ....Execute commands...........................................................................
   if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
