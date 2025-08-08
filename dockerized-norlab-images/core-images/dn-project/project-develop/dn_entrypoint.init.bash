@@ -43,11 +43,10 @@ fi
 
 # ====SSH daemon===================================================================================
 # Check if sshd is running
-n2st::print_msg "Starting container internal ssh server for IDE remote development workflow on port ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_PORT}${MSG_END_FORMAT}"
-#with user ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_USER}${MSG_END_FORMAT}
+n2st::print_msg "Starting container internal ssh server on port ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_PORT}${MSG_END_FORMAT} for IDE remote development workflow"
 
 # Usage:
-#   $ /usr/sbin/sshd -e -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server
+#   $ /usr/sbin/sshd [-D] -e -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server
 #
 # Note on sshd flags:
 # -D : sshd will not detach and does not become a daemon. This allows easy monitoring of sshd.
@@ -65,7 +64,7 @@ n2st::print_msg "Launching ssh daemon with the following flags ${MSG_DIMMED_FORM
 if [[ $(whoami) == "root" ]]; then
   "${LAUNCH_SSH_DAEMON[@]}" || n2st::print_msg_warning "Something went wrong with the ssh daemon!"
 else
-  n2st::print_msg "Be advised, launching the ssh daemon in a subshell with sudo priviledge instead of the $(whoami) shell"
+  n2st::print_msg "Be advised, launching the ssh daemon in a subshell with sudo priviledge instead of the $(whoami) current shell"
   sudo bash -c "${LAUNCH_SSH_DAEMON[*]} || { echo \"\033[1;31m[DN error]\033[0m Something went wrong with the ssh daemon!\" 1>&2; exit 1; }"
 fi
 
