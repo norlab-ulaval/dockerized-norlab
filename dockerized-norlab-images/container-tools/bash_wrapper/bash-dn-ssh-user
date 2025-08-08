@@ -32,7 +32,7 @@ function dn::bash_dn_ssh_server_user() {
 
 dn::bash_dn_ssh_server_user "$@" || exit 1
 
-π#function dn::bash_dn_runtime_ros2() {
+#function dn::bash_dn_runtime_ros2() {
 #  local cmds=()
 #  local bash_run_config_root="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config"
 #  local c_flag_buffer

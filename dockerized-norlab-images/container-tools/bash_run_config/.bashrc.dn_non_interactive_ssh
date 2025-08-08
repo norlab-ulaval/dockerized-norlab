@@ -45,10 +45,10 @@ else
   echo -e "\033[1;31m[DN error]\033[0m ${_bashrc_dn_common_path} is unreachable!" 1>&2 && exit 1
 fi
 
-# ....Source ROS2 underlay and overlay.............................................................
-test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;33m[DN warning]\033[0m The DN lib is not loaded!" 1>&2; exit 1; }
-
-# Note: dont print sdtdout as it break the pycharm helper for ssh interpreter configuration
-dn::source_ros2 >/dev/null
+## ....Source ROS2 underlay and overlay.............................................................
+#test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;33m[DN warning]\033[0m The DN lib is not loaded!" 1>&2; exit 1; }
+#
+## Note: dont print sdtdout as it break the pycharm helper for ssh interpreter configuration
+#dn::source_ros2 >/dev/null
 
 # ====Build-time appended instructions=============================================================

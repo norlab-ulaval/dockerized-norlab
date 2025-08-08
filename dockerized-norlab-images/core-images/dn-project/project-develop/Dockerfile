@@ -144,26 +144,26 @@ RUN <<EOF
 
     # ....Copy environment variable to non-interactive sub shell...................................
     n2st::print_msg "Copy environment variable to non-interactive sub shell"
-#    dn::source_ros2
-#
-#    # Generate dotenv file
-#    source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash || exit 1
-#
-#    # Override target dotenv
-#    cat /dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err} > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
+    dn::source_ros2
 
-    (
-      echo
-      echo "ROS_DISTRO=${ROS_DISTRO}"
-      echo "DN_DEV_WORKSPACE=${DN_DEV_WORKSPACE}"
-      echo "DN_PROJECT_PATH=${DN_PROJECT_PATH}"
-      echo "PYTHONPATH=${PYTHONPATH}"
-      echo "ROS_PKG=${ROS_PKG}"
-      echo "PATH=${PATH}"
-      echo "ROS_ROOT=${ROS_ROOT}"
-      echo "ROS_DISTRO=${ROS_DISTRO}"
-      echo
-    ) > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
+    # Generate dotenv file
+    source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash || exit 1
+
+    # Override target dotenv
+    cat /dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err} > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
+
+#    (
+#      echo
+#      echo "ROS_DISTRO=${ROS_DISTRO}"
+#      echo "DN_DEV_WORKSPACE=${DN_DEV_WORKSPACE}"
+#      echo "DN_PROJECT_PATH=${DN_PROJECT_PATH}"
+#      echo "PYTHONPATH=${PYTHONPATH}"
+#      echo "ROS_PKG=${ROS_PKG}"
+#      echo "PATH=${PATH}"
+#      echo "ROS_ROOT=${ROS_ROOT}"
+#      echo "ROS_DISTRO=${ROS_DISTRO}"
+#      echo
+#    ) > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
 
     # ....Sanity check.............................................................................
     # (CRITICAL) ToDo: validate (ref task TASK)
