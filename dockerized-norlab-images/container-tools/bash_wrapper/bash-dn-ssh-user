@@ -64,7 +64,7 @@ function dn::bash_dn_runtime_ros2() {
   done
 
   # Insert DN lib sourcing logic before command string arguments
-  cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh${c_flag_buffer}; ${@:-bash}" )
+  cmds+=( "-c" "source ${bash_run_config_root}/.bashrc.dn_non_interactive_ssh${c_flag_buffer}; bash $@" )
 
   # ....Execute commands...........................................................................
   if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
