@@ -31,6 +31,7 @@
 set -o allexport
 source /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh || exit 1
 set +o allexport
+test -n "${ROS_DISTRO}" || { echo -e "\033[1;33m[DN warning]\033[0m The ROS_DISTRO is not set!" 1>&2; exit 1; }
 
 if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
   echo -e "\033[1;33m[DN trace]\033[0m Execute .bashrc.dn_non_interactive_ssh"
@@ -46,9 +47,8 @@ fi
 
 # ....Source ROS2 underlay and overlay.............................................................
 test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;33m[DN warning]\033[0m The DN lib is not loaded!" 1>&2; exit 1; }
-test -n "${ROS_DISTRO}" || { echo -e "\033[1;33m[DN warning]\033[0m The ROS_DISTRO is not set!" 1>&2; exit 1; }
 
-#dn::source_ros2 >/dev/null
-dn::source_ros2
+dn::source_ros2 >/dev/null
+#dn::source_ros2
 
 # ====Build-time appended instructions=============================================================
