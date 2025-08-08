@@ -143,11 +143,15 @@ RUN <<EOF
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
 
     # ....Copy environment variable to non-interactive sub shell...................................
-    n2st::print_msg "Copy environment variable to non-interactive sub shell"
-    dn::source_ros2
+    n2st::print_msg "Setup environment variables for run-time non-interactive sub shell..."
+
+    dn::source_ros2 || exit 1
 
     # Generate dotenv file
-    source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash || exit 1
+    {
+      source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash && \
+      test -f "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err}";
+    } || n2st::print_msg_error_and_exit "Failed to expose container environment variables!"
 
     # Override target dotenv
     cat /dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err} > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
@@ -164,6 +168,8 @@ RUN <<EOF
 #      echo "ROS_DISTRO=${ROS_DISTRO}"
 #      echo
 #    ) > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
+
+    n2st::print_msg_done "Environment variables for run-time non-interactive sub shell are set."
 
     # ....Sanity check.............................................................................
     # (CRITICAL) ToDo: validate (ref task TASK)
