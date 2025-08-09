@@ -110,7 +110,6 @@ EOF
 
 FROM ros2-custom-install AS test
 
-# Note: ROS2 distro should be sourced automaticaly via our .bashrc.dn_non_interactive setup
 RUN <<EOF
     echo "(ROS2 sourcing) Non-interactive shell sanity check. Validate .bashrc.dn_non_interactive logic..."
 
@@ -143,7 +142,6 @@ RUN <<EOF
     echo "(ROS2 sourcing) Non-interactive shell sanity check ok."
 EOF
 
-# Note: ROS2 distro should be sourced automaticaly via our .bashrc.dn_non_interactive setup
 SHELL ["/bin/bash", "-i", "-c"]
 RUN <<EOF
     echo "(ROS2 sourcing) Interactive shell sanity check. Validate .bashrc.dn logic..."

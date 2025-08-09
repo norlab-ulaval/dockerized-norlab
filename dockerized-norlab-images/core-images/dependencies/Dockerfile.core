@@ -171,13 +171,6 @@ RUN <<EOF
     chmod +x /usr/local/bin/bash-dn-buildtime
     chmod +x /usr/local/bin/bash-dn-non-interactive-ros2
 
-#    echo
-#    echo "Configure bash run config..."
-#    chmod +x /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
-#    chmod +x /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_common
-#    chmod +x /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
-#    chmod +x /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ros2
-
     echo
     echo "Activate DN build time non-interactive shell: /bin/bash -> /usr/local/bin/bash-dn-buildtime ..."
 EOF
