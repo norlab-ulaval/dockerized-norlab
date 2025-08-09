@@ -28,7 +28,7 @@ ENV DN_GDB_SERVER_PORT=${DN_GDB_SERVER_PORT}
 EXPOSE ${DN_GDB_SERVER_PORT}
 
 # ...debugging user config.........................................................................
-ARG DN_SSH_SERVER_USER=pycharm-debugger
+ARG DN_SSH_SERVER_USER=non-interactive-ros2
 ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
 ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 
@@ -154,44 +154,79 @@ RUN <<EOF
 #    } || n2st::print_msg_error_and_exit "Failed to expose container environment variables!"
 #
 #    # Override target dotenv
-#    cat /dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err} > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
+#    cat /dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?err} > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ros2
 
+    # Override target dotenv
     (
       echo
       echo "ROS_DISTRO=${ROS_DISTRO}"
+      echo "ROS_ROOT=${ROS_ROOT}"
       echo "DN_DEV_WORKSPACE=${DN_DEV_WORKSPACE}"
       echo "DN_PROJECT_PATH=${DN_PROJECT_PATH}"
-      echo "PYTHONPATH=${PYTHONPATH}"
-      echo "ROS_PKG=${ROS_PKG}"
-      echo "PATH=${PATH}"
-      echo "ROS_ROOT=${ROS_ROOT}"
-      echo "ROS_DISTRO=${ROS_DISTRO}"
+#      echo "PYTHONPATH=${PYTHONPATH}"
+#      echo "ROS_PKG=${ROS_PKG}"
+#      echo "PATH=${PATH}"
       echo
-    ) > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ssh
+    ) > /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.env.dn_non_interactive_ros2
 
     n2st::print_msg_done "Environment variables for run-time non-interactive sub shell are set."
 
     # ....Sanity check.............................................................................
-    # (CRITICAL) ToDo: validate (ref task TASK)
     n2st::print_msg "Users configuration sanity check..."
+    echo
+    echo "id ${DN_PROJECT_USER}: $(id "${DN_PROJECT_USER}")"
+    echo
+    echo "id ${DN_SSH_SERVER_USER}: $(id "${DN_SSH_SERVER_USER}")"
+    echo
+
+    # (CRITICAL) ToDo: validate (ref task TASK)
     getent passwd redleader
 
-    echo "Check pycharm-debugger..."
-    pd_shell_path=$(getent passwd pycharm-debugger | awk -F: '{print $7}')
-    test "$pd_shell_path" = "/usr/local/bin/bash-dn-ssh-user"
+    echo "Check non-interactive-ros2..."
+    pd_shell_path=$(getent passwd non-interactive-ros2 | awk -F: '{print $7}')
+    test "$pd_shell_path" == "/usr/local/bin/bash-dn-non-interactive-ros2"
 
     getent passwd root
 
 EOF
 
+## (CRITICAL) ToDo: on task NMO-774 end >> delete this bloc ↓↓
+#COPY --from=context-dn-container-tools ./bash_run_config/.bashrc.dn_non_interactive_ros2 /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ros2
+#COPY --from=context-dn-container-tools ./bash_wrapper/bash-dn-non-interactive-ros2 /usr/local/bin/bash-dn-non-interactive-ros2
+#RUN <<EOF
+#    # ////Note: Relevant code copied from DN for DEBUG purposes ⬇︎/////////////////////////////////
+#    echo "Configure bash wrappers..."
+##    chmod +x /usr/local/bin/bash-dn-buildtime
+#    chmod +x /usr/local/bin/bash-dn-non-interactive-ros2
+#    echo "Activate DN build time non-interactive shell: /bin/bash -> /usr/local/bin/bash-dn-buildtime ..."
+#
+#    chown -R "${DN_PROJECT_UID:?err}":"${DN_PROJECT_GID:?err}" "${DN_PATH:?err}"
+#EOF
+
 
 FROM dockerized-norlab-project-internal AS test-ssh-user
 USER "${DN_SSH_SERVER_USER}"
-SHELL ["/usr/local/bin/bash-dn-ssh-user", "-c"]
+SHELL ["/usr/local/bin/bash-dn-non-interactive-ros2", "-c"]
 WORKDIR /
 
 RUN <<EOF
     test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
+
+    # Note: Seek for the following files:
+    #  - "/usr/local/bin/bash-dn-buildtime"
+    #  - "/usr/local/bin/bash-dn-non-interactive-ros2"
+    echo
+    tree -aguL 1 -P bash-dn* /usr/local/bin
+    echo
+
+
+    echo "whoami: $(whoami)"
+    echo "id ${DN_PROJECT_USER}: $(id "${DN_PROJECT_USER}")"
+    echo "id ${DN_SSH_SERVER_USER}: $(id "${DN_SSH_SERVER_USER}")"
+    echo "DN_SSH_SERVER_USER: ${DN_SSH_SERVER_USER}"
+    echo "DN_CONTAINER_TOOLS_LOADED: ${DN_CONTAINER_TOOLS_LOADED}"
+    echo "DEBIAN_FRONTEND: ${DEBIAN_FRONTEND}"
+    tree -aguL 1 /home/
 
     {
         test $(whoami) == "${DN_SSH_SERVER_USER}" && \
@@ -202,7 +237,7 @@ RUN <<EOF
     } || exit 1
 
     n2st::print_msg "Check that ROS source is available via the ssh daemon user"
-    # Note: ROS2 should have been sourced by /usr/local/bin/bash-dn-ssh-user
+    # Note: ROS2 should have been sourced by /usr/local/bin/bash-dn-non-interactive-ros2
     printenv
     {
       test -n "${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'}" && \
@@ -316,7 +351,7 @@ SHELL ["/bin/bash", "-c"]
 # Unset DEBIAN_FRONTEND (which is set globaly in base DN images) before run stage.
 ENV DEBIAN_FRONTEND=""
 
-#ENV BASH_ENV="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ssh"
+#ENV BASH_ENV="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ros2"
 
 #WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 WORKDIR ${DN_PROJECT_USER_HOME:?'environment variable is not set'}

@@ -60,9 +60,6 @@ function dn::setup_debugging_tools() {
   apt-get install --assume-yes --no-install-recommends \
       openssh-server
 
-#      ncurses-term \
-#      xauth
-
   # ....Setup ssh daemon.............................................................................
   n2st::print_msg "Setup ssh daemon..."
 
@@ -74,8 +71,10 @@ function dn::setup_debugging_tools() {
   (
     echo
     echo "# Security settings"
-    echo "PermitRootLogin yes"
     echo "PasswordAuthentication yes"                     # Allow password-based authentication
+    # (CRITICAL) ToDo: validate >> "PermitRootLogin" line ↓
+    echo "PermitRootLogin yes"
+#    echo "PermitRootLogin no"
 #    echo "X11Forwarding no"                               # Disable X11 forwarding unless needed
 #    echo "AllowTcpForwarding no"                          # Disable TCP forwarding unless needed
 #    echo "PermitEmptyPasswords no"                        # Never allow empty passwords
@@ -85,8 +84,9 @@ function dn::setup_debugging_tools() {
     echo "Port ${DN_SSH_SERVER_PORT}"                     # Default SSH port
 #    echo "MaxAuthTries 3"                                 # Limit authentication attempts
     echo
+    # (CRITICAL) ToDo: validate >> "User restrictions" bloc ↓↓
 #    echo "# User restrictions"
-#    echo "AllowUsers ${DN_PROJECT_USER},${_SETUP_DEBUGGER_USER}" # Restrict which users can connect
+#    echo "AllowUsers ${DN_PROJECT_USER},${DN_SSH_SERVER_USER}" # Restrict which users can connect
 #    echo "DenyUsers root"                                 # Explicitly deny root access
     echo
     echo "# Logging"
@@ -110,46 +110,52 @@ function dn::setup_debugging_tools() {
   cat /etc/pam.d/sshd
   echo
 
+  n2st::print_msg_warning "Be advised, the ssh daemon still need to be started.
+  Curently its done by 'dn_entrypoint.global.init.callback.bash'.
+  Ref 'dockerized-norlab-images/core-images/dn-project/project-core/project_entrypoints'.
+  "
+
   # ....Set password for users.......................................................................
+  n2st::print_msg "Set password for users..."
   # user:newpassword
   echo "${DN_PROJECT_USER}:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
   echo "root:${DN_SSH_SERVER_USER_PASSWORD}" | chpasswd
 
   # ....Create and setup specialized debugger user.................................................
   if [[ ${_SETUP_DEBUGGER_USER} == true ]]; then
-    useradd --create-home "${DN_SSH_SERVER_USER}"
+    n2st::print_msg "Create and setup specialized debugger user..."
+
+    useradd --gid "${DN_PROJECT_GID:?err}" \
+            --create-home "${DN_SSH_SERVER_USER}" || exit 1
 
     yes "${DN_SSH_SERVER_USER_PASSWORD}" | passwd "${DN_SSH_SERVER_USER}"
 
+    # Copy secondary group of main user
+    local secondary_group
+    secondary_group="$(groups "${DN_PROJECT_USER}" | cut -d: -f2 | sed 's/^ //' | tr ' ' ',' | sed 's/,$//')"
+    echo "secondary_group: ${secondary_group}"
+    usermod -a -G "${secondary_group}" "${DN_SSH_SERVER_USER}" || exit 1
+
     echo "${DN_SSH_SERVER_USER} ALL=(root) NOPASSWD:ALL" >/etc/sudoers.d/"${DN_SSH_SERVER_USER}"
     chmod 0440 "/etc/sudoers.d/${DN_SSH_SERVER_USER}"
+
     mkdir -p "/home/${DN_SSH_SERVER_USER}"
     chown -R "${DN_SSH_SERVER_USER}":"${DN_PROJECT_GID}" "/home/${DN_SSH_SERVER_USER}"
 
-    # Add the 'video' groups to new user as it's required for GPU access.
-    # (not a problem on norlab-og but mandatory on Jetson device)
-    # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
-    usermod -a -G video,sudo "${DN_SSH_SERVER_USER}"
+    # ....Create the non-interactive-ros2 user tmp project directory...................................
+    if [[ ${_SETUP_DEBUGGER_USER} == true ]] && [[ ${_SETUP_DEBUG_PROJECT_TMP_DIR} == true ]]; then
+      mkdir -p "/home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}"
+      chown -R "${DN_SSH_SERVER_USER}" "/home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME}/"
+    fi
 
-    ## (CRITICAL) ToDo: assessment >> assigning project user primary group to pycharm-debugger (ref task NMO-548)
-    #usermod --gid "${DN_PROJECT_GID:?err}" "${DN_SSH_SERVER_USER}"
-  fi
-
-  # ....Create the pycharm-debugger user tmp project directory.....................................
-  if [[ ${_SETUP_DEBUGGER_USER} == true ]] && [[ ${_SETUP_DEBUG_PROJECT_TMP_DIR} == true ]]; then
-    mkdir -p "/home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME:?err}"
-    chown -R "${DN_SSH_SERVER_USER}" "/home/${DN_SSH_SERVER_USER}/tmp/${DN_PROJECT_GIT_NAME}/"
-  fi
-
-  # ....add the ros distro source steps to debugger user.............................................
-  if [[ ${_SETUP_DEBUGGER_USER} == true ]]; then
+    # ....add the ros distro source steps to debugger user.........................................
     # (CRITICAL) ToDo: validate shell wrapper behaviour ⬇︎ (ref task NMO-770)
-    usermod --shell /usr/local/bin/bash-dn-ssh-user "${DN_SSH_SERVER_USER}"
-    # Note: Required for ssh in pycharm-debugger, otherwise it use .sh instead of .bash
+    usermod --shell /usr/local/bin/bash-dn-non-interactive-ros2 "${DN_SSH_SERVER_USER}"
+    # Note: Required for ssh in non-interactive-ros2, otherwise it use .sh instead of .bash
     #       and result in not sourcing ros from .bashrc
 
     ## Option 1 (CURRENT): source a bash wrapper in the debugger user
-    # In effect: $ /usr/local/bin/bash-dn-ssh-user -c COMMAND
+    # In effect: $ /usr/local/bin/bash-dn-non-interactive-ros2 -c COMMAND
 
     ## Option 2: hardlink the root .bashrc to the debugger user .bashrc
     #sudo ln -fv /root/.bashrc "/home/${DN_SSH_SERVER_USER}/.bashrc"
@@ -164,6 +170,7 @@ function dn::setup_debugging_tools() {
   fi
 
   # ====Jetbrains IDE================================================================================
+  n2st::print_msg "Setup JetBrains IDE related packages..."
 
   ## (!) pytest-cov › "The pytest-cov package, due to technical restrictions, breaks PyCharm's debugger."
   ## see https://www.jetbrains.com/help/pycharm/2023.1/run-debug-configuration-py-test.html
@@ -180,11 +187,6 @@ function dn::setup_debugging_tools() {
   ##  - https://github.com/sea-bass/pyrobosim/pull/162
   ##  - https://github.com/ros2/launch/issues/765
   pip3 install 'pytest!=8.1.1'
-
-  n2st::print_msg_warning "Be advised, the ssh daemon still need to be started.
-  Curently its done by 'dn_entrypoint.global.init.callback.bash'.
-  Ref 'dockerized-norlab-images/core-images/dn-project/project-core/project_entrypoints'.
-  "
 
   # ....Teardown...................................................................................
   apt-get clean

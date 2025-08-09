@@ -50,23 +50,23 @@ function buidl_over_single_build_matrix() {
 #  docker_flag+=( dn-control-deep-rl-tester )
 #  docker_flag+=( dn-control-deep-rl ) # final
 
-  docker_flag+=( dn-control-deep-rl-openai-gym )
-  docker_flag+=( dn-control-deep-rl-openai-gym-tester )
+#  docker_flag+=( dn-control-deep-rl-openai-gym )
+#  docker_flag+=( dn-control-deep-rl-openai-gym-tester )
 
 #  docker_flag+=( dn-control-deep-rl-f1tenth-gym-main )
 #  docker_flag+=( dn-control-deep-rl-f1tenth-gym-tester )
 #  docker_flag+=( dn-control-deep-rl-f1tenth-gym ) # final
 
   # ....dn-project images............................................................................
-#  docker_flag+=( project-core-main )
-#  docker_flag+=( project-core )
-#  docker_flag+=( project-develop-main )
-#  docker_flag+=( project-develop-test-ssh-user )
-#  docker_flag+=( project-develop-test-project-user )
-#  docker_flag+=( project-develop )
-#  docker_flag+=( project-deploy-main )
-#  docker_flag+=( project-deploy-tester )
-#  docker_flag+=( project-deploy )
+  docker_flag+=( project-core-main )
+  docker_flag+=( project-core )
+  docker_flag+=( project-develop-main )
+  docker_flag+=( project-develop-test-ssh-user )
+  docker_flag+=( project-develop-test-project-user )
+  docker_flag+=( project-develop )
+  docker_flag+=( project-deploy-main )
+  docker_flag+=( project-deploy-tester )
+  docker_flag+=( project-deploy )
 
   # ....Script flag..................................................................................
   local script_flag=()
@@ -76,7 +76,7 @@ function buidl_over_single_build_matrix() {
 #  export BUILDX_BUILDER=local-builder-multiarch-virtual
 #  export BUILDX_BUILDER=remote-norlab-cicd-builder-multiarch-native
   #export DOCKER_CONTEXT=desktop-linux
-#  export BUILDKIT_PROGRESS=plain
+  export BUILDKIT_PROGRESS=plain
 
   # ....Begin......................................................................................
   export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="${docker_flag[@]}"

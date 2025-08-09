@@ -164,12 +164,19 @@ EOF
 
 # ....Setup bash wrapper...........................................................................
 COPY --from=context-dn-container-tools ./bash_wrapper/bash-dn-buildtime /usr/local/bin/bash-dn-buildtime
-COPY --from=context-dn-container-tools ./bash_wrapper/bash-dn-ssh-user /usr/local/bin/bash-dn-ssh-user
+COPY --from=context-dn-container-tools ./bash_wrapper/bash-dn-non-interactive-ros2 /usr/local/bin/bash-dn-non-interactive-ros2
 
 RUN <<EOF
     echo "Configure bash wrappers..."
     chmod +x /usr/local/bin/bash-dn-buildtime
-    chmod +x /usr/local/bin/bash-dn-ssh-user
+    chmod +x /usr/local/bin/bash-dn-non-interactive-ros2
+
+#    echo
+#    echo "Configure bash run config..."
+#    chmod +x /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
+#    chmod +x /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_common
+#    chmod +x /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
+#    chmod +x /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ros2
 
     echo
     echo "Activate DN build time non-interactive shell: /bin/bash -> /usr/local/bin/bash-dn-buildtime ..."
@@ -192,12 +199,12 @@ RUN <<EOF
 
     echo "(container-tools directory copy) Sanity check..."
     {
-        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_wrapper/bash-dn-ssh-user && \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_wrapper/bash-dn-non-interactive-ros2 && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_wrapper/bash-dn-buildtime && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_common && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive && \
-        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ssh && \
+        test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ros2 && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash ;
     } || { echo "(container-tools directory copy) Sanity check failed" ; exit 1 ; }
 

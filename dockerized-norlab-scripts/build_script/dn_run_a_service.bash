@@ -72,7 +72,7 @@ echo
 
 #OPTION_FLAG=${OPTION_FLAG:-"( --build )"}
 OPTION_FLAG=( --build )
-#OPTION_FLAG=( --user pycharm-debugger )
+#OPTION_FLAG=( --user non-interactive-ros2 )
 #OPTION_FLAG=()
 bash ./dockerized-norlab-scripts/build_script/dn_execute_compose_over_build_matrix.bash \
                 "${NBS_BUILD_MATRIX_CONFIG:?'Variable not set'}/${_DOTENV_BUILD_MATRIX}" \

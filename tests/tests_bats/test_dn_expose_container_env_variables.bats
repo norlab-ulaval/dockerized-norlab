@@ -142,7 +142,7 @@ function export_DN_container_env() {
     export DN_GDB_SERVER_PORT=7777
     export DN_PROJECT_GIT_NAME=dockerized-norlab-project-mock
     export DN_SSH_SERVER_PORT=2222
-    export DN_SSH_SERVER_USER=pycharm-debugger
+    export DN_SSH_SERVER_USER=non-interactive-ros2
     export DN_PROJECT_GIT_DOMAIN=norlab-ulaval
 
     export PYTHONUNBUFFERED=1
@@ -249,7 +249,7 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DISPLAY=host.docker.internal:0"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_PORT=2222"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_LOCALHOST_ONLY=0"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_USER=pycharm-debugger"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_USER=non-interactive-ros2"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_ROOT=/opt/ros/foxy"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_DOMAIN=norlab-ulaval"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DISTRO=foxy"
@@ -273,7 +273,8 @@ function show_DN_container_env() {
   assert_file_not_empty $DN_CONTAINER_EXPOSE_ENV_PATH
   more $DN_CONTAINER_EXPOSE_ENV_PATH  >&3
 
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=\${PYTHONPATH}:/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
+#  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=\${PYTHONPATH}:/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
 
 }
 
