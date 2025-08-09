@@ -69,8 +69,9 @@ for path in difference:
     fi
 
     # Method 3: Create sitecustomize.py for automatic detection
-    if [[ -d "${site_packages_dir}" ]] && [[ ${method} == "syscustom" ]]; then
-      cat > "${site_packages_dir}/dna_sitecustomize.py" << EOF
+    if [[ -d "$(python3 -m site --user-site)" ]] && [[ ${method} == "syscustom" ]]; then
+      cat >> "${site_packages_dir}/sitecustomize.py" << EOF
+
 import sys
 import os
 

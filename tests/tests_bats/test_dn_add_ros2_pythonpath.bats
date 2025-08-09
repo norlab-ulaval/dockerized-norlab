@@ -184,7 +184,9 @@ teardown() {
 @test "dna::setup_ros2_python_paths › method=syscustom › sitecustomize.py creation › expect pass" {
   # Mock only python3 site.getsitepackages
   function python3() {
-    if [[ "$*" == *"site.getsitepackages"* ]]; then
+    if [[ "$1" == "-m" ]] && [[ "$2" == "site" ]] && [[ "$3" == "--user-site" ]]; then
+      echo "$TEST_SITE_PACKAGES_DIR"
+    elif [[ "$*" == *"site.getsitepackages"* ]]; then
       echo "$TEST_SITE_PACKAGES_DIR"
     else
       command python3 "$@"
@@ -199,10 +201,10 @@ teardown() {
   assert_success
   
   # Verify sitecustomize.py was created (testing actual file system effects)
-  assert_file_exist "$TEST_SITE_PACKAGES_DIR/dna_sitecustomize.py"
+  assert_file_exist "$TEST_SITE_PACKAGES_DIR/sitecustomize.py"
   
   # Verify file content contains expected Python code
-  run cat "$TEST_SITE_PACKAGES_DIR/dna_sitecustomize.py"
+  run cat "$TEST_SITE_PACKAGES_DIR/sitecustomize.py"
   assert_success
   assert_output --partial "DNA ROS path auto-detection"
   assert_output --partial "ros_distro = os.environ.get('ROS_DISTRO')"
