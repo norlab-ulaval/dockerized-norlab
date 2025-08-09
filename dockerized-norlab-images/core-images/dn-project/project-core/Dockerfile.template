@@ -24,10 +24,10 @@ ENV DN_PROJECT_GID=${DN_PROJECT_GID:?'Build argument needs to be set and non-emp
 ENV DN_PROJECT_USER_HOME=/home/${DN_PROJECT_USER}
 ENV DN_PROJECT_PATH=${DN_DEV_WORKSPACE:?'Build argument needs to be set and non-empty.'}/src/${DN_PROJECT_GIT_NAME}
 
-COPY --from=context-dn-container-tools ./dn_project_core_init.bash .
+COPY --from=context-dn-container-tools ./dn_project_core_init.bash /dn_project_core_init.bash
 RUN <<EOF
-    source ./dn_project_core_init.bash
-    rm ./dn_project_core_init.bash
+    source /dn_project_core_init.bash
+    rm -f /dn_project_core_init.bash
     { test -d ${DN_PROJECT_USER_HOME} && test -d ${DN_PROJECT_PATH} ; } || exit 1
 EOF
 
@@ -69,6 +69,7 @@ FROM project-custom-docker-steps AS final
 WORKDIR /project_entrypoints
 ENV MOCK_PROJECT_ENTRYPOINT_PATH=./project_entrypoints
 COPY ${MOCK_PROJECT_ENTRYPOINT_PATH} .
+COPY --from=context-dn-container-tools ./dn_project_core_finalize.bash /dn_project_core_finalize.bash
 RUN <<EOF
     # Note: DN-project path would be ".dockerized_norlab_project/configuration/project_entrypoints"
     for each_file in ./dn_entrypoint.*.bash; do
@@ -78,6 +79,9 @@ RUN <<EOF
     for each_file in ./project-*/dn_entrypoint.*.bash; do
       chmod +x "${each_file}"
     done
+
+    source /dn_project_core_finalize.bash || exit 1
+    rm -f /dn_project_core_finalize.bash
 EOF
 
 ENV DN_ENTRYPOINT_TRACE_EXECUTION=true

@@ -143,7 +143,6 @@ COPY --from=context-dn-root ./.git ./.git
 COPY --from=context-dn-submodules ./norlab-shell-script-tools/ ./utilities/norlab-shell-script-tools
 
 # ....Add dn-container tools.......................................................................
-
 COPY --from=context-dn-container-tools . ./dockerized-norlab-images/container-tools
 
 RUN <<EOF
