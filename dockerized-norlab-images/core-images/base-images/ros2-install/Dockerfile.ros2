@@ -398,7 +398,6 @@ ARG BUILDPLATFORM
 WORKDIR ${DN_DEV_WORKSPACE}
 
 RUN <<EOF
-    # (NICE TO HAVE) ToDo: assess replacing the ros2 source logic by dn_source_ros2.bash instead
     echo "sourcing /opt/ros/${ROS_DISTRO:?err}/setup.bash"
     source /opt/ros/${ROS_DISTRO}/setup.bash
     echo "sourcing ${DN_DEV_WORKSPACE:?err}/install/setup.bash"
