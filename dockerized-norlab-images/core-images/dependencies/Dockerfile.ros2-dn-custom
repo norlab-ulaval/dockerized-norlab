@@ -142,6 +142,7 @@ RUN <<EOF
     echo "(ROS2 sourcing) Non-interactive shell sanity check ok."
 EOF
 
+# (CRITICAL) ToDo: assess >> There is no point testing interactive vs non-interactive ROS2 related logic in here anymore
 SHELL ["/bin/bash", "-i", "-c"]
 RUN <<EOF
     echo "(ROS2 sourcing) Interactive shell sanity check. Validate .bashrc.dn logic..."

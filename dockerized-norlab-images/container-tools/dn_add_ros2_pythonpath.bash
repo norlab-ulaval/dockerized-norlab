@@ -34,7 +34,7 @@ function dna::setup_ros2_python_paths() {
       test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
       
       # Capture Python path after sourcing ROS2
-      pythonpath_post_ros2_source=$(bash -c "source $(dirname "${BASH_SOURCE[0]}")/dn_source_ros2.bash && dn::source_ros2 && python3 -c \"import sys; print(sys.path)\"" 2>/dev/null)
+      pythonpath_post_ros2_source=$(dn::source_ros2 >/dev/null && python3 -c "import sys; print(sys.path)")
       
       # Compute the difference between the two Python paths
       local pythonpath_difference

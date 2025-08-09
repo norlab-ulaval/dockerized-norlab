@@ -112,30 +112,20 @@ teardown() {
       *"site.getsitepackages"*)
         echo "$TEST_SITE_PACKAGES_DIR"
         ;;
-      *"import sys; print(sys.path)"*)
-        # Return mock pre-ROS2 Python path
-        echo "['', '/usr/lib/python3.10', '/usr/lib/python3/dist-packages']"
-        ;;
       *)
         command python3 "$@"
         ;;
     esac
   }
   export -f python3
-  
-  # Mock bash command to simulate ROS2 sourcing
-  function bash() {
-    if [[ "$1" == "-c" ]] && [[ "$2" == *"dn::source_ros2"* ]]; then
-      # Return mock post-ROS2 Python path with additional paths
-      echo "['', '/opt/ros/humble/lib/python3.10/site-packages', '/opt/ros/humble/local/lib/python3.10/dist-packages', '/usr/lib/python3.10', '/usr/lib/python3/dist-packages']"
-    else
-      command bash "$@"
-    fi
-  }
-  export -f bash
-  
+
+#  echo "PYTHONPATH: $PYTHONPATH"  >&3
+
   # Mock dn::source_ros2 to be available
   function dn::source_ros2() {
+    # Return mock post-ROS2 Python path with additional paths
+#    python3 -c "import sys; sys.path.insert(0, /opt/ros/humble/lib/python3.10/site-packages)"
+    export PYTHONPATH="/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/lib/python3.10:/usr/lib/python3/dist-packages:/opt/arbitrary/path"
     return 0
   }
   export -f dn::source_ros2
@@ -163,6 +153,9 @@ teardown() {
   # Should contain actual ROS paths
   assert_output --partial "/opt/ros/humble/lib/python3.10/site-packages"
   assert_output --partial "/opt/ros/humble/local/lib/python3.10/dist-packages"
+  assert_output --partial "/opt/arbitrary/path"
+
+  unset PYTHONPATH
 }
 
 @test "dna::setup_ros2_python_paths › method=pth › missing DN lib › expect fail" {
