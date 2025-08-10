@@ -100,40 +100,40 @@ ${_sp}RMW_IMPLEMENTATION:          ${RMW_IMPLEMENTATION}"
 ${_sp}python3 version:             ${DN_PYTHON3_VERSION}
 ${_sp}numpy version:               $(echo "${PKG_VERSION}" | grep numpy== | sed 's/numpy==//g')
 ${_sp}pyTorch version:             $(echo "${PKG_VERSION}" | grep -w torch | sed 's/torch==//g')
-${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')
+${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')π
 ${_sp}LLVMlite version:            $(echo "${PKG_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')"
 
 #  ${_sp}torchvision version:         $(echo "${PKG_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
 
   # ....Prompt customisation.......................................................................
   # (NICE TO HAVE) ToDo: Add >> procedure for configuring .env file
-  echo -e "${MSG_EMPH_FORMAT}Terminal prompt configuration${MSG_END_FORMAT} ›
-The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m or\033[1;37m Powerline10k\033[0m
-be installed on the host terminal. To change to a minimal prompt, either set permanently
+  echo
+  echo -e "${MSG_EMPH_FORMAT}Terminal prompt configuration${MSG_END_FORMAT} › The default Dockerized-NorLab prompt require that\033[1;37m Powerline-status\033[0m
+or\033[1;37m Powerline10k\033[0m be installed on the host terminal. To change to a minimal prompt, either set permanently
 the environment variable in \033[1;37mDN_ACTIVATE_POWERLINE_PROMT=false\033[0m in .dockerized_norlab/configuration/.env.dna
-or pass the following flag to \033[1;37mdna up\033[0m or \033[1;37mdna exec\033[0m when connecting to a running container:
+or pass the following flags to \033[1;37mdna up\033[0m or \033[1;37mdna exec\033[0m when connecting to a running container:
 \033[1;37m
 ${_sp}$ dna [up|exec] --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" -- bash
 \033[0m"
 
   # ....Service specific (project-develop) ........................................................
   if [[ "${DN_PROJECT_SERVICE}" == "project-develop" ]]; then
-  echo -e "${MSG_EMPH_FORMAT}Remote development workflow${MSG_END_FORMAT} ›
-To connect to the container internal ssh server:
+  echo -e "${MSG_EMPH_FORMAT}Remote development workflow${MSG_END_FORMAT} › To connect to the container internal ssh server:
 
-Case › Interactive and non-interactive shell (regular bash shell)
+${_sp}Case › Interactive and non-interactive shell (regular bash shell)
 ${_sp}${MSG_EMPH_FORMAT}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}')${MSG_END_FORMAT}
 
-Case › ROS2 pre-sourced non-interactive shell (shell with ros2 support tailormade for ssh python interpreter)
+${_sp}Case › ROS2 pre-sourced non-interactive shell (shell with ros2 support tailormade for ssh python interpreter)
 ${_sp}${MSG_EMPH_FORMAT}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}')${MSG_END_FORMAT}
 
-Case › Copy file from local host to remote host
+${_sp}Case › Copy file from local host to remote host
 ${_sp}${MSG_EMPH_FORMAT}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}'):/target/dir/${MSG_END_FORMAT}
 "
 
   # ....Remote python interpreter setup info.......................................................
-  echo -e "${MSG_EMPH_FORMAT}Remote development workflow with ROS2 support${MSG_END_FORMAT} ›
-If you're running a python interpreter in remote development mode and you want ROS2 path and python path mirorred in your local host IDE
+  echo -e "${MSG_EMPH_FORMAT}Remote development workflow with ROS2 support${MSG_END_FORMAT} › If you're running a python interpreter in remote
+development mode and you want ROS2 path and python path mirorred in your local host IDE, DNA support
+the following approach:
 
 ${_sp}\033[1;37mOption 1\033[0m:
 ${_sp}Configure a remote ssh python interpreter using \033[1;37m${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}'):${DN_SSH_SERVER_PORT}\033[0m
@@ -154,18 +154,17 @@ ${_sp}\033[1;37mOption 3\033[0m:
 ${_sp}Add the following python path manualy to your host machine IDE python interpreter configuration:
 ${_sp}${MSG_DIMMED_FORMAT}
 ${_sp}PYTHONPATH=$(dn::source_ros2 >/dev/null && echo "${PYTHONPATH}")
-${_sp}${MSG_END_FORMAT}
-"
+${_sp}${MSG_END_FORMAT}"
   fi
 
   # ....DN wide aliases............................................................................
   echo
-  echo -e "${MSG_EMPH_FORMAT}In-container available alias${MSG_END_FORMAT} ›\n
+  echo -e "${MSG_EMPH_FORMAT}In-container available aliases${MSG_END_FORMAT} ›\n
 $(
 cd "${DN_PATH}"/dockerized-norlab-images/container-tools &&
 sed "s;alias dn-;${_sp}$ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn-.*;;" | grep -e dn-
 )"
-
+  echo
 
   n2st::draw_horizontal_line_across_the_terminal_window "${line_style}" "${MSG_DIMMED_FORMAT}"
 
