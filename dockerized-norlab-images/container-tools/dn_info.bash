@@ -103,10 +103,7 @@ ${_sp}pyTorch version:             $(echo "${PKG_VERSION}" | grep -w torch | sed
 ${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')π
 ${_sp}LLVMlite version:            $(echo "${PKG_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')${MSG_END_FORMAT}"
 
-#  ${_sp}torchvision version:         $(echo "${PKG_VERSION}" | grep -w torchvision | sed 's/torchvision==//g')
-
   # ....Prompt customisation.......................................................................
-  # (NICE TO HAVE) ToDo: Add >> procedure for configuring .env file
   echo
   echo -e "${MSG_EMPH_FORMAT}Terminal prompt configuration${MSG_END_FORMAT} › The default Dockerized-NorLab prompt require that${MSG_DIMMED_FORMAT} Powerline-status${MSG_END_FORMAT}
 or${MSG_DIMMED_FORMAT} Powerline10k${MSG_END_FORMAT} be installed on the host terminal. To change to a minimal prompt, either set permanently
@@ -120,15 +117,15 @@ ${MSG_END_FORMAT}"
   if [[ "${DN_PROJECT_SERVICE}" == "project-develop" ]]; then
   echo -e "${MSG_EMPH_FORMAT}Remote development workflow${MSG_END_FORMAT} › To connect to the container internal ssh server:
 
-${_sp}Case › Interactive and non-interactive shell (regular bash shell)
+${_sp}Case interactive and non-interactive shell (regular bash shell)
 ${_sp}
 ${_sp}${_sp}${MSG_DIMMED_FORMAT}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}')${MSG_END_FORMAT}
 ${_sp}
-${_sp}Case › ROS2 pre-sourced non-interactive shell (shell with ros2 support tailormade for ssh python interpreter)
+${_sp}Case ROS2 pre-sourced non-interactive shell (shell with ros2 support tailormade for ssh python interpreter)
 ${_sp}
 ${_sp}${_sp}${MSG_DIMMED_FORMAT}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}')${MSG_END_FORMAT}
 ${_sp}
-${_sp}Case › Copy file from local host to remote host
+${_sp}Case copy file from local host to remote host
 ${_sp}
 ${_sp}${_sp}${MSG_DIMMED_FORMAT}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}'):/target/dir/${MSG_END_FORMAT}
 ${_sp}"
@@ -149,14 +146,14 @@ ${_sp}${_sp}${MSG_DIMMED_FORMAT}$ dn::source_ros2 && dn-expose-container-env-var
 ${_sp}or
 ${_sp}${_sp}${MSG_DIMMED_FORMAT}$ dn::source_ros2_underlay_only && dn-expose-container-env-variables${MSG_END_FORMAT}
 ${_sp}
-${_sp}and then synchronize .dockerized_norlab/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}
+${_sp}and then synchronize ${MSG_DIMMED_FORMAT}.dockerized_norlab/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}${MSG_END_FORMAT}.
 ${_sp}
-${_sp}Note: Recommend using using EnvFile plugin https://github.com/Ashald/EnvFile for sourcing the dotenv
-${_sp}      file in your IDE run conbfiguration.
+${_sp}Note: Recommend using using EnvFile plugin https://github.com/ashald/EnvFile.git for sourcing the dotenv
+${_sp}      file in your JetBrains IDE run configuration.
 ${_sp}
 ${_sp}${MSG_EMPH_FORMAT}Option 3${MSG_END_FORMAT}: Source ROS2 manualy and add the value of PYTHONPATH to your IDE python interpreter configuration:
 ${_sp}
-${_sp}${_sp}${MSG_DIMMED_FORMAT}$ dn::source_ros2 && echo \"\$PYTHONPATH\"${MSG_END_FORMAT}${MSG_END_FORMAT}
+${_sp}${_sp}${MSG_DIMMED_FORMAT}$ dn::source_ros2 >/dev/null && echo \"PYTHONPATH=\$PYTHONPATH\"${MSG_END_FORMAT}${MSG_END_FORMAT}
 ${_sp}"
 
   fi
