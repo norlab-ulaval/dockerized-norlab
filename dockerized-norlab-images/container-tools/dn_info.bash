@@ -113,7 +113,7 @@ or${MSG_DIMMED_FORMAT} Powerline10k${MSG_END_FORMAT} be installed on the host te
 the environment variable in ${MSG_DIMMED_FORMAT}DN_ACTIVATE_POWERLINE_PROMT=false${MSG_END_FORMAT} in .dockerized_norlab/configuration/.env.dna
 or pass the following flags to ${MSG_DIMMED_FORMAT}dna up${MSG_END_FORMAT} or ${MSG_DIMMED_FORMAT}dna exec${MSG_END_FORMAT} when connecting to a running container:
 ${MSG_DIMMED_FORMAT}
-${_sp}$ dna [up|exec] --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" -- bash
+${_sp}${_sp}$ dna [up|exec] --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" -- bash
 ${MSG_END_FORMAT}"
 
   # ....Service specific (project-develop) ........................................................
@@ -121,14 +121,17 @@ ${MSG_END_FORMAT}"
   echo -e "${MSG_EMPH_FORMAT}Remote development workflow${MSG_END_FORMAT} › To connect to the container internal ssh server:
 
 ${_sp}Case › Interactive and non-interactive shell (regular bash shell)
-${_sp}${MSG_DIMMED_FORMAT}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}')${MSG_END_FORMAT}
-
+${_sp}
+${_sp}${_sp}${MSG_DIMMED_FORMAT}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}')${MSG_END_FORMAT}
+${_sp}
 ${_sp}Case › ROS2 pre-sourced non-interactive shell (shell with ros2 support tailormade for ssh python interpreter)
-${_sp}${MSG_DIMMED_FORMAT}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}')${MSG_END_FORMAT}
-
+${_sp}
+${_sp}${_sp}${MSG_DIMMED_FORMAT}$ ssh -p ${DN_SSH_SERVER_PORT} ${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}')${MSG_END_FORMAT}
+${_sp}
 ${_sp}Case › Copy file from local host to remote host
-${_sp}${MSG_DIMMED_FORMAT}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}'):/target/dir/${MSG_END_FORMAT}
-"
+${_sp}
+${_sp}${_sp}${MSG_DIMMED_FORMAT}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_PROJECT_USER}@$(hostname -I | awk '{print $1}'):/target/dir/${MSG_END_FORMAT}
+${_sp}"
 
   # ....Remote python interpreter setup info.......................................................
   echo -e "${MSG_EMPH_FORMAT}Remote development workflow with ROS2 support${MSG_END_FORMAT} › If you're running a python interpreter in remote
@@ -142,9 +145,9 @@ ${_sp}${MSG_EMPH_FORMAT}Option 2${MSG_END_FORMAT}: Fetch the container environme
 ${_sp}the mounted volume ${MSG_DIMMED_FORMAT}dockerized-norlab-tools/dn_container_env_variable/${MSG_END_FORMAT}.
 ${_sp}Execute the following in the container:
 ${_sp}
-${_sp}   ${MSG_DIMMED_FORMAT}$ dn::source_ros2 && dn-expose-container-env-variables${MSG_END_FORMAT}
+${_sp}${_sp}${MSG_DIMMED_FORMAT}$ dn::source_ros2 && dn-expose-container-env-variables${MSG_END_FORMAT}
 ${_sp}or
-${_sp}   ${MSG_DIMMED_FORMAT}$ dn::source_ros2_underlay_only && dn-expose-container-env-variables${MSG_END_FORMAT}
+${_sp}${_sp}${MSG_DIMMED_FORMAT}$ dn::source_ros2_underlay_only && dn-expose-container-env-variables${MSG_END_FORMAT}
 ${_sp}
 ${_sp}and then synchronize .dockerized_norlab/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}
 ${_sp}
@@ -153,7 +156,7 @@ ${_sp}      file in your IDE run conbfiguration.
 ${_sp}
 ${_sp}${MSG_EMPH_FORMAT}Option 3${MSG_END_FORMAT}: Source ROS2 manualy and add the value of PYTHONPATH to your IDE python interpreter configuration:
 ${_sp}
-${_sp}   ${MSG_DIMMED_FORMAT}$ dn::source_ros2 && echo \"\$PYTHONPATH\"${MSG_END_FORMAT}${MSG_END_FORMAT}
+${_sp}${_sp}${MSG_DIMMED_FORMAT}$ dn::source_ros2 && echo \"\$PYTHONPATH\"${MSG_END_FORMAT}${MSG_END_FORMAT}
 ${_sp}"
 
   fi
@@ -162,10 +165,10 @@ ${_sp}"
   # ....DN wide aliases............................................................................
   echo
   echo -e "${MSG_EMPH_FORMAT}In-container available aliases${MSG_END_FORMAT} ›\n
-$(
+${MSG_DIMMED_FORMAT}$(
 cd "${DN_PATH}"/dockerized-norlab-images/container-tools &&
 sed "s;alias dn-;${_sp}$ dn-;" ./dn_bash_alias.bash | sed "s;='.*;;" | sed "s;\# dn-.*;;" | grep -e dn-
-)"
+)${MSG_END_FORMAT}"
   echo
 
   n2st::draw_horizontal_line_across_the_terminal_window "${line_style}" "${MSG_DIMMED_FORMAT}"
