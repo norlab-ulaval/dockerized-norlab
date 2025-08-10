@@ -135,27 +135,28 @@ ${_sp}${MSG_EMPH_FORMAT}$ scp -P ${DN_SSH_SERVER_PORT} /path/to/source ${DN_PROJ
 development mode and you want ROS2 path and python path mirorred in your local host IDE, DNA support
 the following approach:
 
-${_sp}\033[1;37mOption 1\033[0m:
-${_sp}Configure a remote ssh python interpreter using \033[1;37m${DN_SSH_SERVER_USER}@$(hostname -I | awk '{print $1}'):${DN_SSH_SERVER_PORT}\033[0m
-${_sp}Its tailormade for that purposes.
+${_sp}\033[1;37mOption 1\033[0m: Configure a remote ssh python interpreter dedicated ros2 user \033[1;37m${DN_SSH_SERVER_USER}\033[0m.
+${_sp}He is tailormade for handling ROS2 path and python path in a non-interactive remote shell.
 ${_sp}
-${_sp}\033[1;37mOption 2\033[0m:
-${_sp}Fetch the container environment variables and expose them to the host computer through the mounted
-${_sp}volume \033[1;37m dockerized-norlab-tools/dn_container_env_variable/ \033[0m making them available
-${_sp}To configure your ide. Execute the following:
+${_sp}\033[1;37mOption 2\033[0m: Fetch the container environment variables and expose them to the local host IDE through
+${_sp}the mounted volume \033[1;37m dockerized-norlab-tools/dn_container_env_variable/\033[0m.
+${_sp}Execute the following in the container:
 ${_sp}
-${_sp}\033[1;37m$ dn::source_ros2 && dn-expose-container-env-variables\033[0m
+${_sp}   \033[1;37m$ dn::source_ros2 && dn-expose-container-env-variables\033[0m
 ${_sp}or
-${_sp}\033[1;37m$ dn::source_ros2_underlay_only && dn-expose-container-env-variables\033[0m
+${_sp}   \033[1;37m$ dn::source_ros2_underlay_only && dn-expose-container-env-variables\033[0m
 ${_sp}
-${_sp}Recommend using using EnvFile plugin https://github.com/Ashald/EnvFile for that purposes.
+${_sp}and then synchronize .dockerized_norlab/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME}
 ${_sp}
-${_sp}\033[1;37mOption 3\033[0m:
-${_sp}Add the following python path manualy to your host machine IDE python interpreter configuration:
+${_sp}Note: Recommend using using EnvFile plugin https://github.com/Ashald/EnvFile for sourcing the dotenv
+${_sp}      file in your IDE run conbfiguration.
+${_sp}
+${_sp}\033[1;37mOption 3\033[0m: Source ROS2 manualy and add the value of PYTHONPATH to your IDE python interpreter configuration:
 ${_sp}${MSG_DIMMED_FORMAT}
-${_sp}PYTHONPATH=$(dn::source_ros2 >/dev/null && echo "${PYTHONPATH}")
+${_sp}   \033[1;37m$ dn::source_ros2 && echo \"PYTHONPATH=$PYTHONPATH\"\033[0m
 ${_sp}${MSG_END_FORMAT}"
   fi
+#${_sp}PYTHONPATH=$(dn::source_ros2 >/dev/null && echo "${PYTHONPATH}")
 
   # ....DN wide aliases............................................................................
   echo

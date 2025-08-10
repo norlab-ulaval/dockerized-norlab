@@ -28,7 +28,7 @@ ENV DN_GDB_SERVER_PORT=${DN_GDB_SERVER_PORT}
 EXPOSE ${DN_GDB_SERVER_PORT}
 
 # ...debugging user config.........................................................................
-ARG DN_SSH_SERVER_USER=non-interactive-ros2
+ARG DN_SSH_SERVER_USER=dna-non-interactive-ros2
 ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
 ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 
@@ -183,7 +183,7 @@ RUN <<EOF
     getent passwd redleader
 
     echo "Check non-interactive-ros2..."
-    pd_shell_path=$(getent passwd non-interactive-ros2 | awk -F: '{print $7}')
+    pd_shell_path=$(getent passwd ${DN_SSH_SERVER_USER} | awk -F: '{print $7}')
     test "$pd_shell_path" == "/usr/local/bin/bash-dn-non-interactive-ros2"
 
     getent passwd root
