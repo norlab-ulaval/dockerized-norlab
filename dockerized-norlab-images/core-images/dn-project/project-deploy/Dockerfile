@@ -13,7 +13,7 @@ ARG BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
 ARG DN_DEV_TESTS=${DN_DEV_TESTS:-false}
 
 RUN <<EOF
-    n2st::print_msg "Pre-condition checks"
+    n2st::print_msg "Pre-condition checks..."
     {
         test $(whoami) == "root" && \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \

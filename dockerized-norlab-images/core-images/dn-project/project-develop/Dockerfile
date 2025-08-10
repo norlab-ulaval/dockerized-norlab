@@ -55,8 +55,8 @@ COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 
 
 RUN <<EOF
-    # ....Pre-condition checks.....................................................................
-    n2st::print_msg "Pre-condition checks"
+    # ....Pre-condition............................................................................
+    n2st::print_msg "Pre-condition checks..."
     {
         test $(whoami) == "root" &&  \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \

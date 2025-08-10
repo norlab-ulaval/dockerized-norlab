@@ -189,7 +189,7 @@ RUN <<EOF
         test -n "$( declare -f n2st::print_msg )" ;
     } || { echo "Failed non-interactive shell sanity check" ; exit 1 ; }
 
-    echo "(container-tools directory copy) Sanity check..."
+    n2st::print_msg "(container-tools directory copy) Sanity check..."
     {
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_wrapper/bash-dn-non-interactive-ros2 && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_wrapper/bash-dn-buildtime && \
@@ -198,9 +198,9 @@ RUN <<EOF
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ros2 && \
         test -f /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash ;
-    } || { echo "(container-tools directory copy) Sanity check failed" ; exit 1 ; }
+    } || n2st::print_msg_error_and_exit "(container-tools directory copy) Sanity check failed"
 
-    echo "(dn-container tools) Non-interactive shell sanity check. ok."
+    n2st::print_msg "(dn-container tools) Non-interactive shell sanity check. ok."
 EOF
 
 # ....Run time tests...............................................................................
@@ -220,9 +220,9 @@ RUN <<EOF
         test "$(type -t n2st::set_which_python3_version)" == "function" && \
         n2st::set_which_python3_version && \
         test -n "${PYTHON3_VERSION:?'Error: env variable PYTHON3_VERSION was not exported by script which_python_version.bash'}" ;
-    } || { echo "Failed interactive shell sanity check" ; exit 1 ; }
+    } || n2st::print_msg_error_and_exit "Failed interactive shell sanity check"
 
-    echo "(dn-container tools) interactive shell sanity check. ok."
+    n2st::print_msg "(dn-container tools) interactive shell sanity check. ok."
 EOF
 
 FROM dependencies AS final

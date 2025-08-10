@@ -84,7 +84,7 @@ function dn::cuda_squash_image_logic() {
 # =================================================================================================
 function dn::callback_execute_compose_pre() {
 
-  n2st::print_msg "Pre-condition checks"
+  n2st::print_msg "Pre-condition checks..."
   {
       test -n "${COMPOSE_FILE:?'Env variable need to be set and non-empty.'}" && \
       test -n "${OS_NAME:?'Env variable need to be set and non-empty.'}" && \
