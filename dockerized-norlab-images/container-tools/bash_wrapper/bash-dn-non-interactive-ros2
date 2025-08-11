@@ -1,0 +1,37 @@
+#!/bin/bash
+# =================================================================================================
+# Bash wrapper tailormade for the ssh server user used for remote IDE debugging.
+#
+# Usage in Dockerfile:
+#   SHELL ["/usr/local/bin/bash-dn-non-interactive-ros2", "-c"]
+#   RUN echo "command executed in bash-dn-non-interactive-ros2"
+#
+# Usage in script:
+#   $ usermod --shell /usr/local/bin/bash-dn-non-interactive-ros2 "${DN_SSH_SERVER_USER}"
+#
+# Options:
+#   any bash flag
+#
+# Positional argument:
+#   Instructions in RUN, CMD or ENTRYPOINT are passed to the '-c' flag.
+#
+# =================================================================================================
+function dn::bash_dn_ssh_server_user() {
+  local bash_run_config_root="/dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config"
+
+  # (CRITICAL) ToDo: on task NMO-774 end >> UN-mute next bloc ↓↓
+  export BASH_ENV="${bash_run_config_root}/.bashrc.dn_non_interactive_ros2"
+  test -f "${bash_run_config_root}/.bashrc.dn_non_interactive_ros2" || exit 1
+
+  # ....Execute commands...........................................................................
+  if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
+    echo -e "Executing $ \033[1;2mexec bash ${cmds[*]}${MSG_END_FORMAT}\033[0m"
+  fi
+
+  source "${bash_run_config_root}/.bashrc.dn_non_interactive_ros2" || exit 1
+
+  exec bash "$@" || return 1
+  return 0
+}
+
+dn::bash_dn_ssh_server_user "$@" || exit 1

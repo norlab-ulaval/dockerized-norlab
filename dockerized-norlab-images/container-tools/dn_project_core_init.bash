@@ -41,7 +41,8 @@ function dn::initialize_dockerized_norlab_project() {
 
     # (CRITICAL) ToDo: validate primary group change from 'DN_PROJECT_GID' to 'DN_PROJECT_USER' for
     # compatibility with macOs (ref task NMO-773).
-    useradd --uid "${DN_PROJECT_UID}" -g "${DN_PROJECT_USER}" --create-home "${DN_PROJECT_USER}"
+#    useradd --uid "${DN_PROJECT_UID}" -g "${DN_PROJECT_USER}" --create-home "${DN_PROJECT_USER}"
+    useradd --uid "${DN_PROJECT_UID}" --gid "${DN_PROJECT_GID}" --create-home "${DN_PROJECT_USER}"
 
     echo "${DN_PROJECT_USER} ALL=(root) NOPASSWD:ALL" >/etc/sudoers.d/"${DN_PROJECT_USER}"
     chmod 0440 "/etc/sudoers.d/${DN_PROJECT_USER}"
@@ -51,8 +52,9 @@ function dn::initialize_dockerized_norlab_project() {
     # Add the 'video' groups to new user as it's required for GPU access.
     # (not a problem on norlab-og but mandatory on Jetson device)
     # Ref: https://forums.developer.nvidia.com/t/how-to-properly-create-new-users/68660/2
-    usermod -a -G video,sudo "${DN_PROJECT_USER}"
-#    usermod --shell /bin/bash -a -G video,sudo "${DN_PROJECT_USER}"
+    # (CRITICAL) ToDo: validate setting the shell (NMO-774 fix: ssh daemon configuration)
+#    usermod -a -G video,sudo "${DN_PROJECT_USER}"
+    usermod --shell /bin/bash -a -G video,sudo "${DN_PROJECT_USER}"
   } || n2st::print_msg_error_and_exit "Failed new user ${DN_PROJECT_USER} setup!"
 
   # ....Setup project dev workspace................................................................

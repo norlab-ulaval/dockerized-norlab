@@ -36,6 +36,11 @@ Always comply with guidelines and instructions.
 - `utilities/tmp/dockerized-norlab-project-mock` is use for cloning a fresh copy of a mock "super project" from https://github.com/norlab-ulaval/dockerized-norlab-project-mock.git on test execution.
   `dockerized-norlab-project-mock` is a mock of how a user would install and uses DNP. We refer to this as a "super project" or the "user side".
 
+### Test execution scripts:
+- `tests/run_bats_core_test_in_n2st.bash`
+- `tests/run_all_dryrun_and_tests_scripts.bash` 
+- `tests/run_all_docker_dryrun_and_config_tests.bash`
+
 ## Repository Terminology
 
 CUDA: Is a parallel computing platform and application programming interface (API) that allows software to use certain types of graphics processing units (GPUs) for accelerated general-purpose processing, significantly broadening their utility in scientific and high-performance computing.

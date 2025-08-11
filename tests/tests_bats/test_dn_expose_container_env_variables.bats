@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-#
+# =================================================================================================
 # Usage in docker container
 #   $ REPO_ROOT=$(pwd) && RUN_TESTS_IN_DIR='tests'
 #   $ docker run -it --rm -v "$REPO_ROOT:/code" bats/bats:latest "$RUN_TESTS_IN_DIR"
@@ -12,11 +12,12 @@
 #   - https://opensource.com/article/19/2/testing-bash-bats
 #       ↳ https://github.com/dmlond/how_to_bats/blob/master/test/build.bats
 #
-# Helper library: 
+# Helper library:
 #   - https://github.com/bats-core/bats-assert
 #   - https://github.com/bats-core/bats-support
 #   - https://github.com/bats-core/bats-file
 #
+# =================================================================================================
 
 BATS_HELPER_PATH=/usr/lib/bats
 if [[ -d ${BATS_HELPER_PATH} ]]; then
@@ -126,7 +127,7 @@ function export_DN_container_env() {
     export NVIDIA_VISIBLE_DEVICES=all
     export NVIDIA_DRIVER_CAPABILITIES=graphics
     export TORCH_HOME=/data/models/torch
-    export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+#    export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
 #    export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
 
     # Display forwarding related env
@@ -142,7 +143,7 @@ function export_DN_container_env() {
     export DN_GDB_SERVER_PORT=7777
     export DN_PROJECT_GIT_NAME=dockerized-norlab-project-mock
     export DN_SSH_SERVER_PORT=2222
-    export DN_SSH_SERVER_USER=pycharm-debugger
+    export DN_SSH_SERVER_USER=non-interactive-ros2
     export DN_PROJECT_GIT_DOMAIN=norlab-ulaval
 
     export PYTHONUNBUFFERED=1
@@ -168,7 +169,7 @@ function show_DN_container_env() {
          -e NVIDIA_VISIBLE_DEVICES \
          -e NVIDIA_DRIVER_CAPABILITIES \
          -e TORCH_HOME \
-         -e PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION \
+#         -e PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION \
 #         -e LD_PRELOAD \
          -e DISPLAY \
          -e LIBGL_ALWAYS_INDIRECT \
@@ -234,7 +235,7 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_PYTHON_VERSION=3"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "NVIDIA_DRIVER_CAPABILITIES=graphics"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "TORCH_HOME=/data/models/torch"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp"
+#  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DOMAIN_ID=1"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_DEV_WORKSPACE=/ros2_ws_mock"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_PATH=/ros2_ws_mock/src/f1tenth-redleader-controller"
@@ -249,7 +250,7 @@ function show_DN_container_env() {
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DISPLAY=host.docker.internal:0"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_PORT=2222"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_LOCALHOST_ONLY=0"
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_USER=pycharm-debugger"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_SSH_SERVER_USER=non-interactive-ros2"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_ROOT=/opt/ros/foxy"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "DN_PROJECT_GIT_DOMAIN=norlab-ulaval"
   assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "ROS_DISTRO=foxy"
@@ -273,7 +274,8 @@ function show_DN_container_env() {
   assert_file_not_empty $DN_CONTAINER_EXPOSE_ENV_PATH
   more $DN_CONTAINER_EXPOSE_ENV_PATH  >&3
 
-  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=\${PYTHONPATH}:/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
+#  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=\${PYTHONPATH}:/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
+  assert_file_contains $DN_CONTAINER_EXPOSE_ENV_PATH "PYTHONPATH=/opt/ros/foxy/lib/python3.8/site-packages:/opt/ros/foxy/install/lib/python3.8/site-packages"
 
 }
 

@@ -21,7 +21,7 @@ services:
       # DISPLAY: "169.254.205.89:0.0"
       QT_X11_NO_MITSHM: 1
     ports:
-      - "2222:2222" # ssh pycharm-debugger
+      - "2222:2222" # ssh non-interactive-ros2
       - "6006:6006" # tensorboard
       - "7777:7777" # gdbserver
 

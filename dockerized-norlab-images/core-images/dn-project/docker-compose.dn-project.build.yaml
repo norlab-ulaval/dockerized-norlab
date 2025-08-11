@@ -46,6 +46,9 @@ services:
       args:
         BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
         BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
+        DN_SSH_SERVER_USER: dna-non-interactive-ros2
+        DN_SSH_SERVER_PORT: 2222
+        DN_GDB_SERVER_PORT: 7777
     depends_on:
       - project-core
 

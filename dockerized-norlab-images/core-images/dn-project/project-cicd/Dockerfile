@@ -6,7 +6,7 @@ FROM ${BASE_IMAGE:?err}:${BASE_IMAGE_TAG:?err} AS norlab-teamcity-cicd-setup
 SHELL ["/usr/local/bin/bash-dn-buildtime", "-c"]
 
 
-RUN echo "Pre-condition checks" && { \
+RUN echo "Pre-condition checks..." && { \
         test $(whoami) == "root" &&  \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
         test -d /home/${DN_PROJECT_USER} && \

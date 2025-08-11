@@ -69,8 +69,9 @@ RUN <<EOF
 
     apt-get update || exit 1
 
-    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
-    dn::source_ros2_underlay_only || exit 1
+    echo "Source ROS2 underlay only..."
+    echo "sourcing /opt/ros/${ROS_DISTRO:?err}/setup.bash"
+    source /opt/ros/${ROS_DISTRO}/setup.bash
 
     rosdep update --rosdistro ${ROS_DISTRO:?err} || exit 1
     rosdep fix-permissions
@@ -110,15 +111,14 @@ EOF
 
 FROM ros2-custom-install AS test
 
-# Note: ROS2 distro should be sourced automaticaly via our .bashrc.dn_non_interactive setup
 RUN <<EOF
-    echo "(ROS2 sourcing) Non-interactive shell sanity check. Validate .bashrc.dn_non_interactive logic..."
+    echo "(ROS2 sourcing) Non-interactive shell sanity check..."
 
-    echo -e "\nLog .bashrc.dn_non_interactive state\n"
-    cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
-
-    test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
-    dn::source_ros2 || exit 1
+    echo "Source both ROS2 underlay and overlay..."
+    echo "sourcing /opt/ros/${ROS_DISTRO:?err}/setup.bash"
+    source /opt/ros/${ROS_DISTRO}/setup.bash
+    echo "sourcing ${DN_DEV_WORKSPACE:?err}/install/setup.bash"
+    source ${DN_DEV_WORKSPACE}/install/setup.bash
 
     echo -e "\nPre-condition check...\n"
     {
@@ -141,40 +141,6 @@ RUN <<EOF
     } ||  exit 1
 
     echo "(ROS2 sourcing) Non-interactive shell sanity check ok."
-EOF
-
-# Note: ROS2 distro should be sourced automaticaly via our .bashrc.dn_non_interactive setup
-SHELL ["/bin/bash", "-i", "-c"]
-RUN <<EOF
-    echo "(ROS2 sourcing) Interactive shell sanity check. Validate .bashrc.dn logic..."
-
-    echo -e "\nLog .bashrc.dn state\n"
-    cat /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn
-
-    test -n "$( declare -f dn::source_ros2 )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
-    dn::source_ros2 || exit 1
-
-    echo -e "\nPre-condition check...\n"
-    {
-        test -n ${ROS_VERSION:?'Build argument needs to be set and non-empty.'} && \
-        test -n ${ROS_PYTHON_VERSION:?'Build argument needs to be set and non-empty.'} && \
-        test -n ${ROS_DISTRO:?'Build argument needs to be set and non-empty.'} && \
-        test -n ${AMENT_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
-        test -n ${COLCON_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
-        test -n ${PYTHONPATH:?'Build argument needs to be set and non-empty.'} ;
-    } || exit 1
-        #    test -n ${CMAKE_PREFIX_PATH:?'Build argument needs to be set and non-empty.'} && \
-
-    echo -e "\nCheck ros2 is available...\n"
-    {
-        python -c "import rclpy" && \
-        ros2 pkg list && \
-        test -n "$(ros2 pkg list | grep -e ros_core)" &&  \
-        test -n "$(ros2 pkg list | grep -e rclpy)" &&  \
-        test -n "$(ros2 pkg list | grep -e ackermann_msgs)" ;
-    } ||  exit 1
-
-    echo "(ROS2 sourcing) Interactive shell sanity check ok."
 EOF
 
 

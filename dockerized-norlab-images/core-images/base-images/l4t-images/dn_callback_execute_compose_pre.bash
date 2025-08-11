@@ -25,7 +25,7 @@ declare -x DN_IMAGE_TAG_NO_ROS
 # =================================================================================================
 function dn::callback_execute_compose_pre() {
 
-    n2st::print_msg "Pre-condition checks"
+    n2st::print_msg "Pre-condition checks..."
     {
         test -n "${OS_NAME:?'Env variable need to be set and non-empty.'}" && \
         test -n "${TAG_OS_VERSION:?'Env variable need to be set and non-empty.'}" && \

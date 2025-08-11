@@ -13,7 +13,7 @@ ARG BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
 ARG DN_DEV_TESTS=${DN_DEV_TESTS:-false}
 
 RUN <<EOF
-    n2st::print_msg "Pre-condition checks"
+    n2st::print_msg "Pre-condition checks..."
     {
         test $(whoami) == "root" && \
         test -n ${DN_PROJECT_USER:?'Env variable need to be set and non-empty.'} && \
@@ -213,6 +213,9 @@ RUN <<EOF
       echo "# >>> dockerized-norlab project-deploy"
       echo "# Dockerized-NorLab aliases (from project-deploy img)"
       echo "alias dn-info='source /dockerized-norlab/dockerized-norlab-images/container-tools/dn_info.bash'"
+      echo "alias dn-source-ros2='dn::source_ros2'"
+      echo "alias dn-source-ros2-underlay-only='dn::source_ros2_underlay_only'"
+      echo "alias dn-source-ros2-overlay-only='dn::source_ros2_overlay_only'"
       echo "# <<< dockerized-norlab project-deploy"
       echo ""
     ) >> /dockerized-norlab/dockerized-norlab-images/container-tools/dn_bash_alias.bash
