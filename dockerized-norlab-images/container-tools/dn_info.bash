@@ -65,7 +65,8 @@ function dn::show_container_runtime_information() {
   n2st::set_which_python3_version
   DN_PYTHON3_VERSION=${PYTHON3_VERSION?err}
 
-  # ToDo: NMO-669 refactor: replace DN_IMAGE_ARCHITECTURE by DN_HOST which is declare in DN-project
+  # ToDo: NMO-669 refactor: consider replacing DN_IMAGE_ARCHITECTURE by DN_HOST which is declare in DN-project
+  # ToDo: NMO-669 what's the point of DN_HOST ... which is declare in DN-project ... its not used nowhere
   n2st::set_which_architecture_and_os
   DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err}
 
