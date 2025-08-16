@@ -37,10 +37,10 @@ else
   n2st::print_msg_warning "dn_entrypoint.global.init.callback.bash unavailable"
 fi
 
-if [[ -f /project_entrypoints/project-develop/dn_entrypoint.init.callback.bash ]]; then
-  source /project_entrypoints/project-develop/dn_entrypoint.init.callback.bash || exit 1
+if [[ -f /project_entrypoints/project-deploy/dn_entrypoint.init.callback.bash ]]; then
+  source /project_entrypoints/project-deploy/dn_entrypoint.init.callback.bash || exit 1
 else
-  n2st::print_msg_warning "project-develop/dn_entrypoint.init.callback.bash unavailable"
+  n2st::print_msg_warning "project-deploy/dn_entrypoint.init.callback.bash unavailable"
 fi
 
 # ....Release......................................................................................
