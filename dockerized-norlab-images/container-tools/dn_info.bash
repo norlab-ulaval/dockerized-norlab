@@ -101,7 +101,7 @@ ${_sp}RMW_IMPLEMENTATION:          ${RMW_IMPLEMENTATION}${MSG_END_FORMAT}"
 ${_sp}python3 version:             ${DN_PYTHON3_VERSION}
 ${_sp}numpy version:               $(echo "${PKG_VERSION}" | grep numpy== | sed 's/numpy==//g')
 ${_sp}pyTorch version:             $(echo "${PKG_VERSION}" | grep -w torch | sed 's/torch==//g')
-${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')π
+${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')
 ${_sp}LLVMlite version:            $(echo "${PKG_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')${MSG_END_FORMAT}"
 
   # ....Prompt customisation.......................................................................
