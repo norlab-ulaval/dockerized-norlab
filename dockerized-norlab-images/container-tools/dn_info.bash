@@ -65,7 +65,8 @@ function dn::show_container_runtime_information() {
   n2st::set_which_python3_version
   DN_PYTHON3_VERSION=${PYTHON3_VERSION?err}
 
-  # ToDo: NMO-669 refactor: replace DN_IMAGE_ARCHITECTURE by DN_HOST which is declare in DN-project
+  # ToDo: NMO-669 refactor: consider replacing DN_IMAGE_ARCHITECTURE by DN_HOST which is declare in DN-project
+  # ToDo: NMO-669 what's the point of DN_HOST ... which is declare in DN-project ... its not used nowhere
   n2st::set_which_architecture_and_os
   DN_IMAGE_ARCHITECTURE=${IMAGE_ARCH_AND_OS:?err}
 
@@ -100,7 +101,7 @@ ${_sp}RMW_IMPLEMENTATION:          ${RMW_IMPLEMENTATION}${MSG_END_FORMAT}"
 ${_sp}python3 version:             ${DN_PYTHON3_VERSION}
 ${_sp}numpy version:               $(echo "${PKG_VERSION}" | grep numpy== | sed 's/numpy==//g')
 ${_sp}pyTorch version:             $(echo "${PKG_VERSION}" | grep -w torch | sed 's/torch==//g')
-${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')π
+${_sp}numba version:               $(echo "${PKG_VERSION}" | grep numba | sed 's/numba==//g')
 ${_sp}LLVMlite version:            $(echo "${PKG_VERSION}" | grep llvmlite | sed 's/llvmlite==//g')${MSG_END_FORMAT}"
 
   # ....Prompt customisation.......................................................................

@@ -33,10 +33,8 @@ _SETUP_DEBUGGER_USER=${1:-true}
 _SETUP_DEBUG_PROJECT_TMP_DIR=${2:-true}
 
 # ....Source project shell-scripts dependencies....................................................
-# (CRITICAL) ToDo: assess adding this line (ref task NMO-768) ↓
-#unset BASH_ENV
 
-# (CRITICAL) ToDo: assess deleting those lines (ref task NMO-768) ↓
+# (NICE TO HAVE) ToDo: assess deleting those lines ↓
 cd /dockerized-norlab/dockerized-norlab-images/container-tools || exit 1
 source import_dockerized_norlab_container_tools.bash
 

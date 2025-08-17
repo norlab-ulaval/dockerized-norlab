@@ -37,23 +37,6 @@ ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 
-### (CRITICAL) ToDo: on DEV ⚠️ task NMO-768 end >> delete this bloc ↓↓
-##COPY --from=context-dn-container-tools ./.bashrc.dn_non_interactive ./.bashrc.dn_non_interactive
-##COPY --from=context-dn-container-tools ./.bashrc.dn ./.bashrc.dn
-#COPY --from=context-dn-container-tools ./import_dockerized_norlab_container_tools.bash /import_dockerized_norlab_container_tools.bash
-#RUN <<EOF
-#  # ⚠️ DEV TMP -> mod .bashrc.dn_non_interactive without rebuilding depenencies images
-#  echo "unset BASH_ENV" >> /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive
-#
-#  echo "Introspec .bashrc.dn_non_interactive ..."
-#  cat ./.bashrc.dn_non_interactive
-#  echo
-#  echo "Introspec .bashrc.dn ..."
-#  cat ./.bashrc.dn
-#  echo
-#EOF
-
-
 RUN <<EOF
     # ....Pre-condition............................................................................
     n2st::print_msg "Pre-condition checks..."
@@ -179,29 +162,12 @@ RUN <<EOF
     echo "id ${DN_SSH_SERVER_USER}: $(id "${DN_SSH_SERVER_USER}")"
     echo
 
-    # (CRITICAL) ToDo: validate (ref task TASK)
-    getent passwd redleader
-
     echo "Check non-interactive-ros2..."
     pd_shell_path=$(getent passwd ${DN_SSH_SERVER_USER} | awk -F: '{print $7}')
     test "$pd_shell_path" == "/usr/local/bin/bash-dn-non-interactive-ros2"
 
-    getent passwd root
 
 EOF
-
-## (CRITICAL) ToDo: on task NMO-774 end >> delete this bloc ↓↓
-#COPY --from=context-dn-container-tools ./bash_run_config/.bashrc.dn_non_interactive_ros2 /dockerized-norlab/dockerized-norlab-images/container-tools/bash_run_config/.bashrc.dn_non_interactive_ros2
-#COPY --from=context-dn-container-tools ./bash_wrapper/bash-dn-non-interactive-ros2 /usr/local/bin/bash-dn-non-interactive-ros2
-#RUN <<EOF
-#    # ////Note: Relevant code copied from DN for DEBUG purposes ⬇︎/////////////////////////////////
-#    echo "Configure bash wrappers..."
-##    chmod +x /usr/local/bin/bash-dn-buildtime
-#    chmod +x /usr/local/bin/bash-dn-non-interactive-ros2
-#    echo "Activate DN build time non-interactive shell: /bin/bash -> /usr/local/bin/bash-dn-buildtime ..."
-#
-#    chown -R "${DN_PROJECT_UID:?err}":"${DN_PROJECT_GID:?err}" "${DN_PATH:?err}"
-#EOF
 
 
 FROM dockerized-norlab-project-internal AS test-ssh-user
