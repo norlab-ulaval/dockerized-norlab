@@ -58,8 +58,6 @@ RUN <<EOF
     # Note: fix openai gym + f110 gym install error
     #   See "ERROR: Failed building wheel for gym" https://github.com/freqtrade/freqtrade/issues/8376#issuecomment-1520844382
     # Note: pip<24.1 is required for backward compatibility
-    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
-    #pip3 install --upgrade \
     pip3 install --no-cache-dir \
         'pip<24.1' \
         'wheel==0.38.4' \
@@ -84,8 +82,6 @@ RUN <<EOF
 
     # Quick hack to fix `ImportError: Can't find framework /System/Library/Frameworks/OpenGL.framework.`
     # See known issues comment https://github.com/f1tenth/f1tenth_gym
-    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
-    #pip3 install --no-cache-dir --upgrade 'pyglet<1.5.11'
 #    pip3 install --no-cache-dir 'pyglet<1.5.11'
     pip3 install --no-cache-dir 'pyglet==1.5.20'
     #pip3 install --no-cache-dir --upgrade 'pyglet!=1.5.11'

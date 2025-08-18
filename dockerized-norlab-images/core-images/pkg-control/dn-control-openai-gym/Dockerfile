@@ -44,8 +44,6 @@ RUN <<EOF
     # ....Pip install..............................................................................
     pip3 install --no-cache-dir --upgrade pip
 
-    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
-    #pip3 install --no-cache-dir --upgrade Cython \
     #pip3 install --no-cache-dir Cython \
     #echo "Install >>> pip cython $( pip list | grep -i cython )..."
 
@@ -59,8 +57,6 @@ RUN <<EOF
 
     echo "(pip) Install OpenAI gym dependencies..."
     # Note: OpenAI gym is not compatible with numpy 2.0, so pin to earlier version ⚠️
-    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
-    #pip3 install --upgrade \
     pip3 install --no-cache-dir \
         'numpy<2.0.0' \
         || exit 1

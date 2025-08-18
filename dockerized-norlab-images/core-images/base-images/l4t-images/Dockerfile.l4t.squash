@@ -251,8 +251,6 @@ RUN <<EOF
     # ....Install python utilities..................................................................
     python3 -m pip install --upgrade pip
 
-    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
-    #pip3 install --upgrade --no-cache-dir \
     pip3 install --no-cache-dir \
         wheel \
         setuptools \

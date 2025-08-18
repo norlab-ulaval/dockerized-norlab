@@ -178,8 +178,6 @@ RUN <<EOF
     #  - this is needed to build some of the ROS2 packages
     #  - use pip to upgrade cmake instead because of kitware's rotating GPG keys:
     # Source https://github.com/dusty-nv/jetson-containers/issues/216
-    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
-    #pip3 install --upgrade --no-cache-dir cmake || exit 1
     pip3 install --no-cache-dir cmake || exit 1
 
     # ....Teardown.................................................................................
@@ -244,8 +242,6 @@ RUN <<EOF
     echo "Install python testing tools..."
     # Note: pip 'flake8-blind-except' version
     #       ref https://github.com/ros2/examples/issues/325#issuecomment-936131710
-    # (CRITICAL) ToDo: Validate droping the upgrade flag (ref task NMO-768)
-    #pip3 install --upgrade --no-cache-dir \
     pip3 install --no-cache-dir \
         flake8-blind-except==0.1.1 \
         flake8-builtins \

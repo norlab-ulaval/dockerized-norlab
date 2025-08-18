@@ -5,9 +5,9 @@ set -e  # exit script if any statement returns a non-true return value
 
 # ====DN-project internal logic====================================================================
 
-# ....Load library.................................................................................π
+# ....Load library.................................................................................
 if [[ ${DN_ENTRYPOINT_TRACE_EXECUTION} == true ]]; then
-  echo -e "\033[1;33m[DN trace]\033[0m Execute dn_entrypoint.attach.bash"
+  echo -e "\033[1;33m[DN trace]\033[0m Execute project-develop/dn_entrypoint.attach.bash"
 fi
 
 if [[ $- == *i* ]] || [[ -n "$PS1" ]]; then
