@@ -111,7 +111,7 @@ or${MSG_DIMMED_FORMAT} Powerline10k${MSG_END_FORMAT} be installed on the host te
 the environment variable in ${MSG_DIMMED_FORMAT}DN_ACTIVATE_POWERLINE_PROMT=false${MSG_END_FORMAT} in .dockerized_norlab/configuration/.env.dna
 or pass the following flags to ${MSG_DIMMED_FORMAT}dna up${MSG_END_FORMAT} or ${MSG_DIMMED_FORMAT}dna exec${MSG_END_FORMAT} when connecting to a running container:
 ${MSG_DIMMED_FORMAT}
-${_sp}${_sp}$ dna [up|exec] --env=\"DN_ACTIVATE_POWERLINE_PROMT=false\" -- bash
+${_sp}${_sp}$ dna [up|exec] --env \"DN_ACTIVATE_POWERLINE_PROMT=false\" -- bash
 ${MSG_END_FORMAT}"
 
   # ....Service specific (project-develop) ........................................................
