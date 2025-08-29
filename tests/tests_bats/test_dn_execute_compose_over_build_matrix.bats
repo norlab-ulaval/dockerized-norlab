@@ -310,7 +310,7 @@ setup() {
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r35.4.1'
 #  set -e
-  assert_output --regexp .*"\[".*"DN-build-system error".*"\]".*"The DN 'latest' tag was set but the current checkout branch is not the 'main' branch."
+  assert_output --regexp .*"\[".*"DN-build-system warning".*"\]".*"The DN 'latest' tag was set but the current checkout branch is not the 'main' branch:"
 }
 
 @test "--force-push 'bleeding' tag sanity check ok" {
@@ -328,7 +328,7 @@ setup() {
                                       --os-name-build-matrix-override 'l4t' \
                                       --l4t-version-build-matrix-override 'r35.4.1'
 #  set -e
-  assert_output --regexp .*"\[".*"DN-build-system error".*"\]".*"The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch."
+  assert_output --regexp .*"\[".*"DN-build-system warning".*"\]".*"The DN 'bleeding' tag was set but the current checkout branch is not the 'dev' branch:"
 }
 
 @test "flag --force-push is passed to dn_execute_compose.bash" {
