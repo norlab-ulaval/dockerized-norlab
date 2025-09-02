@@ -119,55 +119,55 @@ RUN <<EOF
 
 EOF
 
-
-# ....Project specific ROS setup..................................................................
-WORKDIR ${DN_DEV_WORKSPACE}
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-
-RUN <<EOF
-    apt-get update
-
-    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
-    dn::source_ros2_underlay_only || exit 1
-
-    n2st::print_msg "Execute rosdep update..."
-    rosdep update --rosdistro ${ROS_DISTRO} || n2st::print_msg_error_and_exit "Failed rosdep update!"
-    rosdep fix-permissions
-
-    n2st::print_msg "Execute rosdep install..."
-    rosdep install \
-        --ignore-packages-from-source \
-        --from-path ./src  \
-        --rosdistro ${ROS_DISTRO} \
-        -q \
-        -y \
-    || n2st::print_msg_error_and_exit "Failed rosdep install!"
-
-    COLCON_FLAGS=()
-    if [[ "${TARGETPLATFORM:?err}" != "${BUILDPLATFORM:?err}" ]]; then
-      n2st::print_msg "Builder is running in architecture virtualisation"
-      COLCON_FLAGS+=("--executor" "sequential")
-    else
-        n2st::print_msg "Builder is running on native architecture"
-        COLCON_FLAGS+=("--symlink-install")
-    fi
-
-    COLCON_FLAGS+=(
-        "--cmake-clean-cache"
-        "--cmake-args" "-DCMAKE_BUILD_TYPE=Release"
-        "--event-handlers" "console_direct+"
-    )
-    n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
-
-    n2st::print_msg "Execute colcon build..."
-    colcon build ${COLCON_FLAGS[@]} || n2st::print_msg_error_and_exit "Failed colcon build!"
-
-    # ....Teardown.................................................................................
-    apt-get autoremove --assume-yes
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-EOF
+# ToDo: validate "dna build deploy" works ok >> on task end  >> delete next bloc ↓↓
+## ....Project specific ROS setup..................................................................
+#WORKDIR ${DN_DEV_WORKSPACE}
+#ARG TARGETPLATFORM
+#ARG BUILDPLATFORM
+#
+#RUN <<EOF
+#    apt-get update
+#
+#    test -n "$( declare -f dn::source_ros2_underlay_only )" || { echo -e "\033[1;31m[DN error]\033[0m The DN lib is not loaded!" 1>&2 && exit 1; }
+#    dn::source_ros2_underlay_only || exit 1
+#
+#    n2st::print_msg "Execute rosdep update..."
+#    rosdep update --rosdistro ${ROS_DISTRO} || n2st::print_msg_error_and_exit "Failed rosdep update!"
+#    rosdep fix-permissions
+#
+#    n2st::print_msg "Execute rosdep install..."
+#    rosdep install \
+#        --ignore-packages-from-source \
+#        --from-path ./src  \
+#        --rosdistro ${ROS_DISTRO} \
+#        -q \
+#        -y \
+#    || n2st::print_msg_error_and_exit "Failed rosdep install!"
+#
+#    COLCON_FLAGS=()
+#    if [[ "${TARGETPLATFORM:?err}" != "${BUILDPLATFORM:?err}" ]]; then
+#      n2st::print_msg "Builder is running in architecture virtualisation"
+#      COLCON_FLAGS+=("--executor" "sequential")
+#    else
+#        n2st::print_msg "Builder is running on native architecture"
+#        COLCON_FLAGS+=("--symlink-install")
+#    fi
+#
+#    COLCON_FLAGS+=(
+#        "--cmake-clean-cache"
+#        "--cmake-args" "-DCMAKE_BUILD_TYPE=Release"
+#        "--event-handlers" "console_direct+"
+#    )
+#    n2st::print_msg "COLCON_FLAGS=("${COLCON_FLAGS[*]}")"
+#
+#    n2st::print_msg "Execute colcon build..."
+#    colcon build ${COLCON_FLAGS[@]} || n2st::print_msg_error_and_exit "Failed colcon build!"
+#
+#    # ....Teardown.................................................................................
+#    apt-get autoremove --assume-yes
+#    apt-get clean
+#    rm -rf /var/lib/apt/lists/*
+#EOF
 
 # ToDo: refactor project-develop/Dockerfile the project-specific-ros-setup stage as a standalone
 #script that can be executed by project-deploy (ref task NMO-558)
