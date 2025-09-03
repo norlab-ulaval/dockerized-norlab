@@ -4,19 +4,19 @@
 # colcon build system for ROS (Robot Operating System).
 #
 # Usage:
-#         $ source dn_ros2_rebuild_dev_workspace.bash ["virtualization|native"]
+#         $ source dn_ros2_rebuild_dev_workspace.bash [ARCH_TYPE [PARAM_COLCON_BUILD_FLAGS]]
 #
 # Arguments:
-#         PARAM_ARCH:  (optional) The architecture type, could be 'native' or 'virtualization'.
-#                      Default to 'native'
+#   ARCH_TYPE:           The host architecture type, either 'native' or 'virtualization'
+#                        (Default to 'native').
+#   PARAM_COLCON_BUILD_FLAGS:  Any legal colcon build flags
 #
 # Globals:
-#   Read:
-#         DN_DEV_WORKSPACE: Path to the development workspace.
-#         ROS_DISTRO: Name of the ROS distribution to use.
+#   read DN_DEV_WORKSPACE: Path to the development workspace.
+#   read ROS_DISTRO: Name of the ROS distribution to use.
 #
 # Outputs:
-#         Writes the build status, error messages and logs to stdout.
+#   Writes the build status, error messages and logs to stdout.
 #
 # =================================================================================================
 set -e
@@ -29,6 +29,8 @@ pushd "$(pwd)" >/dev/null || exit 1
 
 # ....Set argument.................................................................................
 PARAM_ARCH=${1:-"native"}
+shift
+PARAM_COLCON_BUILD_FLAGS=( "$@" )
 
 # ....Check pre-conditions.......................................................................
 {
@@ -49,7 +51,7 @@ sudo apt-get update
 echo
 n2st::draw_horizontal_line_across_the_terminal_window "."
 
-ROSDEP_UPDATE_FLAGS=("--rosdistro" "${ROS_DISTRO}" "--include-eol-distros")
+ROSDEP_UPDATE_FLAGS=("--rosdistro" "${ROS_DISTRO}")
 n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}rosdep update ${ROSDEP_UPDATE_FLAGS[*]}${MSG_END_FORMAT}...\n"
 rosdep update "${ROSDEP_UPDATE_FLAGS[@]}" || n2st::print_msg_error_and_exit "Failed rosdep update!"
 echo
@@ -61,8 +63,8 @@ rosdep fix-permissions
 echo
 n2st::draw_horizontal_line_across_the_terminal_window "."
 
-# Note on rosdep install: looks at all the packages in the src directory and tries to find
-# and install their dependencies on your platform.
+# Note on rosdep install: looks at all the packages in the "$DN_DEV_WORKSPACE/src" directory and
+# tries to find and install their dependencies.
 ROSDEP_FLAGS=("--ignore-packages-from-source")
 ROSDEP_FLAGS+=("--from-paths" "./src")
 ROSDEP_FLAGS+=("--rosdistro" "${ROS_DISTRO}")
@@ -94,6 +96,7 @@ COLCON_FLAGS+=(
   "--cmake-args" "-DCMAKE_BUILD_TYPE=Release"
   "--event-handlers" "console_direct+"
 )
+COLCON_FLAGS+=( "${PARAM_COLCON_BUILD_FLAGS[@]}" )
 n2st::print_msg "Execute ${MSG_DIMMED_FORMAT}colcon build ${COLCON_FLAGS[*]}${MSG_END_FORMAT}...\n"
 colcon build "${COLCON_FLAGS[@]}" || n2st::print_msg_error_and_exit "Failed colcon build!"
 n2st::draw_horizontal_line_across_the_terminal_window "."

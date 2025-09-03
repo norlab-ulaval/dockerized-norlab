@@ -11,15 +11,15 @@ Refer to the [Features](../README.md#features) section in the README.md for deta
 
 Refer to the [Why](../README.md#why) section in the README.md for details.
 
-## Prime directive:
-
-Always comply with guidelines and instructions.
-
 ## Repository Guidelines Instructions
 
-- First, review _A2G Framework Guidelines_ specified in
-  `.junie/ai_agent_guidelines/guidelines.a2g_framework.md` for additional guidelines.
-- Then proceed with the remaining repository guidelines instructions.
+1. First, review and learn _A2G Framework Guidelines_ specified in
+  `.junie/ai_agent_guidelines/guidelines.a2g_framework.md`.
+2. Then review the remaining repository guidelines below.
+
+## Prime directive:
+
+Always comply with _A2G Framework Guidelines_, _Repository Guidelines_ and _AI operator_ instructions.
 
 ## Repository Organization
 
@@ -45,3 +45,7 @@ Always comply with guidelines and instructions.
 
 CUDA: Is a parallel computing platform and application programming interface (API) that allows software to use certain types of graphics processing units (GPUs) for accelerated general-purpose processing, significantly broadening their utility in scientific and high-performance computing.
 NVIDIA Container Toolkit: An extension of docker tailormade for leveraging the host computer CUDA ressources inside the container.
+
+## Repository Specific Additional Guidelines
+
+Proceed with _AI operator_ instructions

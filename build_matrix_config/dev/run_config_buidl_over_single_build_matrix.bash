@@ -76,7 +76,7 @@ function buidl_over_single_build_matrix() {
 #  export BUILDX_BUILDER=local-builder-multiarch-virtual
 #  export BUILDX_BUILDER=remote-norlab-cicd-builder-multiarch-native
   #export DOCKER_CONTEXT=desktop-linux
-  export BUILDKIT_PROGRESS=plain
+#  export BUILDKIT_PROGRESS=plain
 
   # ....Begin......................................................................................
   export NBS_OVERRIDE_ADD_DOCKER_CMD_AND_FLAG="${docker_flag[@]}"
