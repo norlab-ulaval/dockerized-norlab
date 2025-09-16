@@ -79,7 +79,7 @@ RUN <<EOF
     else
         # ....Build time sanity check .............................................................
         test "$( basename $( git remote get-url origin ) .git )" == "${DN_PROJECT_GIT_NAME}" || n2st::print_msg_error_and_exit "'git remote get-url origin' should point to  ${DN_PROJECT_GIT_NAME} but it point to '$( git remote get-url origin )'"
-        test "$(git branch --show-current)" == "${DN_PROJECT_DEPLOY_REPO_BRANCH999}" || {
+        test "$(git branch --show-current)" == "${DN_PROJECT_DEPLOY_REPO_BRANCH}" || {
           n2st::print_msg_error "$(git branch --show-current) != ${DN_PROJECT_DEPLOY_REPO_BRANCH}" && \
           n2st::print_msg_error "Note on git checkout faillure: If you experience problem checking out a tag, use prefix 'tags/<my-tags-name>' e.g.: DN_PROJECT_DEPLOY_REPO_BRANCH=\"tags/v0.0.1\" in your .dockerized_norlab_project/configuration/.env file" && \
           exit 1
