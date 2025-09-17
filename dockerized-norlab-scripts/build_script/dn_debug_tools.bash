@@ -72,7 +72,6 @@ function dn::show_debug_build_information() {
   echo -e "===============================================================================================\n"
   echo "DN_IMAGE_TAG=$(printenv DN_IMAGE_TAG)"
   echo "DN_PROJECT_GID=$(printenv DN_PROJECT_GID)"
-  echo "DN_PROJECT_DEPLOY_REPO_BRANCH=$(printenv DN_PROJECT_DEPLOY_REPO_BRANCH)"
   echo "DN_PROJECT_COMPOSE_NAME=$(printenv DN_PROJECT_COMPOSE_NAME)"
   echo "DN_PROJECT_UID=$(printenv DN_PROJECT_UID)"
   echo "DN_CONTAINER_NAME=$(printenv DN_CONTAINER_NAME)"
