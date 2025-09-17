@@ -91,9 +91,7 @@ services:
       args:
         BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
         BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
-        DN_PROJECT_DEPLOY_REPO_BRANCH: ${DN_PROJECT_DEPLOY_REPO_BRANCH:?err}  # Option: main, dev or tag version (ie v*.*.*)
         BUILDKIT_CONTEXT_KEEP_GIT_DIR: 1
-        DN_DEPLOY_TESTS: true
     depends_on:
       - project-core
 
