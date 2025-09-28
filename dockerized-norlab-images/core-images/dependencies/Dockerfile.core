@@ -56,7 +56,6 @@ RUN <<EOF
         usbutils \
         iputils-ping \
         bash-completion \
-        python3-argcomplete \
         vim \
         tree \
         zip gzip tar unzip \
@@ -80,6 +79,7 @@ RUN <<EOF
         tqdm \
         rich \
         python-dotenv \
+        argcomplete \
       || exit 1
 
     # ....install python general development packages..................................................
