@@ -138,14 +138,10 @@ RUN <<EOF
         libpython3-dev ;
     } || exit 1
 
-    # (Priority) ToDo: validate removing deb installed setuptools >> this line ↓
-    #    python3-setuptools \
-
     {
       python3 -m pip install --upgrade pip && \
       pip3 install --no-cache-dir  \
             argcomplete \
-            distutils \
             scikit-build \
             six \
             vcstools \
@@ -153,6 +149,8 @@ RUN <<EOF
             pygments \
             msgpack ;
     } || exit 1
+    # Note: 'distutils' is deprecated since python 3.10 and removed as of python 3.12.
+    #       Use 'standard-distutils' if backward compatibility is required.
 
     # Fix setuptools compatibility issues for colcon build
     if [[ "${UBUNTU_DISTRO_RELEASE}" == "20.04" ]]; then
@@ -200,8 +198,7 @@ RUN <<EOF
       apt-get update && \
       apt-get upgrade --assume-yes && \
       apt-get install --assume-yes --no-install-recommends \
-            ros-${ROS_DISTRO}-${ROS_PKG} \
-            python3-rosdep ;
+            ros-${ROS_DISTRO}-${ROS_PKG} ;
      } || exit 1
 
     echo "Manualy installed recommendation from '$ apt-get install ros-${ROS_DISTRO}-${ROS_PKG}'..."
@@ -218,9 +215,8 @@ RUN <<EOF
       || exit 1
 
     pip3 install --no-cache-dir \
-        pil \
-        bs4 \
-        html5lib \
+        rosdep \
+        pillow \
         colcon-common-extensions \
         colcon-mixin \
       || exit 1
@@ -243,10 +239,7 @@ RUN <<EOF
       || exit 1
 
     echo "Install python testing tools..."
-    # Note: pip 'flake8-blind-except' version
-    #       ref https://github.com/ros2/examples/issues/325#issuecomment-936131710
     pip3 install --no-cache-dir \
-        flake8-blind-except==0.1.1 \
         flake8-builtins \
         flake8-class-newline \
         flake8-comprehensions \
