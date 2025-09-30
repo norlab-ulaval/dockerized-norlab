@@ -139,6 +139,9 @@ RUN pip3 install --no-cache-dir  \
 
 RUN pip3 install --no-cache-dir --ignore-installed pybind11
 
+# Explicitly install matplotlib and its required module tkinter (required on arm64)
+RUN pip3 install --no-cache-dir matplotlib tk
+
 # ...Configure Matplotlib to use a non-interactive backends for TeamCity run............................................
 # Procedure to fix NLSAR-343 ﹅→ `ModuleNotFoundError` when using pyplot & `couldn't connect to display`
 # Solution: install python3-tk and configure matplotlib to use a non-interactive backend in TeamCity
@@ -152,13 +155,6 @@ RUN pip3 install --no-cache-dir --ignore-installed pybind11
 ## Option 2: Set the MPLBACKEND environment variable manualy in the TeamCity build step
 #export MPLBACKEND="Agg"
 #python3 -m pytest tests/
-
-# Hack to install matplotlib on arm64 and it's required module tkinter
-RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends \
-      python3-matplotlib \
-      python3-tk \
-    && rm -rf /var/lib/apt/lists/*
 
 
 CMD [ "bash" ]
