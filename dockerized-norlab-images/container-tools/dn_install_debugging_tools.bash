@@ -110,7 +110,7 @@ function dn::setup_debugging_tools() {
 
   n2st::print_msg_warning "Be advised, the ssh daemon still need to be started.
   Curently its done by 'dn_entrypoint.global.init.callback.bash'.
-  Ref 'dockerized-norlab-images/core-images/dn-project/project-core/project_entrypoints'.
+  Ref 'dockerized-norlab-images/core-images/dn-project/project-core/entrypoints'.
   "
 
   # ....Set password for users.......................................................................

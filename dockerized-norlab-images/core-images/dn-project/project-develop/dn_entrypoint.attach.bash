@@ -28,16 +28,16 @@ test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[DN error]\033
 
 # ....Execute DN-project user callback.............................................................
 # Sanity check
-test -d "/project_entrypoints" || n2st::print_msg_error_and_exit "Dir /project_entrypoints is unreachable"
+test -d "/entrypoints" || n2st::print_msg_error_and_exit "Dir /entrypoints is unreachable"
 
-if [[ -f /project_entrypoints/dn_entrypoint.global.attach.callback.bash ]]; then
-  source /project_entrypoints/dn_entrypoint.global.attach.callback.bash || exit 1
+if [[ -f /entrypoints/dn_entrypoint.global.attach.callback.bash ]]; then
+  source /entrypoints/dn_entrypoint.global.attach.callback.bash || exit 1
 else
   n2st::print_msg_warning "dn_entrypoint.global.attach.callback.bash unavailable"
 fi
 
-if [[ -f /project_entrypoints/project-develop/dn_entrypoint.attach.callback.bash ]]; then
-  source /project_entrypoints/project-develop/dn_entrypoint.attach.callback.bash || exit 1
+if [[ -f /entrypoints/project-develop/dn_entrypoint.attach.callback.bash ]]; then
+  source /entrypoints/project-develop/dn_entrypoint.attach.callback.bash || exit 1
 else
   n2st::print_msg_warning "project-develop/dn_entrypoint.attach.callback.bash unavailable"
 fi
