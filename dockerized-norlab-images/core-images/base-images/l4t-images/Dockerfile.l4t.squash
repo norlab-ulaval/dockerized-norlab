@@ -338,7 +338,12 @@ RUN <<EOF
     # ....Install l4t image python requirement from file...........................................
     echo "Install l4t image python requirement from file..."
     # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
-    pip3 install --no-cache-dir nvidia-pyindex
+
+    # (CRITICAL) ToDo: fix the build 210 nvidia-pyindex install problem
+    # ref http://132.203.26.125:8111/buildConfiguration/DockerizedNorlab_BuildAndPushMultiArchDockerImages/13322
+#    pip3 install --no-cache-dir nvidia-pyindex
+    python3 -m pip install --upgrade setuptools pip wheel
+    python3 -m pip install nvidia-pyindex
 
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
         echo "Strip versions from requirement"
