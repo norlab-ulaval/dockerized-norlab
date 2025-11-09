@@ -344,7 +344,8 @@ RUN <<EOF
     #pip3 install --no-cache-dir nvidia-pyindex
     python3 -m pip install --upgrade pip
     python3 -m pip install wheel setuptools
-    python3 -m pip install nvidia-pyindex
+    # Install with --no-build-isolation to avoid the subprocess pip issue
+    python3 -m pip install --no-build-isolation nvidia-pyindex
 
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
         echo "Strip versions from requirement"
