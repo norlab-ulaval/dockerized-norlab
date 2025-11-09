@@ -104,37 +104,6 @@ COPY --from=base-image / /
 #COPY --from=base-image /opt /opt
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
-RUN <<EOF
-    echo "(deb) Install basic utilities..."
-
-    # ....Setup Sources............................................................................
-    {
-      apt-get update \
-      && apt-get install --assume-yes --no-install-recommends \
-            software-properties-common \
-      && add-apt-repository --yes universe \
-      && apt-get update;
-    } || exit 1
-
-    apt-get install --assume-yes --no-install-recommends \
-            curl \
-            pkg-config \
-            lsb-release \
-      || exit 1
-
-    echo "Log build time environment variable..."
-    printenv
-
-    # Update symlink to point to system python3 instead of system python2
-    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 || exit 1
-    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 || exit 1
-
-    # ....Teardown.................................................................................
-    apt-get autoremove --assume-yes
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-EOF
-
 # ....Transfer environment variable from base-images...............................................
 # Env var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
 ARG CUDA_HOME
@@ -192,6 +161,37 @@ ENV CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
 ENV NVCC_PATH=${NVCC_PATH}
 ENV CUDA_NVCC_EXECUTABLE=${CUDA_NVCC_EXECUTABLE}
 ENV CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
+
+RUN <<EOF
+    echo "(deb) Install basic utilities..."
+
+    # ....Setup Sources............................................................................
+    {
+      apt-get update \
+      && apt-get install --assume-yes --no-install-recommends \
+            software-properties-common \
+      && add-apt-repository --yes universe \
+      && apt-get update;
+    } || exit 1
+
+    apt-get install --assume-yes --no-install-recommends \
+            curl \
+            pkg-config \
+            lsb-release \
+      || exit 1
+
+    echo "Log build time environment variable..."
+    printenv
+
+    # Update symlink to point to system python3 instead of system python2
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 || exit 1
+    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 || exit 1
+
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
 
 
 FROM --platform=linux/amd64 ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
@@ -328,20 +328,20 @@ RUN <<EOF
     fi
 
     # ....Install l4t image ubuntu apt requirement.................................................
-    echo "Install l4t image ubuntu apt requirement..."
-    # Install pycuda related
-    #   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
-    #
-    # Requirement for 'pycairo' which is required by 'pycuda'
-    apt-get install --assume-yes --no-install-recommends \
-      libcairo2-dev
-
-    # ....Install l4t image python requirement from file...........................................
-    echo "Install l4t image python requirement from file..."
-    # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
-    python3 -m pip install onnx_graphsurgeon uff --extra-index-url https://pypi.ngc.nvidia.com
-
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+        echo "Install l4t image ubuntu apt requirement..."
+        # Install pycuda related
+        #   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
+        #
+        # Requirement for 'pycairo' which is required by 'pycuda'
+        apt-get install --assume-yes --no-install-recommends \
+          libcairo2-dev
+
+        # ....Install l4t image python requirement from file...........................................
+        echo "Install l4t image python requirement from file..."
+        # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
+        python3 -m pip install onnx_graphsurgeon uff --extra-index-url https://pypi.ngc.nvidia.com || pip3 install --no-cache-dir nvidia-pyindex || exit 1
+
         echo "Strip versions from requirement"
         sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt
         pip3 install -r /requirements.l4t-base-image.txt || exit 1
