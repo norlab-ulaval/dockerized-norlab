@@ -163,6 +163,9 @@ ENV CUDA_NVCC_EXECUTABLE=${CUDA_NVCC_EXECUTABLE}
 ENV CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
 
 RUN <<EOF
+    echo "Log build time environment variable..."
+    printenv
+
     echo "(deb) Install basic utilities..."
 
     # ....Setup Sources............................................................................
@@ -179,9 +182,6 @@ RUN <<EOF
             pkg-config \
             lsb-release \
       || exit 1
-
-    echo "Log build time environment variable..."
-    printenv
 
     # Update symlink to point to system python3 instead of system python2
     update-alternatives --install /usr/bin/python python /usr/bin/python3 1 || exit 1
@@ -210,6 +210,9 @@ SHELL ["/bin/bash", "-c"]
 ARG UBUNTU_VERSION_MAJOR
 
 RUN <<EOF
+    echo "Log build time environment variable..."
+    printenv
+
     # ....Check pre-conditions.......................................................................
     {
         test -n "${UBUNTU_VERSION_MAJOR:?'Env variable need to be set and non-empty.'}" && \
@@ -235,8 +238,6 @@ RUN <<EOF
         python3-dev \
         python3-pip
 
-    echo "Log build time environment variable..."
-    printenv
 
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
     if [[ "${UBUNTU_VERSION_MAJOR:?err}.04" != "${IMG_RELEASE}" ]]; then
@@ -281,6 +282,9 @@ ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
 RUN <<EOF
+    echo "Log build time environment variable..."
+    printenv
+
     # ....Check pre-conditions.....................................................................
     {
         test -n "${UBUNTU_VERSION_MAJOR:?'Env variable need to be set and non-empty.'}" && \
@@ -291,9 +295,8 @@ RUN <<EOF
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Reinstall l4t image package in amd64 image...............................................
-    apt-get update
-
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+        apt-get update
 
         echo "Install general utilities..."
         apt-get install --assume-yes --no-install-recommends \
@@ -330,6 +333,10 @@ RUN <<EOF
     # ....Install l4t image ubuntu apt requirement.................................................
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
         echo "Install l4t image ubuntu apt requirement..."
+
+        echo "Log requirements.l4t-base-image.txt for debuging..."
+        cat /requirements.l4t-base-image.txt
+
         # Install pycuda related
         #   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
         #
@@ -340,11 +347,12 @@ RUN <<EOF
         # ....Install l4t image python requirement from file...........................................
         echo "Install l4t image python requirement from file..."
         # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
-        python3 -m pip install onnx_graphsurgeon uff --extra-index-url https://pypi.ngc.nvidia.com || pip3 install --no-cache-dir nvidia-pyindex || exit 1
+        python3 -m pip install onnx_graphsurgeon uff --extra-index-url https://pypi.ngc.nvidia.com
+        #|| pip3 install --no-cache-dir nvidia-pyindex
 
         echo "Strip versions from requirement"
         sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt
-        pip3 install -r /requirements.l4t-base-image.txt || exit 1
+        pip3 install -r /requirements.l4t-base-image.txt --extra-index-url https://pypi.ngc.nvidia.com
 
         # Clean up sed tmp file
         rm /requirements.l4t-base-image.txt.bak
