@@ -342,8 +342,8 @@ RUN <<EOF
 
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
         echo "Strip versions from requirement"
-        sed -i.bak 's/nvidia-pyindex.*//g' /requirements.l4t-base-image.txt
         sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt
+        sed -i.bak 's/nvidia-pyindex.*//' /requirements.l4t-base-image.txt
         pip3 install -r /requirements.l4t-base-image.txt || exit 1
 
         # Clean up sed tmp file
@@ -358,7 +358,7 @@ RUN <<EOF
     #   - https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/torch2trt/Dockerfile
     #
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
-      # pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
+        # pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
         cd /opt
         git clone https://github.com/NVIDIA-AI-IOT/torch2trt
         cd torch2trt
