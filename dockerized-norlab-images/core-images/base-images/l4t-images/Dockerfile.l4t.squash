@@ -338,17 +338,6 @@ RUN <<EOF
     # ....Install l4t image python requirement from file...........................................
     echo "Install l4t image python requirement from file..."
     # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
-
-    # (CRITICAL) ToDo: fix the build 210 nvidia-pyindex install problem
-    # ref http://132.203.26.125:8111/buildConfiguration/DockerizedNorlab_BuildAndPushMultiArchDockerImages/13322
-    #pip3 install --no-cache-dir nvidia-pyindex
-    #python3 -m pip install --upgrade pip
-    #python3 -m pip install wheel setuptools
-    ## Install with --no-build-isolation to avoid the subprocess pip issue
-    #python3 -m pip install --no-build-isolation nvidia-pyindex
-    #pip3 install --no-cache-dir \
-    #    --extra-index-url https://pypi.ngc.nvidia.com \
-    #    nvidia-pyindex || echo "nvidia-pyindex installation optional, continuing..."
     python3 -m pip install onnx_graphsurgeon uff --extra-index-url https://pypi.ngc.nvidia.com
 
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
@@ -368,9 +357,8 @@ RUN <<EOF
     #   - https://github.com/NVIDIA-AI-IOT/torch2trt
     #   - https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/torch2trt/Dockerfile
     #
-
-    # pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+      # pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
         cd /opt
         git clone https://github.com/NVIDIA-AI-IOT/torch2trt
         cd torch2trt

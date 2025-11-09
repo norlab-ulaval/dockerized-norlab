@@ -210,7 +210,7 @@ RUN apt-get update  \
         ninja
 
 # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
-RUN pip3 install --no-cache-dir nvidia-pyindex
+RUN python3 -m pip install onnx_graphsurgeon uff --extra-index-url https://pypi.ngc.nvidia.com
 
 # Requirement for 'pycairo' which is required by 'pycuda'
 RUN apt-get update  \
@@ -249,7 +249,8 @@ RUN apt-get update  \
 
 #    pycuda==2023.1 \
 #    PySoundFile==0.9.0.post1 \
-RUN sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt  \
+RUN sed -i.bak 's/nvidia-pyindex.*//g' /requirements.l4t-base-image.txt \
+    && sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt \
     && rm /requirements.l4t-base-image.txt.bak
 
 RUN pip3 install --no-cache-dir -r /requirements.l4t-base-image.txt
