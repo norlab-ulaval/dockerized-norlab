@@ -392,6 +392,8 @@ ARG TARGETARCH
 ARG BUILDPLATFORM
 
 RUN <<EOF
+    echo "Test final"
+
     # ....Check pre-conditions.......................................................................
     {
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
@@ -422,11 +424,11 @@ RUN <<EOF
 
     if [[ ${TARGETPLATFORM} =~ "linux/arm64".* ]]; then
       {
-        test -n ${CUDA_HOME:?'Environment variable was not passed from base-image build stage to test stage'} && \
-        test -n ${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage to test stage'} && \
-        test -n ${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage to test stage'} && \
-        test -n ${PATH:?'Environment variable was not passed from base-image build stage to test stage'} && \
-        test -n ${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage to test stage'} ;
+        test -n ${CUDA_HOME:?'(Final) Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${NVIDIA_VISIBLE_DEVICES:?'(Final) Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${NVIDIA_DRIVER_CAPABILITIES:?'(Final) Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${PATH:?'(Final) Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${LD_LIBRARY_PATH:?'(Final) Environment variable was not passed from base-image build stage to test stage'} ;
       } || { echo "Missing required environment variables!" 1>&2 ; exit 1 ; }
     fi
 
