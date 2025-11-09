@@ -24,6 +24,7 @@ RUN touch /requirements.l4t-base-image.txt \
               --exclude torch2trt  \
               --exclude torchaudio  \
               --exclude tensorrt \
+              --exclude nvidia-pyindex \
         > /requirements.l4t-base-image.txt
 
 # ===Remove Jetson-container unused install========================================================
@@ -250,7 +251,6 @@ RUN apt-get update  \
 #    pycuda==2023.1 \
 #    PySoundFile==0.9.0.post1 \
 RUN sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt \
-    && sed -i.bak 's/nvidia-pyindex.*//' /requirements.l4t-base-image.txt \
     && rm /requirements.l4t-base-image.txt.bak
 
 RUN pip3 install --no-cache-dir -r /requirements.l4t-base-image.txt
