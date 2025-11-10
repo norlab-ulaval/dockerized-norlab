@@ -41,8 +41,8 @@ FROM project-setup AS project-custom-docker-steps
 # ====Project custom python libraries==============================================================
 
 # (NICE TO HAVE) ToDo: refactor to dn_project_core_init.bash (ref task RLRP-213 and NMO-548)
-COPY ./project_requirements/python.requirements.txt /python.requirements.txt
-COPY ./project_requirements/shell.requirements.bash /shell.requirements.bash
+COPY ./build_stage/python.requirements.txt /python.requirements.txt
+COPY ./build_stage/shell.requirements.bash /shell.requirements.bash
 
 # (NICE TO HAVE) ToDo: refactor to dn_project_core_init.bash (ref task RLRP-213 and NMO-548)
 RUN <<EOF
@@ -60,18 +60,18 @@ EOF
 # ====DN-project final=============================================================================
 FROM project-custom-docker-steps AS final
 
-# (NICE TO HAVE) ToDo: refactor project_entrypoints logic a fct. Either in DN container-tools or in DN-project
+# (NICE TO HAVE) ToDo: refactor entrypoints logic a fct. Either in DN container-tools or in DN-project
 # Note: project-develop container mounth those directories as a volume to skip rebuilding
 #       each time they are modify (see docker-compose.project.run.*.yaml). However, project-deploy
 #       and project release container will need them copied in the image for portability.
-# Note: Files copied from project_entrypoints/ directory are required by Dockerized-NorLab
+# Note: Files copied from entrypoints/ directory are required by Dockerized-NorLab
 #       dn_entrypoint.init.bash and dn_entrypoint.attach.bash
-WORKDIR /project_entrypoints
-ENV MOCK_PROJECT_ENTRYPOINT_PATH=./project_entrypoints
+WORKDIR /entrypoints
+ENV MOCK_PROJECT_ENTRYPOINT_PATH=./entrypoints
 COPY ${MOCK_PROJECT_ENTRYPOINT_PATH} .
 COPY --from=context-dn-container-tools ./dn_project_core_finalize.bash /dn_project_core_finalize.bash
 RUN <<EOF
-    # Note: DN-project path would be ".dockerized_norlab_project/configuration/project_entrypoints"
+    # Note: DN-project path would be ".dockerized_norlab_project/configuration/entrypoints"
     for each_file in ./dn_entrypoint.*.bash; do
       chmod +x "${each_file}"
     done

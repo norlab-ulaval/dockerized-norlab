@@ -27,16 +27,16 @@ test -n "$( declare -f n2st::print_msg )" || { echo -e "\033[1;31m[DN error]\033
 
 # ....Execute DN-project user callback.............................................................
 # Sanity check
-test -d "/project_entrypoints" || n2st::print_msg_error_and_exit "Dir /project_entrypoints is unreachable"
+test -d "/entrypoints" || n2st::print_msg_error_and_exit "Dir /entrypoints is unreachable"
 
-if [[ -f /project_entrypoints/dn_entrypoint.global.init.callback.bash ]]; then
-  source /project_entrypoints/dn_entrypoint.global.init.callback.bash || exit 1
+if [[ -f /entrypoints/dn_entrypoint.global.init.callback.bash ]]; then
+  source /entrypoints/dn_entrypoint.global.init.callback.bash || exit 1
 else
   n2st::print_msg_warning "dn_entrypoint.global.init.callback.bash unavailable"
 fi
 
-if [[ -f /project_entrypoints/project-develop/dn_entrypoint.init.callback.bash ]]; then
-  source /project_entrypoints/project-develop/dn_entrypoint.init.callback.bash || exit 1
+if [[ -f /entrypoints/project-develop/dn_entrypoint.init.callback.bash ]]; then
+  source /entrypoints/project-develop/dn_entrypoint.init.callback.bash || exit 1
 else
   n2st::print_msg_warning "project-develop/dn_entrypoint.init.callback.bash unavailable"
 fi
@@ -64,7 +64,7 @@ n2st::print_msg "Launching ssh daemon with the following flags ${MSG_DIMMED_FORM
 if [[ $(whoami) == "root" ]]; then
   "${LAUNCH_SSH_DAEMON[@]}" || n2st::print_msg_warning "Something went wrong with the ssh daemon!"
 else
-  n2st::print_msg "Be advised, launching the ssh daemon in a subshell with sudo priviledge instead of the $(whoami) current shell"
+  #n2st::print_msg "Be advised, launching the ssh daemon in a subshell with sudo priviledge instead of the $(whoami) current shell"
   sudo bash -c "${LAUNCH_SSH_DAEMON[*]} || { echo \"\033[1;31m[DN error]\033[0m Something went wrong with the ssh daemon!\" 1>&2; exit 1; }"
 fi
 

@@ -44,7 +44,6 @@ RUN <<EOF
         osrf-pycommon \
         rosbags \
         rosbags-dataframe \
-        rosbag-tools[plot] \
         || exit 1
 
     apt-get install --assume-yes --no-install-recommends \

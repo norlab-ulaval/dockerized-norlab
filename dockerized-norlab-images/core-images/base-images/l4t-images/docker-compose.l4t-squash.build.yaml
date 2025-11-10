@@ -88,6 +88,8 @@ services:
       service: l4t-base-image-amd64
     build:
       target: mimic-l4t-image
+      platforms: !override
+        - linux/amd64
     depends_on:
       - l4t-base-image-amd64
 
@@ -107,6 +109,8 @@ services:
     image: ${DN_HUB:?err}/dockerized-norlab-base-image:${DN_IMAGE_TAG:?err}-amd64
     build:
       target: final-amd64
+      platforms: !override
+        - linux/amd64
     depends_on:
       - l4t-base-image-mimic-l4t-image
 
@@ -124,6 +128,8 @@ services:
       service: l4t-base-image-amd64
     build:
       target: test
+      platforms: !override
+        - linux/amd64
     depends_on:
       - l4t-base-image-amd64-final
 

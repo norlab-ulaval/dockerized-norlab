@@ -30,7 +30,8 @@ RUN <<EOF
           --exclude torchaudio  \
           --exclude tensorrt \
           --exclude torch2trt  \
-          --exclude pycuda
+          --exclude pycuda \
+          --exclude nvidia-pyindex
     ) > /requirements.l4t-base-image.txt
 
     # ....Builder sanity check.....................................................................
@@ -103,37 +104,6 @@ COPY --from=base-image / /
 #COPY --from=base-image /opt /opt
 #COPY --from=base-image ${ROS_ROOT} ${ROS_ROOT}
 
-RUN <<EOF
-    echo "(deb) Install basic utilities..."
-
-    # ....Setup Sources............................................................................
-    {
-      apt-get update \
-      && apt-get install --assume-yes --no-install-recommends \
-            software-properties-common \
-      && add-apt-repository --yes universe \
-      && apt-get update;
-    } || exit 1
-
-    apt-get install --assume-yes --no-install-recommends \
-            curl \
-            pkg-config \
-            lsb-release \
-      || exit 1
-
-    echo "Log build time environment variable..."
-    printenv
-
-    # Update symlink to point to system python3 instead of system python2
-    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 || exit 1
-    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 || exit 1
-
-    # ....Teardown.................................................................................
-    apt-get autoremove --assume-yes
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-EOF
-
 # ....Transfer environment variable from base-images...............................................
 # Env var specific to 'nvcr.io/nvidia/l4t-jetpack' base images
 ARG CUDA_HOME
@@ -192,6 +162,37 @@ ENV NVCC_PATH=${NVCC_PATH}
 ENV CUDA_NVCC_EXECUTABLE=${CUDA_NVCC_EXECUTABLE}
 ENV CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
 
+RUN <<EOF
+    echo "Log build time environment variable..."
+    printenv
+
+    echo "(deb) Install basic utilities..."
+
+    # ....Setup Sources............................................................................
+    {
+      apt-get update \
+      && apt-get install --assume-yes --no-install-recommends \
+            software-properties-common \
+      && add-apt-repository --yes universe \
+      && apt-get update;
+    } || exit 1
+
+    apt-get install --assume-yes --no-install-recommends \
+            curl \
+            pkg-config \
+            lsb-release \
+      || exit 1
+
+    # Update symlink to point to system python3 instead of system python2
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 || exit 1
+    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 || exit 1
+
+    # ....Teardown.................................................................................
+    apt-get autoremove --assume-yes
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
 
 FROM --platform=linux/amd64 ${MIMIC_DEPENDENCIES_BASE_IMAGE:?err}:${MIMIC_DEPENDENCIES_BASE_IMAGE_TAG:?err} AS base-image-amd64
 ARG TARGETPLATFORM
@@ -209,6 +210,9 @@ SHELL ["/bin/bash", "-c"]
 ARG UBUNTU_VERSION_MAJOR
 
 RUN <<EOF
+    echo "Log build time environment variable..."
+    printenv
+
     # ....Check pre-conditions.......................................................................
     {
         test -n "${UBUNTU_VERSION_MAJOR:?'Env variable need to be set and non-empty.'}" && \
@@ -234,8 +238,6 @@ RUN <<EOF
         python3-dev \
         python3-pip
 
-    echo "Log build time environment variable..."
-    printenv
 
     IMG_RELEASE="$( source /etc/lsb-release && echo ${DISTRIB_RELEASE})"
     if [[ "${UBUNTU_VERSION_MAJOR:?err}.04" != "${IMG_RELEASE}" ]]; then
@@ -280,6 +282,9 @@ ENV IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN:-false}
 COPY --from=base-image /requirements.l4t-base-image.txt /requirements.l4t-base-image.txt
 
 RUN <<EOF
+    echo "Log build time environment variable..."
+    printenv
+
     # ....Check pre-conditions.....................................................................
     {
         test -n "${UBUNTU_VERSION_MAJOR:?'Env variable need to be set and non-empty.'}" && \
@@ -290,9 +295,8 @@ RUN <<EOF
     } || { echo -e "\033[1;31m[DN error]\033[0m Failed pre-condition check" 1>&2 ; exit 1 ; }
 
     # ....Reinstall l4t image package in amd64 image...............................................
-    apt-get update
-
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+        apt-get update
 
         echo "Install general utilities..."
         apt-get install --assume-yes --no-install-recommends \
@@ -327,23 +331,28 @@ RUN <<EOF
     fi
 
     # ....Install l4t image ubuntu apt requirement.................................................
-    echo "Install l4t image ubuntu apt requirement..."
-    # Install pycuda related
-    #   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
-    #
-    # Requirement for 'pycairo' which is required by 'pycuda'
-    apt-get install --assume-yes --no-install-recommends \
-      libcairo2-dev
-
-    # ....Install l4t image python requirement from file...........................................
-    echo "Install l4t image python requirement from file..."
-    # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
-    pip3 install --no-cache-dir nvidia-pyindex
-
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+        echo "Install l4t image ubuntu apt requirement..."
+
+        echo "Log requirements.l4t-base-image.txt for debuging..."
+        cat /requirements.l4t-base-image.txt
+
+        # Install pycuda related
+        #   Build instruction: https://github.com/berlinguyinca/pycuda/blob/master/doc/source/install.rst
+        #
+        # Requirement for 'pycairo' which is required by 'pycuda'
+        apt-get install --assume-yes --no-install-recommends \
+          libcairo2-dev
+
+        # ....Install l4t image python requirement from file...........................................
+        echo "Install l4t image python requirement from file..."
+        # Requirement for 'graphsurgeon' and 'uff', it give access to nvidia pip index
+        python3 -m pip install onnx_graphsurgeon uff --extra-index-url https://pypi.ngc.nvidia.com
+        #|| pip3 install --no-cache-dir nvidia-pyindex
+
         echo "Strip versions from requirement"
         sed -i.bak 's/==.*//g' /requirements.l4t-base-image.txt
-        pip3 install -r /requirements.l4t-base-image.txt || exit 1
+        pip3 install -r /requirements.l4t-base-image.txt --extra-index-url https://pypi.ngc.nvidia.com
 
         # Clean up sed tmp file
         rm /requirements.l4t-base-image.txt.bak
@@ -356,9 +365,8 @@ RUN <<EOF
     #   - https://github.com/NVIDIA-AI-IOT/torch2trt
     #   - https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/torch2trt/Dockerfile
     #
-
-    # pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
     if [[ ${TARGETPLATFORM} =~ "linux/amd64".* ]]; then
+        # pip3 install git+https://github.com/NVIDIA-AI-IOT/torch2trt
         cd /opt
         git clone https://github.com/NVIDIA-AI-IOT/torch2trt
         cd torch2trt
@@ -392,6 +400,8 @@ ARG TARGETARCH
 ARG BUILDPLATFORM
 
 RUN <<EOF
+    echo "Test final"
+
     # ....Check pre-conditions.......................................................................
     {
         test -n "${TARGETPLATFORM:?'Env variable need to be set and non-empty.'}" && \
@@ -422,11 +432,11 @@ RUN <<EOF
 
     if [[ ${TARGETPLATFORM} =~ "linux/arm64".* ]]; then
       {
-        test -n ${CUDA_HOME:?'Environment variable was not passed from base-image build stage to test stage'} && \
-        test -n ${NVIDIA_VISIBLE_DEVICES:?'Environment variable was not passed from base-image build stage to test stage'} && \
-        test -n ${NVIDIA_DRIVER_CAPABILITIES:?'Environment variable was not passed from base-image build stage to test stage'} && \
-        test -n ${PATH:?'Environment variable was not passed from base-image build stage to test stage'} && \
-        test -n ${LD_LIBRARY_PATH:?'Environment variable was not passed from base-image build stage to test stage'} ;
+        test -n ${CUDA_HOME:?'(Final) Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${NVIDIA_VISIBLE_DEVICES:?'(Final) Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${NVIDIA_DRIVER_CAPABILITIES:?'(Final) Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${PATH:?'(Final) Environment variable was not passed from base-image build stage to test stage'} && \
+        test -n ${LD_LIBRARY_PATH:?'(Final) Environment variable was not passed from base-image build stage to test stage'} ;
       } || { echo "Missing required environment variables!" 1>&2 ; exit 1 ; }
     fi
 
