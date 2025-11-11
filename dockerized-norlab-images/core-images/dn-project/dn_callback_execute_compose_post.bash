@@ -24,6 +24,10 @@ function dn::callback_execute_compose_post() {
   test -d "${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock" \
     || { n2st::print_msg_error "The directory ${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock is unreachable" && return 1 ; }
 
+  # Delete mock secrets
+  local secret_file_path="${DN_PATH}/dockerized-norlab-images/core-images/dn-project/secrets/dna_ssh_password.txt"
+  rm -f "${secret_file_path}"
+
   # Delete git cloned repo
   rm -rf "${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock"
 

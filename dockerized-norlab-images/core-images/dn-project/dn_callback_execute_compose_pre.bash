@@ -30,6 +30,16 @@ function dn::callback_execute_compose_pre() {
     "${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock" \
     || { n2st::print_msg_error "Could not clone dockerized-norlab-project-mock" && return 1 ;}
 
+  # ....Mock secret...............................................................................
+  # Create secrets directory (if it does not exist)
+  local secret_dir="${DN_PATH}/dockerized-norlab-images/core-images/dn-project/secrets/"
+  mkdir -p "${secret_dir}"
+  # Generate one strong password for Phase 1
+  openssl rand -base64 32 > "${secret_dir}/dna_ssh_password.txt"
+  # Secure the secret
+  chmod 600 "${secret_dir}/dna_ssh_password.txt"
+
+
   # ....Sanity check...............................................................................
   test -d "${DN_PATH}/utilities/tmp" || { n2st::print_msg_error "The directory ${DN_PATH}/utilities/tmp is unreachable" && return 1 ;}
   test -d "${DN_PATH}/utilities/tmp/dockerized-norlab-project-mock/.git" \

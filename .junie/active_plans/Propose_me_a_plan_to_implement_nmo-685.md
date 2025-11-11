@@ -6,11 +6,11 @@ Based on my analysis of the SSH daemon implementation in your dockerized-norlab 
 
 ### Current Security Issues
 
-1. **Hardcoded Password**: The SSH password is hardcoded as "lasagne" in the Dockerfile (line 44)
-2. **Build Argument Exposure**: Passwords passed as build arguments are visible in Docker image history
-3. **Shared Password**: The same password is used for root, project user, and SSH user
-4. **Plain Text Logging**: The password is displayed in plain text in the entrypoint script (line 20)
-5. **No Secret Rotation**: No mechanism for password rotation or management
+1. Hardcoded default password set via `ARG DN_SSH_SERVER_USER_PASSWORD=*****` in `dockerized-norlab-images/core-images/dn-project/project-develop/Dockerfile`
+2. Build argument exposure: secrets passed as build args can leak via image history and caches
+3. Shared password: the same value is applied to root, project user, and SSH user in `dockerized-norlab-images/container-tools/dn_install_debugging_tools.bash`
+4. Password-based auth enabled by default and `PermitRootLogin yes` present in `dockerized-norlab-images/container-tools/dn_install_debugging_tools.bash`
+5. No secret rotation mechanism is defined
 
 ### Recommended Implementation Plan
 
@@ -24,23 +24,39 @@ ARG DN_SSH_SERVER_USER_PASSWORD
 ```
 
 **1.2 Implement Docker Secrets**
-```yaml
-# Add to docker-compose.dn-project.build.yaml
-secrets:
-  ssh_user_password:
-    file: ./secrets/ssh_user_password.txt
-  ssh_root_password:
-    file: ./secrets/ssh_root_password.txt
+- Build-time (in this repo): define BuildKit build secrets in `dockerized-norlab-images/core-images/dn-project/docker-compose.dn-project.build.yaml` and consume them from `dockerized-norlab-images/core-images/dn-project/project-develop/Dockerfile`.
+- Runtime (in super project DNA): mount runtime secrets (e.g., authorized_keys) in the app-level compose that actually runs the containers.
 
+Example (build-time compose, BuildKit):
+```yaml
+# File: dockerized-norlab-images/core-images/dn-project/docker-compose.dn-project.build.yaml
 services:
   project-develop-main:
-    secrets:
-      - ssh_user_password
-      - ssh_root_password
     build:
+      context: project-develop
+      dockerfile: Dockerfile
+      secrets:
+        - id: ssh_user_password
+          src: ./secrets/ssh_user_password.txt
+        - id: ssh_root_password
+          src: ./secrets/ssh_root_password.txt
       args:
         # Remove DN_SSH_SERVER_USER_PASSWORD from here
+secrets: {}
 ```
+
+Example (Dockerfile build-time usage with BuildKit):
+```dockerfile
+# in dockerized-norlab-images/core-images/dn-project/project-develop/Dockerfile
+# ... before sourcing dn_install_debugging_tools.bash
+RUN --mount=type=secret,id=ssh_user_password,required=1 \
+    --mount=type=secret,id=ssh_root_password,required=1 \
+    export DN_SSH_SERVER_USER_PASSWORD="$(cat /run/secrets/ssh_user_password)" && \
+    export DN_ROOT_PASSWORD="$(cat /run/secrets/ssh_root_password)" && \
+    source ./dn_install_debugging_tools.bash
+```
+
+Note: For runtime key-based auth, add a secret like `ssh_public_key` in the super project (DNA) compose that runs `project-develop`, and mount it to `/run/secrets/ssh_public_key`.
 
 **1.3 Update Build Process**
 - Create a `secrets/` directory (add to `.gitignore`)
