@@ -7,7 +7,7 @@ This plan outlines the implementation of gdbserver remote debugging support for 
 ## Current State Analysis
 
 ### ✅ Already Implemented Infrastructure:
-1. **Package Installation**: `gdbserver` package installed in `dockerized-norlab-images/core-images/dependencies/Dockerfile.core` (line 66)
+1. Package installation: `gdbserver` package is installed in `dockerized-norlab-images/core-images/dependencies/Dockerfile.core`
 2. **Port Configuration**: `DN_GDB_SERVER_PORT` environment variable set to 7777 in project-develop Dockerfile
 3. **Port Exposure**: Container exposes port 7777 in Dockerfile
 4. **Port Mapping**: Docker-compose maps host port 7777 to container port 7777
@@ -81,17 +81,17 @@ n2st::print_msg "Port configured: ${DN_GDB_SERVER_PORT}"
 
 **Documentation Header Update**:
 ```bash
-# BEFORE (line 7):
+# BEFORE:
 #   3. Installs/update debugging the necessary packages,
 
-# AFTER (line 7):
+# AFTER:
 #   3. Sets up gdbserver for remote debugging with utility scripts.
 #   4. Installs/update debugging the necessary packages,
 ```
 
 **Global Variables Documentation Update**:
 ```bash
-# Add to Global Variables section (around line 18):
+# Add to the "Global Variables" section in the script header:
 # - DN_GDB_SERVER_PORT (Read): The port for the gdbserver remote debugging.
 ```
 
@@ -263,7 +263,7 @@ Gdbserver processes killed
    Host: localhost
    Port: 2222
    Username: non-interactive-ros2
-   Password: lasagne
+   Password: *****
    Root path: /
    ```
 
@@ -485,7 +485,7 @@ docker run -it --rm \
 The containers include SSH server support for remote development:
 - **Port**: 2222 (mapped from container's 22)
 - **User**: `non-interactive-ros2` (with ROS2 environment pre-loaded)
-- **Password**: `lasagne` (configurable via `DN_SSH_SERVER_USER_PASSWORD`)
+- **Password**: `*****` (configurable via `DN_SSH_SERVER_USER_PASSWORD`)
 
 ```bash
 # Connect to running container

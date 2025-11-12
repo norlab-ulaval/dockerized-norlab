@@ -1,11 +1,11 @@
 ## Updated Lines for Phase 1 Implementation
 References:
 - NMO-685 fix: implement secret best-practice
-- `.junie/plans/Propose_me_a_plan_to_implement_nmo-685.md`
+- `.junie/active_plans/Propose_me_a_plan_to_implement_nmo-685.md`
 
 Here's how you should update those lines to implement Phase 1 of the Docker secret management best practices:
 
-### Original Code (Lines 78-86):
+### Original Code Snippet:
 ```bash
 # ....Set password for users.......................................................................
 # user:newpassword
@@ -66,7 +66,7 @@ if [[ ${_SETUP_DEBUGGER_USER} == true ]]; then
 #### 1. Update the Dockerfile (remove hardcoded password):
 ```dockerfile
 # Remove this line completely:
-# ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
+# ARG DN_SSH_SERVER_USER_PASSWORD=*****
 
 # Replace with:
 ARG DN_SSH_SERVER_USER_PASSWORD
@@ -76,29 +76,21 @@ ARG DN_SSH_SERVER_USER_PASSWORD
 ```yaml
 services:
   project-develop-main:
-    secrets:
-      - ssh_user_password
-      - ssh_project_user_password  
-      - ssh_root_password
     build:
       context: project-develop
       dockerfile: Dockerfile
       secrets:
-        - ssh_user_password
-        - ssh_project_user_password
-        - ssh_root_password
+        - id: ssh_user_password
+          src: ./secrets/ssh_user_password.txt
+        - id: ssh_project_user_password
+          src: ./secrets/ssh_project_user_password.txt
+        - id: ssh_root_password
+          src: ./secrets/ssh_root_password.txt
       args:
         # Remove DN_SSH_SERVER_USER_PASSWORD from build args
         BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
         BASE_IMAGE_TAG: ${PROJECT_TAG:?err}
-
-secrets:
-  ssh_user_password:
-    file: ./secrets/ssh_user_password.txt
-  ssh_project_user_password:
-    file: ./secrets/ssh_project_user_password.txt
-  ssh_root_password:
-    file: ./secrets/ssh_root_password.txt
+# Build-time secrets definition is inlined above via id/src. No service-level secrets needed for Phase 1.
 ```
 
 #### 3. Create secrets directory structure:
@@ -122,18 +114,18 @@ secrets/
 *.secret
 ```
 
-#### 5. Update the entrypoint script (dn_entrypoint.init.bash line 20):
+#### 5. Verify entrypoint message (project-develop entrypoint):
 ```bash
-# Replace this line:
-n2st::print_msg "Starting container internal ssh server for IDE remote development workflow on port ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_PORT}${MSG_END_FORMAT} with user ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_USER}${MSG_END_FORMAT} (default pass: lasagne)"
+# File: dockerized-norlab-images/core-images/dn-project/project-develop/dn_entrypoint.init.bash
+# Current implementation already avoids printing passwords:
+n2st::print_msg "Starting container internal ssh server on port ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_PORT}${MSG_END_FORMAT} for IDE remote development workflow"
 
-# With this (remove password disclosure):
-n2st::print_msg "Starting container internal ssh server for IDE remote development workflow on port ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_PORT}${MSG_END_FORMAT} with user ${MSG_DIMMED_FORMAT}${DN_SSH_SERVER_USER}${MSG_END_FORMAT}"
+# Action: no change required for password logging. Keep message minimal and do not include credentials.
 ```
 
 ### Key Security Improvements:
 
-1. **Eliminated Hardcoded Passwords**: No more "lasagne" password in the Dockerfile
+1. **Eliminated Hardcoded Passwords**: No more "*****" password in the Dockerfile
 2. **Docker Secrets Integration**: Passwords are now read from Docker secrets
 3. **Separate Passwords**: Each user (project, root, debugger) can have unique passwords
 4. **Backward Compatibility**: Temporary fallback to environment variables during migration

@@ -4,10 +4,14 @@
 # ....Dev required.................................................................................
 /utilities/tmp/dockerized-norlab-project-mock
 
-# ....DNP common...................................................................................
+# ....DNA common...................................................................................
 **/.dockerized_norlab_project/dn_container_env_variable/
 /dockerized-norlab-tools/dn_container_env_variable/
 !/dockerized-norlab-tools/dn_container_env_variable/README.md
+
+# Docker secrets
+**/secrets/*
+*.secret
 
 
 # ====General======================================================================================
@@ -33,4 +37,3 @@
 
 # ....General......................................................................................
 **/.DS_Store
-

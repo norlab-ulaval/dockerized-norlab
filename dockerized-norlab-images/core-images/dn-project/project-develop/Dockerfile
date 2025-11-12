@@ -30,14 +30,14 @@ EXPOSE ${DN_GDB_SERVER_PORT}
 # ...debugging user config.........................................................................
 ARG DN_SSH_SERVER_USER=dna-non-interactive-ros2
 ENV DN_SSH_SERVER_USER=${DN_SSH_SERVER_USER}
-ARG DN_SSH_SERVER_USER_PASSWORD=lasagne
 
 
 # ....install debugging tools......................................................................
 WORKDIR /dockerized-norlab/dockerized-norlab-images/container-tools
 COPY --from=context-dn-container-tools ./dn_install_debugging_tools.bash .
 
-RUN <<EOF
+# Note: require that build secrets variable 'dna_ssh_password' be set via docker-compose
+RUN --mount=type=secret,id=dna_ssh_password,required=1 <<EOF
     # ....Pre-condition............................................................................
     n2st::print_msg "Pre-condition checks..."
     {
@@ -52,8 +52,13 @@ RUN <<EOF
     } || n2st::print_msg_error_and_exit "Failed pre-condition checks!"
 
     # ....Install debugging tools..................................................................
-    source ./dn_install_debugging_tools.bash || exit 1
-    rm -f ./dn_install_debugging_tools.bash
+    export DN_SSH_SERVER_USER_PASSWORD="$(cat /run/secrets/dna_ssh_password)"
+    if [[ -n "${DN_SSH_SERVER_USER_PASSWORD}" ]]; then
+        source ./dn_install_debugging_tools.bash || exit 1
+        rm -f ./dn_install_debugging_tools.bash
+    else
+      n2st::print_msg_error_and_exit "SSH passwords not available from secrets."
+    fi
 
     # ....Sanity check.............................................................................
     test -f /etc/ssh/sshd_config_dockerized_norlab_openssh_server || exit 1
