@@ -32,7 +32,7 @@ function dn::callback_execute_compose_pre() {
 
   # ....Mock secret...............................................................................
   # Create secrets directory (if it does not exist)
-  local secret_dir="${DN_PATH}/dockerized-norlab-images/core-images/dn-project/secrets/"
+  local secret_dir="${DN_PATH}/dockerized-norlab-images/core-images/dn-project/secrets"
   mkdir -p "${secret_dir}"
   # Generate one strong password for Phase 1
   openssl rand -base64 32 > "${secret_dir}/dna_ssh_password.txt"
