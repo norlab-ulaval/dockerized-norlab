@@ -42,6 +42,8 @@ services:
     build:
       context: project-develop
       dockerfile: Dockerfile
+      secrets:
+        - dna_ssh_password
       pull: false # Use the local image store to execute the FROM directive
       args:
         BASE_IMAGE: ${DN_PROJECT_HUB:?err}/${DN_PROJECT_IMAGE_NAME:?err}-core
@@ -111,3 +113,8 @@ services:
     depends_on:
       - project-deploy-tester
 
+
+
+secrets:
+  dna_ssh_password:
+    file: ./secrets/dna_ssh_password.txt
