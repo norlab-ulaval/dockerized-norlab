@@ -88,7 +88,6 @@ sudo touch "/dn_container_env_variable/.env.dn_expose_${DN_CONTAINER_NAME:?'Vari
   echo ""
   echo "# Dockerized-NorLab related env"
   echo "DN_HOST=${DN_HOST}"
-  echo "DN_HOST_GPU_ARCHITECTURE=${DN_HOST_GPU_ARCHITECTURE}"
   echo "DN_PROJECT_USER=${DN_PROJECT_USER}"
   echo "DN_ENTRYPOINT_TRACE_EXECUTION=${DN_ENTRYPOINT_TRACE_EXECUTION}"
   echo "DN_DEV_WORKSPACE=${DN_DEV_WORKSPACE}"
