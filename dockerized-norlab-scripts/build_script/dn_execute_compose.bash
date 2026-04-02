@@ -328,6 +328,17 @@ function dn::execute_compose() {
     DOCKER_COMPOSE_CMD_ARGS=( build --build-arg "BUILDKIT_CONTEXT_KEEP_GIT_DIR=1" ${DOCKER_COMPOSE_CMD_ARGS[@]})
   fi
 
+  # ...Auto-detect --push in docker compose cmd args and switch to force-push mode.................
+  # Note: Using 'docker compose build --push' on all services simultaneously can cause BuildKit
+  #       'DeadlineExceeded: context deadline exceeded' errors on large multi-arch builds.
+  #       Enabling DOCKER_FORCE_PUSH ensures sequential build-then-push per service, which is
+  #       more reliable for CI builds. The --push flag is kept in DOCKER_COMPOSE_CMD_ARGS so that
+  #       individual service builds still push inline and the post callback can detect push mode.
+  if [[ ${DOCKER_FORCE_PUSH} != true ]] && [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*--push.* ]]; then
+    n2st::print_msg "Detected --push flag in docker compose command args, switching to force-push mode for sequential build-then-push per service"
+    DOCKER_FORCE_PUSH=true
+  fi
+
   cd "${DN_PATH:?err}" || exit 1
 
   # (NICE TO HAVE) ToDo: assessment >> next bloc ↓↓

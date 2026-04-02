@@ -147,7 +147,11 @@ setup() {
                           --tag-os-version r35.0.0 \
                           -- ${DOCKER_CMD}
   assert_success
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
+  # Note: --push in docker compose cmd args auto-triggers force-push mode for sequential
+  #       build-then-push per service, preventing BuildKit 'DeadlineExceeded' on large builds.
+  assert_output --regexp .*"Detected --push flag in docker compose command args, switching to force-push mode".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push mock-service-one".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push mock-service-two".*"since the script is executed inside a docker container".*
 #  bats_print_run_env_variable
 }
 
