@@ -152,6 +152,9 @@ setup() {
   assert_output --regexp .*"Detected --push flag in docker compose command args, switching to force-push mode".*
   assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push mock-service-one".*"since the script is executed inside a docker container".*
   assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push mock-service-two".*"since the script is executed inside a docker container".*
+  # Verify: no separate 'docker compose push' step since 'build --push' already pushes to registry
+  assert_output --regexp .*"Skip separate push for".*"mock-service-one".*"already pushed via build --push".*
+  assert_output --regexp .*"Skip separate push for".*"mock-service-two".*"already pushed via build --push".*
 #  bats_print_run_env_variable
 }
 

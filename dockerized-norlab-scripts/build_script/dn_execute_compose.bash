@@ -334,9 +334,19 @@ function dn::execute_compose() {
   #       Enabling DOCKER_FORCE_PUSH ensures sequential build-then-push per service, which is
   #       more reliable for CI builds. The --push flag is kept in DOCKER_COMPOSE_CMD_ARGS so that
   #       individual service builds still push inline and the post callback can detect push mode.
+  local _PUSH_VIA_BUILD_FLAG=false
   if [[ ${DOCKER_FORCE_PUSH} != true ]] && [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*--push.* ]]; then
     n2st::print_msg "Detected --push flag in docker compose command args, switching to force-push mode for sequential build-then-push per service"
     DOCKER_FORCE_PUSH=true
+    _PUSH_VIA_BUILD_FLAG=true
+  fi
+
+  # ...Set BUILDKIT_PROGRESS=plain for non-TTY CI environments.....................................
+  # Note: Docker BuildKit defaults to TTY-based progress output which causes
+  #       'failed to get console: provided file is not a console' errors in CI environments
+  #       like TeamCity where there is no TTY available.
+  if [[ ${IS_TEAMCITY_RUN} == true ]] && [[ -z ${BUILDKIT_PROGRESS:-} ]]; then
+    export BUILDKIT_PROGRESS=plain
   fi
 
   cd "${DN_PATH:?err}" || exit 1
@@ -377,6 +387,12 @@ function dn::execute_compose() {
         # ...Execute PUSH for each service.........................................................
         if [[ "${each_service}" =~ .*'-main' ]] || [[ "${each_service}" =~ .*'-tester' ]]; then
           n2st::print_msg "Skip pushing ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
+        elif [[ ${_PUSH_VIA_BUILD_FLAG} == true ]]; then
+          # Note: When --push is in the build args, 'docker compose build --push <service>'
+          #       already pushes images directly to the registry via BuildKit without storing
+          #       them locally. A separate 'docker compose push' would fail with
+          #       'An image does not exist locally' since there is no local image to push.
+          n2st::print_msg "Skip separate push for ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} (already pushed via build --push)"
         else
           # ...Force pushing docker images to registry...........................................
           # Note: this is the best workaround when building multi-architecture images across multi-stage
