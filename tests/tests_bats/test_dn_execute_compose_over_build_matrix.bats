@@ -232,6 +232,13 @@ setup() {
 #  skip "tmp dev"
   assert_equal "${DN_IMPORTED}" "true"
 
+  # Optimize test speed by reducing retry sleep and build matrix size
+  export N2ST_RETRY_SLEEP=0
+  export NBS_MATRIX_REPOSITORY_VERSIONS=( 'hot' )
+  export NBS_MATRIX_SUPPORTED_OS=( 'l4t' )
+  export NBS_MATRIX_L4T_SUPPORTED_VERSIONS=( 'r36.4.0' )
+  export NBS_MATRIX_ROS_DISTRO=( 'foxy' )
+
   local DOCKER_CMD="version"
   local _CI_TEST=true
 #  fake_IS_TEAMCITY_RUN
@@ -256,6 +263,13 @@ setup() {
 @test "docker exit code propagation on faillure › expect fail (TeamCity casses)" {
 #  skip "tmp dev"
   assert_equal "${DN_IMPORTED}" "true"
+
+  # Optimize test speed by reducing retry sleep and build matrix size
+  export N2ST_RETRY_SLEEP=0
+  export NBS_MATRIX_REPOSITORY_VERSIONS=( 'hot' )
+  export NBS_MATRIX_SUPPORTED_OS=( 'l4t' )
+  export NBS_MATRIX_L4T_SUPPORTED_VERSIONS=( 'r36.4.0' )
+  export NBS_MATRIX_ROS_DISTRO=( 'foxy' )
 
   local DOCKER_CMD="version"
   local _CI_TEST=true
@@ -334,6 +348,13 @@ setup() {
 @test "flag --force-push is passed to dn_execute_compose.bash" {
 #  skip "tmp dev"
   assert_equal "${DN_IMPORTED}" "true"
+
+  # Optimize test speed by reducing retry sleep and build matrix size
+  export N2ST_RETRY_SLEEP=0
+  export NBS_MATRIX_REPOSITORY_VERSIONS=( 'hot' )
+  export NBS_MATRIX_SUPPORTED_OS=( 'l4t' )
+  export NBS_MATRIX_L4T_SUPPORTED_VERSIONS=( 'r36.4.0' )
+  export NBS_MATRIX_ROS_DISTRO=( 'foxy' )
 
   local _CI_TEST=true
   mock_docker_command_config_services

@@ -222,6 +222,28 @@ setup() {
   assert_equal "$DOCKER_EXIT_CODE" 1
 }
 
+@test "docker command retry on failure › expect pass" {
+  assert_equal "${DN_IMPORTED}" "true"
+
+  # Mock retry count
+  export BUILD_RETRY=1
+
+  mock_docker_command_fail_once
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                    --dockerized-norlab-version hot \
+                    --base-image dustynv/pytorch \
+                    --os-name l4t \
+                    --ros2 foxy-ros-base \
+                    --base-img-tag-prefix 2.1 \
+                    --tag-os-version r35.0.0 \
+                    --force-push \
+                    --ci-test-force-runing-docker-cmd -- build
+
+  assert_success
+  assert_output --partial "Service build for mock-service-one failed (exit code 1). Retrying service build (1/1) in 5 seconds..."
+}
+
 @test "Variable are exported to calling script › expect pass" {
   assert_equal "${DN_IMPORTED}" "true"
 
