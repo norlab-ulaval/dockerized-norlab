@@ -8,6 +8,20 @@ COPY requirements_deep_rl.txt /requirements_deep_rl.txt
 # Doc › pip install flag: https://pip.pypa.io/en/stable/cli/pip_install/#options
 
 RUN <<EOF
+    if [[ "${DISTRIB_CODENAME}" == "focal"  ]]; then
+        # ....pyopenssl/cryptography fix...........................................................
+        # Fix AttributeError: module 'lib' has no attribute 'X509_V_FLAG_NOTIFY_POLICY' on Ubuntu
+        # focal (Python 3.8, linux/arm64). The system python3-openssl package is stale (< 23.2.0)
+        # and still references X509StoreFlags.NOTIFY_POLICY, which was removed in cryptography
+        # >= 42.0.0. Upgrading via pip ensures /usr/local/lib/python3.8/dist-packages/OpenSSL
+        # (pyopenssl >= 23.2.0) is used instead of the stale system package.
+        # Ref: https://github.com/pyca/pyopenssl/pull/1213
+        pip3 install --no-cache-dir \
+          pyopenssl \
+          cryptography
+    fi
+
+
     pip3 install --no-cache-dir -r /requirements_deep_rl.txt || exit 1
     rm -rf /requirements_deep_rl.txt
 
