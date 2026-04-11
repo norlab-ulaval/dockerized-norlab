@@ -59,8 +59,6 @@ RUN <<EOF
       && python -c "import Cython" \
       && python -c "import torch" \
       && python -c "import torchvision" \
-      && python -c "from ray import train, tune" \
-      && python -c "from ray.tune.search.hyperopt import HyperOptSearch" \
       || exit 1
 
     python /dockerized-norlab/dockerized-norlab-images/container-tools/dn_test/try_pytorch_cpu.py || exit 1
