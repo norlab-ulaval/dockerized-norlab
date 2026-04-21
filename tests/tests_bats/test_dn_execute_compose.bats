@@ -147,7 +147,14 @@ setup() {
                           --tag-os-version r35.0.0 \
                           -- ${DOCKER_CMD}
   assert_success
-  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push".*"since the script is executed inside a docker container".*
+  # Note: --push in docker compose cmd args auto-triggers force-push mode for sequential
+  #       build-then-push per service, preventing BuildKit 'DeadlineExceeded' on large builds.
+  assert_output --regexp .*"Detected --push flag in docker compose command args, switching to force-push mode".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push mock-service-one".*"since the script is executed inside a docker container".*
+  assert_output --regexp .*"Skipping the execution of Docker command".*"docker compose -f dockerized-norlab-images/core-images/base-images/l4t-images/docker-compose.l4t-squash.build.yaml".*" build --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 --no-cache --push mock-service-two".*"since the script is executed inside a docker container".*
+  # Verify: no separate 'docker compose push' step since 'build --push' already pushes to registry
+  assert_output --regexp .*"Skip separate push for".*"mock-service-one".*"already pushed via build --push".*
+  assert_output --regexp .*"Skip separate push for".*"mock-service-two".*"already pushed via build --push".*
 #  bats_print_run_env_variable
 }
 
@@ -213,6 +220,28 @@ setup() {
 
   set -e
   assert_equal "$DOCKER_EXIT_CODE" 1
+}
+
+@test "docker command retry on failure › expect pass" {
+  assert_equal "${DN_IMPORTED}" "true"
+
+  # Mock retry count
+  export BUILD_RETRY=1
+
+  mock_docker_command_fail_once
+  source ./${TESTED_FILE_PATH}/$TESTED_FILE
+  run dn::execute_compose ${TEST_DOCKER_COMPOSE_FILE} \
+                    --dockerized-norlab-version hot \
+                    --base-image dustynv/pytorch \
+                    --os-name l4t \
+                    --ros2 foxy-ros-base \
+                    --base-img-tag-prefix 2.1 \
+                    --tag-os-version r35.0.0 \
+                    --force-push \
+                    --ci-test-force-runing-docker-cmd -- build
+
+  assert_success
+  assert_output --partial "Service build for mock-service-one failed (exit code 1). Retrying service build (1/1) in 5 seconds..."
 }
 
 @test "Variable are exported to calling script › expect pass" {

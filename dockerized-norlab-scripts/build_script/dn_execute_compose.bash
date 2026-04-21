@@ -121,6 +121,18 @@ function dn::execute_compose() {
     export IS_TEAMCITY_RUN=false
   fi
 
+  local BUILD_RETRY_COUNT
+  if [[ -n ${BUILD_RETRY:-} ]]; then
+    BUILD_RETRY_COUNT=${BUILD_RETRY}
+  elif [[ ${IS_TEAMCITY_RUN} == true ]]; then
+    BUILD_RETRY_COUNT=${DN_TEAMCITY_BUILD_RETRY:-2}
+  else
+    BUILD_RETRY_COUNT=${DN_LOCAL_BUILD_RETRY:-0}
+  fi
+
+  local RETRY_SLEEP
+  RETRY_SLEEP=${N2ST_RETRY_SLEEP:-5}
+
   n2st::print_msg "IS_TEAMCITY_RUN=${IS_TEAMCITY_RUN} ${TC_VERSION}"
 
   # ====Begin======================================================================================
@@ -328,6 +340,27 @@ function dn::execute_compose() {
     DOCKER_COMPOSE_CMD_ARGS=( build --build-arg "BUILDKIT_CONTEXT_KEEP_GIT_DIR=1" ${DOCKER_COMPOSE_CMD_ARGS[@]})
   fi
 
+  # ...Auto-detect --push in docker compose cmd args and switch to force-push mode.................
+  # Note: Using 'docker compose build --push' on all services simultaneously can cause BuildKit
+  #       'DeadlineExceeded: context deadline exceeded' errors on large multi-arch builds.
+  #       Enabling DOCKER_FORCE_PUSH ensures sequential build-then-push per service, which is
+  #       more reliable for CI builds. The --push flag is kept in DOCKER_COMPOSE_CMD_ARGS so that
+  #       individual service builds still push inline and the post callback can detect push mode.
+  local _PUSH_VIA_BUILD_FLAG=false
+  if [[ ${DOCKER_FORCE_PUSH} != true ]] && [[ ${DOCKER_COMPOSE_CMD_ARGS[0]} == build ]] && [[ "${DOCKER_COMPOSE_CMD_ARGS[*]}" =~ .*--push.* ]]; then
+    n2st::print_msg "Detected --push flag in docker compose command args, switching to force-push mode for sequential build-then-push per service"
+    DOCKER_FORCE_PUSH=true
+    _PUSH_VIA_BUILD_FLAG=true
+  fi
+
+  # ...Set BUILDKIT_PROGRESS=plain for non-TTY CI environments.....................................
+  # Note: Docker BuildKit defaults to TTY-based progress output which causes
+  #       'failed to get console: provided file is not a console' errors in CI environments
+  #       like TeamCity where there is no TTY available.
+  if [[ ${IS_TEAMCITY_RUN} == true ]] && [[ -z ${BUILDKIT_PROGRESS:-} ]]; then
+    export BUILDKIT_PROGRESS=plain
+  fi
+
   cd "${DN_PATH:?err}" || exit 1
 
   # (NICE TO HAVE) ToDo: assessment >> next bloc ↓↓
@@ -353,8 +386,18 @@ function dn::execute_compose() {
         n2st::print_msg "Execute docker build for service ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} and push if image is defined"
         # ...Execute docker command for each service...............................................
         n2st::teamcity_service_msg_blockOpened_v2 "Build ${each_service}"
-        n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST" "false"
-        DOCKER_EXIT_CODE=$?
+        local _retry_idx=0
+        local _DOCKER_EXIT_CODE=1
+        while [[ ${_retry_idx} -le ${BUILD_RETRY_COUNT} ]] && [[ ${_DOCKER_EXIT_CODE} != 0 ]]; do
+          n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]} ${each_service}" "$_CI_TEST" "false"
+          _DOCKER_EXIT_CODE=$?
+          if [[ ${_DOCKER_EXIT_CODE} -ne 0 ]] && [[ ${_retry_idx} -lt ${BUILD_RETRY_COUNT} ]]; then
+             n2st::print_msg_warning "Service build for ${each_service} failed (exit code ${_DOCKER_EXIT_CODE}). Retrying service build ($((_retry_idx + 1))/${BUILD_RETRY_COUNT}) in ${RETRY_SLEEP} seconds..."
+             sleep "${RETRY_SLEEP}"
+          fi
+          (( _retry_idx++ ))
+        done
+        DOCKER_EXIT_CODE=${_DOCKER_EXIT_CODE}
         if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
           # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
           MAIN_DOCKER_EXIT_CODE=${DOCKER_EXIT_CODE}
@@ -366,6 +409,12 @@ function dn::execute_compose() {
         # ...Execute PUSH for each service.........................................................
         if [[ "${each_service}" =~ .*'-main' ]] || [[ "${each_service}" =~ .*'-tester' ]]; then
           n2st::print_msg "Skip pushing ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT}"
+        elif [[ ${_PUSH_VIA_BUILD_FLAG} == true ]]; then
+          # Note: When --push is in the build args, 'docker compose build --push <service>'
+          #       already pushes images directly to the registry via BuildKit without storing
+          #       them locally. A separate 'docker compose push' would fail with
+          #       'An image does not exist locally' since there is no local image to push.
+          n2st::print_msg "Skip separate push for ${MSG_DIMMED_FORMAT}${each_service}${MSG_END_FORMAT} (already pushed via build --push)"
         else
           # ...Force pushing docker images to registry...........................................
           # Note: this is the best workaround when building multi-architecture images across multi-stage
@@ -373,8 +422,18 @@ function dn::execute_compose() {
           #       docker compose build --push command is not reliable in buildx builder docker-container driver
           n2st::teamcity_service_msg_blockOpened_v2 "Force push ${each_service} image to docker registry"
           export COMPOSE_ANSI=always
-          n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST" "false"
-          DOCKER_EXIT_CODE=$?
+          local _retry_idx=0
+          local _DOCKER_EXIT_CODE=1
+          while [[ ${_retry_idx} -le ${BUILD_RETRY_COUNT} ]] && [[ ${_DOCKER_EXIT_CODE} != 0 ]]; do
+            n2st::show_and_execute_docker "compose -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} push ${each_service}" "$_CI_TEST" "false"
+            _DOCKER_EXIT_CODE=$?
+            if [[ ${_DOCKER_EXIT_CODE} -ne 0 ]] && [[ ${_retry_idx} -lt ${BUILD_RETRY_COUNT} ]]; then
+               n2st::print_msg_warning "Service push for ${each_service} failed (exit code ${_DOCKER_EXIT_CODE}). Retrying service push ($((_retry_idx + 1))/${BUILD_RETRY_COUNT}) in ${RETRY_SLEEP} seconds..."
+               sleep "${RETRY_SLEEP}"
+            fi
+            (( _retry_idx++ ))
+          done
+          DOCKER_EXIT_CODE=${_DOCKER_EXIT_CODE}
           if [[ ${MAIN_DOCKER_EXIT_CODE} == 0 ]]; then
             # Skip update MAIN_DOCKER_EXIT_CODE if it already failed once
             MAIN_DOCKER_EXIT_CODE=${DOCKER_EXIT_CODE}
@@ -390,8 +449,18 @@ function dn::execute_compose() {
     n2st::draw_horizontal_line_across_the_terminal_window "${MSG_LINE_CHAR_UTIL}"
     STR_TC_SERVICE_MSG="${DOCKER_COMPOSE_CMD_ARGS[0]}ing $( basename "${COMPOSE_FILE}")"
     n2st::teamcity_service_msg_blockOpened_v2 "${STR_TC_SERVICE_MSG}"
-    n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST" "false"
-    MAIN_DOCKER_EXIT_CODE=$?
+    local _retry_idx=0
+    local _DOCKER_EXIT_CODE=1
+    while [[ ${_retry_idx} -le ${BUILD_RETRY_COUNT} ]] && [[ ${_DOCKER_EXIT_CODE} != 0 ]]; do
+      n2st::show_and_execute_docker "${DOCKER_MANAGEMENT_COMMAND[*]} -f ${COMPOSE_FILE} ${COMPOSE_FILE_OVERRIDE_FLAG[*]} ${DOCKER_COMPOSE_CMD_ARGS[*]}" "$_CI_TEST" "false"
+      _DOCKER_EXIT_CODE=$?
+      if [[ ${_DOCKER_EXIT_CODE} -ne 0 ]] && [[ ${_retry_idx} -lt ${BUILD_RETRY_COUNT} ]]; then
+         n2st::print_msg_warning "Docker command failed (exit code ${_DOCKER_EXIT_CODE}). Retrying ($((_retry_idx + 1))/${BUILD_RETRY_COUNT}) in ${RETRY_SLEEP} seconds..."
+         sleep "${RETRY_SLEEP}"
+      fi
+      (( _retry_idx++ ))
+    done
+    MAIN_DOCKER_EXIT_CODE=${_DOCKER_EXIT_CODE}
     #MAIN_DOCKER_EXIT_CODE="${DOCKER_EXIT_CODE:?"variable was not set by n2st::show_and_execute_docker"}"
     #unset DOCKER_EXIT_CODE # ToDo: This is a temporary hack >> delete it when n2st::show_and_execute_docker is refactored using "return DOCKER_EXIT_CODE" instead of "export DOCKER_EXIT_CODE"
     n2st::teamcity_service_msg_blockClosed_v2 "${STR_TC_SERVICE_MSG}"

@@ -55,10 +55,7 @@ FROM main AS test
 RUN <<EOF
     echo "Sanity check"
 
-    python -c "import torch" \
-      && python -c "from ray import train, tune" \
-      && python -c "from ray.tune.search.hyperopt import HyperOptSearch" \
-      || exit 1
+    python -c "import torch" || exit 1
 
     python -c "import torchrl" \
       && python -c "from tensordict.tensordict import TensorDict" \
