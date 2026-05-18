@@ -105,17 +105,11 @@ RUN <<EOF
         pytest-env \
         pytest-instafail \
         pytest-xdist \
-        pytest-dotenv \
       || exit 1
 
     pip3 install --no-cache-dir --ignore-installed \
         pybind11 \
       || exit 1
-
-
-    # (CRITICAL) ToDo: test using pytest-dotenv in pycharm (ref task NMO-360 ﹅→ Fix the ROS environment variable not loaded in PyCharm pytest run nightmare)
-    # https://github.com/quiqua/pytest-dotenv
-    # How to get PyCharm test run working with pytest-dotenv?:  https://github.com/quiqua/pytest-dotenv/issues/10
 
     # ....X11 forwarding dev tools.................................................................
     # ref https://gist.github.com/sorny/969fe55d85c9b0035b0109a31cbcb088
